@@ -8,20 +8,28 @@
   "repository": "logux/logux-core",
   "dependencies": {},
   "devDependencies": {
+    "ava": "^0.16.0",
+    "eslint": "^3.3.1",
     "eslint-config-standard": "^6.0.0",
-    "eslint-plugin-standard": "^2.0.0",
     "eslint-plugin-promise": "^2.0.1",
+    "eslint-plugin-standard": "^2.0.0",
+    "jsdoc": "^3.4.0",
     "lint-staged": "^2.0.3",
     "pre-commit": "^1.1.3",
-    "eslint": "^3.3.1",
-    "ava": "^0.16.0"
+    "rimraf": "^2.5.4"
   },
   "scripts": {
     "lint-staged": "lint-staged",
-    "test": "ava && eslint *.js"
+    "clean": "rimraf api/",
+    "test": "ava && npm run lint && npm run docs",
+    "lint": "eslint *.js",
+    "docs": "jsdoc *.js --destination docs/"
   },
   "eslintConfig": {
-    "extends": "standard"
+    "extends": "standard",
+    "rules": {
+      "valid-jsdoc": "error"
+    }
   },
   "lint-staged": {
     "*.js": "eslint"
