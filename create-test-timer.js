@@ -1,15 +1,12 @@
 /**
- * @typedef {function} testTimer
- * @return {number[]}
- */
-
-/**
  * Create a simple timer for tests. Timer will return next number on every call.
  *
- * @return {testTimer} timer
+ * @return {Timer} test timer
  *
  * @example
- * let timer = createTestTimer()
+ * import createTestTimer from 'logux-core/create-test-timer'
+ *
+ * const timer = createTestTimer()
  * timer() //=> [1]
  * timer() //=> [2]
  * timer() //=> [3]
