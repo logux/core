@@ -9,12 +9,12 @@ function checkContent (t, store, events) {
   })
 }
 
-test('is empty in the beginning', t => {
+test('is empty in the beginning', function (t) {
   var store = new MemoryStore()
   return checkContent(t, store, [])
 })
 
-test('adds first event', t => {
+test('adds first event', function (t) {
   var store = new MemoryStore()
   store.add({ time: [1] })
   return checkContent(t, store, [
@@ -22,7 +22,7 @@ test('adds first event', t => {
   ])
 })
 
-test('stores events sorted', t => {
+test('stores events sorted', function (t) {
   var store = new MemoryStore()
   store.add({ time: [3] })
   store.add({ time: [2] })
@@ -38,7 +38,7 @@ test('stores events sorted', t => {
   ])
 })
 
-test('sorts events by time as array', t => {
+test('sorts events by time as array', function (t) {
   var store = new MemoryStore()
   store.add({ time: [1, 1, 1] })
   store.add({ time: [2, 1, 1] })
