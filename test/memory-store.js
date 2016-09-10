@@ -1,6 +1,6 @@
 var test = require('ava')
 
-var createMemoryStore = require('../create-memory-store')
+var MemoryStore = require('../memory-store')
 
 function checkContent (t, store, events) {
   return store.get().then(page => {
@@ -10,12 +10,12 @@ function checkContent (t, store, events) {
 }
 
 test('is empty in the beginning', t => {
-  var store = createMemoryStore()
+  var store = new MemoryStore()
   return checkContent(t, store, [])
 })
 
 test('adds first event', t => {
-  var store = createMemoryStore()
+  var store = new MemoryStore()
   store.add({ time: [1] })
   return checkContent(t, store, [
     { time: [1] }
@@ -23,7 +23,7 @@ test('adds first event', t => {
 })
 
 test('stores events sorted', t => {
-  var store = createMemoryStore()
+  var store = new MemoryStore()
   store.add({ time: [3] })
   store.add({ time: [2] })
   store.add({ time: [5] })
@@ -39,7 +39,7 @@ test('stores events sorted', t => {
 })
 
 test('sorts events by time as array', t => {
-  var store = createMemoryStore()
+  var store = new MemoryStore()
   store.add({ time: [1, 1, 1] })
   store.add({ time: [2, 1, 1] })
   store.add({ time: [2, 1, 3] })
