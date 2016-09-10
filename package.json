@@ -20,7 +20,7 @@
   },
   "scripts": {
     "lint-staged": "lint-staged",
-    "clean": "rimraf api/",
+    "clean": "rimraf docs/",
     "test": "ava && npm run lint && npm run docs",
     "lint": "eslint *.js test/*.js",
     "docs": "jsdoc *.js --destination docs/"

@@ -6,4 +6,4 @@ npm-debug.log
 test/
 .travis.yml
 
-api/
+docs/
