@@ -1,6 +1,6 @@
 /**
  * @typedef {function} testTimer
- * @return {number}
+ * @return {number[]}
  */
 
 /**
@@ -10,15 +10,15 @@
  *
  * @example
  * let timer = createTestTimer()
- * timer() //=> 1
- * timer() //=> 2
- * timer() //=> 3
+ * timer() //=> [1]
+ * timer() //=> [2]
+ * timer() //=> [3]
  */
 function createTestTimer () {
   var last = 0
   return function () {
     last += 1
-    return last
+    return [last]
   }
 }
 
