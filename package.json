@@ -16,7 +16,8 @@
     "jsdoc": "^3.4.1",
     "lint-staged": "^3.0.1",
     "pre-commit": "^1.1.3",
-    "rimraf": "^2.5.4"
+    "rimraf": "^2.5.4",
+    "sorted-array": "^2.0.1"
   },
   "scripts": {
     "lint-staged": "lint-staged",

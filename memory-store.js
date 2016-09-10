@@ -1,3 +1,5 @@
+var SortedArray = require('sorted-array')
+
 /**
  * Simpliest memory-based events store.
  *
@@ -15,38 +17,30 @@
  * @class
  */
 function MemoryStore () {
-  this.store = []
+  this.store = new SortedArray([], this.compare)
 }
 
 MemoryStore.prototype = {
 
   get: function get () {
-    return Promise.resolve({ data: this.store })
+    return Promise.resolve({ data: this.store.array })
   },
 
   add: function add (event) {
-    var store = this.store
-    var time = event.time
-    var insert
-    for (var i = 0; i < store.length; i++) {
-      insert = false
-      var other = store[i].time
+    this.store.insert(event)
+  },
 
-      for (var j = 0; j < time.length; j++) {
-        if (time[j] > other[j]) {
-          insert = true
-          break
-        } else if (time[j] < other[j]) {
-          break
-        }
-      }
-
-      if (insert) {
-        store.splice(i, 0, event)
-        break
+  compare: function compare (a, b) {
+    var aTime = a.time
+    var bTime = b.time
+    for (var i = 0; i < aTime.length; i++) {
+      if (aTime[i] > bTime[i]) {
+        return -1
+      } else if (aTime[i] < bTime[i]) {
+        return 1
       }
     }
-    if (!insert) store.push(event)
+    return 0
   }
 }
 
