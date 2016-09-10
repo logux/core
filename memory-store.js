@@ -1,26 +1,31 @@
 /**
- * Return simpliest memory-based events store.
+ * Simpliest memory-based events store.
  *
  * It is good for tests, but not for server or client usage,
  * because it doesn’t save events to file or localStorage.
  *
  * @example
- * import createMemoryStore from 'logux-core/create-memory-store'
- * var log = createLog({
- *   store: createMemoryStore(),
+ * import MemoryStore from 'logux-core/memory-store'
+ *
+ * var log = new Log({
+ *   store: new MemoryStore(),
  *   timer: createTestTimer()
  * })
  *
- * @return {Store} store
+ * @class
  */
-function createMemoryStore () {
-  var store = []
+function MemoryStore () {
+  this.store = []
+}
 
-  var get = function () {
-    return Promise.resolve({ data: store })
-  }
+MemoryStore.prototype = {
 
-  var add = function (event) {
+  get: function get () {
+    return Promise.resolve({ data: this.store })
+  },
+
+  add: function add (event) {
+    var store = this.store
     var time = event.time
     var insert
     for (var i = 0; i < store.length; i++) {
@@ -43,8 +48,6 @@ function createMemoryStore () {
     }
     if (!insert) store.push(event)
   }
-
-  return { get: get, add: add }
 }
 
-module.exports = createMemoryStore
+module.exports = MemoryStore
