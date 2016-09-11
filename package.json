@@ -12,7 +12,6 @@
     "eslint-config-standard": "^6.0.0",
     "eslint-plugin-promise": "^2.0.1",
     "eslint-plugin-standard": "^2.0.0",
-    "istanbul": "^0.4.5",
     "jest": "^15.1.1",
     "jsdoc": "^3.4.1",
     "lint-staged": "^3.0.1",
@@ -25,8 +24,14 @@
     "clean": "rimraf docs/ coverage/",
     "lint": "eslint *.js test/*.js",
     "docs": "jsdoc *.js --destination docs/",
-    "check-coverage": "istanbul check-coverage --statements 100",
-    "test": "jest --coverage && npm run check-coverage && npm run lint && npm run docs"
+    "test": "jest --coverage && npm run lint && npm run docs"
+  },
+  "jest": {
+    "coverageThreshold": {
+      "global": {
+        "statements": 100
+      }
+    }
   },
   "eslintConfig": {
     "extends": "standard",
