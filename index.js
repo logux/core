@@ -1,5 +1,6 @@
 module.exports = {
   createTestTimer: require('./create-test-timer'),
   createTimer: require('./create-timer'),
-  MemoryStore: require('./memory-store')
+  MemoryStore: require('./memory-store'),
+  Log: require('./log')
 }
