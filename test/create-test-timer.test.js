@@ -1,18 +1,16 @@
-var test = require('ava')
-
 var createTestTimer = require('../create-test-timer')
 
-test('generates uniq time marks', function (t) {
+it('generates uniq time marks', function () {
   var timer = createTestTimer()
   for (var i = 1; i <= 10; i++) {
-    t.deepEqual(timer(), [i])
+    expect(timer()).toEqual([i])
   }
 })
 
-test('starts from same value', function (t) {
+it('starts from same value', function () {
   var timer1 = createTestTimer()
   var timer2 = createTestTimer()
   for (var i = 0; i <= 10; i++) {
-    t.deepEqual(timer1(), timer2())
+    expect(timer1()).toEqual(timer2())
   }
 })
