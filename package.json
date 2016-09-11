@@ -31,7 +31,8 @@
   "eslintConfig": {
     "extends": "standard",
     "rules": {
-      "valid-jsdoc": "error"
+      "valid-jsdoc": "error",
+      "no-new": "off"
     },
     "env": {
       "jest": true

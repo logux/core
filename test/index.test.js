@@ -8,6 +8,10 @@ it('has timer', function () {
   expect(typeof core.createTimer).toEqual('function')
 })
 
-it('has memory store', function () {
+it('has memory store class', function () {
   expect(typeof core.MemoryStore.prototype).toEqual('object')
+})
+
+it('has log class', function () {
+  expect(typeof core.Log.prototype).toEqual('object')
 })
