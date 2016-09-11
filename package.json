@@ -8,11 +8,12 @@
   "repository": "logux/logux-core",
   "dependencies": {},
   "devDependencies": {
-    "ava": "^0.16.0",
     "eslint": "^3.5.0",
     "eslint-config-standard": "^6.0.0",
     "eslint-plugin-promise": "^2.0.1",
     "eslint-plugin-standard": "^2.0.0",
+    "istanbul": "^0.4.5",
+    "jest": "^15.1.1",
     "jsdoc": "^3.4.1",
     "lint-staged": "^3.0.1",
     "pre-commit": "^1.1.3",
@@ -21,15 +22,19 @@
   },
   "scripts": {
     "lint-staged": "lint-staged",
-    "clean": "rimraf docs/",
-    "test": "ava && npm run lint && npm run docs",
+    "clean": "rimraf docs/ coverage/",
     "lint": "eslint *.js test/*.js",
-    "docs": "jsdoc *.js --destination docs/"
+    "docs": "jsdoc *.js --destination docs/",
+    "check-coverage": "istanbul check-coverage --statements 100",
+    "test": "jest --coverage && npm run check-coverage && npm run lint && npm run docs"
   },
   "eslintConfig": {
     "extends": "standard",
     "rules": {
       "valid-jsdoc": "error"
+    },
+    "env": {
+      "jest": true
     }
   },
   "lint-staged": {
