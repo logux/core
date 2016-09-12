@@ -151,9 +151,9 @@ Log.prototype = {
    *
    * @example
    * log.each(event => {
-   *   if ( less(event.time, lastBeep) ) {
+   *   if ( compareTime(event.time, lastBeep) <= 0 ) {
    *     return false;
-   *   } else if ( event.type === 'beep' &&  ) {
+   *   } else if ( event.type === 'beep' ) {
    *     beep()
    *     lastBeep = event.time
    *     return false;
