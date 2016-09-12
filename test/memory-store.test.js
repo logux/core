@@ -20,16 +20,6 @@ it('adds first event', function () {
   ])
 })
 
-it('stores evewnts with same times', function () {
-  var store = new MemoryStore()
-  store.add({ id: 1, time: [1] })
-  store.add({ id: 2, time: [1] })
-  return checkContent(store, [
-    { id: 1, time: [1] },
-    { id: 2, time: [1] }
-  ])
-})
-
 it('stores events sorted', function () {
   var store = new MemoryStore()
   store.add({ time: [3] })

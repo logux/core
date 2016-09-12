@@ -12,7 +12,7 @@
  * @return {Timer} timer
  *
  * @example
- * import createTimer from 'logux-core/create-timer'
+ * import { createTimer } from 'logux-core'
  *
  * const timer = createTimer('host')
  * timer() //=> [1473564435318, 'host', 0]

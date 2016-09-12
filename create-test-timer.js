@@ -4,7 +4,7 @@
  * @return {Timer} test timer
  *
  * @example
- * import createTestTimer from 'logux-core/create-test-timer'
+ * import { createTestTimer } from 'logux-core'
  *
  * const timer = createTestTimer()
  * timer() //=> [1]

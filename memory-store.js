@@ -1,5 +1,7 @@
 var SortedArray = require('sorted-array')
 
+var compareTime = require('./compare-time')
+
 /**
  * Simpliest memory-based events store.
  *
@@ -7,7 +9,7 @@ var SortedArray = require('sorted-array')
  * because it doesn’t save events to file or localStorage.
  *
  * @example
- * import MemoryStore from 'logux-core/memory-store'
+ * import { MemoryStore } from 'logux-core'
  *
  * var log = new Log({
  *   store: new MemoryStore(),
@@ -31,16 +33,7 @@ MemoryStore.prototype = {
   },
 
   compare: function compare (a, b) {
-    var aTime = a.time
-    var bTime = b.time
-    for (var i = 0; i < aTime.length; i++) {
-      if (aTime[i] > bTime[i]) {
-        return -1
-      } else if (aTime[i] < bTime[i]) {
-        return 1
-      }
-    }
-    return 0
+    return compareTime(b.time, a.time)
   }
 }
 
