@@ -6,7 +6,9 @@
   "author": "Andrey Sitnik <andrey@sitnik.ru>",
   "license": "MIT",
   "repository": "logux/logux-core",
-  "dependencies": {},
+  "dependencies": {
+    "sorted-array": "^2.0.1"
+  },
   "devDependencies": {
     "eslint": "^3.5.0",
     "eslint-config-standard": "^6.0.0",
@@ -16,8 +18,7 @@
     "jsdoc": "^3.4.1",
     "lint-staged": "^3.0.2",
     "pre-commit": "^1.1.3",
-    "rimraf": "^2.5.4",
-    "sorted-array": "^2.0.1"
+    "rimraf": "^2.5.4"
   },
   "scripts": {
     "lint-staged": "lint-staged",
