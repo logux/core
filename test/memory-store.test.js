@@ -55,3 +55,15 @@ it('sorts events by time as array', function () {
     { time: [1, 1, 1] }
   ])
 })
+
+it('removes events', function () {
+  var store = new MemoryStore()
+  store.add({ time: [1] })
+  store.add({ time: [2] })
+  store.add({ time: [3] })
+  store.remove({ time: [2] })
+  return checkContent(store, [
+    { time: [3] },
+    { time: [1] }
+  ])
+})

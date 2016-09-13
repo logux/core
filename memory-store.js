@@ -19,17 +19,21 @@ var compareTime = require('./compare-time')
  * @class
  */
 function MemoryStore () {
-  this.store = new SortedArray([], this.compare)
+  this.sorted = new SortedArray([], this.compare)
 }
 
 MemoryStore.prototype = {
 
   get: function get () {
-    return Promise.resolve({ data: this.store.array })
+    return Promise.resolve({ data: this.sorted.array })
   },
 
   add: function add (event) {
-    this.store.insert(event)
+    this.sorted.insert(event)
+  },
+
+  remove: function remove (event) {
+    this.sorted.remove(event)
   },
 
   compare: function compare (a, b) {

@@ -50,6 +50,13 @@ it('requires function listeners', function () {
   }).toThrowError(/listener/)
 })
 
+it('requires function keeper', function () {
+  var log = createLog()
+  expect(function () {
+    log.keep({ a: 1 })
+  }).toThrowError(/keeper/)
+})
+
 it('sends new events to listeners', function () {
   var log = createLog()
   log.add({ type: 'a' })
@@ -156,4 +163,46 @@ it('sets time for timeless events', function () {
   var log = createLog()
   log.add({ type: 'timeless' })
   return checkEvents(log, [{ type: 'timeless', time: [1] }])
+})
+
+it('cleans events', function () {
+  var log = createLog()
+  log.add({ type: 'a' })
+  log.clean()
+  return checkEvents(log, [])
+})
+
+it('keeps events from cleaning', function () {
+  var log = createLog()
+  var eventB = { type: 'b' }
+  log.add({ type: 'a' })
+  log.add(eventB)
+  log.keep(function (event) {
+    return event.type === 'b'
+  })
+  log.clean()
+  return checkEvents(log, [eventB])
+})
+
+it('removes keeper', function () {
+  var log = createLog()
+  log.add({ type: 'a' })
+  log.add({ type: 'b' })
+
+  var unkeep = log.keep(function (event) {
+    return event.type === 'b'
+  })
+  log.clean()
+
+  unkeep()
+  log.clean()
+
+  return checkEvents(log, [])
+})
+
+it('does not fall on multiple unkeep call', function () {
+  var log = createLog()
+  var unkeep = log.keep(function () { })
+  unkeep()
+  unkeep()
 })
