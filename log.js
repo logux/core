@@ -21,12 +21,13 @@
  * Every log store should provide two methods: add and get.
  *
  * @typedef {object} Store
- * @property {function} add Add new event to store. Event always will
- *                          have type and time properties.
- * @property {function} get Return a Promise with events “page”.
- *                          Page is a object with events in `data` property
- *                          and function `next` to return Promise with
- *                          next page. Last page should not have `next`.
+ * @property {function} add    Add new event to store. Event always will
+ *                             have type and time properties.
+ * @property {function} get    Return a Promise with events “page”.
+ *                             Page is a object with events in `data` property
+ *                             and function `next` to return Promise with
+ *                             next page. Last page should not have `next`.
+ * @property {function} remove Remove event from store
  */
 
 /**
@@ -45,6 +46,12 @@
  * @callback iterator
  * @param {Event} event next event
  * @return {boolean} returning false will stop iteration
+ */
+
+/**
+ * @callback keeper
+ * @param {Event} event next event
+ * @return {boolean} true if event should be keeped from cleaning
  */
 
 /**
@@ -80,6 +87,7 @@ function Log (opts) {
   this.store = opts.store
 
   this.listeners = []
+  this.keepers = []
 }
 
 Log.prototype = {
@@ -138,6 +146,62 @@ Log.prototype = {
 
     for (var i = 0; i < this.listeners.length; i++) {
       this.listeners[i](event)
+    }
+  },
+
+  /**
+   * Remove all unnecessary events. Events could be keeped by @link(Log#keep).
+   *
+   * @return {number} removed events count
+   *
+   * @example
+   * let sinceClean = 0
+   * log.subscribe(() => {
+   *   sinceClean += 1
+   *   if (sinceClean > 100) {
+   *     sinceClean = 0
+   *     log.clean()
+   *   }
+   * })
+   */
+  clean: function clean () {
+    var removed = 0
+    this.each(event => {
+      var keep = this.keepers.some(function (keeper) {
+        return keeper(event)
+      })
+      if (!keep) this.store.remove(event)
+    })
+    return removed
+  },
+
+  /**
+   * Add function to keep events from cleaning.
+   *
+   * @param {keeper} keeper return true for non-cleanable events
+   * @return {function} remove keeper from log
+   *
+   * @example
+   * const unkeep = log.keep(event => {
+   *   return compareTime(event.time) > 0
+   * })
+   * function uninstallPlugin () {
+   *   unkeep()
+   * }
+   */
+  keep: function keep (keeper) {
+    if (typeof keeper !== 'function') {
+      throw new Error('Expected log keeper to be a function')
+    }
+
+    var keepers = this.keepers
+    var isKeeping = true
+    keepers.push(keeper)
+
+    return function unkeep () {
+      if (!isKeeping) return
+      isKeeping = false
+      keepers.splice(keepers.indexOf(keeper), 1)
     }
   },
 
