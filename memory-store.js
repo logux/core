@@ -6,10 +6,6 @@ function compareCreated (a, b) {
   return compareTime(b[1].created, a[1].created)
 }
 
-function compareAdded (a, b) {
-  return b[1].added - a[1].added
-}
-
 /**
  * Simpliest memory-based events store.
  *
@@ -28,24 +24,32 @@ function compareAdded (a, b) {
  */
 function MemoryStore () {
   this.created = new SortedArray([], compareCreated)
-  this.added = new SortedArray([], compareAdded)
+  this.added = []
 }
 
 MemoryStore.prototype = {
 
   get: function get (order) {
-    var data = order === 'added' ? this.added : this.created
-    return Promise.resolve({ data: data.array })
+    if (order === 'added') {
+      return Promise.resolve({ data: this.added })
+    } else {
+      return Promise.resolve({ data: this.created.array })
+    }
   },
 
   add: function add (entry) {
     this.created.insert(entry)
-    this.added.insert(entry)
+    this.added.unshift(entry)
   },
 
   remove: function remove (entry) {
     this.created.remove(entry)
-    this.added.remove(entry)
+    for (var i = this.added.length - 1; i >= 0; i--) {
+      if (compareTime(this.added[i][1].created, entry[1].created) === 0) {
+        this.added.splice(i, 1)
+        break
+      }
+    }
   }
 
 }
