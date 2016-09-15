@@ -119,7 +119,7 @@ Log.prototype = {
       var keep = self.keepers.some(function (keeper) {
         return keeper(event, meta)
       })
-      if (!keep) self.store.remove([event, meta])
+      if (!keep) self.store.remove(meta.created)
     })
   },
 

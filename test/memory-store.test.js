@@ -67,14 +67,36 @@ it('support time array in created', function () {
   ])
 })
 
+it('ignores event with same time', function () {
+  var store = new MemoryStore()
+  store.add([{ a: 1 }, { created: [1], added: [1] }])
+  store.add([{ a: 2 }, { created: [1], added: [2] }])
+  return checkCreated(store, [
+    [{ a: 1 }, { created: [1], added: [1] }]
+  ])
+})
+
 it('removes events', function () {
   var store = new MemoryStore()
   store.add([{ }, { created: [1], added: 1 }])
   store.add([{ }, { created: [2], added: 2 }])
   store.add([{ }, { created: [3], added: 3 }])
-  store.remove([{ }, { created: [2], added: 2 }])
+  store.add([{ }, { created: [4], added: 4 }])
+  store.add([{ }, { created: [5], added: 5 }])
+  store.remove([2])
   return checkCreated(store, [
+    [{ }, { created: [5], added: 5 }],
+    [{ }, { created: [4], added: 4 }],
     [{ }, { created: [3], added: 3 }],
+    [{ }, { created: [1], added: 1 }]
+  ])
+})
+
+it('ignores unknown event', function () {
+  var store = new MemoryStore()
+  store.add([{ }, { created: [1], added: 1 }])
+  store.remove([2])
+  return checkCreated(store, [
     [{ }, { created: [1], added: 1 }]
   ])
 })
