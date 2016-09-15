@@ -96,7 +96,7 @@ Log.prototype = {
   /**
    * Remove all unnecessary events. Events could be keeped by @link(Log#keep).
    *
-   * @return {number} removed events count
+   * @return {undefined}
    *
    * @example
    * let sinceClean = 0
@@ -109,14 +109,13 @@ Log.prototype = {
    * })
    */
   clean: function clean () {
-    var removed = 0
-    this.each(event => {
-      var keep = this.keepers.some(function (keeper) {
+    var self = this
+    this.each(function (event) {
+      var keep = self.keepers.some(function (keeper) {
         return keeper(event)
       })
-      if (!keep) this.store.remove(event)
+      if (!keep) self.store.remove(event)
     })
-    return removed
   },
 
   /**
