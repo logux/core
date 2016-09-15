@@ -1,10 +1,4 @@
-var SortedArray = require('sorted-array')
-
 var compareTime = require('./compare-time')
-
-function compareCreated (a, b) {
-  return compareTime(b[1].created, a[1].created)
-}
 
 /**
  * Simpliest memory-based events store.
@@ -23,29 +17,65 @@ function compareCreated (a, b) {
  * @class
  */
 function MemoryStore () {
-  this.created = new SortedArray([], compareCreated)
+  this.created = []
   this.added = []
 }
 
 MemoryStore.prototype = {
 
   get: function get (order) {
-    if (order === 'added') {
-      return Promise.resolve({ data: this.added })
+    if (order === 'created') {
+      return Promise.resolve({ data: this.created })
     } else {
-      return Promise.resolve({ data: this.created.array })
+      return Promise.resolve({ data: this.added })
     }
   },
 
   add: function add (entry) {
-    this.created.insert(entry)
     this.added.unshift(entry)
+
+    var time = entry[1].created
+    var list = this.created
+    for (var i = 0; i < list.length; i++) {
+      var compare = compareTime(time, list[i][1].created)
+      if (compare > 0) {
+        list.splice(i, 0, entry)
+        return
+      } else if (compare === 0) {
+        return
+      }
+    }
+    list.push(entry)
   },
 
-  remove: function remove (entry) {
-    this.created.remove(entry)
+  search: function search (time) {
+    var list = this.created
+    var high = list.length
+    var low = 0
+
+    while (high > low) {
+      var i = (high + low) / 2 >>> 0
+      var compare = compareTime(time, list[i][1].created)
+
+      if (compare < 0) {
+        low = i + 1
+      } else if (compare > 0) {
+        high = i
+      } else {
+        return i
+      }
+    }
+
+    return -1
+  },
+
+  remove: function remove (time) {
+    var index = this.search(time)
+    if (index === -1) return
+    this.created.splice(index, 1)
+
     for (var i = this.added.length - 1; i >= 0; i--) {
-      if (compareTime(this.added[i][1].created, entry[1].created) === 0) {
+      if (compareTime(this.added[i][1].created, time) === 0) {
         this.added.splice(i, 1)
         break
       }

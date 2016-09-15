@@ -6,9 +6,7 @@
   "author": "Andrey Sitnik <andrey@sitnik.ru>",
   "license": "MIT",
   "repository": "logux/logux-core",
-  "dependencies": {
-    "sorted-array": "^2.0.1"
-  },
+  "dependencies": {},
   "devDependencies": {
     "docdash": "^0.4.0",
     "eslint": "^3.5.0",
