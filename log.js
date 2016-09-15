@@ -30,6 +30,7 @@ function Log (opts) {
   }
   this.store = opts.store
 
+  this.lastAdded = 0
   this.listeners = []
   this.keepers = []
 }
@@ -67,10 +68,12 @@ Log.prototype = {
   },
 
   /**
-   * Add event to log. It will set time for event (if it missed)
+   * Add event to log. It will set created (if it missed) and added to meta
    * and call all listeners.
    *
    * @param {Event} event new event
+   * @param {object} [meta] open structure for event metadata
+   * @param {Time} meta.created event created time
    * @return {undefined}
    *
    * @example
@@ -78,18 +81,20 @@ Log.prototype = {
    *   log.add({ type: 'users:remove', user: id })
    * })
    */
-  add: function add (event) {
+  add: function add (event, meta) {
     if (typeof event.type === 'undefined') {
       throw new Error('Expected "type" property in event')
     }
-    if (typeof event.time === 'undefined') {
-      event.time = this.timer()
-    }
 
-    this.store.add(event)
+    if (!meta) meta = { }
+    if (typeof meta.created === 'undefined') meta.created = this.timer()
+    this.lastAdded += 1
+    meta.added = this.lastAdded
+
+    this.store.add([event, meta])
 
     for (var i = 0; i < this.listeners.length; i++) {
-      this.listeners[i](event)
+      this.listeners[i](event, meta)
     }
   },
 
@@ -110,11 +115,11 @@ Log.prototype = {
    */
   clean: function clean () {
     var self = this
-    this.each(function (event) {
+    this.each(function (event, meta) {
       var keep = self.keepers.some(function (keeper) {
-        return keeper(event)
+        return keeper(event, meta)
       })
-      if (!keep) self.store.remove(event)
+      if (!keep) self.store.remove([event, meta])
     })
   },
 
@@ -153,6 +158,9 @@ Log.prototype = {
    *
    * Return false from callback if you want to stop iteration.
    *
+   * @param {object} [opts] interator options
+   * @param {'added'|'created'} opts.order get events by created or added time.
+   *                                       Default is 'created'.
    * @param {iterator} callback function will be executed on every event
    * @return {undefined}
    *
@@ -167,11 +175,16 @@ Log.prototype = {
    *   }
    * })
    */
-  each: function each (callback) {
+  each: function each (opts, callback) {
+    if (!callback) {
+      callback = opts
+      opts = { }
+    }
     function nextPage (get) {
       get().then(function (page) {
         for (var i = 0; i < page.data.length; i++) {
-          var result = callback(page.data[i])
+          var entry = page.data[i]
+          var result = callback(entry[0], entry[1])
           if (result === false) break
         }
         if (result !== false && page.next) {
@@ -180,7 +193,7 @@ Log.prototype = {
       })
     }
 
-    nextPage(this.store.get.bind(this.store))
+    nextPage(this.store.get.bind(this.store, opts.order || 'created'))
   }
 }
 
@@ -201,8 +214,16 @@ module.exports = Log
  *
  * @typedef {object} Event
  * @property {string} type Event type name.
- * @property {Time} [time] Event occured time. {@link Log#add} will fill it,
- *                         if field will be empty.
+ */
+
+/**
+ * Event metadata
+ *
+ * @typedef {object} Meta
+ * @property {Time} created Event occured time. {@link Log#add} will fill it,
+ *                          if field will be empty.
+ * @property {number} added Event added sequence number.
+ *                          {@link Log#add} will fill it.
  */
 
 /**
@@ -228,16 +249,19 @@ module.exports = Log
 /**
  * @callback listener
  * @param {Event} event new event
+ * @param {Meta} meta event metadata
  */
 
 /**
  * @callback iterator
  * @param {Event} event next event
+ * @param {Meta} event next event metadata
  * @return {boolean} returning false will stop iteration
  */
 
 /**
  * @callback keeper
  * @param {Event} event next event
+ * @param {Meta} event next event metadata
  * @return {boolean} true if event should be keeped from cleaning
  */
