@@ -185,6 +185,19 @@ log.keep((event, meta) => {
 
 Or CRDT module could keep events with latest value for every property.
 
+Cleaning should be started manually by `clean()` method:
+
+```js
+let events = 0
+log.listen(event => {
+  events += 1
+  if (events > 100) {
+    events = 0
+    setImmediate(() => log.clean())
+  }
+})
+```
+
 ## Stores
 
 Log should be saved to `localStorage` in browser or file on server.
