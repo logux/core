@@ -160,7 +160,7 @@ Log.prototype = {
    *
    * @param {object} [opts] iterator options
    * @param {'added'|'created'} opts.order get events by created or added time.
-   *                                       Default is 'created'.
+   *                                       Default is `'created'`.
    * @param {iterator} callback function will be executed on every event
    * @return {Promise} when iteration will be finished by iterator or events end
    *

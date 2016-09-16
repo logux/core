@@ -1,7 +1,7 @@
 /**
  * Create base timer.
  *
- * Shareable logs is very sensitive for good time. Just Date.now()
+ * Shareable logs is very sensitive for good time. Just `Date.now()`
  * is not enough. Some events could be created in same millisecond.
  * Events created in same time on different machine may have different order.
  *
