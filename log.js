@@ -101,7 +101,7 @@ Log.prototype = {
   /**
    * Remove all unnecessary events. Events could be keeped by @link(Log#keep).
    *
-   * @return {undefined}
+   * @return {Promise} when cleaning will be finished
    *
    * @example
    * let sinceClean = 0
@@ -115,7 +115,7 @@ Log.prototype = {
    */
   clean: function clean () {
     var self = this
-    this.each(function (event, meta) {
+    return this.each(function (event, meta) {
       var keep = self.keepers.some(function (keeper) {
         return keeper(event, meta)
       })
@@ -162,7 +162,7 @@ Log.prototype = {
    * @param {'added'|'created'} opts.order get events by created or added time.
    *                                       Default is 'created'.
    * @param {iterator} callback function will be executed on every event
-   * @return {undefined}
+   * @return {Promise} when iteration will be finished by iterator or events end
    *
    * @example
    * log.each(event => {
@@ -180,20 +180,27 @@ Log.prototype = {
       callback = opts
       opts = { }
     }
-    function nextPage (get) {
-      get().then(function (page) {
-        for (var i = 0; i < page.data.length; i++) {
-          var entry = page.data[i]
-          var result = callback(entry[0], entry[1])
-          if (result === false) break
-        }
-        if (result !== false && page.next) {
-          nextPage(page.next)
-        }
-      })
-    }
 
-    nextPage(this.store.get.bind(this.store, opts.order || 'created'))
+    var store = this.store
+    return new Promise(function (resolve) {
+      function nextPage (get) {
+        get().then(function (page) {
+          for (var i = 0; i < page.data.length; i++) {
+            var entry = page.data[i]
+            var result = callback(entry[0], entry[1])
+            if (result === false) break
+          }
+
+          if (result === false || !page.next) {
+            resolve()
+          } else {
+            nextPage(page.next)
+          }
+        })
+      }
+
+      nextPage(store.get.bind(store, opts.order || 'created'))
+    })
   }
 }
 

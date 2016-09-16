@@ -6,32 +6,15 @@ function createLog () {
   return new Log({ timer: createTestTimer(), store: new MemoryStore() })
 }
 
-function nextTick () {
-  return new Promise(function (resolve) {
-    setTimeout(function () {
-      resolve()
-    }, 1)
-  })
-}
-
 function checkEvents (log, expected) {
-  var events = []
-  log.each(function (event) {
-    events.push(event)
+  var events = log.store.created.map(function (entry) {
+    return entry[0]
   })
-  return nextTick().then(function () {
-    expect(events).toEqual(expected)
-  })
+  expect(events).toEqual(expected)
 }
 
 function checkEntries (log, expected) {
-  var entries = []
-  log.each(function (event, meta) {
-    entries.push([event, meta])
-  })
-  return nextTick().then(function () {
-    expect(entries).toEqual(expected)
-  })
+  expect(log.store.created).toEqual(expected)
 }
 
 it('requires timer', function () {
@@ -121,11 +104,16 @@ it('iterates through added events', function () {
   log.add({ type: 'b' }, { created: [2] })
   log.add({ type: 'c' }, { created: [1] })
 
-  return checkEntries(log, [
-    [{ type: 'a' }, { created: [3], added: 1 }],
-    [{ type: 'b' }, { created: [2], added: 2 }],
-    [{ type: 'c' }, { created: [1], added: 3 }]
-  ])
+  var entries = []
+  return log.each(function (event, meta) {
+    entries.push([event, meta])
+  }).then(function () {
+    expect(entries).toEqual([
+      [{ type: 'a' }, { created: [3], added: 1 }],
+      [{ type: 'b' }, { created: [2], added: 2 }],
+      [{ type: 'c' }, { created: [1], added: 3 }]
+    ])
+  })
 })
 
 it('iterates by added order', function () {
@@ -136,10 +124,9 @@ it('iterates by added order', function () {
   log.add({ type: 'c' }, { created: [1] })
 
   var events = []
-  log.each({ order: 'added' }, function (event) {
+  return log.each({ order: 'added' }, function (event) {
     events.push(event)
-  })
-  return nextTick().then(function () {
+  }).then(function () {
     expect(events).toEqual([
       { type: 'c' },
       { type: 'b' },
@@ -155,11 +142,10 @@ it('disables iteration on false', function () {
   log.add({ type: 'b' })
 
   var events = []
-  log.each(function (event) {
+  return log.each(function (event) {
     events.push(event)
     return false
-  })
-  return nextTick().then(function () {
+  }).then(function () {
     expect(events).toEqual([{ type: 'b' }])
   })
 })
@@ -176,13 +162,19 @@ it('supports multi-pages stores', function () {
     }
   }
   var log = new Log({ timer: createTestTimer(), store: store })
-  return checkEvents(log, ['a', 'b'])
+
+  var events = []
+  return log.each(function (event) {
+    events.push(event)
+  }).then(function () {
+    expect(events).toEqual(['a', 'b'])
+  })
 })
 
 it('keeps existed time', function () {
   var log = createLog()
   log.add({ type: 'timed' }, { created: [100] })
-  return checkEntries(log, [
+  checkEntries(log, [
     [{ type: 'timed' }, { created: [100], added: 1 }]
   ])
 })
@@ -190,7 +182,7 @@ it('keeps existed time', function () {
 it('sets time for timeless events', function () {
   var log = createLog()
   log.add({ type: 'timeless' })
-  return checkEntries(log, [
+  checkEntries(log, [
     [{ type: 'timeless' }, { created: [1], added: 1 }]
   ])
 })
@@ -198,8 +190,9 @@ it('sets time for timeless events', function () {
 it('cleans events', function () {
   var log = createLog()
   log.add({ type: 'a' })
-  log.clean()
-  return checkEntries(log, [])
+  return log.clean().then(function () {
+    checkEntries(log, [])
+  })
 })
 
 it('keeps events from cleaning', function () {
@@ -209,8 +202,9 @@ it('keeps events from cleaning', function () {
   log.keep(function (event) {
     return event.type === 'b'
   })
-  log.clean()
-  return checkEvents(log, [{ type: 'b' }])
+  return log.clean().then(function () {
+    checkEvents(log, [{ type: 'b' }])
+  })
 })
 
 it('removes keeper', function () {
@@ -221,12 +215,13 @@ it('removes keeper', function () {
   var unkeep = log.keep(function (event) {
     return event.type === 'b'
   })
-  log.clean()
-
-  unkeep()
-  log.clean()
-
-  return checkEvents(log, [])
+  return log.clean().then(function () {
+    checkEvents(log, [{ type: 'b' }])
+    unkeep()
+    log.clean().then(function () {
+      checkEvents(log, [])
+    })
+  })
 })
 
 it('does not fall on multiple unkeep call', function () {
