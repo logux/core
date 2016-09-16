@@ -1,6 +1,6 @@
 /**
  * Compare two Logux Time array and return -1, 0 or 1
- * (standard values for sort()).
+ * (standard values for `sort()`).
  *
  * @param {Time} a first time to compare
  * @param {Time} b second time to compare
