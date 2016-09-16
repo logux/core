@@ -130,8 +130,8 @@ Log.prototype = {
    * @return {function} remove keeper from log
    *
    * @example
-   * const unkeep = log.keep(event => {
-   *   return compareTime(event.time) > 0
+   * const unkeep = log.keep((event, meta) => {
+   *   return compareTime(meta.created, lastBeep) > 0
    * })
    * function uninstallPlugin () {
    *   unkeep()
@@ -165,12 +165,12 @@ Log.prototype = {
    * @return {Promise} when iteration will be finished by iterator or events end
    *
    * @example
-   * log.each(event => {
-   *   if ( compareTime(event.time, lastBeep) <= 0 ) {
+   * log.each((event, meta) => {
+   *   if ( compareTime(meta.created, lastBeep) <= 0 ) {
    *     return false;
    *   } else if ( event.type === 'beep' ) {
    *     beep()
-   *     lastBeep = event.time
+   *     lastBeep = meta.created
    *     return false;
    *   }
    * })
