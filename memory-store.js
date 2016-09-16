@@ -1,7 +1,7 @@
 var compareTime = require('./compare-time')
 
 /**
- * Simpliest memory-based events store.
+ * Simple memory-based events store.
  *
  * It is good for tests, but not for server or client usage,
  * because it doesn’t save events to file or localStorage.

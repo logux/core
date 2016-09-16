@@ -22,11 +22,11 @@
   },
   "scripts": {
     "lint-staged": "lint-staged",
-    "spellcheck": "yaspeller *.md",
+    "spellcheck": "npm run docs && yaspeller *.md docs/*.html",
     "clean": "rimraf docs/ coverage/",
     "lint": "eslint *.js test/*.js",
-    "docs": "jsdoc *.js --template node_modules/docdash --destination docs/",
-    "test": "jest --coverage && npm run lint && npm run docs && npm run spellcheck"
+    "docs": "jsdoc --configure .jsdocrc *.js",
+    "test": "jest --coverage && npm run lint && npm run spellcheck"
   },
   "jest": {
     "coverageThreshold": {
