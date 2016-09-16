@@ -76,9 +76,9 @@ Timer should a function, that return new time array on every call.
 ```js
 import { compareTime } from 'logux-core'
 
-compateTime(older, younder) //=>  1
-compateTime(older, older)   //=>  0
-compateTime(younder, older) //=> -1
+compareTime(older, younder) //=>  1
+compareTime(older, older)   //=>  0
+compareTime(younder, older) //=> -1
 ```
 
 ### Test Timer
