@@ -17,14 +17,16 @@
     "jsdoc": "^3.4.1",
     "lint-staged": "^3.0.2",
     "pre-commit": "^1.1.3",
-    "rimraf": "^2.5.4"
+    "rimraf": "^2.5.4",
+    "yaspeller": "^2.9.1"
   },
   "scripts": {
     "lint-staged": "lint-staged",
+    "spellcheck": "yaspeller *.md",
     "clean": "rimraf docs/ coverage/",
     "lint": "eslint *.js test/*.js",
     "docs": "jsdoc *.js --template node_modules/docdash --destination docs/",
-    "test": "jest --coverage && npm run lint && npm run docs"
+    "test": "jest --coverage && npm run lint && npm run docs && npm run spellcheck"
   },
   "jest": {
     "coverageThreshold": {
@@ -44,6 +46,7 @@
     }
   },
   "lint-staged": {
+    "*.md": "yaspeller",
     "*.js": "eslint"
   },
   "pre-commit": [
