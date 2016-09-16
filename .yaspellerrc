@@ -1,12 +1,18 @@
 {
   "lang": "en",
-  "format": "markdown",
   "ignoreCapitalization": true,
   "dictionary": [
     "CRDT",
     "Logux",
     "MemoryStore",
     "Redux",
-    "JS"
+    "js",
+    "JS",
+    "localStorage",
+    "docdash",
+    "createTimer",
+    "createTestTimer",
+    "compareTime",
+    "JSDoc"
   ]
 }

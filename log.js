@@ -99,7 +99,7 @@ Log.prototype = {
   },
 
   /**
-   * Remove all unnecessary events. Events could be keeped by @link(Log#keep).
+   * Remove all unnecessary events. Events could be kept by @link(Log#keep).
    *
    * @return {Promise} when cleaning will be finished
    *
@@ -126,7 +126,7 @@ Log.prototype = {
   /**
    * Add function to keep events from cleaning.
    *
-   * @param {keeper} keeper return true for non-cleanable events
+   * @param {keeper} keeper return true for events to keep
    * @return {function} remove keeper from log
    *
    * @example
@@ -154,11 +154,11 @@ Log.prototype = {
   },
 
   /**
-   * Iteraters through all event, from last event to first.
+   * Iterates through all event, from last event to first.
    *
    * Return false from callback if you want to stop iteration.
    *
-   * @param {object} [opts] interator options
+   * @param {object} [opts] iterator options
    * @param {'added'|'created'} opts.order get events by created or added time.
    *                                       Default is 'created'.
    * @param {iterator} callback function will be executed on every event
@@ -207,7 +207,7 @@ Log.prototype = {
 module.exports = Log
 
 /**
- * Sortable unique event ID.
+ * Unique event ID.
  * Array of comparable native types (like number or string).
  *
  * @typedef {array} Time
@@ -227,7 +227,7 @@ module.exports = Log
  * Event metadata
  *
  * @typedef {object} Meta
- * @property {Time} created Event occured time. {@link Log#add} will fill it,
+ * @property {Time} created Event occurred time. {@link Log#add} will fill it,
  *                          if field will be empty.
  * @property {number} added Event added sequence number.
  *                          {@link Log#add} will fill it.
@@ -270,5 +270,5 @@ module.exports = Log
  * @callback keeper
  * @param {Event} event next event
  * @param {Meta} event next event metadata
- * @return {boolean} true if event should be keeped from cleaning
+ * @return {boolean} true if event should be kept from cleaning
  */
