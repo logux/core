@@ -3,7 +3,7 @@
 Log for Logux with default timer and test tools. It is base classes, end-users
 should use high-level Logux tools.
 
-Logux idea is based on syncable logs. Log is list of events ordered by time.
+Logux idea is based on shared logs. Log is list of events ordered by time.
 Every entry in Logux log contains event object and meta object with created
 and added times.
 
@@ -14,7 +14,7 @@ const log = new Log({ store, timer })
 
 ## Event
 
-Logux event is a simple JS object. There is only one mondatory property, `type`.
+Logux event is a simple JS object. There is only one mandatory property, `type`.
 Logux events is very similar to Redux actions.
 
 ```js
@@ -202,7 +202,7 @@ log.listen(event => {
 
 Log should be saved to `localStorage` in browser or file on server.
 Also server log could be very big (bigger than memory). This is why Logux
-has changable log stores.
+has changeable log stores.
 
 ### MemoryStore
 
@@ -217,7 +217,7 @@ const log = new Log({ timer, store: new MemoryStore() })
 
 Store could be a any object with 3 methods:
 
-* `add(entry)` puts new log netry to store.
+* `add(entry)` puts new log entry to store.
 * `remove(created)` removes event by event creation time.
 * `get()` returns Promise to load first events page. Events page is a object
   with entries array in `page.date` and `page.next` function with next page

@@ -1,0 +1,12 @@
+{
+  "lang": "en",
+  "format": "markdown",
+  "ignoreCapitalization": true,
+  "dictionary": [
+    "CRDT",
+    "Logux",
+    "MemoryStore",
+    "Redux",
+    "JS"
+  ]
+}
