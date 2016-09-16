@@ -1,4 +1,6 @@
 .gitignore
+.npmignore
+.editorconfig
 
 node_modules/
 npm-debug.log
@@ -8,3 +10,5 @@ coverage/
 .travis.yml
 
 docs/
+.jsdocrc
+.yaspellerrc
