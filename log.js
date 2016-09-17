@@ -74,7 +74,7 @@ Log.prototype = {
    * @param {Event} event new event
    * @param {object} [meta] open structure for event metadata
    * @param {Time} meta.created event created time
-   * @return {undefined}
+   * @return {boolean} Return `false` if event was already in log
    *
    * @example
    * removeButton.addEventListener('click', () => {
@@ -91,11 +91,14 @@ Log.prototype = {
     this.lastAdded += 1
     meta.added = this.lastAdded
 
-    this.store.add([event, meta])
+    var wasAdded = this.store.add([event, meta])
 
-    for (var i = 0; i < this.listeners.length; i++) {
-      this.listeners[i](event, meta)
+    if (wasAdded) {
+      for (var i = 0; i < this.listeners.length; i++) {
+        this.listeners[i](event, meta)
+      }
     }
+    return wasAdded
   },
 
   /**
@@ -238,7 +241,8 @@ module.exports = Log
  *
  * @typedef {object} Store
  * @property {function} add    Add new event to store. Event always will
- *                             have type and time properties.
+ *                             have type and time properties. Returns false
+ *                             if event was already in log.
  * @property {function} get    Return a Promise with events “page”.
  *                             Page is a object with events in `data` property
  *                             and function `next` to return Promise with
