@@ -90,6 +90,24 @@ it('unsubscribes listeners', function () {
   expect(events).toEqual([{ type: 'a' }])
 })
 
+it('ignore existed created time', function () {
+  var log = createLog()
+
+  var added = []
+  log.subscribe(function (event) {
+    added.push(event)
+  })
+
+  var result1 = log.add({ type: 'a' }, { created: [0] })
+  expect(result1).toBeTruthy()
+
+  var result2 = log.add({ type: 'b' }, { created: [0] })
+  expect(result2).not.toBeTruthy()
+
+  checkEvents(log, [{ type: 'a' }])
+  expect(added).toEqual([{ type: 'a' }])
+})
+
 it('does not fall on multiple unsubscribe call', function () {
   var log = createLog()
   var unsubscribe = log.subscribe(function () { })

@@ -40,12 +40,13 @@ MemoryStore.prototype = {
       var compare = compareTime(time, list[i][1].created)
       if (compare > 0) {
         list.splice(i, 0, entry)
-        return
+        return true
       } else if (compare === 0) {
-        return
+        return false
       }
     }
     list.push(entry)
+    return true
   },
 
   search: function search (time) {
