@@ -1,6 +1,6 @@
 # Logux Core
 
-Log for Logux with default timer and test tools. It is base classes, end-users
+Log for Logux, default timer and test tools. It is base classes, end-users
 should use high-level Logux tools.
 
 Logux idea is based on shared logs. Log is list of events ordered by time.
@@ -112,17 +112,20 @@ log.add({ type: 'beep' }, { created: past }) //=> added: 2
 ## Reading
 
 There is a two way to read events from log. First you can subscribe
-for new events:
+to new events:
 
 ```js
-log.listen((event, meta) => {
+log.on('event', (event, meta) => {
   console.log(event, meta)
 })
 log.add({ type: 'test' })
-// outputs { type: 'test' }, { created: time, added: 1 }
+// Prints { type: 'test' }, { created: time, added: 1 }
 ```
 
-To unbind listener call function returned from `listen`.
+Log implements [nanoevents] API, so to unbind listener
+call function returned from `on`.
+
+[nanoevents]: https://github.com/ai/nanoevents
 
 Second way is to run asynchronous event iterator:
 
@@ -148,7 +151,7 @@ log.each(event => {
 })
 ```
 
-By default, `each()` iterates by event creation time. You could set order
+By default, `each()` order events by creation time. You could set order
 by adding time:
 
 ```js
@@ -166,30 +169,31 @@ log.each({ order: 'added' }, (event, meta) => {
 To keep log fast, Logux clean it from outdated events.
 Note, that by default, Logux cleans every event in log.
 
-If third-party library needs some events in future, it should set keeper,
-function that will return `true` on every important event.
+If third-party library will need some events in future, it should set keeper.
+Keeper is a function that will return `true` on every important event.
 
-For example, development tools could keep latest 1000 events to show log:
+Log emit `clean` event before keepers execution and cleaning.
+
+For example, DevTools could keep latest 1000 events to show log:
 
 ```js
-let lastCreated = 0
 let count = 0
+log.on('clean', () => {
+  count = 0
+})
 log.keep((event, meta) => {
-  if (compareTime(meta.created, lastCreated) > 0) {
-    count = 0
-  }
   count += 1
   return count > 1000
 })
 ```
 
-Or CRDT module could keep events with latest value for every property.
+Or CRDT module could keep events with latest property value.
 
 Cleaning should be started manually by `clean()` method:
 
 ```js
 let events = 0
-log.listen(event => {
+log.on('event', event => {
   events += 1
   if (events > 100) {
     events = 0
