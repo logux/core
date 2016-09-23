@@ -36,32 +36,18 @@ it('requires type for events', function () {
   }).toThrowError(/type/)
 })
 
-it('requires function listeners', function () {
-  var log = createLog()
-  expect(function () {
-    log.subscribe({ a: 1 })
-  }).toThrowError(/listener/)
-})
-
-it('requires function keeper', function () {
-  var log = createLog()
-  expect(function () {
-    log.keep({ a: 1 })
-  }).toThrowError(/keeper/)
-})
-
 it('sends new events to listeners', function () {
   var log = createLog()
   log.add({ type: 'a' })
 
   var events1 = []
-  log.subscribe(function (event, meta) {
+  log.on('event', function (event, meta) {
     expect(typeof meta).toEqual('object')
     events1.push(event)
   })
 
   var events2 = []
-  log.subscribe(function (event) {
+  log.on('event', function (event) {
     events2.push(event)
   })
 
@@ -75,11 +61,25 @@ it('sends new events to listeners', function () {
   expect(events2).toEqual(events1)
 })
 
+it('supports one-time listeners', function () {
+  var log = createLog()
+
+  var events = []
+  log.once('event', function (event) {
+    events.push(event)
+  })
+
+  log.add({ type: 'b' })
+  log.add({ type: 'c' })
+
+  expect(events).toEqual([{ type: 'b' }])
+})
+
 it('unsubscribes listeners', function () {
   var log = createLog()
 
   var events = []
-  var unsubscribe = log.subscribe(function (event) {
+  var unsubscribe = log.on('event', function (event) {
     events.push(event)
   })
 
@@ -94,7 +94,7 @@ it('ignore existed created time', function () {
   var log = createLog()
 
   var added = []
-  log.subscribe(function (event) {
+  log.on('event', function (event) {
     added.push(event)
   })
 
@@ -106,13 +106,6 @@ it('ignore existed created time', function () {
 
   checkEvents(log, [{ type: 'a' }])
   expect(added).toEqual([{ type: 'a' }])
-})
-
-it('does not fall on multiple unsubscribe call', function () {
-  var log = createLog()
-  var unsubscribe = log.subscribe(function () { })
-  unsubscribe()
-  unsubscribe()
 })
 
 it('iterates through added events', function () {

@@ -1,9 +1,11 @@
+var NanoEvents = require('nanoevents')
+
 /**
  * Log is main idea in Logux to store timed events inside.
  *
  * @param {object} opts options
- * @param {Store} opts.store Store for events
- * @param {Timer} opts.timer Timer to mark events
+ * @param {Store} opts.store Store for events.
+ * @param {Timer} opts.timer Timer to mark events.
  *
  * @example
  * import Log from 'logux-core'
@@ -12,7 +14,7 @@
  *   timer: createTestTimer()
  * })
  *
- * log.subscribe(beeper)
+ * log.on('event', beeper)
  * log.add({ type: 'beep' })
  *
  * @class
@@ -31,40 +33,52 @@ function Log (opts) {
   this.store = opts.store
 
   this.lastAdded = 0
-  this.listeners = []
-  this.keepers = []
+  this.emitter = new NanoEvents()
 }
 
 Log.prototype = {
 
   /**
-   * Listen for log changes
+   * Subscribe for log events. Supported events:
    *
-   * @param {listener} listener will be executed on every added event
-   * @return {function} remove listener from log
+   * * `event`: when new event was added to log.
+   * * `clean`: before log run keepers and remove outdated events.
+   *
+   * @param {"event"|"clean"} event The event name.
+   * @param {listener} listener The listener function.
+   *
+   * @return {function} Unbind listener from event.
    *
    * @example
-   * const unsubscribe = log.subscribe(newEvent => {
+   * const unbind = log.on('event', newEvent => {
    *   if (newEvent.type === 'beep') beep()
    * })
    * function disableBeeps () {
-   *   unsubscribe()
+   *   unbind()
    * }
    */
-  subscribe: function subscribe (listener) {
-    if (typeof listener !== 'function') {
-      throw new Error('Expected log listener to be a function')
-    }
+  on: function (event, listener) {
+    return this.emitter.on(event, listener)
+  },
 
-    var listeners = this.listeners
-    var isSubscribed = true
-    listeners.push(listener)
-
-    return function unsubscribe () {
-      if (!isSubscribed) return
-      isSubscribed = false
-      listeners.splice(listeners.indexOf(listener), 1)
-    }
+  /**
+   * Add one-time listener for log events. Supported events:
+   *
+   * * `event`: when new event was added to log.
+   * * `clean`: before log run keepers and remove outdated events.
+   *
+   * @param {"event"|"clean"} event The event name.
+   * @param {listener} listener The listener function.
+   *
+   * @return {function} Unbind listener from event.
+   *
+   * @example
+   * log.once('clean', () => {
+   *   console.log('Autocleaning works')
+   * })
+   */
+  once: function (event, listener) {
+    return this.emitter.once(event, listener)
   },
 
   /**
@@ -94,9 +108,7 @@ Log.prototype = {
     var wasAdded = this.store.add([event, meta])
 
     if (wasAdded) {
-      for (var i = 0; i < this.listeners.length; i++) {
-        this.listeners[i](event, meta)
-      }
+      this.emitter.emit('event', event, meta)
     }
     return wasAdded
   },
@@ -108,7 +120,7 @@ Log.prototype = {
    *
    * @example
    * let sinceClean = 0
-   * log.subscribe(() => {
+   * log.on('event', () => {
    *   sinceClean += 1
    *   if (sinceClean > 100) {
    *     sinceClean = 0
@@ -117,10 +129,12 @@ Log.prototype = {
    * })
    */
   clean: function clean () {
+    this.emitter.emit('clean')
     var self = this
     return this.each(function (event, meta) {
-      var keep = self.keepers.some(function (keeper) {
-        return keeper(event, meta)
+      var keepers = self.emitter.events.keep || []
+      var keep = keepers.some(function (keeper) {
+        return keeper.fn(event, meta)
       })
       if (!keep) self.store.remove(meta.created)
     })
@@ -141,19 +155,7 @@ Log.prototype = {
    * }
    */
   keep: function keep (keeper) {
-    if (typeof keeper !== 'function') {
-      throw new Error('Expected log keeper to be a function')
-    }
-
-    var keepers = this.keepers
-    var isKeeping = true
-    keepers.push(keeper)
-
-    return function unkeep () {
-      if (!isKeeping) return
-      isKeeping = false
-      keepers.splice(keepers.indexOf(keeper), 1)
-    }
+    return this.emitter.on('keep', keeper)
   },
 
   /**
@@ -247,7 +249,7 @@ module.exports = Log
  *                             Page is a object with events in `data` property
  *                             and function `next` to return Promise with
  *                             next page. Last page should not have `next`.
- * @property {function} remove Remove event from store
+ * @property {function} remove Remove event from store.
  */
 
 /**
@@ -259,20 +261,20 @@ module.exports = Log
 
 /**
  * @callback listener
- * @param {Event} event new event
- * @param {Meta} meta event metadata
+ * @param {Event} event New event.
+ * @param {Meta} meta The event metadata.
  */
 
 /**
  * @callback iterator
- * @param {Event} event next event
- * @param {Meta} event next event metadata
- * @return {boolean} returning false will stop iteration
+ * @param {Event} event Next event.
+ * @param {Meta} meta Next event metadata.
+ * @return {boolean} returning `false` will stop iteration.
  */
 
 /**
  * @callback keeper
- * @param {Event} event next event
- * @param {Meta} event next event metadata
- * @return {boolean} true if event should be kept from cleaning
+ * @param {Event} event Next event.
+ * @param {Meta} meta Next event metadata.
+ * @return {boolean} true If event should be kept from cleaning.
  */

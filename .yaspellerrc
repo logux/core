@@ -13,6 +13,8 @@
     "createTimer",
     "createTestTimer",
     "compareTime",
-    "JSDoc"
+    "JSDoc",
+    "nanoevents",
+    "DevTools"
   ]
 }
