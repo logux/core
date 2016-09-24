@@ -1,14 +1,14 @@
 var LocalPair = require('../local-pair')
 
-function listen (conection) {
+function listen (connection) {
   var events = []
-  conection.on('connect', function () {
+  connection.on('connect', function () {
     events.push('connect')
   })
-  conection.on('disconnect', function () {
+  connection.on('disconnect', function () {
     events.push('disconnect')
   })
-  conection.on('message', function (msg) {
+  connection.on('message', function (msg) {
     events.push(msg)
   })
   return events
