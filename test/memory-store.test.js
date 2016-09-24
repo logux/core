@@ -2,7 +2,7 @@ var MemoryStore = require('../memory-store')
 
 function checkCreated (store, created) {
   return store.get('created').then(function (page) {
-    expect(page.data).toEqual(created)
+    expect(page.entries).toEqual(created)
     expect(page.next).toBeUndefined()
   })
 }
@@ -35,7 +35,7 @@ it('stores events sorted', function () {
     [{ a: 4 }, { created: [1], added: 4 }]
   ]).then(function () {
     return store.get('added').then(function (page) {
-      expect(page.data).toEqual([
+      expect(page.entries).toEqual([
         [{ a: 5 }, { created: [4], added: 5 }],
         [{ a: 4 }, { created: [1], added: 4 }],
         [{ a: 3 }, { created: [5], added: 3 }],

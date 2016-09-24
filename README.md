@@ -225,5 +225,5 @@ Store could be a any object with 3 methods:
   `created` time was already in log.
 * `remove(created)` removes event by event creation time.
 * `get()` returns Promise to load first events page. Events page is a object
-  with entries array in `page.date` and `page.next` function with next page
+  with entries array in `page.entries` and `page.next` function with next page
   Promise. Last page should not contain `page.next`.
