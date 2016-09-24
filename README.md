@@ -60,6 +60,12 @@ timer2() //=> [1473564435320, 'host2', 0]
 timer()  //=> [1473564435320, 'host', 0]
 ```
 
+You could access to log’s timer by:
+
+```js
+const time = log.timer()
+```
+
 ### Custom Timer
 
 You can change log timer to any other implementation. The only rule

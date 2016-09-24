@@ -25,6 +25,13 @@ function Log (opts) {
   if (typeof opts.timer !== 'function') {
     throw new Error('Expected log timer to be a function')
   }
+  /**
+   * Timer used in this log.
+   * @type {Timer}
+   *
+   * @example
+   * const time = log.timer()
+   */
   this.timer = opts.timer
 
   if (typeof opts.store === 'undefined') {
