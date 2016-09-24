@@ -63,6 +63,7 @@ module.exports = {
  *
  * @name Store
  * @class
+ * @abstract
  */
 /**
  * Add new event to store. Event always will have type and time properties.
