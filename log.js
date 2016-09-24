@@ -39,7 +39,7 @@ function Log (opts) {
 Log.prototype = {
 
   /**
-   * Subscribe for log events. Supported events:
+   * Subscribe for log events. It implements nanoevents API. Supported events:
    *
    * * `event`: when new event was added to log.
    * * `clean`: before log run keepers and remove outdated events.
@@ -210,54 +210,6 @@ Log.prototype = {
 }
 
 module.exports = Log
-
-/**
- * Unique event ID.
- * Array of comparable native types (like number or string).
- *
- * @typedef {array} Time
- *
- * @example
- * [1, 'host']
- */
-
-/**
- * Log’s event.
- *
- * @typedef {object} Event
- * @property {string} type Event type name.
- */
-
-/**
- * Event metadata
- *
- * @typedef {object} Meta
- * @property {Time} created Event occurred time. {@link Log#add} will fill it,
- *                          if field will be empty.
- * @property {number} added Event added sequence number.
- *                          {@link Log#add} will fill it.
- */
-
-/**
- * Every log store should provide two methods: add and get.
- *
- * @typedef {object} Store
- * @property {function} add    Add new event to store. Event always will
- *                             have type and time properties. Returns false
- *                             if event was already in log.
- * @property {function} get    Return a Promise with events “page”.
- *                             Page is a object with events in `data` property
- *                             and function `next` to return Promise with
- *                             next page. Last page should not have `next`.
- * @property {function} remove Remove event from store.
- */
-
-/**
- * Returns current time. Time should be unique for every call.
- *
- * @typedef {function} Timer
- * @return {Time}
- */
 
 /**
  * @callback listener
