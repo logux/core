@@ -1,14 +1,5 @@
 var NanoEvents = require('nanoevents')
 
-/**
- * Loopback connection to be used in test.
- * It should be created by @{link LocalPair}.
- *
- * @param {LocalPair} pair Pair that created this connection.
- * @param {"left"|"right"} type Current connect type to find other.
- *
- * @class
- */
 function LocalConnection (pair, type) {
   this.connected = false
   this.emitter = new NanoEvents()
@@ -75,16 +66,18 @@ LocalConnection.prototype = {
  */
 function LocalPair () {
   /**
-   * First connection
-   * @type {LocalConnection}
+   * First connection. Will be connected to {@link LocalPair#right} one
+   * after {@link Connection#connect}.
+   * @type {Connection}
    *
    * @example
    * new ActiveSync(pair.left)
    */
   this.left = new LocalConnection(this, 'left')
   /**
-   * Second connection
-   * @type {LocalConnection}
+   * Second connection. Will be connected to {@link LocalPair#left} one
+   * after {@link Connection#connect}.
+   * @type {Connection}
    *
    * @example
    * new PassiveSync(pair.right)
