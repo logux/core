@@ -15,6 +15,7 @@ var compareTime = require('./compare-time')
  * })
  *
  * @class
+ * @extends Store
  */
 function MemoryStore () {
   this.created = []
