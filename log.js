@@ -69,10 +69,8 @@ Log.prototype = {
   },
 
   /**
-   * Add one-time listener for log events. Supported events:
-   *
-   * * `event`: when new event was added to log.
-   * * `clean`: before log run keepers and remove outdated events.
+   * Add one-time listener for log events.
+   * See {@link Log#on} for supported events.
    *
    * @param {"event"|"clean"} event The event name.
    * @param {listener} listener The listener function.
