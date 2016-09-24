@@ -165,9 +165,9 @@ it('supports multi-pages stores', function () {
   var store = {
     get: function () {
       return Promise.resolve({
-        data: [['a', 'a']],
+        entries: [['a', 'a']],
         next: function () {
-          return Promise.resolve({ data: [['b', 'b']] })
+          return Promise.resolve({ entries: [['b', 'b']] })
         }
       })
     }
