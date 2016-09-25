@@ -1,17 +1,21 @@
+var createTestTimer = require('../create-test-timer')
+var createTimer = require('../create-timer')
+var MemoryStore = require('../memory-store')
 var core = require('../')
+var Log = require('../log')
 
 it('has test timer', function () {
-  expect(typeof core.createTestTimer).toEqual('function')
+  expect(core.createTestTimer).toBe(createTestTimer)
 })
 
 it('has timer', function () {
-  expect(typeof core.createTimer).toEqual('function')
+  expect(core.createTimer).toBe(createTimer)
 })
 
 it('has memory store class', function () {
-  expect(typeof core.MemoryStore.prototype).toEqual('object')
+  expect(core.MemoryStore).toBe(MemoryStore)
 })
 
 it('has log class', function () {
-  expect(typeof core.Log.prototype).toEqual('object')
+  expect(core.Log).toBe(Log)
 })
