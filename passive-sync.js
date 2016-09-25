@@ -8,8 +8,7 @@ var BaseSync = require('./base-sync')
  * Instead of active client, it doesn’t initialize synchronization
  * and doesn’t remember synchronization state. It destroy itself on disconnect.
  *
- * For example, passive client is used in server
- * and active is used as browse client.
+ * For example, passive sync is used for server and active for browser clients.
  *
  * @param {string} host Unique current host name.
  * @param {Log} log Logux log instance to sync with other client log.

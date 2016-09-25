@@ -25,10 +25,10 @@ LocalConnection.prototype = {
     if (this.connected) {
       throw new Error('Connection already established')
     } else {
-      this.connected = true
       this.other().connected = true
-      this.emitter.emit('connect')
+      this.connected = true
       this.other().emitter.emit('connect')
+      this.emitter.emit('connect')
     }
   },
 

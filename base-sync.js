@@ -1,6 +1,7 @@
 var NanoEvents = require('nanoevents')
 var assign = require('object-assign')
 
+var connect = require('./messages/connect')
 var error = require('./messages/error')
 
 /**
@@ -68,11 +69,35 @@ function BaseSync (host, log, connection, options) {
 BaseSync.prototype = {
 
   /**
+   * Unique host name of other sync client.
+   * It is undefined until clients handshake.
+   *
+   * @type {string|undefined}
+   *
+   * @example
+   * console.log('Connected to ' + sync.otherHost)
+   */
+  otherHost: undefined,
+
+  /**
+   * Array with major and minor versions of other client protocol.
+   * @type {number[]}
+   *
+   * @example
+   * if (sync.otherProtocol[1] >= 5) {
+   *   useNewAPI()
+   * } else {
+   *   useOldAPI()
+   * }
+   */
+  otherProtocol: undefined,
+
+  /**
    * Array with major and minor versions of used protocol.
    * @type {number[]}
    *
    * @example
-   * if (sync.protocol[0] !== 1) {
+   * if (tool.sync.protocol[0] !== 1) {
    *   throw new Error('Unsupported Logux protocol')
    * }
    */
@@ -194,7 +219,7 @@ BaseSync.prototype = {
 
 }
 
-BaseSync.prototype = assign(BaseSync.prototype, error)
+BaseSync.prototype = assign(BaseSync.prototype, error, connect)
 
 module.exports = BaseSync
 
