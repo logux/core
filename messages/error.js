@@ -1,13 +1,16 @@
+var SyncError = require('../sync-error')
+
 module.exports = {
 
-  sendError: function sendError (desc) {
-    this.send(['error', desc])
+  sendError: function sendError (desc, type) {
+    this.send(['error', desc, type])
   },
 
-  errorMessage: function errorMessage (desc) {
-    this.emitter.emit('error', desc)
+  errorMessage: function errorMessage (desc, type) {
+    var error = new SyncError(this, ['error', desc, type])
+    this.emitter.emit('error', error)
     if (this.throwsError) {
-      throw new Error('Logux received a error: ' + desc)
+      throw error
     }
   }
 

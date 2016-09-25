@@ -169,18 +169,19 @@ BaseSync.prototype = {
 
   onMessage: function onMessage (msg) {
     if (typeof msg !== 'object' || typeof msg.length !== 'number') {
-      this.sendError('Wrong message format in ' + JSON.stringify(msg))
+      var json = JSON.stringify(msg)
+      this.sendError('Wrong message format in ' + json, 'protocol')
       return
     }
     if (msg.length < 1 || typeof msg[0] !== 'string') {
-      this.sendError('Wrong type in message ' + JSON.stringify(msg))
+      this.sendError('Wrong type in message ' + JSON.stringify(msg), 'protocol')
       return
     }
 
     var name = msg[0]
     var method = name + 'Message'
     if (typeof this[method] !== 'function') {
-      this.sendError('Unknown message type `' + name + '`')
+      this.sendError('Unknown message type `' + name + '`', 'protocol')
       return
     }
 

@@ -1,5 +1,6 @@
-var BaseSync = require('../base-sync')
 var LocalPair = require('../local-pair')
+var SyncError = require('../sync-error')
+var BaseSync = require('../base-sync')
 
 function createTest () {
   var log = { on: function () { } }
@@ -21,8 +22,8 @@ it('sends error on wrong message format', function () {
   test.sync.connection.other().send(1)
   test.sync.connection.other().send({ hi: 1 })
   expect(test.messages).toEqual([
-    ['error', 'Wrong message format in 1'],
-    ['error', 'Wrong message format in {"hi":1}']
+    ['error', 'Wrong message format in 1', 'protocol'],
+    ['error', 'Wrong message format in {"hi":1}', 'protocol']
   ])
 })
 
@@ -31,8 +32,8 @@ it('sends error on wrong message type format', function () {
   test.sync.connection.other().send([])
   test.sync.connection.other().send([1])
   expect(test.messages).toEqual([
-    ['error', 'Wrong type in message []'],
-    ['error', 'Wrong type in message [1]']
+    ['error', 'Wrong type in message []', 'protocol'],
+    ['error', 'Wrong type in message [1]', 'protocol']
   ])
 })
 
@@ -40,15 +41,16 @@ it('sends error on unknown message type', function () {
   var test = createTest()
   test.sync.connection.other().send(['test'])
   expect(test.messages).toEqual([
-    ['error', 'Unknown message type `test`']
+    ['error', 'Unknown message type `test`', 'protocol']
   ])
 })
 
 it('throws a error on error message by default', function () {
   var sync = createTest().sync
+  var message = ['error', 'test error']
   expect(function () {
-    sync.connection.other().send(['error', 'test error'])
-  }).toThrowError(/test error/)
+    sync.connection.other().send(message)
+  }).toThrow(new SyncError(sync, message))
 })
 
 it('disables throwing a error on listener', function () {
@@ -57,6 +59,8 @@ it('disables throwing a error on listener', function () {
   sync.catch(function (error) {
     errors.push(error)
   })
-  sync.connection.other().send(['error', 'test error'])
-  expect(errors).toEqual(['test error'])
+
+  var message = ['error', 'test error', 'custom']
+  sync.connection.other().send(message)
+  expect(errors).toEqual([new SyncError(sync, message)])
 })
