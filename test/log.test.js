@@ -229,7 +229,7 @@ it('removes keeper', function () {
   return log.clean().then(function () {
     checkEvents(log, [{ type: 'b' }])
     unkeep()
-    log.clean().then(function () {
+    return log.clean().then(function () {
       checkEvents(log, [])
     })
   })
