@@ -50,8 +50,16 @@ function SyncError (sync, message) {
    */
   this.sync = sync
 
-  this.message = 'Logux received "' + this.description + '" '
-  if (this.type) this.message += this.type + ' '
+  this.message = ''
+  if (this.sync.otherHost) {
+    this.message += this.sync.otherHost + ' sent '
+  } else {
+    this.message += 'Logux received '
+  }
+  this.message += '"' + this.description + '" '
+  if (this.type) {
+    this.message += this.type + ' '
+  }
   this.message += 'error'
 
   if (Error.captureStackTrace) {

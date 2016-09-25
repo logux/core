@@ -45,3 +45,8 @@ it('stringifies without type', function () {
   var error = catchError({ }, ['error', 'test'])
   expect(error.toString()).toContain('SyncError: Logux received "test" error')
 })
+
+it('stringifies with other host', function () {
+  var error = catchError({ otherHost: 'server' }, ['error', 'test'])
+  expect(error.toString()).toContain('SyncError: server sent "test" error')
+})
