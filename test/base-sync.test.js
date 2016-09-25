@@ -115,6 +115,7 @@ it('supports one-time events', function () {
 it('calls message method', function () {
   var sync = createSync()
   var calls = []
+  sync.authenticated = true
   sync.testMessage = function (a, b) {
     calls.push([a, b])
   }

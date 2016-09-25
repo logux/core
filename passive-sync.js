@@ -3,17 +3,21 @@ var assign = require('object-assign')
 var BaseSync = require('./base-sync')
 
 /**
- * Passive client in synchronization pair.
+ * Passive node in synchronization pair.
  *
- * Instead of active client, it doesn’t initialize synchronization
+ * Instead of active node, it doesn’t initialize synchronization
  * and doesn’t remember synchronization state. It destroy itself on disconnect.
  *
  * For example, passive sync is used for server and active for browser clients.
  *
  * @param {string} host Unique current host name.
- * @param {Log} log Logux log instance to sync with other client log.
- * @param {Connection} connection Connection to other client.
+ * @param {Log} log Logux log instance to sync with other node log.
+ * @param {Connection} connection Connection to other node.
  * @param {object} [options] Synchronization options.
+ * @param {object} [option.credentials] This sync node credentials.
+ *                                      For example, access token.
+ * @param {authCallback} [option.auth] Function to check
+ *                                     other node credentials.
  *
  * @example
  * import { PassiveSync } from 'logux-sync'

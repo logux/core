@@ -4,14 +4,20 @@ var assign = require('object-assign')
 var connect = require('./messages/connect')
 var error = require('./messages/error')
 
+var BEFORE_AUTH = ['connect', 'connected', 'error']
+
 /**
- * Base methods for synchronization clients. Active and passive clients are
- * based on this module.
+ * Base methods for synchronization nodes. Active and passive nodes
+ * are based on this module.
  *
  * @param {string} host Unique current host name.
- * @param {Log} log Logux log instance to sync with other client log.
- * @param {Connection} connection Connection to other client.
+ * @param {Log} log Logux log instance to sync with other node log.
+ * @param {Connection} connection Connection to other node.
  * @param {object} [options] Synchronization options.
+ * @param {object} [option.credentials] This node credentials.
+ *                                      For example, access token.
+ * @param {authCallback} [option.auth] Function to check
+ *                                     other node credentials.
  *
  * @abstract
  * @class
@@ -28,12 +34,12 @@ function BaseSync (host, log, connection, options) {
    */
   this.log = log
   /**
-   * Connection used to communicate to other client.
+   * Connection used to communicate to other node.
    * @type {Connection}
    */
   this.connection = connection
   /**
-   * Options used to create client.
+   * Options used to create node.
    * @type {object}
    */
   this.options = options || { }
@@ -48,29 +54,35 @@ function BaseSync (host, log, connection, options) {
    * })
    */
   this.connected = false
+  /**
+   * Did other node finish authenticated.
+   * @type {boolean}
+   */
+  this.authenticated = false
 
+  this.unauthenticated = []
   this.throwsError = true
   this.emitter = new NanoEvents()
 
   this.unbind = []
-  var self = this
+  var sync = this
   this.unbind.push(log.on('event', function () { }))
   this.unbind.push(connection.on('connect', function () {
-    self.onConnect()
+    sync.onConnect()
   }))
   this.unbind.push(connection.on('message', function (message) {
-    self.onMessage(message)
+    sync.onMessage(message)
   }))
   this.unbind.push(connection.on('disconnect', function () {
-    self.onDisconnect()
+    sync.onDisconnect()
   }))
 }
 
 BaseSync.prototype = {
 
   /**
-   * Unique host name of other sync client.
-   * It is undefined until clients handshake.
+   * Unique host name of other node.
+   * It is undefined until nodes handshake.
    *
    * @type {string|undefined}
    *
@@ -80,7 +92,7 @@ BaseSync.prototype = {
   otherHost: undefined,
 
   /**
-   * Array with major and minor versions of other client protocol.
+   * Array with major and minor versions of other node protocol.
    * @type {number[]}
    *
    * @example
@@ -107,7 +119,7 @@ BaseSync.prototype = {
    * Subscribe for synchronization events. It implements nanoevents API.
    * Supported events:
    *
-   * * `disconnect`: other client was disconnected.
+   * * `disconnect`: other node was disconnected.
    *
    * @param {"disconnect"} event The event name.
    * @param {listener} listener The listener function.
@@ -210,6 +222,11 @@ BaseSync.prototype = {
       return
     }
 
+    if (!this.authenticated && BEFORE_AUTH.indexOf(name) === -1) {
+      this.unauthenticated.push(msg)
+      return
+    }
+
     var args = new Array(msg.length - 1)
     for (var i = 1; i < msg.length; i++) {
       args[i - 1] = msg[i]
@@ -226,4 +243,10 @@ module.exports = BaseSync
 /**
  * @callback errorListener
  * @param {string} error The error description.
+ */
+/**
+ * @callback authCallback
+ * @param {object} credentials Other credentials.
+ * @param {string} host Unique host name of other sync instance.
+ * @return {Promise} Promise with boolean value.
  */
