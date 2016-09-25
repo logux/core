@@ -41,6 +41,7 @@
     "extends": "standard",
     "rules": {
       "valid-jsdoc": "error",
+      "max-len": [2, 80],
       "no-new": "off"
     },
     "env": {
