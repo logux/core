@@ -90,7 +90,7 @@ module.exports = {
  * @memberof Store#
  */
 /**
- * Return a Promise with first {@link Page}. Page object has `data` property
+ * Return a Promise with first {@link Page}. Page object has `entries` property
  * with part of events list and `next` property with function to load next page.
  * If it was a last page of events, `next` property should be empty.
  *
