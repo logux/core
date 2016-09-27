@@ -122,8 +122,9 @@ BaseSync.prototype = {
    * Supported events:
    *
    * * `disconnect`: other node was disconnected.
+   * * `sendedError`: when error was sent to other node.
    *
-   * @param {"disconnect"} event The event name.
+   * @param {"disconnect"|"sendedError"} event The event name.
    * @param {listener} listener The listener function.
    *
    * @return {function} Unbind listener from event.
@@ -135,23 +136,6 @@ BaseSync.prototype = {
    */
   on: function on (event, listener) {
     return this.emitter.on(event, listener)
-  },
-
-  /**
-   * Disable throwing a error on error message and create error listener.
-   *
-   * @param {errorListener} listener The listener function.
-   *
-   * @return {undefined}
-   *
-   * @example
-   * sync.catch(error => {
-   *   console.error(error)
-   * })
-   */
-  catch: function (listener) {
-    this.throwsError = false
-    this.on('error', listener)
   },
 
   /**
@@ -170,6 +154,23 @@ BaseSync.prototype = {
    */
   once: function once (event, listener) {
     return this.emitter.once(event, listener)
+  },
+
+  /**
+   * Disable throwing a error on error message and create error listener.
+   *
+   * @param {errorListener} listener The listener function.
+   *
+   * @return {undefined}
+   *
+   * @example
+   * sync.catch(error => {
+   *   console.error(error)
+   * })
+   */
+  catch: function (listener) {
+    this.throwsError = false
+    this.on('error', listener)
   },
 
   /**

@@ -64,3 +64,14 @@ it('disables throwing a error on listener', function () {
   sync.connection.other().send(message)
   expect(errors).toEqual([new SyncError(sync, message)])
 })
+
+it('emits a event on error sending', function () {
+  var sync = createTest().sync
+  var errors = []
+  sync.on('sendedError', function (desc, type) {
+    errors.push([desc, type])
+  })
+
+  sync.sendError('test', 'type')
+  expect(errors).toEqual([['test', 'type']])
+})
