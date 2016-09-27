@@ -1,9 +1,3 @@
-function handshake (sync, type) {
-  var message = [type, sync.protocol, sync.host]
-  if (sync.options.credentials) message.push(sync.options.credentials)
-  return message
-}
-
 function auth (sync, host, credentials, callback) {
   if (!sync.options.auth) {
     sync.authenticated = true
@@ -32,11 +26,16 @@ function auth (sync, host, credentials, callback) {
 module.exports = {
 
   sendConnect: function sendConnect () {
-    this.send(handshake(this, 'connect'))
+    var message = ['connect', this.protocol, this.host]
+    if (this.options.credentials) message.push(this.options.credentials)
+    if (this.options.fixTime) this.connectSended = this.log.timer()[0]
+    this.send(message)
   },
 
-  sendConnected: function sendConnected () {
-    this.send(handshake(this, 'connected'))
+  sendConnected: function sendConnected (start, end) {
+    var message = ['connected', this.protocol, this.host, [start, end]]
+    if (this.options.credentials) message.push(this.options.credentials)
+    this.send(message)
   },
 
   connectMessage: function connectMessage (protocol, host, credentials) {
@@ -52,14 +51,23 @@ module.exports = {
     }
 
     var sync = this
+    var start = this.log.timer()[0]
     auth(this, host, credentials, function () {
-      sync.sendConnected()
+      sync.sendConnected(start, sync.log.timer()[0])
     })
   },
 
-  connectedMessage: function connectedMessage (protocol, host, credentials) {
+  connectedMessage: function connectedMessage (ver, host, time, credentials) {
     this.otherHost = host
-    this.otherProtocol = protocol
+    this.otherProtocol = ver
+
+    if (this.options.fixTime) {
+      var now = this.log.timer()[0]
+      var authTime = time[1] - time[0]
+      var roundTrip = now - this.connectSended - authTime
+      this.timeFix = this.connectSended - time[0] + roundTrip / 2
+    }
+
     auth(this, host, credentials)
   }
 

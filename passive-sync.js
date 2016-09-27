@@ -31,6 +31,10 @@ var BaseSync = require('./base-sync')
  */
 function PassiveSync (host, log, connection, options) {
   BaseSync.call(this, host, log, connection, options)
+  if (this.options.fixTime) {
+    throw new Error(
+      'PassiveSync could not fix time. Set opts.fixTime for ActiveSync node.')
+  }
 }
 
 PassiveSync.prototype = {

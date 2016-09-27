@@ -18,6 +18,9 @@ var BaseSync = require('./base-sync')
  *                                      For example, access token.
  * @param {authCallback} [option.auth] Function to check
  *                                     other node credentials.
+ * @param {boolean} [options.fixTime=false] Enables log’s event time fixes
+ *                                          to prevent problems
+ *                                          because of wrong client time zone.
  *
  * @example
  * import { ActiveSync } from 'logux-sync'

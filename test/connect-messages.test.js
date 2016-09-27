@@ -1,4 +1,5 @@
 var NanoEvents = require('nanoevents')
+var createTestTimer = require('logux-core').createTestTimer
 
 var PassiveSync = require('../passive-sync')
 var ActiveSync = require('../active-sync')
@@ -6,6 +7,7 @@ var LocalPair = require('../local-pair')
 
 function createTest () {
   var log = new NanoEvents()
+  log.timer = createTestTimer()
   var pair = new LocalPair()
   var active = new ActiveSync('client', log, pair.left)
   var passive = new PassiveSync('server', log, pair.right)
@@ -50,7 +52,7 @@ it('answers with protocol version and host in connected message', function () {
   var test = createTest()
   test.active.connection.connect()
   expect(test.sendedPassive).toEqual([
-    ['connected', test.passive.protocol, 'server']
+    ['connected', test.passive.protocol, 'server', [1, 2]]
   ])
 })
 
@@ -101,7 +103,7 @@ it('sends credentials in connected', function () {
 
   test.active.connection.connect()
   expect(test.sendedPassive).toEqual([
-    ['connected', test.passive.protocol, 'server', 1]
+    ['connected', test.passive.protocol, 'server', [1, 2], 1]
   ])
 })
 
@@ -173,8 +175,39 @@ it('allows access for right users', function () {
 
   return nextTick().then(function () {
     expect(test.sendedPassive).toEqual([
-      ['connected', [0, 0], 'server']
+      ['connected', [0, 0], 'server', [1, 2]]
     ])
     expect(test.passive.testMessage).toBeCalled()
   })
+})
+
+it('throws on fixTime option in PassiveSync', function () {
+  expect(function () {
+    new PassiveSync('a', new NanoEvents(), new NanoEvents(), { fixTime: true })
+  }).toThrowError(/fixTime/)
+})
+
+it('has default timeFix', function () {
+  var test = createTest()
+  test.active.connection.connect()
+  expect(test.active.timeFix).toEqual(0)
+})
+
+it('calculates time difference', function () {
+  var test = createTest()
+  test.active.options.fixTime = true
+  test.active.log = new NanoEvents()
+  var times1 = [10000, 10000 + 1000 + 100]
+  test.active.log.timer = function () {
+    return [times1.shift()]
+  }
+  test.passive.log = new NanoEvents()
+  var times2 = [0 + 50, 0 + 50 + 1000]
+  test.passive.log.timer = function () {
+    return [times2.shift()]
+  }
+
+  test.active.connection.connect()
+
+  expect(test.active.timeFix).toEqual(10000)
 })

@@ -18,6 +18,9 @@ var BEFORE_AUTH = ['connect', 'connected', 'error']
  *                                      For example, access token.
  * @param {authCallback} [option.auth] Function to check
  *                                     other node credentials.
+ * @param {boolean} [options.fixTime=false] Enables log’s event time fixes
+ *                                          to prevent problems
+ *                                          because of wrong client time zone.
  *
  * @abstract
  * @class
@@ -62,6 +65,8 @@ function BaseSync (host, log, connection, options) {
   this.authenticated = false
   this.authenticating = false
   this.unauthenticated = []
+
+  this.timeFix = 0
 
   this.throwsError = true
   this.emitter = new NanoEvents()
