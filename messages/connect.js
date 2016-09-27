@@ -11,9 +11,12 @@ function auth (sync, host, credentials, callback) {
     return
   }
 
+  sync.authenticating = true
   sync.options.auth(credentials, host).then(function (access) {
     if (access) {
       sync.authenticated = true
+      sync.authenticating = false
+
       if (callback) callback()
       for (var i = 0; i < sync.unauthenticated.length; i++) {
         sync.onMessage(sync.unauthenticated[i])

@@ -54,13 +54,15 @@ function BaseSync (host, log, connection, options) {
    * })
    */
   this.connected = false
+
   /**
    * Did other node finish authenticated.
    * @type {boolean}
    */
   this.authenticated = false
-
+  this.authenticating = false
   this.unauthenticated = []
+
   this.throwsError = true
   this.emitter = new NanoEvents()
 
@@ -223,7 +225,13 @@ BaseSync.prototype = {
     }
 
     if (!this.authenticated && BEFORE_AUTH.indexOf(name) === -1) {
-      this.unauthenticated.push(msg)
+      if (this.authenticating) {
+        this.unauthenticated.push(msg)
+      } else {
+        this.sendError(
+          'Start authentication before sending `' + name + '` message',
+          'protocol')
+      }
       return
     }
 

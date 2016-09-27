@@ -105,6 +105,19 @@ it('sends credentials in connected', function () {
   ])
 })
 
+it('sends error on messages before auth', function () {
+  var test = createTest()
+  test.active.destroy()
+  test.passive.testMessage = function () { }
+
+  test.active.connection.connect()
+  test.active.connection.send(['test'])
+
+  expect(test.sendedPassive).toEqual([
+    ['error', 'Start authentication before sending `test` message', 'protocol']
+  ])
+})
+
 it('denies access for wrong users', function () {
   var test = createTest()
   test.passive.testMessage = jest.fn()
