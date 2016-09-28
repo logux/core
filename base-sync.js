@@ -4,6 +4,7 @@ var assign = require('object-assign')
 var SyncError = require('./sync-error')
 var connect = require('./messages/connect')
 var error = require('./messages/error')
+var ping = require('./messages/ping')
 
 var BEFORE_AUTH = ['connect', 'connected', 'error']
 
@@ -22,7 +23,10 @@ var BEFORE_AUTH = ['connect', 'connected', 'error']
  * @param {boolean} [options.fixTime=false] Enables log’s event time fixes
  *                                          to prevent problems
  *                                          because of wrong client time zone.
- * @param {number} [option.timeout=false] Timeout to disconnect connection.
+ * @param {number} [option.timeout=0] Timeout in milliseconds
+ *                                    to disconnect connection.
+ * @param {number} [option.ping=0] Milliseconds since last message to test
+ *                                 connection by sending ping.
  *
  * @abstract
  * @class
@@ -48,6 +52,13 @@ function BaseSync (host, log, connection, options) {
    * @type {object}
    */
   this.options = options || { }
+
+  if (this.options.ping && !this.options.timeout) {
+    throw new Error('You must set timeout option to use ping')
+  }
+  if (this.options.ping && this.options.ping < 2 * this.options.timeout) {
+    throw new Error('Ping should be at least 2 times longer than timeout')
+  }
 
   /**
    * Is synchronization in process.
@@ -199,6 +210,7 @@ BaseSync.prototype = {
 
   send: function send (msg) {
     if (this.connected) {
+      this.delayPing()
       this.connection.send(msg)
     } else {
       throw new Error('Could not send message to disconnected connection')
@@ -206,15 +218,21 @@ BaseSync.prototype = {
   },
 
   onConnect: function onConnect () {
+    this.delayPing()
     this.connected = true
   },
 
   onDisconnect: function onDisconnect () {
+    this.endTimeout()
+    if (this.pingTimeout) clearTimeout(this.pingTimeout)
+
     this.emitter.emit('disconnect')
     this.connected = false
   },
 
   onMessage: function onMessage (msg) {
+    this.delayPing()
+
     if (typeof msg !== 'object' || typeof msg.length !== 'number') {
       var json = JSON.stringify(msg)
       this.sendError('Wrong message format in ' + json, 'protocol')
@@ -275,11 +293,21 @@ BaseSync.prototype = {
       clearTimeout(this.lastTimeout)
       this.lastTimeout = false
     }
+  },
+
+  delayPing: function delayPing () {
+    if (!this.options.ping) return
+    if (this.pingTimeout) clearTimeout(this.pingTimeout)
+
+    var sync = this
+    this.pingTimeout = setTimeout(function () {
+      sync.sendPing()
+    }, this.options.ping)
   }
 
 }
 
-BaseSync.prototype = assign(BaseSync.prototype, error, connect)
+BaseSync.prototype = assign(BaseSync.prototype, error, connect, ping)
 
 module.exports = BaseSync
 

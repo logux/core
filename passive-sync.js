@@ -19,7 +19,10 @@ var BaseSync = require('./base-sync')
  *                                      For example, access token.
  * @param {authCallback} [option.auth] Function to check
  *                                     other node credentials.
- * @param {number} [option.timeout=false] Timeout to disconnect connection.
+ * @param {number} [option.timeout=0] Timeout in milliseconds
+ *                                    to disconnect connection.
+ * @param {number} [option.ping=0] Milliseconds since last message to test
+ *                                 connection by sending ping.
  *
  * @example
  * import { PassiveSync } from 'logux-sync'

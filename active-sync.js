@@ -21,7 +21,10 @@ var BaseSync = require('./base-sync')
  * @param {boolean} [options.fixTime=false] Enables log’s event time fixes
  *                                          to prevent problems
  *                                          because of wrong client time zone.
- * @param {number} [option.timeout=false] Timeout to disconnect connection.
+ * @param {number} [option.timeout=0] Timeout in milliseconds
+ *                                    to disconnect connection.
+ * @param {number} [option.ping=0] Milliseconds since last message to test
+ *                                 connection by sending ping.
  *
  * @example
  * import { ActiveSync } from 'logux-sync'
