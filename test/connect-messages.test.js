@@ -211,3 +211,39 @@ it('calculates time difference', function () {
 
   expect(test.active.timeFix).toEqual(10000)
 })
+
+it('uses timeout between connect and connected', function () {
+  jest.useFakeTimers()
+
+  var log = new NanoEvents()
+  var pair = new LocalPair()
+  var active = new ActiveSync('client', log, pair.left, { timeout: 1000 })
+
+  var error
+  active.catch(function (err) {
+    error = err
+  })
+
+  pair.left.connect()
+  jest.runOnlyPendingTimers()
+
+  expect(error.name).toEqual('SyncError')
+  expect(error.type).toEqual('connection')
+  expect(error.message).not.toContain('received')
+  expect(error.message).toContain('timeout')
+})
+
+it('connects with timeout', function () {
+  jest.useFakeTimers()
+
+  var test = createTest()
+  var error
+  test.active.catch(function (err) {
+    error = err
+  })
+  test.active.options.timeout = 1000
+  test.active.connection.connect()
+
+  jest.runOnlyPendingTimers()
+  expect(error).toBeUndefined()
+})

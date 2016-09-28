@@ -1,6 +1,7 @@
 var NanoEvents = require('nanoevents')
 var assign = require('object-assign')
 
+var SyncError = require('./sync-error')
 var connect = require('./messages/connect')
 var error = require('./messages/error')
 
@@ -21,6 +22,7 @@ var BEFORE_AUTH = ['connect', 'connected', 'error']
  * @param {boolean} [options.fixTime=false] Enables log’s event time fixes
  *                                          to prevent problems
  *                                          because of wrong client time zone.
+ * @param {number} [option.timeout=false] Timeout to disconnect connection.
  *
  * @abstract
  * @class
@@ -246,6 +248,33 @@ BaseSync.prototype = {
       args[i - 1] = msg[i]
     }
     this[method].apply(this, args)
+  },
+
+  error: function error (desc, type, received) {
+    var err = new SyncError(this, desc, type, received)
+    this.emitter.emit('error', err)
+    if (this.throwsError) {
+      throw err
+    }
+  },
+
+  startTimeout: function startTimeout () {
+    if (!this.options.timeout) return
+    this.endTimeout()
+
+    var ms = this.options.timeout
+    var sync = this
+    this.lastTimeout = setTimeout(function () {
+      sync.connection.disconnect()
+      sync.error('A timeout was riched (' + ms + 'ms)', 'connection', false)
+    }, this.options.timeout)
+  },
+
+  endTimeout: function endTimeout () {
+    if (this.lastTimeout) {
+      clearTimeout(this.lastTimeout)
+      this.lastTimeout = false
+    }
   }
 
 }

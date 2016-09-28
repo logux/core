@@ -2,7 +2,9 @@
  * Unknown error received from other Logux client.
  *
  * @param {BaseSync} sync The sync client object.
- * @param {Message} message The error message.
+ * @param {string} desc The error message.
+ * @param {string} type The error type.
+ * @param {boolean} received Was error received from other node.
  *
  * @example
  * if (error.name === 'SyncError') {
@@ -12,8 +14,8 @@
  * @extends Error
  * @class
  */
-function SyncError (sync, message) {
-  Error.call(this, message[1])
+function SyncError (sync, desc, type, received) {
+  Error.call(this, desc)
 
   /**
    * Always equal to `SyncError`. The best way to check error type.
@@ -30,7 +32,7 @@ function SyncError (sync, message) {
    * @example
    * console.log('Server throws: ' + error.description)
    */
-  this.description = message[1]
+  this.description = desc
   /**
    * Error type.
    * @type {string|undefined}
@@ -40,7 +42,7 @@ function SyncError (sync, message) {
    *   askToUpdateClient()
    * }
    */
-  this.type = message[2]
+  this.type = type
   /**
    * Sync client received a error message.
    * @type {BaseSync}
@@ -51,16 +53,20 @@ function SyncError (sync, message) {
   this.sync = sync
 
   this.message = ''
-  if (this.sync.otherHost) {
-    this.message += this.sync.otherHost + ' sent '
+  if (received) {
+    if (this.sync.otherHost) {
+      this.message += this.sync.otherHost + ' sent '
+    } else {
+      this.message += 'Logux received '
+    }
+    this.message += '"' + this.description + '" '
+    if (this.type) {
+      this.message += this.type + ' '
+    }
+    this.message += 'error'
   } else {
-    this.message += 'Logux received '
+    this.message = desc
   }
-  this.message += '"' + this.description + '" '
-  if (this.type) {
-    this.message += this.type + ' '
-  }
-  this.message += 'error'
 
   if (Error.captureStackTrace) {
     Error.captureStackTrace(this, SyncError)

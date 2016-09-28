@@ -7,6 +7,7 @@ var BaseSync = require('./base-sync')
  *
  * Instead of active node, it doesn’t initialize synchronization
  * and doesn’t remember synchronization state. It destroy itself on disconnect.
+ * And it have timeout between connection and `connect` message.
  *
  * For example, passive sync is used for server and active for browser clients.
  *
@@ -18,6 +19,7 @@ var BaseSync = require('./base-sync')
  *                                      For example, access token.
  * @param {authCallback} [option.auth] Function to check
  *                                     other node credentials.
+ * @param {number} [option.timeout=false] Timeout to disconnect connection.
  *
  * @example
  * import { PassiveSync } from 'logux-sync'
@@ -39,9 +41,19 @@ function PassiveSync (host, log, connection, options) {
 
 PassiveSync.prototype = {
 
+  onConnect: function onConnect () {
+    BaseSync.prototype.onConnect.call(this)
+    this.startTimeout()
+  },
+
   onDisconnect: function onDisconnect () {
     BaseSync.prototype.onDisconnect.call(this)
     this.destroy()
+  },
+
+  connectMessage: function connectMessage () {
+    BaseSync.prototype.connectMessage.apply(this, arguments)
+    this.endTimeout()
   }
 
 }

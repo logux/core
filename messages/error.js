@@ -1,5 +1,3 @@
-var SyncError = require('../sync-error')
-
 module.exports = {
 
   sendError: function sendError (desc, type) {
@@ -8,11 +6,7 @@ module.exports = {
   },
 
   errorMessage: function errorMessage (desc, type) {
-    var error = new SyncError(this, ['error', desc, type])
-    this.emitter.emit('error', error)
-    if (this.throwsError) {
-      throw error
-    }
+    this.error(desc, type, true)
   }
 
 }

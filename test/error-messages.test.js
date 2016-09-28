@@ -47,10 +47,9 @@ it('sends error on unknown message type', function () {
 
 it('throws a error on error message by default', function () {
   var sync = createTest().sync
-  var message = ['error', 'test error']
   expect(function () {
-    sync.connection.other().send(message)
-  }).toThrow(new SyncError(sync, message))
+    sync.connection.other().send(['error', 'test error'])
+  }).toThrow(new SyncError(sync, 'test error', undefined, true))
 })
 
 it('disables throwing a error on listener', function () {
@@ -60,9 +59,8 @@ it('disables throwing a error on listener', function () {
     errors.push(error)
   })
 
-  var message = ['error', 'test error', 'custom']
-  sync.connection.other().send(message)
-  expect(errors).toEqual([new SyncError(sync, message)])
+  sync.connection.other().send(['error', 'test error', 'custom'])
+  expect(errors).toEqual([new SyncError(sync, 'test error', 'custom', true)])
 })
 
 it('emits a event on error sending', function () {

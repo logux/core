@@ -29,6 +29,7 @@ module.exports = {
     var message = ['connect', this.protocol, this.host]
     if (this.options.credentials) message.push(this.options.credentials)
     if (this.options.fixTime) this.connectSended = this.log.timer()[0]
+    this.startTimeout()
     this.send(message)
   },
 
@@ -58,6 +59,7 @@ module.exports = {
   },
 
   connectedMessage: function connectedMessage (ver, host, time, credentials) {
+    this.endTimeout()
     this.otherHost = host
     this.otherProtocol = ver
 
