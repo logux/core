@@ -15,6 +15,7 @@
     "compareTime",
     "JSDoc",
     "nanoevents",
-    "DevTools"
+    "DevTools",
+    "lastAdded"
   ]
 }

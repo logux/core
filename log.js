@@ -33,13 +33,24 @@ function Log (opts) {
    * const time = log.timer()
    */
   this.timer = opts.timer
+  /**
+   * Latest used `added` number.
+   * All events in this log have less or same `added` time.
+   * @type {number}
+   *
+   * @example
+   * sync() {
+   *   sendEvents(log)
+   *   this.synced = log.added
+   * }
+   */
+  this.lastAdded = 0
 
   if (typeof opts.store === 'undefined') {
     throw new Error('Expected log store to be a object')
   }
   this.store = opts.store
 
-  this.lastAdded = 0
   this.emitter = new NanoEvents()
 }
 
