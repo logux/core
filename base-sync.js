@@ -5,6 +5,7 @@ var SyncError = require('./sync-error')
 var connect = require('./messages/connect')
 var error = require('./messages/error')
 var ping = require('./messages/ping')
+var sync = require('./messages/sync')
 
 var BEFORE_AUTH = ['connect', 'connected', 'error']
 
@@ -27,6 +28,15 @@ var BEFORE_AUTH = ['connect', 'connected', 'error']
  *                                    to disconnect connection.
  * @param {number} [option.ping=0] Milliseconds since last message to test
  *                                 connection by sending ping.
+ * @param {filter} [option.inFilter] Function to filter events
+ *                                   from other client. Best place
+ *                                   for access control.
+ * @param {mapper} [option.inMap] Map function to change event
+ *                                before put it to current log.
+ * @param {filter} [option.outFilter] Filter function to select events
+ *                                    to synchronization.
+ * @param {mapper} [option.outMap] Map function to change event
+ *                                 before sending it to other client.
  *
  * @abstract
  * @class
@@ -80,13 +90,16 @@ function BaseSync (host, log, connection, options) {
   this.unauthenticated = []
 
   this.timeFix = 0
+  this.received = 0
 
   this.throwsError = true
   this.emitter = new NanoEvents()
 
   this.unbind = []
   var sync = this
-  this.unbind.push(log.on('event', function () { }))
+  this.unbind.push(log.on('event', function (event, meta) {
+    sync.onEvent(event, meta)
+  }))
   this.unbind.push(connection.on('connect', function () {
     sync.onConnect()
   }))
@@ -268,6 +281,23 @@ BaseSync.prototype = {
     this[method].apply(this, args)
   },
 
+  onEvent: function onEvent (event, meta) {
+    if (meta.added === this.received) {
+      return
+    }
+    if (this.options.outFilter && !this.options.outFilter(event, meta)) {
+      return
+    }
+
+    if (this.options.outMap) {
+      var changed = this.options.outMap(event, meta)
+      event = changed[0]
+      meta = changed[1]
+    }
+
+    this.sendSync(event, meta)
+  },
+
   error: function error (desc, type, received) {
     var err = new SyncError(this, desc, type, received)
     this.emitter.emit('error', err)
@@ -307,7 +337,7 @@ BaseSync.prototype = {
 
 }
 
-BaseSync.prototype = assign(BaseSync.prototype, error, connect, ping)
+BaseSync.prototype = assign(BaseSync.prototype, error, connect, ping, sync)
 
 module.exports = BaseSync
 
@@ -315,9 +345,24 @@ module.exports = BaseSync
  * @callback errorListener
  * @param {string} error The error description.
  */
+
 /**
  * @callback authCallback
  * @param {object} credentials Other credentials.
  * @param {string} host Unique host name of other sync instance.
  * @return {Promise} Promise with boolean value.
  */
+
+ /**
+  * @callback filter
+  * @param {Event} event New event from log.
+  * @param {Meta} meta New event metadata.
+  * @return {boolean} Should event be synchronized with other log.
+  */
+
+ /**
+  * @callback mapper
+  * @param {Event} event New event from log.
+  * @param {Meta} meta New event metadata.
+  * @return {Entry} Array with changed event and changed metadata.
+  */

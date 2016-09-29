@@ -25,6 +25,15 @@ var BaseSync = require('./base-sync')
  *                                    to disconnect connection.
  * @param {number} [option.ping=0] Milliseconds since last message to test
  *                                 connection by sending ping.
+ * @param {filter} [option.inFilter] Function to filter events
+ *                                   from other client. Best place
+ *                                   for access control.
+ * @param {mapper} [option.inMap] Map function to change event
+ *                                before put it to current log.
+ * @param {filter} [option.outFilter] Filter function to select events
+ *                                    to synchronization.
+ * @param {mapper} [option.outMap] Map function to change event
+ *                                 before sending it to other client.
  *
  * @example
  * import { ActiveSync } from 'logux-sync'
@@ -55,6 +64,15 @@ ActiveSync.prototype = {
   pongMessage: function pongMessage (added) {
     BaseSync.prototype.pongMessage.apply(this, arguments)
     this.otherSynced = added
+  },
+
+  syncMessage: function syncMessage (event, created, added) {
+    BaseSync.prototype.syncMessage.apply(this, arguments)
+    this.otherSynced = added
+  },
+
+  syncedMessage: function syncedMessage (added) {
+    this.synced = added
   }
 
 }
