@@ -12,7 +12,7 @@ var BEFORE_AUTH = ['connect', 'connected', 'error']
  * Base methods for synchronization nodes. Active and passive nodes
  * are based on this module.
  *
- * @param {string} host Unique current host name.
+ * @param {string|number} host Unique current host name.
  * @param {Log} log Logux log instance to sync with other node log.
  * @param {Connection} connection Connection to other node.
  * @param {object} [options] Synchronization options.
@@ -34,7 +34,7 @@ var BEFORE_AUTH = ['connect', 'connected', 'error']
 function BaseSync (host, log, connection, options) {
   /**
    * Unique current host name.
-   * @type {string}
+   * @type {string|number}
    */
   this.host = host
   /**
@@ -104,7 +104,7 @@ BaseSync.prototype = {
    * Unique host name of other node.
    * It is undefined until nodes handshake.
    *
-   * @type {string|undefined}
+   * @type {string|number|undefined}
    *
    * @example
    * console.log('Connected to ' + sync.otherHost)
