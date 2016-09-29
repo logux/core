@@ -1,8 +1,16 @@
+function fixTime (created, fix) {
+  return [created[0] + fix].concat(created.slice(1))
+}
+
 module.exports = {
 
   sendSync: function sendSync (event, meta) {
     this.startTimeout()
-    this.send(['sync', event, meta.created, meta.added])
+
+    var created = meta.created
+    if (this.timeFix) created = fixTime(meta.created, -this.timeFix)
+
+    this.send(['sync', event, created, meta.added])
   },
 
   sendSynced: function sendSynced (added) {
@@ -14,6 +22,8 @@ module.exports = {
     if (this.options.inFilter && !this.options.inFilter(event, meta)) {
       return
     }
+
+    if (this.timeFix) meta.created = fixTime(meta.created, this.timeFix)
 
     if (this.options.inMap) {
       var changed = this.options.inMap(event, meta)

@@ -137,3 +137,20 @@ it('maps input events', function () {
   expect(events(test.active.log)).toEqual([{ type: 'a' }])
   expect(events(test.passive.log)).toEqual([{ type: 'a1' }])
 })
+
+it('fixes created time', function () {
+  var test = createTest()
+  test.active.timeFix = 100
+
+  test.active.log.add({ type: 'a' }, { created: [101] })
+  test.passive.log.add({ type: 'b' }, { created: [2] })
+
+  expect(test.active.log.store.created).toEqual([
+    [{ type: 'b' }, { created: [102], added: 2 }],
+    [{ type: 'a' }, { created: [101], added: 1 }]
+  ])
+  expect(test.passive.log.store.created).toEqual([
+    [{ type: 'b' }, { created: [2], added: 2 }],
+    [{ type: 'a' }, { created: [1], added: 1 }]
+  ])
+})
