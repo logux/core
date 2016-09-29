@@ -8,8 +8,8 @@
  * This is why Logux use more smarter timer. To solve this problems this timer
  * store time as 3 variables: current milliseconds, host name and events count.
  *
- * @param {string} host unique name of current log instance
- * @return {Timer} timer
+ * @param {string|number} host Unique current host name.
+ * @return {Timer} Timer function.
  *
  * @example
  * import { createTimer } from 'logux-core'
