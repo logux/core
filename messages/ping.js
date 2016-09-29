@@ -2,14 +2,14 @@ module.exports = {
 
   sendPing: function sendPing () {
     this.startTimeout()
-    this.send(['ping'])
+    this.send(['ping', this.log.lastAdded])
   },
 
-  pingMessage: function pingMessage (time) {
-    this.send(['pong'])
+  pingMessage: function pingMessage () {
+    this.send(['pong', this.log.lastAdded])
   },
 
-  pongMessage: function pongMessage (time) {
+  pongMessage: function pongMessage () {
     this.endTimeout()
   }
 

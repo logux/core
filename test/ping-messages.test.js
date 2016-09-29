@@ -11,6 +11,7 @@ function wait (ms) {
 
 function initTest (opts) {
   var log = new NanoEvents()
+  log.lastAdded = 1
   var pair = new LocalPair()
   var sync = new ActiveSync('host', log, pair.left, opts)
 
@@ -39,8 +40,8 @@ it('throws on small ping', function () {
 
 it('answers pong on ping', function () {
   var test = initTest()
-  test.right.send(['ping'])
-  expect(test.sent).toEqual([['pong']])
+  test.right.send(['ping', 1])
+  expect(test.sent).toEqual([['pong', 1]])
 })
 
 it('sends ping on idle connection', function () {
@@ -64,16 +65,16 @@ it('sends ping on idle connection', function () {
     return wait(100)
   }).then(function () {
     expect(error).toBeUndefined()
-    expect(test.sent).toEqual([['test'], ['ping']])
-    test.right.send(['pong'])
+    expect(test.sent).toEqual([['test'], ['ping', 1]])
+    test.right.send(['pong', 1])
     return wait(250)
   }).then(function () {
     expect(error).toBeUndefined()
-    expect(test.sent).toEqual([['test'], ['ping']])
+    expect(test.sent).toEqual([['test'], ['ping', 1]])
     return wait(100)
   }).then(function () {
     expect(error).toBeUndefined()
-    expect(test.sent).toEqual([['test'], ['ping'], ['ping']])
+    expect(test.sent).toEqual([['test'], ['ping', 1], ['ping', 1]])
     return wait(250)
   }).then(function () {
     expect(error.message).toContain('timeout')
