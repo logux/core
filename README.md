@@ -12,6 +12,11 @@ import { Log } from 'logux-core'
 const log = new Log({ store, timer })
 ```
 
+<a href="https://evilmartians.com/?utm_source=logux-core">
+  <img src="https://evilmartians.com/badges/sponsored-by-evil-martians.svg"
+       alt="Sponsored by Evil Martians" width="236" height="54">
+</a>
+
 ## Event
 
 Logux event is a simple JS object. There is only one mandatory property, `type`.
