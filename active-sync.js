@@ -66,7 +66,7 @@ ActiveSync.prototype = {
     this.otherSynced = added
   },
 
-  syncMessage: function syncMessage (event, created, added) {
+  syncMessage: function syncMessage (added) {
     BaseSync.prototype.syncMessage.apply(this, arguments)
     this.otherSynced = added
   },

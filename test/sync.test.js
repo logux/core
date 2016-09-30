@@ -37,7 +37,7 @@ it('sends sync messages', function () {
 
   test.active.log.add({ type: 'a' })
   expect(activeMessages).toEqual([
-    ['sync', { type: 'a' }, [1], 1]
+    ['sync', 1, { type: 'a' }, [1]]
   ])
   expect(passiveMessages).toEqual([
     ['synced', 1]
@@ -45,12 +45,12 @@ it('sends sync messages', function () {
 
   test.passive.log.add({ type: 'b' })
   expect(activeMessages).toEqual([
-    ['sync', { type: 'a' }, [1], 1],
+    ['sync', 1, { type: 'a' }, [1]],
     ['synced', 2]
   ])
   expect(passiveMessages).toEqual([
     ['synced', 1],
-    ['sync', { type: 'b' }, [3], 2]
+    ['sync', 2, { type: 'b' }, [3]]
   ])
 })
 
@@ -150,6 +150,18 @@ it('fixes created time', function () {
     [{ type: 'a' }, { created: [101], added: 1 }]
   ])
   expect(test.passive.log.store.created).toEqual([
+    [{ type: 'b' }, { created: [2], added: 2 }],
+    [{ type: 'a' }, { created: [1], added: 1 }]
+  ])
+})
+
+it('supports multiple events in sync', function () {
+  var test = createTest()
+  test.passive.sendSync({ type: 'a' }, { created: [1], added: 1 },
+                        { type: 'b' }, { created: [2], added: 2 })
+
+  expect(test.active.otherSynced).toBe(2)
+  expect(test.active.log.store.created).toEqual([
     [{ type: 'b' }, { created: [2], added: 2 }],
     [{ type: 'a' }, { created: [1], added: 1 }]
   ])
