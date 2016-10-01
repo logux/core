@@ -1,7 +1,7 @@
 function auth (sync, host, credentials, callback) {
   if (!sync.options.auth) {
     sync.authenticated = true
-    if (callback) callback()
+    callback()
     return
   }
 
@@ -11,7 +11,7 @@ function auth (sync, host, credentials, callback) {
       sync.authenticated = true
       sync.authenticating = false
 
-      if (callback) callback()
+      callback()
       for (var i = 0; i < sync.unauthenticated.length; i++) {
         sync.onMessage(sync.unauthenticated[i])
       }
@@ -31,7 +31,6 @@ module.exports = {
     if (this.options.fixTime) this.connectSended = this.log.timer()[0]
     this.startTimeout()
     this.send(message)
-    this.syncSince(this.synced)
   },
 
   sendConnected: function sendConnected (start, end) {
@@ -72,7 +71,10 @@ module.exports = {
       this.timeFix = this.connectSended - time[0] + roundTrip / 2
     }
 
-    auth(this, host, credentials)
+    var sync = this
+    auth(this, host, credentials, function () {
+      sync.syncSince(sync.synced)
+    })
   }
 
 }
