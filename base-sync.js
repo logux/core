@@ -226,7 +226,8 @@ BaseSync.prototype = {
       this.delayPing()
       this.connection.send(msg)
     } else {
-      throw new Error('Could not send message to disconnected connection')
+      var json = JSON.stringify(msg)
+      throw new Error('Could not send ' + json + ' to disconnected connection')
     }
   },
 
