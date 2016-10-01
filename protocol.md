@@ -8,7 +8,7 @@ and key-value object.
 You can use any encoding and any low-level protocol: binary [MessagePack]
 encoding over WebSockets, JSON over AJAX and HTTP “keep-alive”, XML over TCP.
 Low-level protocol must guarantee messages order and content.
-Main way is MessagePack over WebSockets.
+Main way is MessagePack over WebSocket Secure.
 
 [MessagePack]: http://msgpack.org/
 [Logux logs]:  https://github.com/logux/logux-core
