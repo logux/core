@@ -26,7 +26,7 @@ function auth (sync, host, credentials, callback) {
 module.exports = {
 
   sendConnect: function sendConnect () {
-    var message = ['connect', this.protocol, this.host]
+    var message = ['connect', this.protocol, this.host, this.otherSynced]
     if (this.options.credentials) message.push(this.options.credentials)
     if (this.options.fixTime) this.connectSended = this.log.timer()[0]
     this.startTimeout()
@@ -39,14 +39,14 @@ module.exports = {
     this.send(message)
   },
 
-  connectMessage: function connectMessage (protocol, host, credentials) {
+  connectMessage: function connectMessage (ver, host, synced, credentials) {
     this.otherHost = host
-    this.otherProtocol = protocol
+    this.otherProtocol = ver
 
     var major = this.protocol[0]
-    if (major !== protocol[0]) {
+    if (major !== ver[0]) {
       this.sendError('Only ' + major + '.x protocols are supported, ' +
-                     'but you use ' + protocol.join('.'), 'protocol')
+                     'but you use ' + ver.join('.'), 'protocol')
       this.destroy()
       return
     }
@@ -55,6 +55,7 @@ module.exports = {
     var start = this.log.timer()[0]
     auth(this, host, credentials, function () {
       sync.sendConnected(start, sync.log.timer()[0])
+      sync.syncSince(synced)
     })
   },
 

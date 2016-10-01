@@ -1,4 +1,6 @@
-var NanoEvents = require('nanoevents')
+var createTestTimer = require('logux-core').createTestTimer
+var MemoryStore = require('logux-core').MemoryStore
+var Log = require('logux-core').Log
 
 var LocalPair = require('../local-pair')
 var ActiveSync = require('../active-sync')
@@ -10,7 +12,7 @@ function wait (ms) {
 }
 
 function initTest (opts) {
-  var log = new NanoEvents()
+  var log = new Log({ store: new MemoryStore(), timer: createTestTimer() })
   log.lastAdded = 1
   var pair = new LocalPair()
   var sync = new ActiveSync('host', log, pair.left, opts)

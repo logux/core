@@ -1,8 +1,12 @@
+var createTestTimer = require('logux-core').createTestTimer
+var MemoryStore = require('logux-core').MemoryStore
+var Log = require('logux-core').Log
+
 var ActiveSync = require('../active-sync')
 var LocalPair = require('../local-pair')
 
 it('connects first', function () {
-  var log = { on: function () { } }
+  var log = new Log({ store: new MemoryStore(), timer: createTestTimer() })
   var pair = new LocalPair()
   var sync = new ActiveSync('host', log, pair.left)
 
@@ -12,7 +16,7 @@ it('connects first', function () {
 })
 
 it('saves last added from ping', function () {
-  var log = { on: function () { } }
+  var log = new Log({ store: new MemoryStore(), timer: createTestTimer() })
   var pair = new LocalPair()
   var sync = new ActiveSync('host', log, pair.left)
 

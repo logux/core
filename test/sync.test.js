@@ -13,8 +13,9 @@ function events (log) {
 }
 
 function createTest () {
-  var log1 = new Log({ store: new MemoryStore(), timer: createTestTimer() })
-  var log2 = new Log({ store: new MemoryStore(), timer: createTestTimer() })
+  var timer = createTestTimer()
+  var log1 = new Log({ store: new MemoryStore(), timer: timer })
+  var log2 = new Log({ store: new MemoryStore(), timer: timer })
   var pair = new LocalPair()
 
   var active = new ActiveSync('client', log1, pair.left)
@@ -22,6 +23,14 @@ function createTest () {
   pair.left.connect()
 
   return { active: active, passive: passive }
+}
+
+function nextTick () {
+  return new Promise(function (resolve) {
+    setTimeout(function () {
+      resolve()
+    }, 1)
+  })
 }
 
 it('sends sync messages', function () {
@@ -37,7 +46,7 @@ it('sends sync messages', function () {
 
   test.active.log.add({ type: 'a' })
   expect(activeMessages).toEqual([
-    ['sync', 1, { type: 'a' }, [1]]
+    ['sync', 1, { type: 'a' }, [3]]
   ])
   expect(passiveMessages).toEqual([
     ['synced', 1]
@@ -45,12 +54,12 @@ it('sends sync messages', function () {
 
   test.passive.log.add({ type: 'b' })
   expect(activeMessages).toEqual([
-    ['sync', 1, { type: 'a' }, [1]],
+    ['sync', 1, { type: 'a' }, [3]],
     ['synced', 2]
   ])
   expect(passiveMessages).toEqual([
     ['synced', 1],
-    ['sync', 2, { type: 'b' }, [3]]
+    ['sync', 2, { type: 'b' }, [4]]
   ])
 })
 
@@ -165,4 +174,36 @@ it('supports multiple events in sync', function () {
     [{ type: 'b' }, { created: [2], added: 2 }],
     [{ type: 'a' }, { created: [1], added: 1 }]
   ])
+})
+
+it('synchronizes events on connect', function () {
+  var test = createTest()
+  return nextTick().then(function () {
+    test.active.log.add({ type: 'a' })
+    test.passive.log.add({ type: 'b' })
+    return nextTick()
+  }).then(function () {
+    test.active.connection.disconnect()
+
+    test.active.log.add({ type: 'c' })
+    test.active.log.add({ type: 'd' })
+    test.passive.log.add({ type: 'e' })
+
+    expect(test.active.synced).toBe(1)
+    expect(test.active.otherSynced).toBe(2)
+
+    new PassiveSync('server2', test.passive.log, test.active.connection.other())
+    test.active.connection.connect()
+
+    return nextTick()
+  }).then(function () {
+    expect(events(test.active.log)).toEqual([
+      { type: 'e' },
+      { type: 'd' },
+      { type: 'c' },
+      { type: 'b' },
+      { type: 'a' }
+    ])
+    expect(events(test.active.log)).toEqual(events(test.passive.log))
+  })
 })

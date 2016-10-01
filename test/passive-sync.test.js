@@ -1,8 +1,10 @@
+var NanoEvents = require('nanoevents')
+
 var PassiveSync = require('../passive-sync')
 var LocalPair = require('../local-pair')
 
 it('destroys on disconnect', function () {
-  var log = { on: function () { } }
+  var log = new NanoEvents()
   var pair = new LocalPair()
   var sync = new PassiveSync('host', log, pair.left)
 
@@ -15,7 +17,7 @@ it('destroys on disconnect', function () {
 it('destroys on connect timeout', function () {
   jest.useFakeTimers()
 
-  var log = { on: function () { } }
+  var log = new NanoEvents()
   var pair = new LocalPair()
   var sync = new PassiveSync('host', log, pair.left, { timeout: 1000 })
 
@@ -31,4 +33,10 @@ it('destroys on connect timeout', function () {
   jest.runOnlyPendingTimers()
   expect(sync.destroy).toBeCalled()
   expect(error.message).toContain('timeout')
+})
+
+it('throws on fixTime option in PassiveSync', function () {
+  expect(function () {
+    new PassiveSync('a', new NanoEvents(), new NanoEvents(), { fixTime: true })
+  }).toThrowError(/fixTime/)
 })

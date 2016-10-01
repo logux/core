@@ -45,8 +45,6 @@ var BaseSync = require('./base-sync')
  */
 function ActiveSync (host, log, connection, options) {
   BaseSync.call(this, host, log, connection, options)
-  this.synced = 0
-  this.otherSynced = 0
 }
 
 ActiveSync.prototype = {
@@ -54,25 +52,26 @@ ActiveSync.prototype = {
   onConnect: function onConnect () {
     BaseSync.prototype.onConnect.apply(this, arguments)
     this.sendConnect()
+    this.syncSince(this.synced)
   },
 
-  pingMessage: function pingMessage (added) {
+  pingMessage: function pingMessage (synced) {
     BaseSync.prototype.pingMessage.apply(this, arguments)
-    this.otherSynced = added
+    if (this.otherSynced < synced) this.otherSynced = synced
   },
 
-  pongMessage: function pongMessage (added) {
+  pongMessage: function pongMessage (synced) {
     BaseSync.prototype.pongMessage.apply(this, arguments)
-    this.otherSynced = added
+    if (this.otherSynced < synced) this.otherSynced = synced
   },
 
-  syncMessage: function syncMessage (added) {
+  syncMessage: function syncMessage (synced) {
     BaseSync.prototype.syncMessage.apply(this, arguments)
-    this.otherSynced = added
+    if (this.otherSynced < synced) this.otherSynced = synced
   },
 
-  syncedMessage: function syncedMessage (added) {
-    this.synced = added
+  syncedMessage: function syncedMessage (synced) {
+    if (this.synced < synced) this.synced = synced
   }
 
 }

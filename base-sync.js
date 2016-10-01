@@ -92,6 +92,9 @@ function BaseSync (host, log, connection, options) {
   this.timeFix = 0
   this.received = 0
 
+  this.synced = 0
+  this.otherSynced = 0
+
   this.throwsError = true
   this.emitter = new NanoEvents()
 
@@ -283,6 +286,9 @@ BaseSync.prototype = {
   },
 
   onEvent: function onEvent (event, meta) {
+    if (!this.connected) {
+      return
+    }
     if (meta.added === this.received) {
       return
     }
@@ -334,6 +340,17 @@ BaseSync.prototype = {
     this.pingTimeout = setTimeout(function () {
       sync.sendPing()
     }, this.options.ping)
+  },
+
+  syncSince: function syncEventSince (lastSynced) {
+    var data = []
+    var sync = this
+    this.log.each({ order: 'added' }, function (event, meta) {
+      if (meta.added <= lastSynced) return false
+      data.push(event, meta)
+    }).then(function () {
+      if (sync.connected && data.length > 0) sync.sendSync.apply(sync, data)
+    })
   }
 
 }
