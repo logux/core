@@ -109,7 +109,9 @@ function BaseSync (host, log, connection, options) {
    *
    * @example
    * sync.on('state', () => {
-   *   console.log('Synchronization ' + sync.state)
+   *   if (sync.state === 'wait' && sync.state === 'sending') {
+   *     console.log('Do not close browser')
+   *   }
    * })
    */
   this.state = 'disconnected'
