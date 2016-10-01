@@ -53,25 +53,6 @@ ActiveSync.prototype = {
     BaseSync.prototype.onConnect.apply(this, arguments)
     this.sendConnect()
     this.syncSince(this.synced)
-  },
-
-  pingMessage: function pingMessage (synced) {
-    BaseSync.prototype.pingMessage.apply(this, arguments)
-    if (this.otherSynced < synced) this.otherSynced = synced
-  },
-
-  pongMessage: function pongMessage (synced) {
-    BaseSync.prototype.pongMessage.apply(this, arguments)
-    if (this.otherSynced < synced) this.otherSynced = synced
-  },
-
-  syncMessage: function syncMessage (synced) {
-    BaseSync.prototype.syncMessage.apply(this, arguments)
-    if (this.otherSynced < synced) this.otherSynced = synced
-  },
-
-  syncedMessage: function syncedMessage (synced) {
-    if (this.synced < synced) this.synced = synced
   }
 
 }

@@ -43,10 +43,13 @@ module.exports = {
       this.received = this.log.lastAdded + 1
       this.log.add(event, meta)
     }
+
+    if (this.otherSynced < added) this.otherSynced = added
     this.sendSynced(added)
   },
 
-  syncedMessage: function syncedMessage () {
+  syncedMessage: function syncedMessage (synced) {
+    if (this.synced < synced) this.synced = synced
     this.endTimeout()
   }
 
