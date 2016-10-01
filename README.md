@@ -106,6 +106,14 @@ testTimer() //=> [2]
 testTimer() //=> [3]
 ```
 
+If you test two logs, don’t forget to use same test timer instance for them:
+
+```js
+const testTimer = createTestTimer()
+const log1 = new Log({ store1, timer: testTimer })
+const log2 = new Log({ store2, timer: testTimer })
+```
+
 ## Added Time
 
 Also log contains time, when event was added to this log. So added time could

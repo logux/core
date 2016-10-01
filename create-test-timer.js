@@ -10,6 +10,9 @@
  * timer() //=> [1]
  * timer() //=> [2]
  * timer() //=> [3]
+ *
+ * const log1 = new Log({ store1, timer: testTimer })
+ * const log2 = new Log({ store2, timer: testTimer })
  */
 function createTestTimer () {
   var last = 0
