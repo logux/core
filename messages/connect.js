@@ -31,6 +31,7 @@ module.exports = {
     if (this.options.fixTime) this.connectSended = this.log.timer()[0]
     this.startTimeout()
     this.send(message)
+    this.syncSince(this.synced)
   },
 
   sendConnected: function sendConnected (start, end) {

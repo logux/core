@@ -52,7 +52,6 @@ ActiveSync.prototype = {
   onConnect: function onConnect () {
     BaseSync.prototype.onConnect.apply(this, arguments)
     this.sendConnect()
-    this.syncSince(this.synced)
   }
 
 }
