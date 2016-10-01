@@ -17,7 +17,7 @@ Main way is MessagePack over WebSockets.
 
 Protocol uses two major and minor numbers for version.
 
-```
+```ts
 [number major, number minor]
 ```
 
@@ -29,7 +29,7 @@ and close connection.
 Communication is based on messages. Every message is a array with string
 in the beginning and any types next:
 
-```
+```ts
 [
   string type,
   …
@@ -61,7 +61,7 @@ and continue communication.
 
 Error message contains error description and error type.
 
-```
+```ts
 [
   "error",
   string message,
@@ -75,7 +75,7 @@ Right now there are 2 possible error types: `protocol` and `auth`.
 
 After connection was started some client should send `connect` message to other.
 
-```
+```ts
 [
   "connect",
   number[] protocol,
@@ -107,7 +107,7 @@ On wrong credentials data receiver may send `auth` error and close connection.
 
 This message is answer to received [`connect`] message.
 
-```
+```ts
 [
   "connected",
   number[] protocol,
@@ -137,7 +137,7 @@ since last connection (all events on first connection).
 
 Client could send `ping` message to check connection.
 
-```
+```ts
 [
   "ping",
   number synced
@@ -153,7 +153,7 @@ Receiver should send [`pong`] message as soon as possible.
 
 `pong` message is a answer to [`ping`] message.
 
-```
+```ts
 [
   "pong",
   number synced
@@ -166,7 +166,7 @@ Message array contains sender last `added` too.
 
 This message contains new events for synchronization.
 
-```
+```ts
 [
   "sync",
   number synced
@@ -187,7 +187,7 @@ Event object could contains any key and values, but it must contains at least
 on used timer. For more details read [Logux Core docs].
 For example, standard timer generated:
 
-```
+```ts
 [number milliseconds, string host, number orderInMs]
 ```
 
@@ -208,7 +208,7 @@ time or time zone.
 
 `synced` message is a answer to [`sync`] message.
 
-```
+```ts
 [
   "synced",
   number synced
@@ -221,7 +221,7 @@ Receiver should mark all events with lower `added` time as synchronized.
 
 Wrong authentication:
 
-```
+```ts
 CONNECTED
 CLIENT > ["connect", [0, 0], "client1", { token: "wrong" }]
 SERVER < ["error", "Wrong credentials", "auth"]
@@ -230,7 +230,7 @@ DISCONNECTED
 
 Correct synchronization:
 
-```
+```ts
 CONNECTED
 CLIENT > ["connect", [0, 0], "client1", 0, { token: "correct" }]
 SERVER < ["connected", [0, 0], "server", [1475316481050, 1475316482879]]
@@ -251,7 +251,7 @@ CLIENT > ["synced", 2]
 Clients may hide some events from each other,
 so `added` time could be different:
 
-```
+```ts
 CONNECTED
 CLIENT > ["connect", [0, 0], "client1", 130, { token: "correct" }]
 SERVER < ["connected", [0, 0], "server", [1475316168379, 1475316169987]]
