@@ -320,8 +320,12 @@ BaseSync.prototype = {
     var ms = this.options.timeout
     var sync = this
     this.lastTimeout = setTimeout(function () {
-      sync.connection.disconnect()
-      sync.error('A timeout was riched (' + ms + 'ms)', 'connection', false)
+      var desc = 'A timeout was riched (' + ms + 'ms)'
+      if (sync.connected) {
+        sync.sendError(desc, 'protocol')
+        sync.connection.disconnect()
+      }
+      sync.error(desc, 'connection', false)
     }, this.options.timeout)
   },
 

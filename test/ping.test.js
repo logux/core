@@ -80,5 +80,11 @@ it('sends ping on idle connection', function () {
     return wait(250)
   }).then(function () {
     expect(error.message).toContain('timeout')
+    expect(test.sent).toEqual([
+      ['test'],
+      ['ping', 1],
+      ['ping', 1],
+      ['error', 'A timeout was riched (100ms)', 'protocol']
+    ])
   })
 })
