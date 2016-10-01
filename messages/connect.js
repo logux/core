@@ -29,6 +29,7 @@ module.exports = {
     var message = ['connect', this.protocol, this.host, this.otherSynced]
     if (this.options.credentials) message.push(this.options.credentials)
     if (this.options.fixTime) this.connectSended = this.log.timer()[0]
+    if (this.log.lastAdded > this.synced) this.setState('sending')
     this.startTimeout()
     this.send(message)
   },

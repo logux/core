@@ -1,12 +1,20 @@
-var NanoEvents = require('nanoevents')
+var createTestTimer = require('logux-core').createTestTimer
+var MemoryStore = require('logux-core').MemoryStore
+var Log = require('logux-core').Log
 
-var BaseSync = require('../base-sync')
 var LocalPair = require('../local-pair')
+var BaseSync = require('../base-sync')
 
 function createSync () {
-  var log = new NanoEvents()
+  var log = new Log({ store: new MemoryStore(), timer: createTestTimer() })
   var pair = new LocalPair()
   return new BaseSync('host', log, pair.left)
+}
+
+function nextTick () {
+  return new Promise(function (resolve) {
+    setTimeout(resolve)
+  })
 }
 
 it('saves all arguments', function () {
@@ -34,12 +42,12 @@ it('has protocol version', function () {
 
 it('unbind all listeners on destroy', function () {
   var sync = createSync()
-  expect(Object.keys(sync.log.events)).toEqual(['event'])
+  expect(Object.keys(sync.log.emitter.events)).toEqual(['event'])
   expect(Object.keys(sync.connection.emitter.events))
     .toEqual(['connect', 'message', 'disconnect'])
 
   sync.destroy()
-  expect(Object.keys(sync.log.events)).toEqual([])
+  expect(Object.keys(sync.log.emitter.events)).toEqual([])
   expect(Object.keys(sync.connection.emitter.events)).toEqual([])
 })
 
@@ -80,36 +88,17 @@ it('has connection state', function () {
   expect(sync.connected).toBeFalsy()
 })
 
-it('emits events on loosing connection', function () {
-  var sync = createSync()
-  var events = []
-  sync.on('disconnect', function () {
-    events.push('disconnect')
-  })
-
-  sync.connection.connect()
-  expect(events).toEqual([])
-
-  sync.connection.disconnect()
-  expect(events).toEqual(['disconnect'])
-
-  sync.connection.connect()
-  sync.connection.disconnect()
-  expect(events).toEqual(['disconnect', 'disconnect'])
-})
-
 it('supports one-time events', function () {
   var sync = createSync()
-  var events = []
-  sync.once('disconnect', function () {
-    events.push('disconnect')
+  var states = []
+  sync.once('state', function () {
+    states.push(sync.state)
   })
 
-  sync.connection.connect()
-  sync.connection.disconnect()
-  sync.connection.connect()
-  sync.connection.disconnect()
-  expect(events).toEqual(['disconnect'])
+  sync.setState('sending')
+  sync.setState('synchronized')
+
+  expect(states).toEqual(['sending'])
 })
 
 it('calls message method', function () {
@@ -123,4 +112,62 @@ it('calls message method', function () {
   sync.connection.connect()
   sync.connection.other().send(['test', 1, 2])
   expect(calls).toEqual([[1, 2]])
+})
+
+it('sets wait state on creating', function () {
+  var log = new Log({ store: new MemoryStore(), timer: createTestTimer() })
+  log.add({ type: 'a' })
+  var pair = new LocalPair()
+  var sync = new BaseSync('host', log, pair.left)
+  expect(sync.state).toEqual('wait')
+})
+
+it('has state', function () {
+  var sync = createSync()
+  var other = sync.connection.other()
+  var states = []
+  sync.on('state', function () {
+    states.push(sync.state)
+  })
+
+  expect(sync.state).toEqual('disconnected')
+
+  sync.connection.connect()
+  sync.sendConnect()
+  other.send(['connected', sync.protocol, 'server', [0, 0]])
+  return nextTick().then(function () {
+    expect(sync.state).toEqual('synchronized')
+
+    sync.log.add({ type: 'a' })
+    expect(sync.state).toEqual('sending')
+
+    other.send(['synced', 1])
+    expect(sync.state).toEqual('synchronized')
+
+    sync.connection.disconnect()
+    expect(sync.state).toEqual('disconnected')
+
+    sync.log.add({ type: 'b' })
+    expect(sync.state).toEqual('wait')
+
+    sync.connection.connect()
+    sync.sendConnect()
+    expect(sync.state).toEqual('sending')
+
+    other.send(['connected', sync.protocol, 'server', [0, 0]])
+    return nextTick()
+  }).then(function () {
+    other.send(['synced', 2])
+    expect(sync.state).toEqual('synchronized')
+
+    expect(states).toEqual([
+      'synchronized',
+      'sending',
+      'synchronized',
+      'disconnected',
+      'wait',
+      'sending',
+      'synchronized'
+    ])
+  })
 })

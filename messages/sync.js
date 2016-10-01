@@ -17,6 +17,8 @@ module.exports = {
       data.push(arguments[i], created)
     }
 
+    this.syncing += 1
+    this.setState('sending')
     this.send(['sync', max].concat(data))
   },
 
@@ -50,7 +52,11 @@ module.exports = {
 
   syncedMessage: function syncedMessage (synced) {
     if (this.synced < synced) this.synced = synced
-    this.endTimeout()
+    if (this.syncing > 0) this.syncing -= 1
+    if (this.syncing === 0) {
+      this.endTimeout()
+      this.setState('synchronized')
+    }
   }
 
 }

@@ -90,10 +90,30 @@ function BaseSync (host, log, connection, options) {
   this.unauthenticated = []
 
   this.timeFix = 0
+  this.syncing = 0
   this.received = 0
 
   this.synced = 0
   this.otherSynced = 0
+
+  /**
+   * Current synchronization state.
+   *
+   * * `disconnected`: no connection, but no new events to synchronization.
+   * * `wait`: new events for synchronization but there is no connection.
+   * * `connecting`: connection was established and we wait for node answer.
+   * * `sending`: new events was sent, waiting for answer.
+   * * `synchronized`: all events was synchronized and we keep connection.
+   *
+   * @type {"disconnected"|"wait"|"sending"|"synchronized"}
+   *
+   * @example
+   * sync.on('state', () => {
+   *   console.log('Synchronization ' + sync.state)
+   * })
+   */
+  this.state = 'disconnected'
+  if (this.log.lastAdded > this.synced) this.state = 'wait'
 
   this.throwsError = true
   this.emitter = new NanoEvents()
@@ -155,10 +175,10 @@ BaseSync.prototype = {
    * Subscribe for synchronization events. It implements nanoevents API.
    * Supported events:
    *
-   * * `disconnect`: other node was disconnected.
+   * * `state`: synchronization state changes.
    * * `sendedError`: when error was sent to other node.
    *
-   * @param {"disconnect"|"sendedError"} event The event name.
+   * @param {"state"|"sendedError"} event The event name.
    * @param {listener} listener The listener function.
    *
    * @return {function} Unbind listener from event.
@@ -176,7 +196,7 @@ BaseSync.prototype = {
    * Add one-time listener for synchronization events.
    * See {@link PassiveSync#on} for supported events.
    *
-   * @param {"error"|"disconnect"} event The event name.
+   * @param {"state"|"sendedError"} event The event name.
    * @param {listener} listener The listener function.
    *
    * @return {function} Unbind listener from event.
@@ -242,9 +262,13 @@ BaseSync.prototype = {
   onDisconnect: function onDisconnect () {
     this.endTimeout()
     if (this.pingTimeout) clearTimeout(this.pingTimeout)
-
-    this.emitter.emit('disconnect')
     this.connected = false
+
+    if (this.log.lastAdded > this.synced) {
+      this.setState('wait')
+    } else {
+      this.setState('disconnected')
+    }
   },
 
   onMessage: function onMessage (msg) {
@@ -287,6 +311,7 @@ BaseSync.prototype = {
 
   onEvent: function onEvent (event, meta) {
     if (!this.connected) {
+      this.setState('wait')
       return
     }
     if (meta.added === this.received) {
@@ -310,6 +335,13 @@ BaseSync.prototype = {
     this.emitter.emit('error', err)
     if (this.throwsError) {
       throw err
+    }
+  },
+
+  setState: function setState (state) {
+    if (this.state !== state) {
+      this.state = state
+      this.emitter.emit('state')
     }
   },
 
@@ -353,7 +385,12 @@ BaseSync.prototype = {
       if (meta.added <= lastSynced) return false
       data.push(event, meta)
     }).then(function () {
-      if (sync.connected && data.length > 0) sync.sendSync.apply(sync, data)
+      if (!sync.connected) return
+      if (data.length > 0) {
+        sync.sendSync.apply(sync, data)
+      } else {
+        sync.setState('synchronized')
+      }
     })
   }
 
@@ -375,16 +412,16 @@ module.exports = BaseSync
  * @return {Promise} Promise with boolean value.
  */
 
- /**
-  * @callback filter
-  * @param {Event} event New event from log.
-  * @param {Meta} meta New event metadata.
-  * @return {boolean} Should event be synchronized with other log.
-  */
+/**
+ * @callback filter
+ * @param {Event} event New event from log.
+ * @param {Meta} meta New event metadata.
+ * @return {boolean} Should event be synchronized with other log.
+ */
 
- /**
-  * @callback mapper
-  * @param {Event} event New event from log.
-  * @param {Meta} meta New event metadata.
-  * @return {Entry} Array with changed event and changed metadata.
-  */
+/**
+ * @callback mapper
+ * @param {Event} event New event from log.
+ * @param {Meta} meta New event metadata.
+ * @return {Entry} Array with changed event and changed metadata.
+ */
