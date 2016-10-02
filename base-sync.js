@@ -10,7 +10,7 @@ var sync = require('./messages/sync')
 var BEFORE_AUTH = ['connect', 'connected', 'error']
 
 /**
- * Base methods for synchronization nodes. Active and passive nodes
+ * Base methods for synchronization nodes. Client and server nodes
  * are based on this module.
  *
  * @param {string|number} host Unique current host name.
@@ -213,7 +213,7 @@ BaseSync.prototype = {
 
   /**
    * Add one-time listener for synchronization events.
-   * See {@link PassiveSync#on} for supported events.
+   * See {@link BaseSync#on} for supported events.
    *
    * @param {"state"|"sendedError"} event The event name.
    * @param {listener} listener The listener function.

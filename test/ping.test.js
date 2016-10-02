@@ -3,7 +3,7 @@ var MemoryStore = require('logux-core').MemoryStore
 var Log = require('logux-core').Log
 
 var LocalPair = require('../local-pair')
-var ActiveSync = require('../active-sync')
+var Client = require('../client')
 
 function wait (ms) {
   return new Promise(function (resolve) {
@@ -15,7 +15,7 @@ function initTest (opts) {
   var log = new Log({ store: new MemoryStore(), timer: createTestTimer() })
   log.lastAdded = 1
   var pair = new LocalPair()
-  var sync = new ActiveSync('host', log, pair.left, opts)
+  var sync = new Client('host', log, pair.left, opts)
 
   sync.connection.connect()
   sync.connection.other().send(['connected', sync.protocol, 'server'])
@@ -30,13 +30,13 @@ function initTest (opts) {
 
 it('throws on ping and no timeout options', function () {
   expect(function () {
-    new ActiveSync('host', null, null, { ping: 1000 })
+    new Client('host', null, null, { ping: 1000 })
   }).toThrowError(/set timeout option/)
 })
 
 it('throws on small ping', function () {
   expect(function () {
-    new ActiveSync('host', null, null, { ping: 1000, timeout: 1000 })
+    new Client('host', null, null, { ping: 1000, timeout: 1000 })
   }).toThrowError(/longer than timeout/)
 })
 

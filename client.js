@@ -3,11 +3,10 @@ var assign = require('object-assign')
 var BaseSync = require('./base-sync')
 
 /**
- * Active node in synchronization pair.
+ * Client node in synchronization pair.
  *
- * Instead of passive node, it initializes synchronization.
- *
- * For example, active sync is used for browser clients and passive for servers.
+ * Instead of server node, it initializes synchronization
+ * and sends connect message.
  *
  * @param {string} host Unique current host name.
  * @param {Log} log Logux log instance to sync with other node log.
@@ -40,18 +39,18 @@ var BaseSync = require('./base-sync')
  *                                         will not be synchronized.
  *
  * @example
- * import { ActiveSync } from 'logux-sync'
+ * import { Client } from 'logux-sync'
  * const connection = new WebSocketsConnection(destination)
- * const sync = new ActiveSync('user' + id, log, connection)
+ * const sync = new Client('user' + id, log, connection)
  *
  * @extends BaseSync
  * @class
  */
-function ActiveSync (host, log, connection, options) {
+function Client (host, log, connection, options) {
   BaseSync.call(this, host, log, connection, options)
 }
 
-ActiveSync.prototype = {
+Client.prototype = {
 
   onConnect: function onConnect () {
     BaseSync.prototype.onConnect.apply(this, arguments)
@@ -60,6 +59,6 @@ ActiveSync.prototype = {
 
 }
 
-ActiveSync.prototype = assign({ }, BaseSync.prototype, ActiveSync.prototype)
+Client.prototype = assign({ }, BaseSync.prototype, Client.prototype)
 
-module.exports = ActiveSync
+module.exports = Client

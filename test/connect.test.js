@@ -2,33 +2,33 @@ var createTestTimer = require('logux-core').createTestTimer
 var MemoryStore = require('logux-core').MemoryStore
 var Log = require('logux-core').Log
 
-var PassiveSync = require('../passive-sync')
-var ActiveSync = require('../active-sync')
 var LocalPair = require('../local-pair')
+var Server = require('../server')
+var Client = require('../client')
 
 function createTest () {
   var log = new Log({ store: new MemoryStore(), timer: createTestTimer() })
   var pair = new LocalPair()
-  var active = new ActiveSync('client', log, pair.left)
-  var passive = new PassiveSync('server', log, pair.right)
+  var client = new Client('client', log, pair.left)
+  var server = new Server('server', log, pair.right)
 
-  active.catch(function () { })
-  passive.catch(function () { })
+  client.catch(function () { })
+  server.catch(function () { })
 
-  var sendedActive = []
-  passive.connection.on('message', function (msg) {
-    sendedActive.push(msg)
+  var clientSent = []
+  server.connection.on('message', function (msg) {
+    clientSent.push(msg)
   })
-  var sendedPassive = []
-  active.connection.on('message', function (msg) {
-    sendedPassive.push(msg)
+  var serverSent = []
+  client.connection.on('message', function (msg) {
+    serverSent.push(msg)
   })
 
   return {
-    sendedPassive: sendedPassive,
-    sendedActive: sendedActive,
-    passive: passive,
-    active: active
+    serverSent: serverSent,
+    clientSent: clientSent,
+    server: server,
+    client: client
   }
 }
 
@@ -42,172 +42,172 @@ function nextTick () {
 
 it('sends protocol version and host in connect message', function () {
   var test = createTest()
-  test.active.connection.connect()
-  expect(test.sendedActive).toEqual([
-    ['connect', test.active.protocol, 'client', 0]
+  test.client.connection.connect()
+  expect(test.clientSent).toEqual([
+    ['connect', test.client.protocol, 'client', 0]
   ])
 })
 
 it('answers with protocol version and host in connected message', function () {
   var test = createTest()
-  test.active.connection.connect()
-  expect(test.sendedPassive).toEqual([
-    ['connected', test.passive.protocol, 'server', [1, 2]]
+  test.client.connection.connect()
+  expect(test.serverSent).toEqual([
+    ['connected', test.server.protocol, 'server', [1, 2]]
   ])
 })
 
 it('checks protocol version', function () {
   var test = createTest()
-  test.active.protocol = [2, 0]
-  test.passive.protocol = [1, 0]
+  test.client.protocol = [2, 0]
+  test.server.protocol = [1, 0]
 
-  test.active.connection.connect()
-  test.passive.connection.emitter.emit('message', ['test', 1])
+  test.client.connection.connect()
+  test.server.connection.emitter.emit('message', ['test', 1])
 
-  expect(test.sendedPassive).toEqual([
+  expect(test.serverSent).toEqual([
     ['error', 'Only 1.x protocols are supported, but you use 2.0', 'protocol']
   ])
-  expect(test.active.connected).toBeFalsy()
+  expect(test.client.connected).toBeFalsy()
 })
 
 it('saves other client host', function () {
   var test = createTest()
-  test.active.connection.connect()
-  expect(test.active.otherHost).toEqual('server')
-  expect(test.passive.otherHost).toEqual('client')
+  test.client.connection.connect()
+  expect(test.client.otherHost).toEqual('server')
+  expect(test.server.otherHost).toEqual('client')
 })
 
 it('saves other client protocol', function () {
   var test = createTest()
-  test.active.protocol = [1, 0]
-  test.passive.protocol = [1, 1]
+  test.client.protocol = [1, 0]
+  test.server.protocol = [1, 1]
 
-  test.active.connection.connect()
-  expect(test.active.otherProtocol).toEqual([1, 1])
-  expect(test.passive.otherProtocol).toEqual([1, 0])
+  test.client.connection.connect()
+  expect(test.client.otherProtocol).toEqual([1, 1])
+  expect(test.server.otherProtocol).toEqual([1, 0])
 })
 
 it('sends credentials in connect', function () {
   var test = createTest()
-  test.active.options = { credentials: { a: 1, b: 2 } }
+  test.client.options = { credentials: { a: 1, b: 2 } }
 
-  test.active.connection.connect()
-  expect(test.sendedActive).toEqual([
-    ['connect', test.active.protocol, 'client', 0, { a: 1, b: 2 }]
+  test.client.connection.connect()
+  expect(test.clientSent).toEqual([
+    ['connect', test.client.protocol, 'client', 0, { a: 1, b: 2 }]
   ])
 })
 
 it('sends credentials in connected', function () {
   var test = createTest()
-  test.passive.options = { credentials: 1 }
+  test.server.options = { credentials: 1 }
 
-  test.active.connection.connect()
-  expect(test.sendedPassive).toEqual([
-    ['connected', test.passive.protocol, 'server', [1, 2], 1]
+  test.client.connection.connect()
+  expect(test.serverSent).toEqual([
+    ['connected', test.server.protocol, 'server', [1, 2], 1]
   ])
 })
 
 it('sends error on messages before auth', function () {
   var test = createTest()
-  test.active.destroy()
-  test.passive.testMessage = function () { }
+  test.client.destroy()
+  test.server.testMessage = function () { }
 
-  test.active.connection.connect()
-  test.active.connection.send(['test'])
+  test.client.connection.connect()
+  test.client.connection.send(['test'])
 
-  expect(test.sendedPassive).toEqual([
+  expect(test.serverSent).toEqual([
     ['error', 'Start authentication before sending `test` message', 'protocol']
   ])
 })
 
 it('denies access for wrong users', function () {
   var test = createTest()
-  test.passive.testMessage = jest.fn()
-  test.passive.options = {
+  test.server.testMessage = jest.fn()
+  test.server.options = {
     auth: function () {
       return Promise.resolve(false)
     }
   }
 
-  test.active.connection.connect()
-  test.active.send(['test'])
+  test.client.connection.connect()
+  test.client.send(['test'])
 
   return nextTick().then(function () {
-    expect(test.sendedPassive).toEqual([
+    expect(test.serverSent).toEqual([
       ['error', 'Wrong credentials', 'auth']
     ])
-    expect(test.passive.testMessage).not.toBeCalled()
-    expect(test.passive.connected).toBeFalsy()
+    expect(test.server.testMessage).not.toBeCalled()
+    expect(test.server.connected).toBeFalsy()
   })
 })
 
 it('denies access to wrong server', function () {
   var test = createTest()
-  test.active.options = {
+  test.client.options = {
     auth: function () {
       return Promise.resolve(false)
     }
   }
 
-  test.active.connection.connect()
+  test.client.connection.connect()
 
   return nextTick().then(function () {
-    expect(test.sendedActive).toEqual([
-      ['connect', test.active.protocol, 'client', 0],
+    expect(test.clientSent).toEqual([
+      ['connect', test.client.protocol, 'client', 0],
       ['error', 'Wrong credentials', 'auth']
     ])
-    expect(test.active.connected).toBeFalsy()
+    expect(test.client.connected).toBeFalsy()
   })
 })
 
 it('allows access for right users', function () {
   var test = createTest()
-  test.active.options = { credentials: 'a' }
-  test.passive.testMessage = jest.fn()
-  test.passive.options = {
+  test.client.options = { credentials: 'a' }
+  test.server.testMessage = jest.fn()
+  test.server.options = {
     auth: function (credentials, host) {
       return Promise.resolve(credentials === 'a' && host === 'client')
     }
   }
 
-  test.active.connection.connect()
-  test.active.send(['test'])
+  test.client.connection.connect()
+  test.client.send(['test'])
 
   return nextTick().then(function () {
-    expect(test.sendedPassive).toEqual([
-      ['connected', test.passive.protocol, 'server', [1, 2]]
+    expect(test.serverSent).toEqual([
+      ['connected', test.server.protocol, 'server', [1, 2]]
     ])
-    expect(test.passive.testMessage).toBeCalled()
+    expect(test.server.testMessage).toBeCalled()
   })
 })
 
 it('has default timeFix', function () {
   var test = createTest()
-  test.active.connection.connect()
-  expect(test.active.timeFix).toEqual(0)
+  test.client.connection.connect()
+  expect(test.client.timeFix).toEqual(0)
 })
 
 it('calculates time difference', function () {
   var test = createTest()
   var times1 = [10000, 10000 + 1000 + 100]
-  test.active.log = new Log({
+  test.client.log = new Log({
     store: new MemoryStore(),
     timer: function () {
       return [times1.shift()]
     }
   })
   var times2 = [0 + 50, 0 + 50 + 1000]
-  test.passive.log = new Log({
+  test.server.log = new Log({
     store: new MemoryStore(),
     timer: function () {
       return [times2.shift()]
     }
   })
 
-  test.active.options.fixTime = true
-  test.active.connection.connect()
+  test.client.options.fixTime = true
+  test.client.connection.connect()
 
-  expect(test.active.timeFix).toEqual(10000)
+  expect(test.client.timeFix).toEqual(10000)
 })
 
 it('uses timeout between connect and connected', function () {
@@ -215,10 +215,10 @@ it('uses timeout between connect and connected', function () {
 
   var log = new Log({ store: new MemoryStore(), timer: createTestTimer() })
   var pair = new LocalPair()
-  var active = new ActiveSync('client', log, pair.left, { timeout: 1000 })
+  var client = new Client('client', log, pair.left, { timeout: 1000 })
 
   var error
-  active.catch(function (err) {
+  client.catch(function (err) {
     error = err
   })
 
@@ -236,11 +236,11 @@ it('connects with timeout', function () {
 
   var test = createTest()
   var error
-  test.active.catch(function (err) {
+  test.client.catch(function (err) {
     error = err
   })
-  test.active.options.timeout = 1000
-  test.active.connection.connect()
+  test.client.options.timeout = 1000
+  test.client.connection.connect()
 
   jest.runOnlyPendingTimers()
   expect(error).toBeUndefined()

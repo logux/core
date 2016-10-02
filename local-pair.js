@@ -59,8 +59,8 @@ LocalConnection.prototype = {
  * @example
  * import { LocalPair } from 'logux-sync'
  * const pair = new LocalPair()
- * const client = new ActiveSync(pair.left)
- * const server = new PassiveSync(pair.right)
+ * const client = new Client(pair.left)
+ * const server = new Server(pair.right)
  *
  * @class
  */
@@ -71,7 +71,7 @@ function LocalPair () {
    * @type {Connection}
    *
    * @example
-   * new ActiveSync(pair.left)
+   * new Client(pair.left)
    */
   this.left = new LocalConnection(this, 'left')
   /**
@@ -80,7 +80,7 @@ function LocalPair () {
    * @type {Connection}
    *
    * @example
-   * new PassiveSync(pair.right)
+   * new Server(pair.right)
    */
   this.right = new LocalConnection(this, 'right')
 }

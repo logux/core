@@ -1,12 +1,12 @@
 var NanoEvents = require('nanoevents')
 
-var PassiveSync = require('../passive-sync')
 var LocalPair = require('../local-pair')
+var Server = require('../server')
 
 it('destroys on disconnect', function () {
   var log = new NanoEvents()
   var pair = new LocalPair()
-  var sync = new PassiveSync('host', log, pair.left)
+  var sync = new Server('host', log, pair.left)
 
   sync.destroy = jest.fn()
   pair.left.connect()
@@ -19,7 +19,7 @@ it('destroys on connect timeout', function () {
 
   var log = new NanoEvents()
   var pair = new LocalPair()
-  var sync = new PassiveSync('host', log, pair.left, { timeout: 1000 })
+  var sync = new Server('host', log, pair.left, { timeout: 1000 })
 
   var error
   sync.catch(function (err) {
@@ -35,15 +35,15 @@ it('destroys on connect timeout', function () {
   expect(error.message).toContain('timeout')
 })
 
-it('throws on fixTime option in PassiveSync', function () {
+it('throws on fixTime option', function () {
   expect(function () {
-    new PassiveSync('a', new NanoEvents(), new NanoEvents(), { fixTime: true })
+    new Server('a', new NanoEvents(), new NanoEvents(), { fixTime: true })
   }).toThrowError(/fixTime/)
 })
 
-it('throws on synced ot otherSynced option in PassiveSync', function () {
+it('throws on synced ot otherSynced option', function () {
   expect(function () {
-    new PassiveSync('a', new NanoEvents(), new NanoEvents(), {
+    new Server('a', new NanoEvents(), new NanoEvents(), {
       otherSynced: 1,
       synced: 1
     })

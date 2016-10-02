@@ -3,12 +3,10 @@ var assign = require('object-assign')
 var BaseSync = require('./base-sync')
 
 /**
- * Passive node in synchronization pair.
+ * Server node in synchronization pair.
  *
- * Instead of active node, it doesn’t initialize synchronization
+ * Instead of client node, it doesn’t initialize synchronization
  * and destroy itself on disconnect.
- *
- * For example, passive sync is used for server and active for browser clients.
  *
  * @param {string} host Unique current host name.
  * @param {Log} log Logux log instance to sync with other node log.
@@ -33,28 +31,28 @@ var BaseSync = require('./base-sync')
  *                                  before sending it to other client.
  *
  * @example
- * import { PassiveSync } from 'logux-sync'
+ * import { Server } from 'logux-sync'
  * startServer(ws => {
  *   const connection = new WSServerConnection(ws)
- *   const sync = new PassiveSync('server' + id, log, connection)
+ *   const sync = new Server('server' + id, log, connection)
  * })
  *
  * @extends BaseSync
  * @class
  */
-function PassiveSync (host, log, connection, options) {
+function Server (host, log, connection, options) {
   BaseSync.call(this, host, log, connection, options)
   if (this.options.fixTime) {
     throw new Error(
-      'PassiveSync could not fix time. Set opts.fixTime for ActiveSync node.')
+      'Server could not fix time. Set opts.fixTime for Client node.')
   }
   if (options && (options.synced || options.otherSynced)) {
     throw new Error(
-      'PassiveSync could not use synced and otherSynced options.')
+      'Server could not use synced and otherSynced options.')
   }
 }
 
-PassiveSync.prototype = {
+Server.prototype = {
 
   onConnect: function onConnect () {
     BaseSync.prototype.onConnect.call(this)
@@ -73,6 +71,6 @@ PassiveSync.prototype = {
 
 }
 
-PassiveSync.prototype = assign({ }, BaseSync.prototype, PassiveSync.prototype)
+Server.prototype = assign({ }, BaseSync.prototype, Server.prototype)
 
-module.exports = PassiveSync
+module.exports = Server

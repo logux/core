@@ -2,9 +2,9 @@ var createTestTimer = require('logux-core').createTestTimer
 var MemoryStore = require('logux-core').MemoryStore
 var Log = require('logux-core').Log
 
-var PassiveSync = require('../passive-sync')
-var ActiveSync = require('../active-sync')
 var LocalPair = require('../local-pair')
+var Server = require('../server')
+var Client = require('../client')
 
 function events (log) {
   return log.store.created.map(function (entry) {
@@ -18,11 +18,11 @@ function createTest () {
   var log2 = new Log({ store: new MemoryStore(), timer: timer })
   var pair = new LocalPair()
 
-  var active = new ActiveSync('client', log1, pair.left)
-  var passive = new PassiveSync('server', log2, pair.right)
+  var client = new Client('client', log1, pair.left)
+  var server = new Server('server', log2, pair.right)
   pair.left.connect()
 
-  return { active: active, passive: passive }
+  return { client: client, server: server }
 }
 
 function nextTick () {
@@ -35,29 +35,29 @@ function nextTick () {
 
 it('sends sync messages', function () {
   var test = createTest()
-  var passiveMessages = []
-  test.active.connection.on('message', function (msg) {
-    passiveMessages.push(msg)
+  var serverSent = []
+  test.client.connection.on('message', function (msg) {
+    serverSent.push(msg)
   })
-  var activeMessages = []
-  test.passive.connection.on('message', function (msg) {
-    activeMessages.push(msg)
+  var clientSent = []
+  test.server.connection.on('message', function (msg) {
+    clientSent.push(msg)
   })
 
-  test.active.log.add({ type: 'a' })
-  expect(activeMessages).toEqual([
+  test.client.log.add({ type: 'a' })
+  expect(clientSent).toEqual([
     ['sync', 1, { type: 'a' }, [3]]
   ])
-  expect(passiveMessages).toEqual([
+  expect(serverSent).toEqual([
     ['synced', 1]
   ])
 
-  test.passive.log.add({ type: 'b' })
-  expect(activeMessages).toEqual([
+  test.server.log.add({ type: 'b' })
+  expect(clientSent).toEqual([
     ['sync', 1, { type: 'a' }, [3]],
     ['synced', 2]
   ])
-  expect(passiveMessages).toEqual([
+  expect(serverSent).toEqual([
     ['synced', 1],
     ['sync', 2, { type: 'b' }, [4]]
   ])
@@ -66,99 +66,99 @@ it('sends sync messages', function () {
 it('synchronizes events', function () {
   var test = createTest()
 
-  test.active.log.add({ type: 'a' })
-  expect(events(test.passive.log)).toEqual([{ type: 'a' }])
-  expect(events(test.active.log)).toEqual(events(test.passive.log))
+  test.client.log.add({ type: 'a' })
+  expect(events(test.server.log)).toEqual([{ type: 'a' }])
+  expect(events(test.client.log)).toEqual(events(test.server.log))
 
-  test.passive.log.add({ type: 'b' })
-  expect(events(test.active.log)).toEqual([{ type: 'b' }, { type: 'a' }])
-  expect(events(test.active.log)).toEqual(events(test.passive.log))
+  test.server.log.add({ type: 'b' })
+  expect(events(test.client.log)).toEqual([{ type: 'b' }, { type: 'a' }])
+  expect(events(test.client.log)).toEqual(events(test.server.log))
 })
 
 it('remembers synced added', function () {
   var test = createTest()
-  expect(test.active.synced).toBe(0)
-  expect(test.active.otherSynced).toBe(0)
+  expect(test.client.synced).toBe(0)
+  expect(test.client.otherSynced).toBe(0)
 
-  test.active.log.add({ type: 'a' })
-  expect(test.active.synced).toBe(1)
-  expect(test.active.otherSynced).toBe(0)
+  test.client.log.add({ type: 'a' })
+  expect(test.client.synced).toBe(1)
+  expect(test.client.otherSynced).toBe(0)
 
-  test.passive.log.add({ type: 'b' })
-  expect(test.active.synced).toBe(1)
-  expect(test.active.otherSynced).toBe(2)
+  test.server.log.add({ type: 'b' })
+  expect(test.client.synced).toBe(1)
+  expect(test.client.otherSynced).toBe(2)
 })
 
 it('filters output events', function () {
   var test = createTest()
-  test.active.options.outFilter = function (event, meta) {
+  test.client.options.outFilter = function (event, meta) {
     expect(meta.created).toBeDefined()
     expect(meta.added).toBeDefined()
     return event.type === 'b'
   }
 
-  test.active.log.add({ type: 'a' })
-  expect(events(test.active.log)).toEqual([{ type: 'a' }])
-  expect(events(test.passive.log)).toEqual([])
+  test.client.log.add({ type: 'a' })
+  expect(events(test.client.log)).toEqual([{ type: 'a' }])
+  expect(events(test.server.log)).toEqual([])
 
-  test.active.log.add({ type: 'b' })
-  expect(events(test.active.log)).toEqual([{ type: 'b' }, { type: 'a' }])
-  expect(events(test.passive.log)).toEqual([{ type: 'b' }])
+  test.client.log.add({ type: 'b' })
+  expect(events(test.client.log)).toEqual([{ type: 'b' }, { type: 'a' }])
+  expect(events(test.server.log)).toEqual([{ type: 'b' }])
 })
 
 it('maps output events', function () {
   var test = createTest()
-  test.active.options.outMap = function (event, meta) {
+  test.client.options.outMap = function (event, meta) {
     expect(meta.created).toBeDefined()
     expect(meta.added).toBeDefined()
     return [{ type: event.type + '1' }, meta]
   }
 
-  test.active.log.add({ type: 'a' })
-  expect(events(test.active.log)).toEqual([{ type: 'a' }])
-  expect(events(test.passive.log)).toEqual([{ type: 'a1' }])
+  test.client.log.add({ type: 'a' })
+  expect(events(test.client.log)).toEqual([{ type: 'a' }])
+  expect(events(test.server.log)).toEqual([{ type: 'a1' }])
 })
 
 it('filters input events', function () {
   var test = createTest()
-  test.passive.options.inFilter = function (event, meta) {
+  test.server.options.inFilter = function (event, meta) {
     expect(meta.created).toBeDefined()
     return event.type === 'b'
   }
 
-  test.active.log.add({ type: 'a' })
-  expect(events(test.active.log)).toEqual([{ type: 'a' }])
-  expect(events(test.passive.log)).toEqual([])
+  test.client.log.add({ type: 'a' })
+  expect(events(test.client.log)).toEqual([{ type: 'a' }])
+  expect(events(test.server.log)).toEqual([])
 
-  test.active.log.add({ type: 'b' })
-  expect(events(test.active.log)).toEqual([{ type: 'b' }, { type: 'a' }])
-  expect(events(test.passive.log)).toEqual([{ type: 'b' }])
+  test.client.log.add({ type: 'b' })
+  expect(events(test.client.log)).toEqual([{ type: 'b' }, { type: 'a' }])
+  expect(events(test.server.log)).toEqual([{ type: 'b' }])
 })
 
 it('maps input events', function () {
   var test = createTest()
-  test.passive.options.inMap = function (event, meta) {
+  test.server.options.inMap = function (event, meta) {
     expect(meta.created).toBeDefined()
     return [{ type: event.type + '1' }, meta]
   }
 
-  test.active.log.add({ type: 'a' })
-  expect(events(test.active.log)).toEqual([{ type: 'a' }])
-  expect(events(test.passive.log)).toEqual([{ type: 'a1' }])
+  test.client.log.add({ type: 'a' })
+  expect(events(test.client.log)).toEqual([{ type: 'a' }])
+  expect(events(test.server.log)).toEqual([{ type: 'a1' }])
 })
 
 it('fixes created time', function () {
   var test = createTest()
-  test.active.timeFix = 100
+  test.client.timeFix = 100
 
-  test.active.log.add({ type: 'a' }, { created: [101] })
-  test.passive.log.add({ type: 'b' }, { created: [2] })
+  test.client.log.add({ type: 'a' }, { created: [101] })
+  test.server.log.add({ type: 'b' }, { created: [2] })
 
-  expect(test.active.log.store.created).toEqual([
+  expect(test.client.log.store.created).toEqual([
     [{ type: 'b' }, { created: [102], added: 2 }],
     [{ type: 'a' }, { created: [101], added: 1 }]
   ])
-  expect(test.passive.log.store.created).toEqual([
+  expect(test.server.log.store.created).toEqual([
     [{ type: 'b' }, { created: [2], added: 2 }],
     [{ type: 'a' }, { created: [1], added: 1 }]
   ])
@@ -166,11 +166,11 @@ it('fixes created time', function () {
 
 it('supports multiple events in sync', function () {
   var test = createTest()
-  test.passive.sendSync({ type: 'a' }, { created: [1], added: 1 },
+  test.server.sendSync({ type: 'a' }, { created: [1], added: 1 },
                         { type: 'b' }, { created: [2], added: 2 })
 
-  expect(test.active.otherSynced).toBe(2)
-  expect(test.active.log.store.created).toEqual([
+  expect(test.client.otherSynced).toBe(2)
+  expect(test.client.log.store.created).toEqual([
     [{ type: 'b' }, { created: [2], added: 2 }],
     [{ type: 'a' }, { created: [1], added: 1 }]
   ])
@@ -179,31 +179,31 @@ it('supports multiple events in sync', function () {
 it('synchronizes events on connect', function () {
   var test = createTest()
   return nextTick().then(function () {
-    test.active.log.add({ type: 'a' })
-    test.passive.log.add({ type: 'b' })
+    test.client.log.add({ type: 'a' })
+    test.server.log.add({ type: 'b' })
     return nextTick()
   }).then(function () {
-    test.active.connection.disconnect()
+    test.client.connection.disconnect()
 
-    test.active.log.add({ type: 'c' })
-    test.active.log.add({ type: 'd' })
-    test.passive.log.add({ type: 'e' })
+    test.client.log.add({ type: 'c' })
+    test.client.log.add({ type: 'd' })
+    test.server.log.add({ type: 'e' })
 
-    expect(test.active.synced).toBe(1)
-    expect(test.active.otherSynced).toBe(2)
+    expect(test.client.synced).toBe(1)
+    expect(test.client.otherSynced).toBe(2)
 
-    new PassiveSync('server2', test.passive.log, test.active.connection.other())
-    test.active.connection.connect()
+    new Server('server2', test.server.log, test.client.connection.other())
+    test.client.connection.connect()
 
     return nextTick()
   }).then(function () {
-    expect(events(test.active.log)).toEqual([
+    expect(events(test.client.log)).toEqual([
       { type: 'e' },
       { type: 'd' },
       { type: 'c' },
       { type: 'b' },
       { type: 'a' }
     ])
-    expect(events(test.active.log)).toEqual(events(test.passive.log))
+    expect(events(test.client.log)).toEqual(events(test.server.log))
   })
 })
