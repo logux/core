@@ -70,8 +70,8 @@ module.exports = {
  *
  * @param {Entry} entry Array with event and meta.
  *
- * @return {boolean} `false` if event with same `meta.created` was already
- *                   in store
+ * @return {Promise} Promise with `false` if event with same `meta.created`
+ *                   was already in store
  *
  * @name add
  * @function

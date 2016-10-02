@@ -70,15 +70,16 @@ it('support time array in created', function () {
 it('ignores event with same time', function () {
   var store = new MemoryStore()
 
-  var result1 = store.add([{ a: 1 }, { created: [1], added: [1] }])
-  expect(result1).toBeTruthy()
-
-  var result2 = store.add([{ a: 2 }, { created: [1], added: [2] }])
-  expect(result2).not.toBeTruthy()
-
-  return checkCreated(store, [
-    [{ a: 1 }, { created: [1], added: [1] }]
-  ])
+  return store.add([{ a: 1 }, { created: [1], added: [1] }])
+    .then(function (result1) {
+      expect(result1).toBeTruthy()
+      return store.add([{ a: 2 }, { created: [1], added: [2] }])
+    }).then(function (result2) {
+      expect(result2).toBeFalsy()
+      return checkCreated(store, [
+        [{ a: 1 }, { created: [1], added: [1] }]
+      ])
+    })
 })
 
 it('removes events', function () {

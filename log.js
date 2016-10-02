@@ -104,7 +104,7 @@ Log.prototype = {
    * @param {Event} event new event
    * @param {object} [meta] open structure for event metadata
    * @param {Time} meta.created event created time
-   * @return {boolean} Return `false` if event was already in log
+   * @return {Promise} Promise with `false` if event was already in log
    *
    * @example
    * removeButton.addEventListener('click', () => {
@@ -121,12 +121,11 @@ Log.prototype = {
     this.lastAdded += 1
     meta.added = this.lastAdded
 
-    var wasAdded = this.store.add([event, meta])
-
-    if (wasAdded) {
-      this.emitter.emit('event', event, meta)
-    }
-    return wasAdded
+    var emitter = this.emitter
+    return this.store.add([event, meta]).then(function (wasAdded) {
+      if (wasAdded) emitter.emit('event', event, meta)
+      return wasAdded
+    })
   },
 
   /**
