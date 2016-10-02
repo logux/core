@@ -106,3 +106,10 @@ it('ignores unknown event', function () {
     [{ }, { created: [1], added: 1 }]
   ])
 })
+
+it('returns current events state', function () {
+  var store = new MemoryStore()
+  var promise1 = checkCreated(store, [])
+  var promise2 = store.add([{ type: 'a' }, { created: [1], added: 1 }])
+  return Promise.all([promise1, promise2])
+})

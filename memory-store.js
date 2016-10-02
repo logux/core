@@ -26,9 +26,9 @@ MemoryStore.prototype = {
 
   get: function get (order) {
     if (order === 'created') {
-      return Promise.resolve({ entries: this.created })
+      return Promise.resolve({ entries: this.created.slice(0) })
     } else {
-      return Promise.resolve({ entries: this.added })
+      return Promise.resolve({ entries: this.added.slice(0) })
     }
   },
 
