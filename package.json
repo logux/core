@@ -2,7 +2,9 @@
   "name": "logux-core",
   "version": "0.0.0",
   "description": "Log for Logux with default timer and test tools",
-  "keywords": [],
+  "keywords": [
+    "logux"
+  ],
   "author": "Andrey Sitnik <andrey@sitnik.ru>",
   "license": "MIT",
   "repository": "logux/logux-core",
