@@ -96,7 +96,7 @@ function BaseSync (host, log, connection, options) {
 
   this.timeFix = 0
   this.syncing = 0
-  this.received = 0
+  this.received = { }
 
   /**
    * Latest current log `added` time, which was successfully synchronized.
@@ -333,7 +333,8 @@ BaseSync.prototype = {
       this.setState('wait')
       return
     }
-    if (meta.added === this.received) {
+    if (this.received[meta.added]) {
+      delete this.received[meta.added]
       return
     }
     if (this.options.outFilter && !this.options.outFilter(event, meta)) {

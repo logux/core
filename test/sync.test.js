@@ -44,35 +44,41 @@ it('sends sync messages', function () {
     clientSent.push(msg)
   })
 
-  test.client.log.add({ type: 'a' })
-  expect(clientSent).toEqual([
-    ['sync', 1, { type: 'a' }, [3]]
-  ])
-  expect(serverSent).toEqual([
-    ['synced', 1]
-  ])
-
-  test.server.log.add({ type: 'b' })
-  expect(clientSent).toEqual([
-    ['sync', 1, { type: 'a' }, [3]],
-    ['synced', 2]
-  ])
-  expect(serverSent).toEqual([
-    ['synced', 1],
-    ['sync', 2, { type: 'b' }, [4]]
-  ])
+  return test.client.log.add({ type: 'a' }).then(function () {
+    expect(clientSent).toEqual([
+      ['sync', 1, { type: 'a' }, [3]]
+    ])
+    return nextTick()
+  }).then(function () {
+    expect(serverSent).toEqual([
+      ['synced', 1]
+    ])
+    return test.server.log.add({ type: 'b' })
+  }).then(function () {
+    return nextTick()
+  }).then(function () {
+    expect(clientSent).toEqual([
+      ['sync', 1, { type: 'a' }, [3]],
+      ['synced', 2]
+    ])
+    expect(serverSent).toEqual([
+      ['synced', 1],
+      ['sync', 2, { type: 'b' }, [4]]
+    ])
+  })
 })
 
 it('synchronizes events', function () {
   var test = createTest()
 
-  test.client.log.add({ type: 'a' })
-  expect(events(test.server.log)).toEqual([{ type: 'a' }])
-  expect(events(test.client.log)).toEqual(events(test.server.log))
-
-  test.server.log.add({ type: 'b' })
-  expect(events(test.client.log)).toEqual([{ type: 'b' }, { type: 'a' }])
-  expect(events(test.client.log)).toEqual(events(test.server.log))
+  test.client.log.add({ type: 'a' }).then(function () {
+    expect(events(test.server.log)).toEqual([{ type: 'a' }])
+    expect(events(test.client.log)).toEqual(events(test.server.log))
+    return test.server.log.add({ type: 'b' })
+  }).then(function () {
+    expect(events(test.client.log)).toEqual([{ type: 'b' }, { type: 'a' }])
+    expect(events(test.client.log)).toEqual(events(test.server.log))
+  })
 })
 
 it('remembers synced added', function () {
@@ -80,13 +86,18 @@ it('remembers synced added', function () {
   expect(test.client.synced).toBe(0)
   expect(test.client.otherSynced).toBe(0)
 
-  test.client.log.add({ type: 'a' })
-  expect(test.client.synced).toBe(1)
-  expect(test.client.otherSynced).toBe(0)
-
-  test.server.log.add({ type: 'b' })
-  expect(test.client.synced).toBe(1)
-  expect(test.client.otherSynced).toBe(2)
+  return test.client.log.add({ type: 'a' }).then(function () {
+    return nextTick()
+  }).then(function () {
+    expect(test.client.synced).toBe(1)
+    expect(test.client.otherSynced).toBe(0)
+    return test.server.log.add({ type: 'b' })
+  }).then(function () {
+    return nextTick()
+  }).then(function () {
+    expect(test.client.synced).toBe(1)
+    expect(test.client.otherSynced).toBe(2)
+  })
 })
 
 it('filters output events', function () {
@@ -97,13 +108,14 @@ it('filters output events', function () {
     return event.type === 'b'
   }
 
-  test.client.log.add({ type: 'a' })
-  expect(events(test.client.log)).toEqual([{ type: 'a' }])
-  expect(events(test.server.log)).toEqual([])
-
-  test.client.log.add({ type: 'b' })
-  expect(events(test.client.log)).toEqual([{ type: 'b' }, { type: 'a' }])
-  expect(events(test.server.log)).toEqual([{ type: 'b' }])
+  return test.client.log.add({ type: 'a' }).then(function () {
+    expect(events(test.client.log)).toEqual([{ type: 'a' }])
+    expect(events(test.server.log)).toEqual([])
+    return test.client.log.add({ type: 'b' })
+  }).then(function () {
+    expect(events(test.client.log)).toEqual([{ type: 'b' }, { type: 'a' }])
+    expect(events(test.server.log)).toEqual([{ type: 'b' }])
+  })
 })
 
 it('maps output events', function () {
@@ -114,9 +126,10 @@ it('maps output events', function () {
     return [{ type: event.type + '1' }, meta]
   }
 
-  test.client.log.add({ type: 'a' })
-  expect(events(test.client.log)).toEqual([{ type: 'a' }])
-  expect(events(test.server.log)).toEqual([{ type: 'a1' }])
+  return test.client.log.add({ type: 'a' }).then(function () {
+    expect(events(test.client.log)).toEqual([{ type: 'a' }])
+    expect(events(test.server.log)).toEqual([{ type: 'a1' }])
+  })
 })
 
 it('filters input events', function () {
@@ -126,13 +139,14 @@ it('filters input events', function () {
     return event.type === 'b'
   }
 
-  test.client.log.add({ type: 'a' })
-  expect(events(test.client.log)).toEqual([{ type: 'a' }])
-  expect(events(test.server.log)).toEqual([])
-
-  test.client.log.add({ type: 'b' })
-  expect(events(test.client.log)).toEqual([{ type: 'b' }, { type: 'a' }])
-  expect(events(test.server.log)).toEqual([{ type: 'b' }])
+  return test.client.log.add({ type: 'a' }).then(function () {
+    expect(events(test.client.log)).toEqual([{ type: 'a' }])
+    expect(events(test.server.log)).toEqual([])
+    return test.client.log.add({ type: 'b' })
+  }).then(function () {
+    expect(events(test.client.log)).toEqual([{ type: 'b' }, { type: 'a' }])
+    expect(events(test.server.log)).toEqual([{ type: 'b' }])
+  })
 })
 
 it('maps input events', function () {
@@ -142,55 +156,62 @@ it('maps input events', function () {
     return [{ type: event.type + '1' }, meta]
   }
 
-  test.client.log.add({ type: 'a' })
-  expect(events(test.client.log)).toEqual([{ type: 'a' }])
-  expect(events(test.server.log)).toEqual([{ type: 'a1' }])
+  return test.client.log.add({ type: 'a' }).then(function () {
+    expect(events(test.client.log)).toEqual([{ type: 'a' }])
+    expect(events(test.server.log)).toEqual([{ type: 'a1' }])
+  })
 })
 
 it('fixes created time', function () {
   var test = createTest()
   test.client.timeFix = 100
 
-  test.client.log.add({ type: 'a' }, { created: [101] })
-  test.server.log.add({ type: 'b' }, { created: [2] })
-
-  expect(test.client.log.store.created).toEqual([
-    [{ type: 'b' }, { created: [102], added: 2 }],
-    [{ type: 'a' }, { created: [101], added: 1 }]
-  ])
-  expect(test.server.log.store.created).toEqual([
-    [{ type: 'b' }, { created: [2], added: 2 }],
-    [{ type: 'a' }, { created: [1], added: 1 }]
-  ])
+  return Promise.all([
+    test.client.log.add({ type: 'a' }, { created: [101] }),
+    test.server.log.add({ type: 'b' }, { created: [2] })
+  ]).then(function () {
+    expect(test.client.log.store.created).toEqual([
+      [{ type: 'b' }, { created: [102], added: 2 }],
+      [{ type: 'a' }, { created: [101], added: 1 }]
+    ])
+    expect(test.server.log.store.created).toEqual([
+      [{ type: 'b' }, { created: [2], added: 1 }],
+      [{ type: 'a' }, { created: [1], added: 2 }]
+    ])
+  })
 })
 
 it('supports multiple events in sync', function () {
   var test = createTest()
   test.server.sendSync({ type: 'a' }, { created: [1], added: 1 },
-                        { type: 'b' }, { created: [2], added: 2 })
+                       { type: 'b' }, { created: [2], added: 2 })
 
-  expect(test.client.otherSynced).toBe(2)
-  expect(test.client.log.store.created).toEqual([
-    [{ type: 'b' }, { created: [2], added: 2 }],
-    [{ type: 'a' }, { created: [1], added: 1 }]
-  ])
+  return nextTick().then(function () {
+    expect(test.client.otherSynced).toBe(2)
+    expect(test.client.log.store.created).toEqual([
+      [{ type: 'b' }, { created: [2], added: 2 }],
+      [{ type: 'a' }, { created: [1], added: 1 }]
+    ])
+  })
 })
 
 it('synchronizes events on connect', function () {
   var test = createTest()
-  return nextTick().then(function () {
-    test.client.log.add({ type: 'a' })
+  return Promise.all([
+    test.client.log.add({ type: 'a' }),
     test.server.log.add({ type: 'b' })
+  ]).then(function () {
     return nextTick()
   }).then(function () {
     test.client.connection.disconnect()
-
-    test.client.log.add({ type: 'c' })
-    test.client.log.add({ type: 'd' })
-    test.server.log.add({ type: 'e' })
-
+    return Promise.all([
+      test.client.log.add({ type: 'c' }),
+      test.client.log.add({ type: 'd' }),
+      test.server.log.add({ type: 'e' })
+    ])
+  }).then(function () {
     expect(test.client.synced).toBe(1)
-    expect(test.client.otherSynced).toBe(2)
+    expect(test.client.otherSynced).toBe(1)
 
     new Server('server2', test.server.log, test.client.connection.other())
     test.client.connection.connect()

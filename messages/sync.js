@@ -27,6 +27,7 @@ module.exports = {
   },
 
   syncMessage: function syncMessage (added) {
+    var promises = []
     for (var i = 1; i < arguments.length - 1; i += 2) {
       var event = arguments[i]
       var meta = { created: arguments[i + 1] }
@@ -42,12 +43,15 @@ module.exports = {
         meta = changed[1]
       }
 
-      this.received = this.log.lastAdded + 1
-      this.log.add(event, meta)
+      this.received[this.log.lastAdded + 1] = true
+      promises.push(this.log.add(event, meta))
     }
 
-    if (this.otherSynced < added) this.otherSynced = added
-    this.sendSynced(added)
+    var sync = this
+    Promise.all(promises).then(function () {
+      if (sync.otherSynced < added) sync.otherSynced = added
+      sync.sendSynced(added)
+    })
   },
 
   syncedMessage: function syncedMessage (synced) {

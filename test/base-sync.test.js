@@ -137,8 +137,8 @@ it('has state', function () {
   other.send(['connected', sync.protocol, 'server', [0, 0]])
   return nextTick().then(function () {
     expect(sync.state).toEqual('synchronized')
-
-    sync.log.add({ type: 'a' })
+    return sync.log.add({ type: 'a' })
+  }).then(function () {
     expect(sync.state).toEqual('sending')
 
     other.send(['synced', 1])
@@ -147,7 +147,8 @@ it('has state', function () {
     sync.connection.disconnect()
     expect(sync.state).toEqual('disconnected')
 
-    sync.log.add({ type: 'b' })
+    return sync.log.add({ type: 'b' })
+  }).then(function () {
     expect(sync.state).toEqual('wait')
 
     sync.connection.connect()
