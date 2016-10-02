@@ -171,3 +171,11 @@ it('has state', function () {
     ])
   })
 })
+
+it('has synced and otherSynced option', function () {
+  var log = { on: function () { } }
+  var con = { on: function () { } }
+  var sync = new BaseSync('host', log, con, { synced: 1, otherSynced: 2 })
+  expect(sync.synced).toBe(1)
+  expect(sync.otherSynced).toBe(2)
+})

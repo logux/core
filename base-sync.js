@@ -17,26 +17,31 @@ var BEFORE_AUTH = ['connect', 'connected', 'error']
  * @param {Log} log Logux log instance to sync with other node log.
  * @param {Connection} connection Connection to other node.
  * @param {object} [options] Synchronization options.
- * @param {object} [option.credentials] This node credentials.
- *                                      For example, access token.
- * @param {authCallback} [option.auth] Function to check
- *                                     other node credentials.
+ * @param {object} [options.credentials] This node credentials.
+ *                                       For example, access token.
+ * @param {authCallback} [options.auth] Function to check
+ *                                      other node credentials.
  * @param {boolean} [options.fixTime=false] Enables log’s event time fixes
  *                                          to prevent problems
  *                                          because of wrong client time zone.
- * @param {number} [option.timeout=0] Timeout in milliseconds
- *                                    to disconnect connection.
- * @param {number} [option.ping=0] Milliseconds since last message to test
- *                                 connection by sending ping.
- * @param {filter} [option.inFilter] Function to filter events
- *                                   from other client. Best place
- *                                   for access control.
- * @param {mapper} [option.inMap] Map function to change event
- *                                before put it to current log.
- * @param {filter} [option.outFilter] Filter function to select events
- *                                    to synchronization.
- * @param {mapper} [option.outMap] Map function to change event
- *                                 before sending it to other client.
+ * @param {number} [options.timeout=0] Timeout in milliseconds
+ *                                     to disconnect connection.
+ * @param {number} [options.ping=0] Milliseconds since last message to test
+ *                                  connection by sending ping.
+ * @param {filter} [options.inFilter] Function to filter events
+ *                                    from other client. Best place
+ *                                    for access control.
+ * @param {mapper} [options.inMap] Map function to change event
+ *                                 before put it to current log.
+ * @param {filter} [options.outFilter] Filter function to select events
+ *                                     to synchronization.
+ * @param {mapper} [options.outMap] Map function to change event
+ *                                  before sending it to other client.
+ * @param {number} [options.synced=0] Events with lower `added` time in current
+ *                                    log will not be synchronized.
+ * @param {number} [options.otherSynced=0] Events with lower `added` time
+ *                                         in other node’s log
+ *                                         will not be synchronized.
  *
  * @abstract
  * @class
@@ -93,8 +98,20 @@ function BaseSync (host, log, connection, options) {
   this.syncing = 0
   this.received = 0
 
-  this.synced = 0
-  this.otherSynced = 0
+  /**
+   * Latest current log `added` time, which was successfully synchronized.
+   * If you save log to file, you can remember this option too for faster
+   * synchronization on next connection.
+   * @type {number}
+   */
+  this.synced = this.options.synced || 0
+  /**
+   * Latest other node’s log `added` time, which was successfully synchronized.
+   * If you save log to file, you can remember this option too for faster
+   * synchronization on next connection.
+   * @type {number}
+   */
+  this.otherSynced = this.options.otherSynced || 0
 
   /**
    * Current synchronization state.

@@ -40,3 +40,12 @@ it('throws on fixTime option in PassiveSync', function () {
     new PassiveSync('a', new NanoEvents(), new NanoEvents(), { fixTime: true })
   }).toThrowError(/fixTime/)
 })
+
+it('throws on synced ot otherSynced option in PassiveSync', function () {
+  expect(function () {
+    new PassiveSync('a', new NanoEvents(), new NanoEvents(), {
+      otherSynced: 1,
+      synced: 1
+    })
+  }).toThrowError(/synced/)
+})
