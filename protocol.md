@@ -223,7 +223,7 @@ Wrong authentication:
 
 ```ts
 CONNECTED
-CLIENT > ["connect", [0, 0], "client1", { token: "wrong" }]
+CLIENT > ["connect", [0, 0], "client1", "wrongToken"]
 SERVER < ["error", "Wrong credentials", "auth"]
 DISCONNECTED
 ```
@@ -232,7 +232,7 @@ Correct synchronization:
 
 ```ts
 CONNECTED
-CLIENT > ["connect", [0, 0], "client1", 0, { token: "correct" }]
+CLIENT > ["connect", [0, 0], "client1", 0, "token"]
 SERVER < ["connected", [0, 0], "server", [1475316481050, 1475316482879]]
 
 CLIENT > ["ping", 0]
@@ -246,7 +246,7 @@ SERVER < ["pong", 1]
 DISCONNECTED
 
 CONNECTED
-CLIENT > ["connect", [0, 0], "client1", 1, { token: "correct" }]
+CLIENT > ["connect", [0, 0], "client1", 1, "token"]
 SERVER < ["connected", [0, 0], "server", [1475316659892, 1475316660687]]
 SERVER < ["sync", 2, { type: 'b' }, [1475316641759, "client2", 0]]
 CLIENT > ["synced", 2]
@@ -257,7 +257,7 @@ so `added` time could be different:
 
 ```ts
 CONNECTED
-CLIENT > ["connect", [0, 0], "client1", 130, { token: "correct" }]
+CLIENT > ["connect", [0, 0], "client1", 130, "token"]
 SERVER < ["connected", [0, 0], "server", [1475316168379, 1475316169987]]
 SERVER < ["sync", 132, { type: 'a' }, [1475316158300, "client2", 0],
                        { type: 'b' }, [1475316158300, "client2", 1]]
