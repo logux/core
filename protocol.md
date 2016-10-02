@@ -49,6 +49,10 @@ First string in message array is a message type. Possible types:
 If client received unknown type, it should send `protocol` error
 and continue communication.
 
+Protocol design has no client and server roles. But in most real cases
+client will send `connect` and `ping`. Server will send `connected` and `pong`.
+Both will send `error`, `sync` and `synced`.
+
 [`connected`]: #connected
 [`connect`]:   #connect
 [`synced`]:    #synced
@@ -101,6 +105,8 @@ Fifth position is optional and contains credentials data.
 It could be in any type. Receiver may check credentials data.
 On wrong credentials data receiver may send `auth` error and close connection.
 
+In most cases client will initiate connection, so client will send `connect`.
+
 [protocol version]: #versions
 
 ## `connected`
@@ -133,6 +139,8 @@ send `auth` error and close connection.
 Right after this message receiver should send [`sync`] message with all new events
 since last connection (all events on first connection).
 
+In most cases client will initiate connection, so server will answer `connected`.
+
 ## `ping`
 
 Client could send `ping` message to check connection.
@@ -149,6 +157,8 @@ to use in next [`connect`] message.
 
 Receiver should send [`pong`] message as soon as possible.
 
+In most cases client will send `ping`.
+
 ## `pong`
 
 `pong` message is a answer to [`ping`] message.
@@ -161,6 +171,8 @@ Receiver should send [`pong`] message as soon as possible.
 ```
 
 Message array contains sender last `added` too.
+
+In most cases server will send `pong`.
 
 ## `sync`
 
