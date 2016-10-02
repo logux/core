@@ -240,8 +240,8 @@ const log = new Log({ timer, store: new MemoryStore() })
 
 Store could be a any object with 3 methods:
 
-* `add(entry)` puts new log entry to store. Returns `false` if event with same
-  `created` time was already in log.
+* `add(entry)` puts new log entry to store. Returns Promise `false` if event
+  with same `created` time was already in log.
 * `remove(created)` removes event by event creation time.
 * `get()` returns Promise to load first events page. Events page is a object
   with entries array in `page.entries` and `page.next` function with next page

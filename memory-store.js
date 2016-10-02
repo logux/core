@@ -41,13 +41,13 @@ MemoryStore.prototype = {
       var compare = compareTime(time, list[i][1].created)
       if (compare > 0) {
         list.splice(i, 0, entry)
-        return true
+        return Promise.resolve(true)
       } else if (compare === 0) {
-        return false
+        return Promise.resolve(false)
       }
     }
     list.push(entry)
-    return true
+    return Promise.resolve(true)
   },
 
   search: function search (time) {
