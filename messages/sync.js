@@ -27,27 +27,44 @@ module.exports = {
   },
 
   syncMessage: function syncMessage (added) {
+    var sync = this
     var promises = []
     for (var i = 1; i < arguments.length - 1; i += 2) {
       var event = arguments[i]
       var meta = { created: arguments[i + 1] }
 
-      if (this.options.inFilter && !this.options.inFilter(event, meta)) {
-        return
+      var process = Promise.resolve([event, meta])
+      if (this.options.inFilter) {
+        process = process.then(function (data) {
+          return sync.options.inFilter(data[0], data[1])
+            .then(function (result) {
+              if (result) {
+                return data
+              } else {
+                return false
+              }
+            })
+        })
       }
 
-      if (this.timeFix) meta.created = fixTime(meta.created, this.timeFix)
-      if (this.options.inMap) {
-        var changed = this.options.inMap(event, meta)
-        event = changed[0]
-        meta = changed[1]
-      }
+      process.then(function (data) {
+        if (!data) return false
 
-      this.received[this.log.lastAdded + 1] = true
-      promises.push(this.log.add(event, meta))
+        if (sync.timeFix) meta.created = fixTime(meta.created, sync.timeFix)
+        if (sync.options.inMap) {
+          return sync.options.inMap(data[0], data[1])
+        } else {
+          return data
+        }
+      }).then(function (changed) {
+        if (!changed) return
+        sync.received[sync.log.lastAdded + 1] = true
+        return sync.log.add(changed[0], changed[1])
+      })
+
+      promises.push(process)
     }
 
-    var sync = this
     Promise.all(promises).then(function () {
       if (sync.otherSynced < added) sync.otherSynced = added
       sync.sendSynced(added)

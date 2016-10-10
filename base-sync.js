@@ -9,6 +9,16 @@ var sync = require('./messages/sync')
 
 var BEFORE_AUTH = ['connect', 'connected', 'error']
 
+function syncMappedEvent (sync, event, meta) {
+  if (sync.options.outMap) {
+    sync.options.outMap(event, meta).then(function (changed) {
+      sync.sendSync(changed[0], changed[1])
+    })
+  } else {
+    sync.sendSync(event, meta)
+  }
+}
+
 /**
  * Base methods for synchronization nodes. Client and server nodes
  * are based on this module.
@@ -337,17 +347,14 @@ BaseSync.prototype = {
       delete this.received[meta.added]
       return
     }
-    if (this.options.outFilter && !this.options.outFilter(event, meta)) {
-      return
+    if (this.options.outFilter) {
+      var sync = this
+      this.options.outFilter(event, meta).then(function (result) {
+        if (result) syncMappedEvent(sync, event, meta)
+      })
+    } else {
+      syncMappedEvent(this, event, meta)
     }
-
-    if (this.options.outMap) {
-      var changed = this.options.outMap(event, meta)
-      event = changed[0]
-      meta = changed[1]
-    }
-
-    this.sendSync(event, meta)
   },
 
   error: function error (desc, type, received) {
@@ -436,12 +443,13 @@ module.exports = BaseSync
  * @callback filter
  * @param {Event} event New event from log.
  * @param {Meta} meta New event metadata.
- * @return {boolean} Should event be synchronized with other log.
+ * @return {Promise} Promise with `true` if event be synchronized
+ *                   with other log.
  */
 
 /**
  * @callback mapper
  * @param {Event} event New event from log.
  * @param {Meta} meta New event metadata.
- * @return {Entry} Array with changed event and changed metadata.
+ * @return {Promise} Promise with array of changed event and changed metadata.
  */

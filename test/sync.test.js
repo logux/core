@@ -71,10 +71,14 @@ it('sends sync messages', function () {
 it('synchronizes events', function () {
   var test = createTest()
 
-  test.client.log.add({ type: 'a' }).then(function () {
+  return test.client.log.add({ type: 'a' }).then(function () {
+    return nextTick()
+  }).then(function () {
     expect(events(test.server.log)).toEqual([{ type: 'a' }])
     expect(events(test.client.log)).toEqual(events(test.server.log))
     return test.server.log.add({ type: 'b' })
+  }).then(function () {
+    return nextTick()
   }).then(function () {
     expect(events(test.client.log)).toEqual([{ type: 'b' }, { type: 'a' }])
     expect(events(test.client.log)).toEqual(events(test.server.log))
@@ -105,13 +109,17 @@ it('filters output events', function () {
   test.client.options.outFilter = function (event, meta) {
     expect(meta.created).toBeDefined()
     expect(meta.added).toBeDefined()
-    return event.type === 'b'
+    return Promise.resolve(event.type === 'b')
   }
 
   return test.client.log.add({ type: 'a' }).then(function () {
+    return nextTick()
+  }).then(function () {
     expect(events(test.client.log)).toEqual([{ type: 'a' }])
     expect(events(test.server.log)).toEqual([])
     return test.client.log.add({ type: 'b' })
+  }).then(function () {
+    return nextTick()
   }).then(function () {
     expect(events(test.client.log)).toEqual([{ type: 'b' }, { type: 'a' }])
     expect(events(test.server.log)).toEqual([{ type: 'b' }])
@@ -123,10 +131,12 @@ it('maps output events', function () {
   test.client.options.outMap = function (event, meta) {
     expect(meta.created).toBeDefined()
     expect(meta.added).toBeDefined()
-    return [{ type: event.type + '1' }, meta]
+    return Promise.resolve([{ type: event.type + '1' }, meta])
   }
 
   return test.client.log.add({ type: 'a' }).then(function () {
+    return nextTick()
+  }).then(function () {
     expect(events(test.client.log)).toEqual([{ type: 'a' }])
     expect(events(test.server.log)).toEqual([{ type: 'a1' }])
   })
@@ -136,13 +146,17 @@ it('filters input events', function () {
   var test = createTest()
   test.server.options.inFilter = function (event, meta) {
     expect(meta.created).toBeDefined()
-    return event.type === 'b'
+    return Promise.resolve(event.type === 'b')
   }
 
   return test.client.log.add({ type: 'a' }).then(function () {
+    return nextTick()
+  }).then(function () {
     expect(events(test.client.log)).toEqual([{ type: 'a' }])
     expect(events(test.server.log)).toEqual([])
     return test.client.log.add({ type: 'b' })
+  }).then(function () {
+    return nextTick()
   }).then(function () {
     expect(events(test.client.log)).toEqual([{ type: 'b' }, { type: 'a' }])
     expect(events(test.server.log)).toEqual([{ type: 'b' }])
@@ -153,10 +167,12 @@ it('maps input events', function () {
   var test = createTest()
   test.server.options.inMap = function (event, meta) {
     expect(meta.created).toBeDefined()
-    return [{ type: event.type + '1' }, meta]
+    return Promise.resolve([{ type: event.type + '1' }, meta])
   }
 
   return test.client.log.add({ type: 'a' }).then(function () {
+    return nextTick()
+  }).then(function () {
     expect(events(test.client.log)).toEqual([{ type: 'a' }])
     expect(events(test.server.log)).toEqual([{ type: 'a1' }])
   })
@@ -170,6 +186,8 @@ it('fixes created time', function () {
     test.client.log.add({ type: 'a' }, { created: [101] }),
     test.server.log.add({ type: 'b' }, { created: [2] })
   ]).then(function () {
+    return nextTick()
+  }).then(function () {
     expect(test.client.log.store.created).toEqual([
       [{ type: 'b' }, { created: [102], added: 2 }],
       [{ type: 'a' }, { created: [101], added: 1 }]
