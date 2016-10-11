@@ -3,6 +3,7 @@ module.exports = {
   sendPing: function sendPing () {
     this.startTimeout()
     this.send(['ping', this.log.lastAdded])
+    if (this.pingTimeout) clearTimeout(this.pingTimeout)
   },
 
   pingMessage: function pingMessage (synced) {

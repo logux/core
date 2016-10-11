@@ -81,9 +81,6 @@ function BaseSync (host, log, connection, options) {
   if (this.options.ping && !this.options.timeout) {
     throw new Error('You must set timeout option to use ping')
   }
-  if (this.options.ping && this.options.ping < 2 * this.options.timeout) {
-    throw new Error('Ping should be at least 2 times longer than timeout')
-  }
 
   /**
    * Is synchronization in process.
@@ -144,8 +141,9 @@ function BaseSync (host, log, connection, options) {
   this.state = 'disconnected'
   if (this.log.lastAdded > this.synced) this.state = 'wait'
 
-  this.throwsError = true
   this.emitter = new NanoEvents()
+  this.timeouts = []
+  this.throwsError = true
 
   this.unbind = []
   var sync = this
@@ -374,24 +372,24 @@ BaseSync.prototype = {
 
   startTimeout: function startTimeout () {
     if (!this.options.timeout) return
-    this.endTimeout()
 
     var ms = this.options.timeout
     var sync = this
-    this.lastTimeout = setTimeout(function () {
+    var timeout = setTimeout(function () {
       var desc = 'A timeout was riched (' + ms + 'ms)'
       if (sync.connected) {
         sync.sendError(desc, 'protocol')
         sync.connection.disconnect()
       }
       sync.error(desc, 'connection', false)
-    }, this.options.timeout)
+    }, ms)
+
+    this.timeouts.push(timeout)
   },
 
   endTimeout: function endTimeout () {
-    if (this.lastTimeout) {
-      clearTimeout(this.lastTimeout)
-      this.lastTimeout = false
+    if (this.timeouts.length > 0) {
+      clearTimeout(this.timeouts.shift())
     }
   },
 

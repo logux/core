@@ -34,12 +34,6 @@ it('throws on ping and no timeout options', function () {
   }).toThrowError(/set timeout option/)
 })
 
-it('throws on small ping', function () {
-  expect(function () {
-    new Client('host', null, null, { ping: 1000, timeout: 1000 })
-  }).toThrowError(/longer than timeout/)
-})
-
 it('answers pong on ping', function () {
   var test = initTest()
   test.right.send(['ping', 1])
@@ -86,5 +80,12 @@ it('sends ping on idle connection', function () {
       ['ping', 1],
       ['error', 'A timeout was riched (100ms)', 'protocol']
     ])
+  })
+})
+
+it('sends only one ping if timeout is bigger than ping', function () {
+  var test = initTest({ ping: 100, timeout: 300 })
+  return wait(250).then(function () {
+    expect(test.sent).toEqual([['ping', 1]])
   })
 })

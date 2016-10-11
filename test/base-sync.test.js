@@ -17,6 +17,12 @@ function nextTick () {
   })
 }
 
+function wait (ms) {
+  return new Promise(function (resolve) {
+    setTimeout(resolve, ms)
+  })
+}
+
 it('saves all arguments', function () {
   var log = { on: function () { } }
   var connection = { on: function () { } }
@@ -179,4 +185,23 @@ it('has synced and otherSynced option', function () {
   var sync = new BaseSync('host', log, con, { synced: 1, otherSynced: 2 })
   expect(sync.synced).toBe(1)
   expect(sync.otherSynced).toBe(2)
+})
+
+it('has separated timeouts', function () {
+  var log = { on: function () { } }
+  var con = { on: function () { } }
+  var sync = new BaseSync('host', log, con, { timeout: 100 })
+
+  var error
+  sync.catch(function (e) {
+    error = e
+  })
+
+  sync.startTimeout()
+  return wait(60).then(function () {
+    sync.startTimeout()
+    return wait(60)
+  }).then(function () {
+    expect(error.message).toContain('timeout')
+  })
 })
