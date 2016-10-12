@@ -2,15 +2,15 @@ var createTestTimer = require('logux-core').createTestTimer
 var MemoryStore = require('logux-core').MemoryStore
 var Log = require('logux-core').Log
 
+var ClientSync = require('../client-sync')
+var ServerSync = require('../server-sync')
 var LocalPair = require('../local-pair')
-var Server = require('../server')
-var Client = require('../client')
 
 function createTest () {
   var log = new Log({ store: new MemoryStore(), timer: createTestTimer() })
   var pair = new LocalPair()
-  var client = new Client('client', log, pair.left)
-  var server = new Server('server', log, pair.right)
+  var client = new ClientSync('client', log, pair.left)
+  var server = new ServerSync('server', log, pair.right)
 
   client.catch(function () { })
   server.catch(function () { })
@@ -215,7 +215,7 @@ it('uses timeout between connect and connected', function () {
 
   var log = new Log({ store: new MemoryStore(), timer: createTestTimer() })
   var pair = new LocalPair()
-  var client = new Client('client', log, pair.left, { timeout: 1000 })
+  var client = new ClientSync('client', log, pair.left, { timeout: 1000 })
 
   var error
   client.catch(function (err) {

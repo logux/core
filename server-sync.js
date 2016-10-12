@@ -31,16 +31,16 @@ var BaseSync = require('./base-sync')
  *                                  before sending it to other client.
  *
  * @example
- * import { Server } from 'logux-sync'
+ * import { ServerSync } from 'logux-sync'
  * startServer(ws => {
  *   const connection = new WSServerConnection(ws)
- *   const sync = new Server('server' + id, log, connection)
+ *   const sync = new ServerSync('server' + id, log, connection)
  * })
  *
  * @extends BaseSync
  * @class
  */
-function Server (host, log, connection, options) {
+function ServerSync (host, log, connection, options) {
   BaseSync.call(this, host, log, connection, options)
   if (this.options.fixTime) {
     throw new Error(
@@ -52,7 +52,7 @@ function Server (host, log, connection, options) {
   }
 }
 
-Server.prototype = {
+ServerSync.prototype = {
 
   onConnect: function onConnect () {
     BaseSync.prototype.onConnect.call(this)
@@ -71,6 +71,6 @@ Server.prototype = {
 
 }
 
-Server.prototype = assign({ }, BaseSync.prototype, Server.prototype)
+ServerSync.prototype = assign({ }, BaseSync.prototype, ServerSync.prototype)
 
-module.exports = Server
+module.exports = ServerSync

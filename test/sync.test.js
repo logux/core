@@ -2,9 +2,9 @@ var createTestTimer = require('logux-core').createTestTimer
 var MemoryStore = require('logux-core').MemoryStore
 var Log = require('logux-core').Log
 
+var ClientSync = require('../client-sync')
+var ServerSync = require('../server-sync')
 var LocalPair = require('../local-pair')
-var Server = require('../server')
-var Client = require('../client')
 
 function events (log) {
   return log.store.created.map(function (entry) {
@@ -18,8 +18,8 @@ function createTest () {
   var log2 = new Log({ store: new MemoryStore(), timer: timer })
   var pair = new LocalPair()
 
-  var client = new Client('client', log1, pair.left)
-  var server = new Server('server', log2, pair.right)
+  var client = new ClientSync('client', log1, pair.left)
+  var server = new ServerSync('server', log2, pair.right)
   pair.left.connect()
 
   return { client: client, server: server }
@@ -231,7 +231,7 @@ it('synchronizes events on connect', function () {
     expect(test.client.synced).toBe(1)
     expect(test.client.otherSynced).toBe(1)
 
-    new Server('server2', test.server.log, test.client.connection.other())
+    new ServerSync('server2', test.server.log, test.client.connection.other())
     test.client.connection.connect()
 
     return nextTick()

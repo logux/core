@@ -39,18 +39,18 @@ var BaseSync = require('./base-sync')
  *                                         will not be synchronized.
  *
  * @example
- * import { Client } from 'logux-sync'
+ * import { ClientSync } from 'logux-sync'
  * const connection = new WebSocketsConnection(destination)
- * const sync = new Client('user' + id, log, connection)
+ * const sync = new ClientSync('user' + id, log, connection)
  *
  * @extends BaseSync
  * @class
  */
-function Client (host, log, connection, options) {
+function ClientSync (host, log, connection, options) {
   BaseSync.call(this, host, log, connection, options)
 }
 
-Client.prototype = {
+ClientSync.prototype = {
 
   onConnect: function onConnect () {
     BaseSync.prototype.onConnect.apply(this, arguments)
@@ -59,6 +59,6 @@ Client.prototype = {
 
 }
 
-Client.prototype = assign({ }, BaseSync.prototype, Client.prototype)
+ClientSync.prototype = assign({ }, BaseSync.prototype, ClientSync.prototype)
 
-module.exports = Client
+module.exports = ClientSync
