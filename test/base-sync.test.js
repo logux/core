@@ -50,7 +50,7 @@ it('unbind all listeners on destroy', function () {
   var sync = createSync()
   expect(Object.keys(sync.log.emitter.events)).toEqual(['event'])
   expect(Object.keys(sync.connection.emitter.events))
-    .toEqual(['connect', 'message', 'disconnect'])
+    .toEqual(['connect', 'message', 'error', 'disconnect'])
 
   sync.destroy()
   expect(Object.keys(sync.log.emitter.events)).toEqual([])
@@ -212,4 +212,18 @@ it('accepts already connected connection', function () {
   pair.left.connect()
   var sync = new BaseSync('host', log, pair.left)
   expect(sync.connected).toBeTruthy()
+})
+
+it('receives errors from connection', function () {
+  var log = { on: function () { } }
+  var pair = new LocalPair()
+  var sync = new BaseSync('host', log, pair.left)
+
+  var error
+  sync.catch(function (err) {
+    error = err
+  })
+
+  pair.left.emitter.emit('error', new Error('test'))
+  expect(error.message).toEqual('test')
 })

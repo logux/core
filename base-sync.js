@@ -156,6 +156,9 @@ function BaseSync (host, log, connection, options) {
   this.unbind.push(connection.on('message', function (message) {
     sync.onMessage(message)
   }))
+  this.unbind.push(connection.on('error', function (error) {
+    sync.error(error.message, 'protocol')
+  }))
   this.unbind.push(connection.on('disconnect', function () {
     sync.onDisconnect()
   }))
