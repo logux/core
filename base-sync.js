@@ -159,6 +159,10 @@ function BaseSync (host, log, connection, options) {
   this.unbind.push(connection.on('disconnect', function () {
     sync.onDisconnect()
   }))
+
+  if (this.connection.connected) {
+    this.onConnect()
+  }
 }
 
 BaseSync.prototype = {

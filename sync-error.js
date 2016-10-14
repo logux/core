@@ -48,7 +48,7 @@ function SyncError (sync, desc, type, received) {
    * @type {BaseSync}
    *
    * @example
-   * error.sync.connected
+   * error.sync.connection.connected
    */
   this.sync = sync
 

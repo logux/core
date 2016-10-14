@@ -205,3 +205,11 @@ it('has separated timeouts', function () {
     expect(error.message).toContain('timeout')
   })
 })
+
+it('accepts already connected connection', function () {
+  var log = { on: function () { } }
+  var pair = new LocalPair()
+  pair.left.connect()
+  var sync = new BaseSync('host', log, pair.left)
+  expect(sync.connected).toBeTruthy()
+})
