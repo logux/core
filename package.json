@@ -13,7 +13,7 @@
   },
   "devDependencies": {
     "docdash": "^0.4.0",
-    "eslint": "^3.7.1",
+    "eslint": "^3.8.0",
     "eslint-config-standard": "^6.2.0",
     "eslint-plugin-promise": "^3.0.0",
     "eslint-plugin-standard": "^2.0.1",
@@ -42,6 +42,7 @@
   "eslintConfig": {
     "extends": "standard",
     "rules": {
+      "func-name-matching": "error",
       "valid-jsdoc": "error",
       "max-len": [2, 80],
       "no-new": "off"
