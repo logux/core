@@ -52,9 +52,7 @@ it('sends sync messages', function () {
       ['synced', 1]
     ])
     return test.server.log.add({ type: 'b' })
-  }).then(function () {
-    return nextTick()
-  }).then(function () {
+  }).then(nextTick).then(function () {
     expect(clientSent).toEqual([
       ['sync', 1, { type: 'a' }, [3]],
       ['synced', 2]
@@ -69,15 +67,11 @@ it('sends sync messages', function () {
 it('synchronizes events', function () {
   var test = createTest()
 
-  return test.client.log.add({ type: 'a' }).then(function () {
-    return nextTick()
-  }).then(function () {
+  return test.client.log.add({ type: 'a' }).then(nextTick).then(function () {
     expect(events(test.server.log)).toEqual([{ type: 'a' }])
     expect(events(test.client.log)).toEqual(events(test.server.log))
     return test.server.log.add({ type: 'b' })
-  }).then(function () {
-    return nextTick()
-  }).then(function () {
+  }).then(nextTick).then(function () {
     expect(events(test.client.log)).toEqual([{ type: 'b' }, { type: 'a' }])
     expect(events(test.client.log)).toEqual(events(test.server.log))
   })
@@ -88,15 +82,11 @@ it('remembers synced added', function () {
   expect(test.client.synced).toBe(0)
   expect(test.client.otherSynced).toBe(0)
 
-  return test.client.log.add({ type: 'a' }).then(function () {
-    return nextTick()
-  }).then(function () {
+  return test.client.log.add({ type: 'a' }).then(nextTick).then(function () {
     expect(test.client.synced).toBe(1)
     expect(test.client.otherSynced).toBe(0)
     return test.server.log.add({ type: 'b' })
-  }).then(function () {
-    return nextTick()
-  }).then(function () {
+  }).then(nextTick).then(function () {
     expect(test.client.synced).toBe(1)
     expect(test.client.otherSynced).toBe(2)
   })
@@ -110,15 +100,11 @@ it('filters output events', function () {
     return Promise.resolve(event.type === 'b')
   }
 
-  return test.client.log.add({ type: 'a' }).then(function () {
-    return nextTick()
-  }).then(function () {
+  return test.client.log.add({ type: 'a' }).then(nextTick).then(function () {
     expect(events(test.client.log)).toEqual([{ type: 'a' }])
     expect(events(test.server.log)).toEqual([])
     return test.client.log.add({ type: 'b' })
-  }).then(function () {
-    return nextTick()
-  }).then(function () {
+  }).then(nextTick).then(function () {
     expect(events(test.client.log)).toEqual([{ type: 'b' }, { type: 'a' }])
     expect(events(test.server.log)).toEqual([{ type: 'b' }])
   })
@@ -132,9 +118,7 @@ it('maps output events', function () {
     return Promise.resolve([{ type: event.type + '1' }, meta])
   }
 
-  return test.client.log.add({ type: 'a' }).then(function () {
-    return nextTick()
-  }).then(function () {
+  return test.client.log.add({ type: 'a' }).then(nextTick).then(function () {
     expect(events(test.client.log)).toEqual([{ type: 'a' }])
     expect(events(test.server.log)).toEqual([{ type: 'a1' }])
   })
@@ -147,15 +131,11 @@ it('filters input events', function () {
     return Promise.resolve(event.type === 'b')
   }
 
-  return test.client.log.add({ type: 'a' }).then(function () {
-    return nextTick()
-  }).then(function () {
+  return test.client.log.add({ type: 'a' }).then(nextTick).then(function () {
     expect(events(test.client.log)).toEqual([{ type: 'a' }])
     expect(events(test.server.log)).toEqual([])
     return test.client.log.add({ type: 'b' })
-  }).then(function () {
-    return nextTick()
-  }).then(function () {
+  }).then(nextTick).then(function () {
     expect(events(test.client.log)).toEqual([{ type: 'b' }, { type: 'a' }])
     expect(events(test.server.log)).toEqual([{ type: 'b' }])
   })
@@ -168,9 +148,7 @@ it('maps input events', function () {
     return Promise.resolve([{ type: event.type + '1' }, meta])
   }
 
-  return test.client.log.add({ type: 'a' }).then(function () {
-    return nextTick()
-  }).then(function () {
+  return test.client.log.add({ type: 'a' }).then(nextTick).then(function () {
     expect(events(test.client.log)).toEqual([{ type: 'a' }])
     expect(events(test.server.log)).toEqual([{ type: 'a1' }])
   })
@@ -183,9 +161,7 @@ it('fixes created time', function () {
   return Promise.all([
     test.client.log.add({ type: 'a' }, { created: [101] }),
     test.server.log.add({ type: 'b' }, { created: [2] })
-  ]).then(function () {
-    return nextTick()
-  }).then(function () {
+  ]).then(nextTick).then(function () {
     expect(test.client.log.store.created).toEqual([
       [{ type: 'b' }, { created: [102], added: 2 }],
       [{ type: 'a' }, { created: [101], added: 1 }]
@@ -216,9 +192,7 @@ it('synchronizes events on connect', function () {
   return Promise.all([
     test.client.log.add({ type: 'a' }),
     test.server.log.add({ type: 'b' })
-  ]).then(function () {
-    return nextTick()
-  }).then(function () {
+  ]).then(nextTick).then(function () {
     test.client.connection.disconnect()
     return Promise.all([
       test.client.log.add({ type: 'c' }),
