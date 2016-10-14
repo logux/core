@@ -40,7 +40,7 @@ var BaseSync = require('./base-sync')
  *
  * @example
  * import { ClientSync } from 'logux-sync'
- * const connection = new WebSocketsConnection(destination)
+ * const connection = new BrowserConnection(url)
  * const sync = new ClientSync('user' + id, log, connection)
  *
  * @extends BaseSync

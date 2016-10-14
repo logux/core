@@ -33,7 +33,7 @@ var BaseSync = require('./base-sync')
  * @example
  * import { ServerSync } from 'logux-sync'
  * startServer(ws => {
- *   const connection = new WSServerConnection(ws)
+ *   const connection = new ServerConnection(ws)
  *   const sync = new ServerSync('server' + id, log, connection)
  * })
  *
