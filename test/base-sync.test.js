@@ -50,7 +50,7 @@ it('unbind all listeners on destroy', function () {
   var sync = createSync()
   expect(Object.keys(sync.log.emitter.events)).toEqual(['event'])
   expect(Object.keys(sync.connection.emitter.events))
-    .toEqual(['connect', 'message', 'error', 'disconnect'])
+    .toEqual(['connecting', 'connect', 'message', 'error', 'disconnect'])
 
   sync.destroy()
   expect(Object.keys(sync.log.emitter.events)).toEqual([])
@@ -157,6 +157,9 @@ it('has state', function () {
   }).then(function () {
     expect(sync.state).toEqual('wait')
 
+    sync.connection.emitter.emit('connecting')
+    expect(sync.state).toEqual('connecting')
+
     sync.connection.connect()
     sync.sendConnect()
     expect(sync.state).toEqual('sending')
@@ -173,6 +176,7 @@ it('has state', function () {
       'synchronized',
       'disconnected',
       'wait',
+      'connecting',
       'sending',
       'synchronized'
     ])

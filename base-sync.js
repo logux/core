@@ -129,7 +129,7 @@ function BaseSync (host, log, connection, options) {
    * * `sending`: new events was sent, waiting for answer.
    * * `synchronized`: all events was synchronized and we keep connection.
    *
-   * @type {"disconnected"|"wait"|"sending"|"synchronized"}
+   * @type {"disconnected"|"wait"|"connecting"|"sending"|"synchronized"}
    *
    * @example
    * sync.on('state', () => {
@@ -149,6 +149,9 @@ function BaseSync (host, log, connection, options) {
   var sync = this
   this.unbind.push(log.on('event', function (event, meta) {
     sync.onEvent(event, meta)
+  }))
+  this.unbind.push(connection.on('connecting', function () {
+    sync.onConnecting()
   }))
   this.unbind.push(connection.on('connect', function () {
     sync.onConnect()
@@ -286,6 +289,10 @@ BaseSync.prototype = {
       var json = JSON.stringify(msg)
       throw new Error('Could not send ' + json + ' to disconnected connection')
     }
+  },
+
+  onConnecting: function onConnecting () {
+    this.setState('connecting')
   },
 
   onConnect: function onConnect () {
