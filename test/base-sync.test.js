@@ -13,7 +13,7 @@ function createSync () {
 
 function nextTick () {
   return new Promise(function (resolve) {
-    setTimeout(resolve)
+    setTimeout(resolve, 1)
   })
 }
 

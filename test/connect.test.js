@@ -34,9 +34,7 @@ function createTest () {
 
 function nextTick () {
   return new Promise(function (resolve) {
-    setTimeout(function () {
-      resolve()
-    }, 1)
+    setTimeout(resolve, 1)
   })
 }
 
