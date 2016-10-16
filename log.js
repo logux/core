@@ -205,9 +205,10 @@ Log.prototype = {
     return new Promise(function (resolve) {
       function nextPage (get) {
         get().then(function (page) {
+          var result
           for (var i = 0; i < page.entries.length; i++) {
             var entry = page.entries[i]
-            var result = callback(entry[0], entry[1])
+            result = callback(entry[0], entry[1])
             if (result === false) break
           }
 
