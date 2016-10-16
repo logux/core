@@ -1,8 +1,13 @@
+var createTestTimer = require('./create-test-timer')
+var createTimer = require('./create-timer')
+var MemoryStore = require('./memory-store')
+var Log = require('./log')
+
 module.exports = {
-  createTestTimer: require('./create-test-timer'),
-  createTimer: require('./create-timer'),
-  MemoryStore: require('./memory-store'),
-  Log: require('./log')
+  createTestTimer: createTestTimer,
+  createTimer: createTimer,
+  MemoryStore: MemoryStore,
+  Log: Log
 }
 
 /**
