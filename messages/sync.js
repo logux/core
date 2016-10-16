@@ -57,7 +57,7 @@ module.exports = {
           return data
         }
       }).then(function (changed) {
-        if (!changed) return
+        if (!changed) return false
         sync.received[sync.log.lastAdded + 1] = true
         return sync.log.add(changed[0], changed[1])
       })

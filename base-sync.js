@@ -2,10 +2,11 @@ var NanoEvents = require('nanoevents')
 var assign = require('object-assign')
 
 var SyncError = require('./sync-error')
-var connect = require('./messages/connect')
-var error = require('./messages/error')
-var ping = require('./messages/ping')
-var sync = require('./messages/sync')
+
+var connectMessages = require('./messages/connect')
+var errorMessages = require('./messages/error')
+var pingMessages = require('./messages/ping')
+var syncMessages = require('./messages/sync')
 
 var BEFORE_AUTH = ['connect', 'connected', 'error']
 
@@ -274,7 +275,7 @@ BaseSync.prototype = {
    *   server.destroy()
    * })
    */
-  destroy: function destory () {
+  destroy: function destroy () {
     if (this.connected) this.connection.disconnect()
     for (var i = 0; i < this.unbind.length; i++) {
       this.unbind[i]()
@@ -417,12 +418,16 @@ BaseSync.prototype = {
     }, this.options.ping)
   },
 
-  syncSince: function syncEventSince (lastSynced) {
+  syncSince: function syncSince (lastSynced) {
     var data = []
     var sync = this
     this.log.each({ order: 'added' }, function (event, meta) {
-      if (meta.added <= lastSynced) return false
-      data.push(event, meta)
+      if (meta.added <= lastSynced) {
+        return false
+      } else {
+        data.push(event, meta)
+        return true
+      }
     }).then(function () {
       if (!sync.connected) return
       if (data.length > 0) {
@@ -435,7 +440,8 @@ BaseSync.prototype = {
 
 }
 
-BaseSync.prototype = assign(BaseSync.prototype, error, connect, ping, sync)
+BaseSync.prototype = assign(BaseSync.prototype,
+  errorMessages, connectMessages, pingMessages, syncMessages)
 
 module.exports = BaseSync
 
