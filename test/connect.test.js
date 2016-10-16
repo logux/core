@@ -114,7 +114,7 @@ it('sends error on messages before auth', function () {
   test.client.connection.send(['test'])
 
   expect(test.serverSent).toEqual([
-    ['error', 'Start authentication before sending `test` message', 'protocol']
+    ['error', 'Start authentication before sending `test` message', 'auth']
   ])
 })
 

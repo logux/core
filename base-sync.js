@@ -338,8 +338,7 @@ BaseSync.prototype = {
         this.unauthenticated.push(msg)
       } else {
         this.sendError(
-          'Start authentication before sending `' + name + '` message',
-          'protocol')
+          'Start authentication before sending `' + name + '` message', 'auth')
       }
       return
     }
