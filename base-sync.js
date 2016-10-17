@@ -161,7 +161,8 @@ function BaseSync (host, log, connection, options) {
     sync.onMessage(message)
   }))
   this.unbind.push(connection.on('error', function (error) {
-    sync.error(error.message, 'protocol')
+    sync.sendError(error.message, 'protocol')
+    sync.connection.disconnect()
   }))
   this.unbind.push(connection.on('disconnect', function () {
     sync.onDisconnect()
@@ -319,10 +320,12 @@ BaseSync.prototype = {
     if (typeof msg !== 'object' || typeof msg.length !== 'number') {
       var json = JSON.stringify(msg)
       this.sendError('Wrong message format in ' + json, 'protocol')
+      this.connection.disconnect()
       return
     }
     if (msg.length < 1 || typeof msg[0] !== 'string') {
       this.sendError('Wrong type in message ' + JSON.stringify(msg), 'protocol')
+      this.connection.disconnect()
       return
     }
 
@@ -330,6 +333,7 @@ BaseSync.prototype = {
     var method = name + 'Message'
     if (typeof this[method] !== 'function') {
       this.sendError('Unknown message type `' + name + '`', 'protocol')
+      this.connection.disconnect()
       return
     }
 

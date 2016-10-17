@@ -222,12 +222,16 @@ it('receives errors from connection', function () {
   var log = { on: function () { } }
   var pair = new LocalPair()
   var sync = new BaseSync('host', log, pair.left)
+  pair.left.connect()
 
-  var error
-  sync.catch(function (err) {
-    error = err
+  var sent = []
+  pair.right.on('message', function (msg) {
+    sent.push(msg)
   })
 
   pair.left.emitter.emit('error', new Error('test'))
-  expect(error.message).toEqual('test')
+  expect(sync.connected).toBeFalsy()
+  expect(sent).toEqual([
+    ['error', 'test', 'protocol']
+  ])
 })

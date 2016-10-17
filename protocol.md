@@ -73,7 +73,11 @@ Error message contains error description and error type.
 ]
 ```
 
-Right now there are 2 possible error types: `protocol` and `auth`.
+Right now there are 4 possible error types:
+* `protocol`: client or server send wrong message. Maybe protocol implementation
+  contains mistakes. Client should no reconnect after this error.
+* `auth`: authentication was missed or had wrong credentials.
+* `connection`: connection was broken or timeout was reached.
 
 ## `connect`
 

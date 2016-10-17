@@ -19,8 +19,14 @@ function createTest () {
 
 it('sends error on wrong message format', function () {
   var test = createTest()
+
   test.sync.connection.other().send(1)
+  expect(test.sync.connection.connected).toBeFalsy()
+
+  test.sync.connection.connect()
   test.sync.connection.other().send({ hi: 1 })
+  expect(test.sync.connection.connected).toBeFalsy()
+
   expect(test.messages).toEqual([
     ['error', 'Wrong message format in 1', 'protocol'],
     ['error', 'Wrong message format in {"hi":1}', 'protocol']
@@ -29,8 +35,14 @@ it('sends error on wrong message format', function () {
 
 it('sends error on wrong message type format', function () {
   var test = createTest()
+
   test.sync.connection.other().send([])
+  expect(test.sync.connection.connected).toBeFalsy()
+
+  test.sync.connection.connect()
   test.sync.connection.other().send([1])
+  expect(test.sync.connection.connected).toBeFalsy()
+
   expect(test.messages).toEqual([
     ['error', 'Wrong type in message []', 'protocol'],
     ['error', 'Wrong type in message [1]', 'protocol']
@@ -40,6 +52,7 @@ it('sends error on wrong message type format', function () {
 it('sends error on unknown message type', function () {
   var test = createTest()
   test.sync.connection.other().send(['test'])
+  expect(test.sync.connection.connected).toBeFalsy()
   expect(test.messages).toEqual([
     ['error', 'Unknown message type `test`', 'protocol']
   ])
