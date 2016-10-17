@@ -277,7 +277,11 @@ BaseSync.prototype = {
    * })
    */
   destroy: function destroy () {
-    if (this.connected) this.connection.disconnect()
+    if (this.connection.destroy) {
+      this.connection.destroy()
+    } else if (this.connected) {
+      this.connection.disconnect()
+    }
     for (var i = 0; i < this.unbind.length; i++) {
       this.unbind[i]()
     }

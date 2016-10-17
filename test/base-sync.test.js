@@ -57,6 +57,16 @@ it('unbind all listeners on destroy', function () {
   expect(Object.keys(sync.connection.emitter.events)).toEqual([])
 })
 
+it('destroys connection on destroy', function () {
+  var sync = createSync()
+  sync.connection.disconnect = jest.fn()
+  sync.connection.destroy = jest.fn()
+
+  sync.destroy()
+  expect(sync.connection.disconnect).not.toBeCalled()
+  expect(sync.connection.destroy).toBeCalled()
+})
+
 it('disconnects on destroy', function () {
   var sync = createSync()
   sync.connection.connect()
