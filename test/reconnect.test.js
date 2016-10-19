@@ -1,18 +1,25 @@
-var LocalPair = require('../local-pair')
+var NanoEvents = require('nanoevents')
 
+var LocalPair = require('../local-pair')
 var Reconnect = require('../reconnect')
+
+function wait (ms) {
+  return new Promise(function (resolve) {
+    setTimeout(resolve, ms)
+  })
+}
 
 it('saves connection and options', function () {
   var con = { on: function () { } }
   var recon = new Reconnect(con, { a: 1 })
   expect(recon.connection).toBe(con)
-  expect(recon.options).toEqual({ a: 1 })
+  expect(recon.options.a).toEqual(1)
 })
 
 it('uses default options', function () {
   var con = { on: function () { } }
   var recon = new Reconnect(con)
-  expect(recon.options).toEqual({ })
+  expect(typeof recon.options.minDelay).toEqual('number')
 })
 
 it('enables reconnecting on connect', function () {
@@ -108,6 +115,18 @@ it('disables reconnection on protocol error', function () {
   expect(recon.reconnecting).toBeFalsy()
 })
 
+it('disables reconnection on authentication error', function () {
+  var pair = new LocalPair()
+  var recon = new Reconnect(pair.left)
+
+  recon.connect()
+
+  pair.right.send(['error', '', 'auth'])
+  pair.right.disconnect()
+
+  expect(recon.reconnecting).toBeFalsy()
+})
+
 it('disconnects and unbind listeners on destory', function () {
   var pair = new LocalPair()
   var recon = new Reconnect(pair.left)
@@ -119,14 +138,17 @@ it('disconnects and unbind listeners on destory', function () {
   expect(pair.right.connected).toBeFalsy()
 })
 
-it('reconnects automatically', function () {
+it('reconnects automatically with delay', function () {
   var pair = new LocalPair()
-  var recon = new Reconnect(pair.left)
+  var recon = new Reconnect(pair.left, { minDelay: 50, maxDelay: 50 })
 
   recon.connect()
   pair.right.disconnect()
+  expect(pair.right.connected).toBeFalsy()
 
-  expect(pair.right.connected).toBeTruthy()
+  return wait(70).then(function () {
+    expect(pair.right.connected).toBeTruthy()
+  })
 })
 
 it('allows to disable reconnecting', function () {
@@ -138,4 +160,75 @@ it('allows to disable reconnecting', function () {
   pair.right.disconnect()
 
   expect(pair.right.connected).toBeFalsy()
+})
+
+it('has maximum reconnection attempts', function () {
+  var con = new NanoEvents()
+  var connects = 0
+  con.connect = function () {
+    connects += 1
+    con.emit('disconnect')
+  }
+
+  var recon = new Reconnect(con, {
+    attempts: 3,
+    minDelay: 0,
+    maxDelay: 0
+  })
+
+  recon.connect()
+
+  return wait(10).then(function () {
+    expect(recon.reconnecting).toBeFalsy()
+    expect(connects).toBe(3)
+  })
+})
+
+it('tracks connecting state', function () {
+  var pair = new LocalPair()
+  var recon = new Reconnect(pair.left, {
+    minDelay: 1000,
+    maxDelay: 5000
+  })
+
+  expect(recon.connecting).toBeFalsy()
+
+  pair.left.emitter.emit('connecting')
+  expect(recon.connecting).toBeTruthy()
+
+  pair.left.emitter.emit('disconnect')
+  expect(recon.connecting).toBeFalsy()
+
+  pair.left.emitter.emit('connecting')
+  pair.left.emitter.emit('connect')
+  expect(recon.connecting).toBeFalsy()
+})
+
+it('has dynamic delay', function () {
+  var pair = new LocalPair()
+  var recon = new Reconnect(pair.left, {
+    minDelay: 1000,
+    maxDelay: 5000
+  })
+
+  function attemptsIsAround (attempt, ms) {
+    recon.attempts = attempt
+    var delay = recon.nextDelay()
+    expect(Math.abs(delay - ms)).toBeLessThan(1000)
+  }
+
+  attemptsIsAround(0, 1000)
+  attemptsIsAround(1, 2200)
+  attemptsIsAround(2, 4500)
+  attemptsIsAround(3, 5000)
+
+  function attemptsIs (attempt, ms) {
+    recon.attempts = attempt
+    var delay = recon.nextDelay()
+    expect(delay).toEqual(ms)
+  }
+
+  attemptsIs(4, 5000)
+  attemptsIs(5, 5000)
+  attemptsIs(10, 5000)
 })
