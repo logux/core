@@ -5,13 +5,12 @@ Logux protocol is used to synchronize events between [Logux logs].
 This protocol is based on simple JS types: boolean, number, string, array
 and key-value object.
 
-You can use any encoding and any low-level protocol: binary [MessagePack]
-encoding over WebSockets, JSON over AJAX and HTTP “keep-alive”, XML over TCP.
+You can use any encoding and any low-level protocol: JSON encoding
+over WebSockets, XML over AJAX and HTTP “keep-alive”.
 Low-level protocol must guarantee messages order and content.
-Main way is MessagePack over WebSocket Secure.
+Main way is JSON over WebSocket Secure.
 
-[MessagePack]: http://msgpack.org/
-[Logux logs]:  https://github.com/logux/logux-core
+[Logux logs]: https://github.com/logux/logux-core
 
 ## Versions
 

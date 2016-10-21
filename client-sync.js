@@ -41,7 +41,7 @@ var BaseSync = require('./base-sync')
  * @example
  * import { ClientSync } from 'logux-sync'
  * const connection = new BrowserConnection(url)
- * const sync = new ClientSync('user' + id, log, connection)
+ * const sync = new ClientSync(uniqHost, log, connection)
  *
  * @extends BaseSync
  * @class
