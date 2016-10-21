@@ -30,18 +30,18 @@ function initTest (opts) {
 
 it('throws on ping and no timeout options', function () {
   expect(function () {
-    new ClientSync('host', null, null, { ping: 1000 })
+    new ClientSync('host', null, null, { ping: 1000, timeout: 0 })
   }).toThrowError(/set timeout option/)
 })
 
 it('answers pong on ping', function () {
-  var test = initTest()
+  var test = initTest({ fixTime: false })
   test.right.send(['ping', 1])
   expect(test.sent).toEqual([['pong', 1]])
 })
 
 it('sends ping on idle connection', function () {
-  var test = initTest({ ping: 300, timeout: 100 })
+  var test = initTest({ ping: 300, timeout: 100, fixTime: false })
   test.sync.testMessage = function () { }
 
   var error
@@ -84,7 +84,7 @@ it('sends ping on idle connection', function () {
 })
 
 it('sends only one ping if timeout is bigger than ping', function () {
-  var test = initTest({ ping: 100, timeout: 300 })
+  var test = initTest({ ping: 100, timeout: 300, fixTime: false })
   return wait(250).then(function () {
     expect(test.sent).toEqual([['ping', 1]])
   })

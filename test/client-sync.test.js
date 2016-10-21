@@ -18,7 +18,7 @@ it('connects first', function () {
 it('saves last added from ping', function () {
   var log = new Log({ store: new MemoryStore(), timer: createTestTimer() })
   var pair = new LocalPair()
-  var sync = new ClientSync('host', log, pair.left)
+  var sync = new ClientSync('host', log, pair.left, { fixTime: false })
 
   pair.left.connect()
   pair.right.send(['connected', sync.protocol, 'server'])

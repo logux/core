@@ -2,6 +2,12 @@ var assign = require('object-assign')
 
 var BaseSync = require('./base-sync')
 
+var DEFAULT_OPTIONS = {
+  fixTime: true,
+  timeout: 20000,
+  ping: 5000
+}
+
 /**
  * Client node in synchronization pair.
  *
@@ -16,13 +22,13 @@ var BaseSync = require('./base-sync')
  *                                       For example, access token.
  * @param {authCallback} [options.auth] Function to check
  *                                      other node credentials.
- * @param {boolean} [options.fixTime=false] Enables log’s event time fixes
- *                                          to prevent problems
- *                                          because of wrong client time zone.
- * @param {number} [options.timeout=0] Timeout in milliseconds
- *                                     to disconnect connection.
- * @param {number} [options.ping=0] Milliseconds since last message to test
- *                                  connection by sending ping.
+ * @param {boolean} [options.fixTime=true] Enables log’s event time fixes
+ *                                         to prevent problems
+ *                                         because of wrong client time zone.
+ * @param {number} [options.timeout=20000] Timeout in milliseconds
+ *                                         to disconnect connection.
+ * @param {number} [options.ping=0=5000] Milliseconds since last message to test
+ *                                       connection by sending ping.
  * @param {filter} [options.inFilter] Function to filter events
  *                                    from other client. Best place
  *                                    for access control.
@@ -47,6 +53,7 @@ var BaseSync = require('./base-sync')
  * @class
  */
 function ClientSync (host, log, connection, options) {
+  options = assign({ }, DEFAULT_OPTIONS, options)
   BaseSync.call(this, host, log, connection, options)
 }
 

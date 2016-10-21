@@ -50,7 +50,7 @@ it('answers with protocol version and host in connected message', function () {
   var test = createTest()
   test.client.connection.connect()
   expect(test.serverSent).toEqual([
-    ['connected', test.server.protocol, 'server', [1, 2]]
+    ['connected', test.server.protocol, 'server', [2, 3]]
   ])
 })
 
@@ -101,7 +101,7 @@ it('sends credentials in connected', function () {
 
   test.client.connection.connect()
   expect(test.serverSent).toEqual([
-    ['connected', test.server.protocol, 'server', [1, 2], 1]
+    ['connected', test.server.protocol, 'server', [2, 3], 1]
   ])
 })
 

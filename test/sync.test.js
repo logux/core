@@ -44,7 +44,7 @@ it('sends sync messages', function () {
 
   return test.client.log.add({ type: 'a' }).then(function () {
     expect(clientSent).toEqual([
-      ['sync', 1, { type: 'a' }, [3]]
+      ['sync', 1, { type: 'a' }, [5]]
     ])
     return nextTick()
   }).then(function () {
@@ -54,12 +54,12 @@ it('sends sync messages', function () {
     return test.server.log.add({ type: 'b' })
   }).then(nextTick).then(function () {
     expect(clientSent).toEqual([
-      ['sync', 1, { type: 'a' }, [3]],
+      ['sync', 1, { type: 'a' }, [5]],
       ['synced', 2]
     ])
     expect(serverSent).toEqual([
       ['synced', 1],
-      ['sync', 2, { type: 'b' }, [4]]
+      ['sync', 2, { type: 'b' }, [6]]
     ])
   })
 })
