@@ -232,3 +232,30 @@ it('has dynamic delay', function () {
   attemptsIs(5, 5000)
   attemptsIs(10, 5000)
 })
+
+it('reconnects when user open a tab', function () {
+  var listener
+  document.addEventListener = function (name, callback) {
+    expect(name).toEqual('visibilitychange')
+    listener = callback
+  }
+  document.removeEventListener = jest.fn()
+
+  var pair = new LocalPair()
+  var recon = new Reconnect(pair.left)
+
+  recon.connect()
+  pair.right.disconnect()
+  expect(pair.right.connected).toBeFalsy()
+
+  Object.defineProperty(document, 'hidden', {
+    get: function () {
+      return false
+    }
+  })
+  listener()
+  expect(pair.right.connected).toBeTruthy()
+
+  recon.destroy()
+  expect(document.removeEventListener).toBeCalled()
+})

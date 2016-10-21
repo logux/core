@@ -64,6 +64,15 @@ function Reconnect (connection, options) {
   this.unbind.push(function () {
     clearTimeout(self.timer)
   })
+
+  if (typeof document !== 'undefined' &&
+      typeof document.hidden !== 'undefined') {
+    var listener = this.visibilityChanged.bind(this)
+    document.addEventListener('visibilitychange', listener, false)
+    this.unbind.push(function () {
+      document.removeEventListener('visibilitychange', listener, false)
+    })
+  }
 }
 
 Reconnect.prototype = {
@@ -125,6 +134,12 @@ Reconnect.prototype = {
     var deviation = Math.floor(rand * 0.5 * base)
     if (Math.floor(rand * 10) === 1) deviation = -deviation
     return Math.min(base + deviation, this.options.maxDelay) || 0
+  },
+
+  visibilityChanged: function visibilityChanged () {
+    if (this.reconnecting && !this.connected && !this.connecting) {
+      if (!document.hidden) this.connect()
+    }
   }
 
 }
