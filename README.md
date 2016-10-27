@@ -221,6 +221,21 @@ log.on('event', event => {
 })
 ```
 
+### Automatically Cleaning
+
+Logux Core has a `cleanEvery()` function. It will install a listener
+to log and will run `clean()` every specified events count.
+
+By default, it will clean log after 100 events:
+
+```js
+import { cleanEvery } from 'logux-core'
+cleanEvery(log)
+```
+
+It returns `stopCleaning` function.
+Call if you want to remove listener from log.
+
 ## Stores
 
 Log should be saved to `localStorage` in browser or file on server.
