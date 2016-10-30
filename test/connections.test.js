@@ -1,12 +1,11 @@
-var httpServer = require('http').createServer
 var WebSocket = require('ws')
 
 var BrowserConnection = require('../browser-connection')
 var ServerConnection = require('../server-connection')
 
-var http
+var wss
 afterEach(function () {
-  http.close()
+  wss.close()
 })
 
 function wait (prev) {
@@ -19,9 +18,7 @@ function wait (prev) {
 
 it('works in real protocol', function () {
   window.WebSocket = WebSocket
-  http = httpServer()
-  var wss = new WebSocket.Server({ server: http })
-  http.listen(8081)
+  wss = new WebSocket.Server({ port: 8081 })
 
   var client = new BrowserConnection('ws://0.0.0.0:8081')
   var clientReceived = []
