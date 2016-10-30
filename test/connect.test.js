@@ -87,11 +87,11 @@ it('saves other client protocol', function () {
 
 it('sends credentials in connect', function () {
   var test = createTest()
-  test.client.options = { credentials: { a: 1, b: 2 } }
+  test.client.options = { credentials: { a: 1 } }
 
   test.client.connection.connect()
   expect(test.clientSent).toEqual([
-    ['connect', test.client.protocol, 'client', 0, { a: 1, b: 2 }]
+    ['connect', test.client.protocol, 'client', 0, { credentials: { a: 1 } }]
   ])
 })
 
@@ -101,7 +101,7 @@ it('sends credentials in connected', function () {
 
   test.client.connection.connect()
   expect(test.serverSent).toEqual([
-    ['connected', test.server.protocol, 'server', [2, 3], 1]
+    ['connected', test.server.protocol, 'server', [2, 3], { credentials: 1 }]
   ])
 })
 

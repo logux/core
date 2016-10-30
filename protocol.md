@@ -88,7 +88,7 @@ After connection was started some client should send `connect` message to other.
   number[] protocol,
   string host,
   number synced,
-  (any credentials)?
+  (object options)?
 ]
 ```
 
@@ -104,8 +104,10 @@ Fourth position contains last `added` time used by receiver
 in previous connection (`0` on first connection).
 message with all new events since `synced` (all events on first connection).
 
-Fifth position is optional and contains credentials data.
-It could be in any type. Receiver may check credentials data.
+Fifth position is optional and contains extra client option in object.
+Right now protocol supports only `credentials` key there.
+
+Credentials could be in any type. Receiver may check credentials data.
 On wrong credentials data receiver may send `auth` error and close connection.
 
 In most cases client will initiate connection, so client will send `connect`.
@@ -122,7 +124,7 @@ This message is answer to received [`connect`] message.
   number[] protocol,
   string host,
   [number start, number end],
-  (any credentials)?
+  (object options)?
 ]
 ```
 
@@ -135,9 +137,11 @@ and receiver time. It could prevents problems if somebody has wrong time
 or wrong time zone. Calculated time fix may be used to correct
 events `created` time in [`sync`] messages.
 
-Fifth position is optional and contains credentials data. It could has any type.
-Receiver may check credentials data. On wrong credentials data receiver may
-send `auth` error and close connection.
+Fifth position is optional and contains extra client option in object.
+Right now protocol supports only `credentials` key there.
+
+Credentials could be in any type. Receiver may check credentials data.
+On wrong credentials data receiver may send `auth` error and close connection.
 
 Right after this message receiver should send [`sync`] message with all new events
 since last connection (all events on first connection).
@@ -238,7 +242,7 @@ Wrong authentication:
 
 ```ts
 CONNECTED
-CLIENT > ["connect", [0, 0], "client1", "wrongToken"]
+CLIENT > ["connect", [0, 0], "client1", { credentials: "wrongToken" }]
 SERVER < ["error", "Wrong credentials", "auth"]
 DISCONNECTED
 ```
@@ -247,7 +251,7 @@ Correct synchronization:
 
 ```ts
 CONNECTED
-CLIENT > ["connect", [0, 0], "client1", 0, "token"]
+CLIENT > ["connect", [0, 0], "client1", 0, { credentials: "token" }]
 SERVER < ["connected", [0, 0], "server", [1475316481050, 1475316482879]]
 
 CLIENT > ["ping", 0]
@@ -261,7 +265,7 @@ SERVER < ["pong", 1]
 DISCONNECTED
 
 CONNECTED
-CLIENT > ["connect", [0, 0], "client1", 1, "token"]
+CLIENT > ["connect", [0, 0], "client1", 1, { credentials: "token" }]
 SERVER < ["connected", [0, 0], "server", [1475316659892, 1475316660687]]
 SERVER < ["sync", 2, { type: 'b' }, [1475316641759, "client2", 0]]
 CLIENT > ["synced", 2]
@@ -272,7 +276,7 @@ so `added` time could be different:
 
 ```ts
 CONNECTED
-CLIENT > ["connect", [0, 0], "client1", 130, "token"]
+CLIENT > ["connect", [0, 0], "client1", 130, { credentials: "token" }]
 SERVER < ["connected", [0, 0], "server", [1475316168379, 1475316169987]]
 SERVER < ["sync", 132, { type: 'a' }, [1475316158300, "client2", 0],
                        { type: 'b' }, [1475316158300, "client2", 1]]
