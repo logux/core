@@ -59,7 +59,7 @@ BrowserConnection.prototype = {
       try {
         data = JSON.parse(event.data)
       } catch (e) {
-        self.error('Could not parse JSON in: ' + event.data)
+        self.error(event.data)
         return
       }
       self.emitter.emit('message', data)
@@ -116,7 +116,9 @@ BrowserConnection.prototype = {
   },
 
   error: function error (message) {
-    this.emitter.emit('error', new Error(message))
+    var err = new Error('Wrong message format')
+    err.received = message
+    this.emitter.emit('error', err)
   }
 
 }

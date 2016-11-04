@@ -239,9 +239,11 @@ it('receives errors from connection', function () {
     sent.push(msg)
   })
 
-  pair.left.emitter.emit('error', new Error('test'))
+  var error = new Error('test')
+  error.received = 'options'
+  pair.left.emitter.emit('error', error)
   expect(sync.connected).toBeFalsy()
   expect(sent).toEqual([
-    ['error', 'test', 'protocol']
+    ['error', 'wrong-format', 'options']
   ])
 })

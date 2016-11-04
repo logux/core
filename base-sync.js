@@ -161,7 +161,7 @@ function BaseSync (host, log, connection, options) {
     sync.onMessage(message)
   }))
   this.unbind.push(connection.on('error', function (error) {
-    sync.sendError(error.message, 'protocol')
+    sync.sendError('wrong-format', error.received)
     sync.connection.disconnect()
   }))
   this.unbind.push(connection.on('disconnect', function () {
@@ -215,16 +215,16 @@ BaseSync.prototype = {
    * Supported events:
    *
    * * `state`: synchronization state changes.
-   * * `sendedError`: when error was sent to other node.
+   * * `clientError`: when error was sent to other node.
    *
-   * @param {"state"|"sendedError"} event The event name.
+   * @param {"state"|"clientError"} event The event name.
    * @param {listener} listener The listener function.
    *
    * @return {function} Unbind listener from event.
    *
    * @example
-   * sync.on('disconnect', error => {
-   *   showDisconnectBadge()
+   * sync.on('clientError', error => {
+   *   logError(error)
    * })
    */
   on: function on (event, listener) {
@@ -235,13 +235,13 @@ BaseSync.prototype = {
    * Add one-time listener for synchronization events.
    * See {@link BaseSync#on} for supported events.
    *
-   * @param {"state"|"sendedError"} event The event name.
+   * @param {"state"|"clientError"} event The event name.
    * @param {listener} listener The listener function.
    *
    * @return {function} Unbind listener from event.
    *
    * @example
-   * sync.once('error', () => {
+   * sync.once('clientError', () => {
    *   everythingFine = false
    * })
    */
@@ -321,14 +321,9 @@ BaseSync.prototype = {
   onMessage: function onMessage (msg) {
     this.delayPing()
 
-    if (typeof msg !== 'object' || typeof msg.length !== 'number') {
-      var json = JSON.stringify(msg)
-      this.sendError('Wrong message format in ' + json, 'protocol')
-      this.connection.disconnect()
-      return
-    }
-    if (msg.length < 1 || typeof msg[0] !== 'string') {
-      this.sendError('Wrong type in message ' + JSON.stringify(msg), 'protocol')
+    if (typeof msg !== 'object' || typeof msg.length !== 'number' ||
+        typeof msg[0] !== 'string') {
+      this.sendError('wrong-format', JSON.stringify(msg))
       this.connection.disconnect()
       return
     }
@@ -336,7 +331,7 @@ BaseSync.prototype = {
     var name = msg[0]
     var method = name + 'Message'
     if (typeof this[method] !== 'function') {
-      this.sendError('Unknown message type `' + name + '`', 'protocol')
+      this.sendError('unknown-message', name)
       this.connection.disconnect()
       return
     }
@@ -345,8 +340,7 @@ BaseSync.prototype = {
       if (this.authenticating) {
         this.unauthenticated.push(msg)
       } else {
-        this.sendError(
-          'Start authentication before sending `' + name + '` message', 'auth')
+        this.sendError('missed-auth', JSON.stringify(msg))
       }
       return
     }
@@ -377,8 +371,8 @@ BaseSync.prototype = {
     }
   },
 
-  error: function error (desc, type, received) {
-    var err = new SyncError(this, desc, type, received)
+  error: function error (type, options, received) {
+    var err = new SyncError(this, type, options, received)
     this.emitter.emit('error', err)
     if (this.throwsError) {
       throw err
@@ -398,12 +392,11 @@ BaseSync.prototype = {
     var ms = this.options.timeout
     var sync = this
     var timeout = setTimeout(function () {
-      var desc = 'A timeout was riched (' + ms + 'ms)'
       if (sync.connected) {
-        sync.sendError(desc, 'protocol')
+        sync.sendError('timeout', ms)
         sync.connection.disconnect()
       }
-      sync.error(desc, 'connection', false)
+      sync.error('timeout', ms)
     }, ms)
 
     this.timeouts.push(timeout)

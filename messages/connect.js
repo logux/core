@@ -17,7 +17,7 @@ function auth (sync, host, credentials, callback) {
       }
       sync.unauthenticated = []
     } else {
-      sync.sendError('Wrong credentials', 'auth')
+      sync.sendError('wrong-credentials')
       sync.destroy()
     }
   })
@@ -52,8 +52,7 @@ module.exports = {
 
     var major = this.protocol[0]
     if (major !== version[0]) {
-      this.sendError('Only ' + major + '.x protocols are supported, ' +
-                     'but you use ' + version.join('.'), 'protocol')
+      this.sendError('wrong-protocol', { supported: [major], used: version })
       this.destroy()
       return
     }

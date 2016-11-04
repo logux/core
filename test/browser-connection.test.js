@@ -29,7 +29,8 @@ it('emits error on wrong format', function () {
   connection.connect()
   connection.ws.onmessage({ data: '{' })
 
-  expect(error.message).toContain('parse JSON')
+  expect(error.message).toEqual('Wrong message format')
+  expect(error.received).toEqual('{')
 })
 
 it('emits connection states', function () {

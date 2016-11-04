@@ -1,9 +1,15 @@
+function supported (versions) {
+  return versions.map(function (i) {
+    return i + '.x'
+  }).join(', ')
+}
+
 /**
  * Unknown error received from other Logux client.
  *
  * @param {BaseSync} sync The sync client object.
- * @param {string} desc The error message.
  * @param {string} type The error type.
+ * @param {any} options The error options.
  * @param {boolean} received Was error received from other node.
  *
  * @example
@@ -14,8 +20,8 @@
  * @extends Error
  * @class
  */
-function SyncError (sync, desc, type, received) {
-  Error.call(this, desc)
+function SyncError (sync, type, options, received) {
+  Error.call(this, type)
 
   /**
    * Always equal to `SyncError`. The best way to check error type.
@@ -25,6 +31,29 @@ function SyncError (sync, desc, type, received) {
    * if (error.name === 'SyncError') { }
    */
   this.name = 'SyncError'
+
+  /**
+   * Error type name.
+   * @type {string}
+   *
+   * @example
+   * if (error.type === 'timeout') {
+   *   fixNetwork()
+   * }
+   */
+  this.type = type
+
+  /**
+   * Error extra data depends on error type.
+   * @type {any}
+   *
+   * @example
+   * if (error.type === 'timeout') {
+   *   console.error('A timeout was reached (' + error.options + ' ms)')
+   * }
+   */
+  this.options = options
+
   /**
    * Origin error description from other client.
    * @type {string}
@@ -32,17 +61,8 @@ function SyncError (sync, desc, type, received) {
    * @example
    * console.log('Server throws: ' + error.description)
    */
-  this.description = desc
-  /**
-   * Error type.
-   * @type {string|undefined}
-   *
-   * @example
-   * if (error.type === 'protocol') {
-   *   askToUpdateClient()
-   * }
-   */
-  this.type = type
+  this.description = SyncError.describe(type, options)
+
   /**
    * Sync client received a error message.
    * @type {BaseSync}
@@ -59,17 +79,51 @@ function SyncError (sync, desc, type, received) {
     } else {
       this.message += 'Logux received '
     }
-    this.message += '"' + this.description + '" '
-    if (this.type) {
-      this.message += this.type + ' '
+    this.message += this.type + ' error'
+    if (this.description !== this.type) {
+      this.message += ' (' + this.description + ')'
     }
-    this.message += 'error'
   } else {
-    this.message = desc
+    this.message = this.description
   }
 
   if (Error.captureStackTrace) {
     Error.captureStackTrace(this, SyncError)
+  }
+}
+
+/**
+ * Return a error description by it code.
+ *
+ * @param {string} type The error code.
+ * @param {any} options The errors options depends on error code.
+ *
+ * @return {string} Human-readable error description.
+ *
+ * @example
+ * errorMessage(msg) {
+ *   console.log(SyncError.describe(msg[1], msg[2]))
+ * }
+ */
+SyncError.describe = function describe (type, options) {
+  if (type === 'timeout') {
+    return 'A timeout was reached (' + options + 'ms)'
+  } else if (type === 'wrong-format') {
+    return 'Wrong message format in ' + options
+  } else if (type === 'unknown-message') {
+    return 'Unknown message `' + options + '` type'
+  } else if (type === 'missed-auth') {
+    return 'Start authentication before sending message ' + options
+  } else if (type === 'wrong-protocol') {
+    return 'Only ' + supported(options.supported) + ' Logux protocols ' +
+           'are supported, but you use ' + options.used.join('.')
+  } else if (type === 'wrong-subprotocol') {
+    return 'Only ' + supported(options.supported) + ' application protocols ' +
+           'are supported, but you use ' + options.used.join('.')
+  } else if (type === 'wrong-credentials') {
+    return 'Wrong credentials'
+  } else {
+    return type
   }
 }
 

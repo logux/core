@@ -31,7 +31,7 @@ function ServerConnection (ws) {
     try {
       data = JSON.parse(msg)
     } catch (e) {
-      self.error('Could not parse JSON in: ' + msg)
+      self.error(msg)
       return
     }
     self.emitter.emit('message', data)
@@ -96,7 +96,9 @@ ServerConnection.prototype = {
   },
 
   error: function error (message) {
-    this.emitter.emit('error', new Error(message))
+    var err = new Error('Wrong message format')
+    err.received = message
+    this.emitter.emit('error', err)
   }
 
 }

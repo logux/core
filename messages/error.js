@@ -1,12 +1,18 @@
+var SyncError = require('../sync-error')
+
 module.exports = {
 
-  sendError: function sendError (desc, type) {
-    this.send(['error', desc, type])
-    this.emitter.emit('sendedError', desc, type)
+  sendError: function sendError (type, options) {
+    var message = ['error', type]
+    if (typeof options !== 'undefined') message.push(options)
+    this.send(message)
+
+    var error = new SyncError(this, type, options)
+    this.emitter.emit('clientError', error)
   },
 
-  errorMessage: function errorMessage (desc, type) {
-    this.error(desc, type, true)
+  errorMessage: function errorMessage (type, options) {
+    this.error(type, options, true)
   }
 
 }

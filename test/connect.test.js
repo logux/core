@@ -63,7 +63,7 @@ it('checks protocol version', function () {
   test.server.connection.emitter.emit('message', ['test', 1])
 
   expect(test.serverSent).toEqual([
-    ['error', 'Only 1.x protocols are supported, but you use 2.0', 'protocol']
+    ['error', 'wrong-protocol', { supported: [1], used: [2, 0] }]
   ])
   expect(test.client.connected).toBeFalsy()
 })
@@ -114,7 +114,7 @@ it('sends error on messages before auth', function () {
   test.client.connection.send(['test'])
 
   expect(test.serverSent).toEqual([
-    ['error', 'Start authentication before sending `test` message', 'auth']
+    ['error', 'missed-auth', '["test"]']
   ])
 })
 
@@ -132,7 +132,7 @@ it('denies access for wrong users', function () {
 
   return nextTick().then(function () {
     expect(test.serverSent).toEqual([
-      ['error', 'Wrong credentials', 'auth']
+      ['error', 'wrong-credentials']
     ])
     expect(test.server.testMessage).not.toBeCalled()
     expect(test.server.connected).toBeFalsy()
@@ -152,7 +152,7 @@ it('denies access to wrong server', function () {
   return nextTick().then(function () {
     expect(test.clientSent).toEqual([
       ['connect', test.client.protocol, 'client', 0],
-      ['error', 'Wrong credentials', 'auth']
+      ['error', 'wrong-credentials']
     ])
     expect(test.client.connected).toBeFalsy()
   })
@@ -224,7 +224,6 @@ it('uses timeout between connect and connected', function () {
   jest.runOnlyPendingTimers()
 
   expect(error.name).toEqual('SyncError')
-  expect(error.type).toEqual('connection')
   expect(error.message).not.toContain('received')
   expect(error.message).toContain('timeout')
 })

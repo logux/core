@@ -67,16 +67,28 @@ Error message contains error description and error type.
 ```ts
 [
   "error",
-  string message,
-  string errorType
+  string errorType,
+  (any options)?
 ]
 ```
 
-Right now there are 4 possible error types:
-* `protocol`: client or server send wrong message. Maybe protocol implementation
-  contains mistakes. Client should no reconnect after this error.
-* `auth`: authentication was missed or had wrong credentials.
-* `connection`: connection was broken or timeout was reached.
+Right now there are 7 possible errors:
+
+- `wrong-protocol`: client Logux protocol version is not supported by server.
+  Error options object will contain `supported` key with array
+  with supported major versions and `used` with used version.
+* `wrong-format`: message is not correct JSON, is not a array or have no `type`.
+  Error options will contain bad message string.
+* `unknown-message`: message’s type is not supported. Error options will contain
+  bad message type.
+- `wrong-credentials`: sent credentials doesn’t pass authentication.
+* `missed-auth`: not `connect`, `connected` or `error` messages was sent
+  before authentication. Error options will contain bad message string.
+* `timeout`: a timeout was reached. Errors options will contain timeout duration
+  in milliseconds.
+* `wrong-subprotocol`: client application protocol version is not supported
+  by server. Error options object will contain `supported` key with array
+  with supported major versions and `used` with used version.
 
 ## `connect`
 
@@ -243,7 +255,7 @@ Wrong authentication:
 ```ts
 CONNECTED
 CLIENT > ["connect", [0, 0], "client1", { credentials: "wrongToken" }]
-SERVER < ["error", "Wrong credentials", "auth"]
+SERVER < ["error", "wrong-credentials"]
 DISCONNECTED
 ```
 

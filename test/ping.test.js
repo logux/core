@@ -78,7 +78,7 @@ it('sends ping on idle connection', function () {
       ['test'],
       ['ping', 1],
       ['ping', 1],
-      ['error', 'A timeout was riched (100ms)', 'protocol']
+      ['error', 'timeout', 100]
     ])
   })
 })

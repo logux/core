@@ -33,7 +33,8 @@ it('emits error on wrong format', function () {
   })
 
   connection.ws.emit('message', '{', { })
-  expect(error.message).toContain('parse JSON')
+  expect(error.message).toEqual('Wrong message format')
+  expect(error.received).toEqual('{')
 })
 
 it('closes WebSocket', function () {
