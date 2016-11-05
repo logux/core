@@ -39,7 +39,7 @@ creation time manually (for example, if you got event from different machine).
 
 ```js
 import { createTimer } from 'logux-core'
-const log = new Log({ store, timer: createTimer(host) })
+const log = new Log({ store, timer: createTimer(uniqName) })
 ```
 
 Log order should be same on every machine. So every creation time
@@ -49,20 +49,20 @@ This is why creation time is a little bit tricky.
 Default timer return array with:
 
 1. Milliseconds elapsed since 1 January 1970.
-2. Unique host name.
+2. Unique node name.
 3. Incremented number if latest time had same milliseconds.
 
 ```js
-const timer = createTimer('host')
+const timer = createTimer('server')
 
-timer() //=> [1473564435318, 'host', 0]
-timer() //=> [1473564435318, 'host', 1]
-timer() //=> [1473564435319, 'host', 0]
+timer() //=> [1473564435318, 'server', 0]
+timer() //=> [1473564435318, 'server', 1]
+timer() //=> [1473564435319, 'server', 0]
 
-const timer2 = createTimer('host2')
+const timer2 = createTimer('user:1')
 
-timer2() //=> [1473564435320, 'host2', 0]
-timer()  //=> [1473564435320, 'host', 0]
+timer2() //=> [1473564435320, 'user:1', 0]
+timer()  //=> [1473564435320, 'user:1', 0]
 ```
 
 You could access to log’s timer by:
