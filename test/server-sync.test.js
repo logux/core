@@ -6,7 +6,7 @@ var LocalPair = require('../local-pair')
 it('destroys on disconnect', function () {
   var log = new NanoEvents()
   var pair = new LocalPair()
-  var sync = new ServerSync('host', log, pair.left)
+  var sync = new ServerSync('server', log, pair.left)
 
   sync.destroy = jest.fn()
   pair.left.connect()
@@ -19,7 +19,7 @@ it('destroys on connect timeout', function () {
 
   var log = new NanoEvents()
   var pair = new LocalPair()
-  var sync = new ServerSync('host', log, pair.left, { timeout: 1000 })
+  var sync = new ServerSync('server', log, pair.left, { timeout: 1000 })
 
   var error
   sync.catch(function (err) {

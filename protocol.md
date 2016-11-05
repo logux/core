@@ -98,7 +98,7 @@ After connection was started some client should send `connect` message to other.
 [
   "connect",
   number[] protocol,
-  string host,
+  string uniqName,
   number synced,
   (object options)?
 ]
@@ -108,9 +108,9 @@ Receiver should check [protocol version] in second position in message array.
 If major version is different from receiver protocol,
 it should send `wrong-protocol` error and close connection.
 
-Third position contains unique host name. Same host name is used in default
-log timer, so sender must be sure that host name is unique.
-Client should UUID if it can’t guarantee host name uniqueness with other way.
+Third position contains unique node name. Same node name is used in default
+log timer, so sender must be sure that name is unique.
+Client should UUID if it can’t guarantee name uniqueness with other way.
 
 Fourth position contains last `added` time used by receiver
 in previous connection (`0` on first connection).
@@ -140,13 +140,13 @@ This message is answer to received [`connect`] message.
 [
   "connected",
   number[] protocol,
-  string host,
+  string uniqName,
   [number start, number end],
   (object options)?
 ]
 ```
 
-`protocol`, `host` and `options` positions are same with [`connect`] message.
+`protocol`, `uniqName` and `options` are same with [`connect`] message.
 
 Fourth position contains [`connect`] receiving time and `connected` sending time.
 Time should be a milliseconds elapsed since 1 January 1970 00:00:00 UTC.
@@ -219,7 +219,7 @@ on used timer. For more details read [Logux Core docs].
 For example, standard timer generated:
 
 ```ts
-[number milliseconds, string host, number orderInMs]
+[number milliseconds, string uniqName, number orderInMs]
 ```
 
 Sender and receiver should use same timer type to have same time format.

@@ -5,7 +5,7 @@ var BaseSync = require('../base-sync')
 function createTest () {
   var log = { on: function () { } }
   var pair = new LocalPair()
-  var sync = new BaseSync('host', log, pair.left)
+  var sync = new BaseSync('server', log, pair.left)
   var messages = []
   pair.right.on('message', function (msg) {
     messages.push(msg)

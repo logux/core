@@ -15,7 +15,7 @@ function initTest (opts) {
   var log = new Log({ store: new MemoryStore(), timer: createTestTimer() })
   log.lastAdded = 1
   var pair = new LocalPair()
-  var sync = new ClientSync('host', log, pair.left, opts)
+  var sync = new ClientSync('client', log, pair.left, opts)
 
   sync.connection.connect()
   sync.connection.other().send(['connected', sync.protocol, 'server'])
@@ -30,7 +30,7 @@ function initTest (opts) {
 
 it('throws on ping and no timeout options', function () {
   expect(function () {
-    new ClientSync('host', null, null, { ping: 1000, timeout: 0 })
+    new ClientSync('client', null, null, { ping: 1000, timeout: 0 })
   }).toThrowError(/set timeout option/)
 })
 

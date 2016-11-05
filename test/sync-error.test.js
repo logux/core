@@ -36,18 +36,18 @@ it('stringifies', function () {
   expect('' + error).toContain('SyncError: Logux received test error')
 })
 
-it('stringifies with other host', function () {
-  var error = catchError({ otherHost: 'server' }, 'test', undefined, true)
+it('stringifies with other node name', function () {
+  var error = catchError({ otherUniqName: 'server' }, 'test', undefined, true)
   expect(error.toString()).toContain('SyncError: server sent test error')
 })
 
 it('stringifies local error', function () {
-  var error = catchError({ otherHost: 'server' }, 'test')
+  var error = catchError({ otherUniqName: 'server' }, 'test')
   expect(error.toString()).toContain('SyncError: test')
 })
 
 it('stringifies subprotocol error', function () {
-  var error = catchError({ otherHost: 'server' }, 'wrong-subprotocol', {
+  var error = catchError({ otherUniqName: 'server' }, 'wrong-subprotocol', {
     supported: [2, 3],
     used: [1, 0]
   }, true)

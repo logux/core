@@ -38,7 +38,7 @@ function nextTick () {
   })
 }
 
-it('sends protocol version and host in connect message', function () {
+it('sends protocol version and name in connect message', function () {
   var test = createTest()
   test.client.connection.connect()
   expect(test.clientSent).toEqual([
@@ -46,7 +46,7 @@ it('sends protocol version and host in connect message', function () {
   ])
 })
 
-it('answers with protocol version and host in connected message', function () {
+it('answers with protocol version and name in connected message', function () {
   var test = createTest()
   test.client.connection.connect()
   expect(test.serverSent).toEqual([
@@ -68,11 +68,11 @@ it('checks protocol version', function () {
   expect(test.client.connected).toBeFalsy()
 })
 
-it('saves other client host', function () {
+it('saves other node name', function () {
   var test = createTest()
   test.client.connection.connect()
-  expect(test.client.otherHost).toEqual('server')
-  expect(test.server.otherHost).toEqual('client')
+  expect(test.client.otherUniqName).toEqual('server')
+  expect(test.server.otherUniqName).toEqual('client')
 })
 
 it('saves other client protocol', function () {
@@ -209,8 +209,8 @@ it('allows access for right users', function () {
   test.client.options = { credentials: 'a' }
   test.server.testMessage = jest.fn()
   test.server.options = {
-    auth: function (credentials, host) {
-      return Promise.resolve(credentials === 'a' && host === 'client')
+    auth: function (credentials, uniqName) {
+      return Promise.resolve(credentials === 'a' && uniqName === 'client')
     }
   }
 

@@ -74,8 +74,8 @@ function SyncError (sync, type, options, received) {
 
   this.message = ''
   if (received) {
-    if (this.sync.otherHost) {
-      this.message += this.sync.otherHost + ' sent '
+    if (this.sync.otherUniqName) {
+      this.message += this.sync.otherUniqName + ' sent '
     } else {
       this.message += 'Logux received '
     }

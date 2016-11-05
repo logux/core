@@ -14,7 +14,7 @@ var DEFAULT_OPTIONS = {
  * Instead of server node, it initializes synchronization
  * and sends connect message.
  *
- * @param {string} host Unique current host name.
+ * @param {string|number} uniqName Unique current node name.
  * @param {Log} log Logux log instance to sync with other node log.
  * @param {Connection} connection Connection to other node.
  * @param {object} [options] Synchronization options.
@@ -50,14 +50,14 @@ var DEFAULT_OPTIONS = {
  * @example
  * import { ClientSync } from 'logux-sync'
  * const connection = new BrowserConnection(url)
- * const sync = new ClientSync(uniqHost, log, connection)
+ * const sync = new ClientSync(uniqName, log, connection)
  *
  * @extends BaseSync
  * @class
  */
-function ClientSync (host, log, connection, options) {
+function ClientSync (uniqName, log, connection, options) {
   options = assign({ }, DEFAULT_OPTIONS, options)
-  BaseSync.call(this, host, log, connection, options)
+  BaseSync.call(this, uniqName, log, connection, options)
 }
 
 ClientSync.prototype = {

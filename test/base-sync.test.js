@@ -8,7 +8,7 @@ var BaseSync = require('../base-sync')
 function createSync () {
   var log = new Log({ store: new MemoryStore(), timer: createTestTimer() })
   var pair = new LocalPair()
-  return new BaseSync('host', log, pair.left)
+  return new BaseSync('client', log, pair.left)
 }
 
 function nextTick () {
@@ -26,8 +26,9 @@ function wait (ms) {
 it('saves all arguments', function () {
   var log = { on: function () { } }
   var connection = { on: function () { } }
-  var sync = new BaseSync('host', log, connection, { a: 1 })
+  var sync = new BaseSync('client', log, connection, { a: 1 })
 
+  expect(sync.uniqName).toEqual('client')
   expect(sync.log).toBe(log)
   expect(sync.connection).toBe(connection)
   expect(sync.options).toEqual({ a: 1 })
@@ -134,7 +135,7 @@ it('sets wait state on creating', function () {
   var log = new Log({ store: new MemoryStore(), timer: createTestTimer() })
   log.add({ type: 'a' })
   var pair = new LocalPair()
-  var sync = new BaseSync('host', log, pair.left)
+  var sync = new BaseSync('client', log, pair.left)
   expect(sync.state).toEqual('wait')
 })
 
@@ -196,7 +197,7 @@ it('has state', function () {
 it('has synced and otherSynced option', function () {
   var log = { on: function () { } }
   var con = { on: function () { } }
-  var sync = new BaseSync('host', log, con, { synced: 1, otherSynced: 2 })
+  var sync = new BaseSync('client', log, con, { synced: 1, otherSynced: 2 })
   expect(sync.synced).toBe(1)
   expect(sync.otherSynced).toBe(2)
 })
@@ -204,7 +205,7 @@ it('has synced and otherSynced option', function () {
 it('has separated timeouts', function () {
   var log = { on: function () { } }
   var con = { on: function () { } }
-  var sync = new BaseSync('host', log, con, { timeout: 100 })
+  var sync = new BaseSync('client', log, con, { timeout: 100 })
 
   var error
   sync.catch(function (e) {
@@ -224,14 +225,14 @@ it('accepts already connected connection', function () {
   var log = { on: function () { } }
   var pair = new LocalPair()
   pair.left.connect()
-  var sync = new BaseSync('host', log, pair.left)
+  var sync = new BaseSync('client', log, pair.left)
   expect(sync.connected).toBeTruthy()
 })
 
 it('receives errors from connection', function () {
   var log = { on: function () { } }
   var pair = new LocalPair()
-  var sync = new BaseSync('host', log, pair.left)
+  var sync = new BaseSync('client', log, pair.left)
   pair.left.connect()
 
   var sent = []

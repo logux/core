@@ -1,4 +1,4 @@
-function auth (sync, host, credentials, callback) {
+function auth (sync, uniqName, credentials, callback) {
   if (!sync.options.auth) {
     sync.authenticated = true
     callback()
@@ -6,7 +6,7 @@ function auth (sync, host, credentials, callback) {
   }
 
   sync.authenticating = true
-  sync.options.auth(credentials, host).then(function (access) {
+  sync.options.auth(credentials, uniqName).then(function (access) {
     if (access) {
       sync.authenticated = true
       sync.authenticating = false
@@ -48,7 +48,7 @@ function checkSubprotocol (sync, subprotocol) {
 module.exports = {
 
   sendConnect: function sendConnect () {
-    var message = ['connect', this.protocol, this.host, this.otherSynced]
+    var message = ['connect', this.protocol, this.uniqName, this.otherSynced]
 
     var options = { }
     if (this.options.credentials) {
@@ -66,7 +66,7 @@ module.exports = {
   },
 
   sendConnected: function sendConnected (start, end) {
-    var message = ['connected', this.protocol, this.host, [start, end]]
+    var message = ['connected', this.protocol, this.uniqName, [start, end]]
 
     var options = { }
     if (this.options.credentials) {
@@ -80,15 +80,15 @@ module.exports = {
     this.send(message)
   },
 
-  connectMessage: function connectMessage (version, host, synced, options) {
+  connectMessage: function connectMessage (ver, uniqName, synced, options) {
     if (!options) options = { }
 
-    this.otherHost = host
-    this.otherProtocol = version
+    this.otherUniqName = uniqName
+    this.otherProtocol = ver
 
     var major = this.protocol[0]
-    if (major !== version[0]) {
-      this.sendError('wrong-protocol', { supported: [major], used: version })
+    if (major !== ver[0]) {
+      this.sendError('wrong-protocol', { supported: [major], used: ver })
       this.destroy()
       return
     }
@@ -99,18 +99,18 @@ module.exports = {
 
     var sync = this
     var start = this.log.timer()[0]
-    auth(this, host, options.credentials, function () {
+    auth(this, uniqName, options.credentials, function () {
       sync.sendConnected(start, sync.log.timer()[0])
       sync.syncSince(synced)
     })
   },
 
-  connectedMessage: function connectedMessage (version, host, time, options) {
+  connectedMessage: function connectedMessage (ver, uniqName, time, options) {
     if (!options) options = { }
 
     this.endTimeout()
-    this.otherHost = host
-    this.otherProtocol = version
+    this.otherUniqName = uniqName
+    this.otherProtocol = ver
 
     if (this.options.fixTime) {
       var now = this.log.timer()[0]
@@ -124,7 +124,7 @@ module.exports = {
     }
 
     var sync = this
-    auth(this, host, options.credentials, function () {
+    auth(this, uniqName, options.credentials, function () {
       sync.syncSince(sync.synced)
     })
   }
