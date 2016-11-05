@@ -29,7 +29,7 @@ module.exports = {
  * @typedef {array} Time
  *
  * @example
- * [1, 'host']
+ * [1, 'server', 0]
  */
 
 /**

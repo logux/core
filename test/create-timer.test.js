@@ -6,10 +6,10 @@ it('starts events from zero', function () {
   expect(time[2]).toBe(0)
 })
 
-it('saves host name', function () {
-  var timer = createTimer('host')
+it('saves node name', function () {
+  var timer = createTimer('uniqName')
   var time = timer()
-  expect(time[2]).toBe(0)
+  expect(time[1]).toEqual('uniqName')
 })
 
 it('generates unique time marks', function () {

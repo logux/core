@@ -6,20 +6,20 @@
  * Events created in same time on different machine may have different order.
  *
  * This is why Logux use more smarter timer. To solve this problems this timer
- * store time as 3 variables: current milliseconds, host name and events count.
+ * store time as 3 variables: current milliseconds, node name and events count.
  *
- * @param {string|number} host Unique current host name.
+ * @param {string|number} uniqName Unique current node name.
  * @return {Timer} Timer function.
  *
  * @example
  * import { createTimer } from 'logux-core'
  *
- * const timer = createTimer('host')
- * timer() //=> [1473564435318, 'host', 0]
- * timer() //=> [1473564435318, 'host', 1]
- * timer() //=> [1473564435319, 'host', 0]
+ * const timer = createTimer('server')
+ * timer() //=> [1473564435318, 'server', 0]
+ * timer() //=> [1473564435318, 'server', 1]
+ * timer() //=> [1473564435319, 'server', 0]
  */
-function createTimer (host) {
+function createTimer (uniqName) {
   var lastTime = 0
   var events = 0
   return function () {
@@ -30,7 +30,7 @@ function createTimer (host) {
       lastTime = now
       events = 0
     }
-    return [now, host, events]
+    return [now, uniqName, events]
   }
 }
 
