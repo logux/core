@@ -6,6 +6,8 @@ var DEFAULT_OPTIONS = {
   attempts: Infinity
 }
 
+var FATAL_ERRORS = ['wrong-protocol', 'wrong-subprotocol', 'wrong-credentials']
+
 /**
  * Wrapper for {@link Connection} to try reconnect it on evert disconnect.
  *
@@ -46,7 +48,7 @@ function Reconnect (connection, options) {
   var self = this
 
   this.unbind.push(this.connection.on('message', function (msg) {
-    if (msg[0] === 'error' && (msg[2] === 'protocol' || msg[2] === 'auth')) {
+    if (msg[0] === 'error' && FATAL_ERRORS.indexOf(msg[1]) !== -1) {
       self.reconnecting = false
     }
   }))

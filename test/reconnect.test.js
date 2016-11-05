@@ -109,7 +109,7 @@ it('disables reconnection on protocol error', function () {
 
   recon.connect()
 
-  pair.right.send(['error', '', 'protocol'])
+  pair.right.send(['error', 'wrong-protocol'])
   pair.right.disconnect()
 
   expect(recon.reconnecting).toBeFalsy()
@@ -121,7 +121,19 @@ it('disables reconnection on authentication error', function () {
 
   recon.connect()
 
-  pair.right.send(['error', '', 'auth'])
+  pair.right.send(['error', 'wrong-credentials'])
+  pair.right.disconnect()
+
+  expect(recon.reconnecting).toBeFalsy()
+})
+
+it('disables reconnection on subprotocol error', function () {
+  var pair = new LocalPair()
+  var recon = new Reconnect(pair.left)
+
+  recon.connect()
+
+  pair.right.send(['error', 'wrong-subprotocol'])
   pair.right.disconnect()
 
   expect(recon.reconnecting).toBeFalsy()
