@@ -43,6 +43,9 @@ var DEFAULT_OPTIONS = {
  * @param {number} [options.otherSynced=0] Events with lower `added` time
  *                                         in other node’s log
  *                                         will not be synchronized.
+ * @param {number[]} [options.subprotocol] Application subprotocol version.
+ * @param {number[]} [options.supports] What major versions of application
+ *                                      subprotocol are supported.
  *
  * @example
  * import { ClientSync } from 'logux-sync'

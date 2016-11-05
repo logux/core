@@ -34,6 +34,9 @@ var DEFAULT_OPTIONS = {
  *                                     to synchronization.
  * @param {mapper} [options.outMap] Map function to change event
  *                                  before sending it to other client.
+ * @param {number[]} [options.subprotocol] Application subprotocol version.
+ * @param {number[]} [options.supports] What major versions of application
+ *                                      subprotocol are supported.
  *
  * @example
  * import { ServerSync } from 'logux-sync'

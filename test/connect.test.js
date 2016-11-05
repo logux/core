@@ -60,7 +60,7 @@ it('checks protocol version', function () {
   test.server.protocol = [1, 0]
 
   test.client.connection.connect()
-  test.server.connection.emitter.emit('message', ['test', 1])
+  test.server.connection.emitter.emit('message', ['test'])
 
   expect(test.serverSent).toEqual([
     ['error', 'wrong-protocol', { supported: [1], used: [2, 0] }]
@@ -83,6 +83,52 @@ it('saves other client protocol', function () {
   test.client.connection.connect()
   expect(test.client.otherProtocol).toEqual([1, 1])
   expect(test.server.otherProtocol).toEqual([1, 0])
+})
+
+it('saves other client subprotocol', function () {
+  var test = createTest()
+  test.client.options.subprotocol = [1, 0]
+  test.server.options.subprotocol = [1, 1]
+
+  test.client.connection.connect()
+  expect(test.client.otherSubprotocol).toEqual([1, 1])
+  expect(test.server.otherSubprotocol).toEqual([1, 0])
+})
+
+it('has default subprotocol', function () {
+  var test = createTest()
+  test.client.connection.connect()
+  expect(test.server.otherSubprotocol).toEqual([0, 0])
+})
+
+it('checks subprotocol version', function () {
+  var test = createTest()
+  test.client.options.subprotocol = [1, 0]
+  test.server.options.supports = [3, 2]
+
+  test.client.connection.connect()
+  test.server.connection.emitter.emit('message', ['test'])
+
+  expect(test.serverSent).toEqual([
+    ['error', 'wrong-subprotocol', { supported: [3, 2], used: [1, 0] }]
+  ])
+  expect(test.client.connected).toBeFalsy()
+})
+
+it('checks subprotocol version on client too', function () {
+  var test = createTest()
+  test.client.options.subprotocol = [1, 0]
+  test.client.options.supports = [1]
+  test.server.options.subprotocol = [3, 0]
+  test.server.options.supports = [3, 2, 1]
+
+  test.client.connection.connect()
+  test.client.connection.emitter.emit('message', ['test'])
+
+  expect(test.clientSent).toEqual([
+    ['error', 'wrong-subprotocol', { supported: [1], used: [3, 0] }]
+  ])
+  expect(test.client.connected).toBeFalsy()
 })
 
 it('sends credentials in connect', function () {

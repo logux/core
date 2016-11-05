@@ -23,13 +23,42 @@ function auth (sync, host, credentials, callback) {
   })
 }
 
+function checkSubprotocol (sync, subprotocol) {
+  if (!subprotocol) subprotocol = [0, 0]
+  sync.otherSubprotocol = subprotocol
+
+  if (!sync.options.supports) {
+    return true
+  } else {
+    var supported = sync.options.supports.some(function (i) {
+      return i === subprotocol[0]
+    })
+
+    if (!supported) {
+      sync.sendError('wrong-subprotocol', {
+        supported: sync.options.supports,
+        used: subprotocol
+      })
+      sync.destroy()
+    }
+    return supported
+  }
+}
+
 module.exports = {
 
   sendConnect: function sendConnect () {
     var message = ['connect', this.protocol, this.host, this.otherSynced]
+
+    var options = { }
     if (this.options.credentials) {
-      message.push({ credentials: this.options.credentials })
+      options.credentials = this.options.credentials
     }
+    if (this.options.subprotocol) {
+      options.subprotocol = this.options.subprotocol
+    }
+    if (Object.keys(options).length > 0) message.push(options)
+
     if (this.options.fixTime) this.connectSended = this.log.timer()[0]
     if (this.log.lastAdded > this.synced) this.setState('sending')
     this.startTimeout()
@@ -38,9 +67,16 @@ module.exports = {
 
   sendConnected: function sendConnected (start, end) {
     var message = ['connected', this.protocol, this.host, [start, end]]
+
+    var options = { }
     if (this.options.credentials) {
-      message.push({ credentials: this.options.credentials })
+      options.credentials = this.options.credentials
     }
+    if (this.options.subprotocol) {
+      options.subprotocol = this.options.subprotocol
+    }
+    if (Object.keys(options).length > 0) message.push(options)
+
     this.send(message)
   },
 
@@ -54,6 +90,10 @@ module.exports = {
     if (major !== version[0]) {
       this.sendError('wrong-protocol', { supported: [major], used: version })
       this.destroy()
+      return
+    }
+
+    if (!checkSubprotocol(this, options.subprotocol)) {
       return
     }
 
@@ -77,6 +117,10 @@ module.exports = {
       var authTime = time[1] - time[0]
       var roundTrip = now - this.connectSended - authTime
       this.timeFix = this.connectSended - time[0] + roundTrip / 2
+    }
+
+    if (!checkSubprotocol(this, options.subprotocol)) {
+      return
     }
 
     var sync = this

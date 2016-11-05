@@ -53,6 +53,9 @@ function syncMappedEvent (sync, event, meta) {
  * @param {number} [options.otherSynced=0] Events with lower `added` time
  *                                         in other node’s log
  *                                         will not be synchronized.
+ * @param {number[]} [options.subprotocol] Application subprotocol version.
+ * @param {number[]} [options.supports] What major versions of application
+ *                                      subprotocol are supported.
  *
  * @abstract
  * @class
@@ -105,6 +108,17 @@ function BaseSync (host, log, connection, options) {
   this.timeFix = 0
   this.syncing = 0
   this.received = { }
+
+  /**
+   * Other node’s application subprotocol version.
+   * @type {number[]}
+   *
+   * @example
+   * if (sync.otherSubprotocol[0] === 4) {
+   *   useOldAPI()
+   * }
+   */
+  this.otherSubprotocol = undefined
 
   /**
    * Latest current log `added` time, which was successfully synchronized.
@@ -188,7 +202,7 @@ BaseSync.prototype = {
 
   /**
    * Array with major and minor versions of other node protocol.
-   * @type {number[]}
+   * @type {Version}
    *
    * @example
    * if (sync.otherProtocol[1] >= 5) {
@@ -201,7 +215,7 @@ BaseSync.prototype = {
 
   /**
    * Array with major and minor versions of used protocol.
-   * @type {number[]}
+   * @type {Version}
    *
    * @example
    * if (tool.sync.protocol[0] !== 1) {
@@ -444,6 +458,12 @@ BaseSync.prototype = assign(BaseSync.prototype,
   errorMessages, connectMessages, pingMessages, syncMessages)
 
 module.exports = BaseSync
+
+/**
+ * Logux protocol or application subprotocol version.
+ *
+ * @typedef {number[]} Version
+ */
 
 /**
  * @callback errorListener

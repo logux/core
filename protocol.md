@@ -20,7 +20,7 @@ Protocol uses two major and minor numbers for version.
 [number major, number minor]
 ```
 
-If other client uses bigger `major`, you should send `protocol` error
+If other client uses bigger `major`, you should send `wrong-protocol` error
 and close connection.
 
 ## Messages
@@ -45,7 +45,7 @@ First string in message array is a message type. Possible types:
 * [`sync`]
 * [`synced`]
 
-If client received unknown type, it should send `protocol` error
+If client received unknown type, it should send `wrong-format` error
 and continue communication.
 
 Protocol design has no client and server roles. But in most real cases
@@ -86,7 +86,7 @@ Right now there are 7 possible errors:
   before authentication. Error options will contain bad message string.
 * `timeout`: a timeout was reached. Errors options will contain timeout duration
   in milliseconds.
-* `wrong-subprotocol`: client application protocol version is not supported
+* `wrong-subprotocol`: client application subprotocol version is not supported
   by server. Error options object will contain `supported` key with array
   with supported major versions and `used` with used version.
 
@@ -105,8 +105,8 @@ After connection was started some client should send `connect` message to other.
 ```
 
 Receiver should check [protocol version] in second position in message array.
-If major version is different from receiver protocol, it should send protocol
-error and close connection.
+If major version is different from receiver protocol,
+it should send `wrong-protocol` error and close connection.
 
 Third position contains unique host name. Same host name is used in default
 log timer, so sender must be sure that host name is unique.
@@ -117,10 +117,16 @@ in previous connection (`0` on first connection).
 message with all new events since `synced` (all events on first connection).
 
 Fifth position is optional and contains extra client option in object.
-Right now protocol supports only `credentials` key there.
+Right now protocol supports only `subprotocol` and `credentials` keys there.
+
+Subprotocol version is a `[number major, number minor]` array. It describe
+a application subprotocol, which developer will create on top of Logux protocol.
+If other node doesn’t support this subprotocol version,
+it could send `wrong-subprotocol` error.
 
 Credentials could be in any type. Receiver may check credentials data.
-On wrong credentials data receiver may send `auth` error and close connection.
+On wrong credentials data receiver may send `wrong-credentials` error
+and close connection.
 
 In most cases client will initiate connection, so client will send `connect`.
 
@@ -140,7 +146,7 @@ This message is answer to received [`connect`] message.
 ]
 ```
 
-`protocol` and `host` positions are same with [`connect`] message.
+`protocol`, `host` and `options` positions are same with [`connect`] message.
 
 Fourth position contains [`connect`] receiving time and `connected` sending time.
 Time should be a milliseconds elapsed since 1 January 1970 00:00:00 UTC.
@@ -148,12 +154,6 @@ Receiver may use this information to calculate difference between sender
 and receiver time. It could prevents problems if somebody has wrong time
 or wrong time zone. Calculated time fix may be used to correct
 events `created` time in [`sync`] messages.
-
-Fifth position is optional and contains extra client option in object.
-Right now protocol supports only `credentials` key there.
-
-Credentials could be in any type. Receiver may check credentials data.
-On wrong credentials data receiver may send `auth` error and close connection.
 
 Right after this message receiver should send [`sync`] message with all new events
 since last connection (all events on first connection).
