@@ -7,9 +7,9 @@ it('starts events from zero', function () {
 })
 
 it('saves node name', function () {
-  var timer = createTimer('uniqName')
+  var timer = createTimer('node')
   var time = timer()
-  expect(time[1]).toEqual('uniqName')
+  expect(time[1]).toEqual('node')
 })
 
 it('generates unique time marks', function () {

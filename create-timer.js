@@ -8,7 +8,7 @@
  * This is why Logux use more smarter timer. To solve this problems this timer
  * store time as 3 variables: current milliseconds, node name and events count.
  *
- * @param {string|number} uniqName Unique current node name.
+ * @param {string|number} nodeId Unique current node name.
  * @return {Timer} Timer function.
  *
  * @example
@@ -19,7 +19,7 @@
  * timer() //=> [1473564435318, 'server', 1]
  * timer() //=> [1473564435319, 'server', 0]
  */
-function createTimer (uniqName) {
+function createTimer (nodeId) {
   var lastTime = 0
   var events = 0
   return function () {
@@ -30,7 +30,7 @@ function createTimer (uniqName) {
       lastTime = now
       events = 0
     }
-    return [now, uniqName, events]
+    return [now, nodeId, events]
   }
 }
 
