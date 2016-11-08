@@ -98,7 +98,7 @@ After connection was started some client should send `connect` message to other.
 [
   "connect",
   number[] protocol,
-  string uniqName,
+  string nodeId,
   number synced,
   (object options)?
 ]
@@ -140,13 +140,13 @@ This message is answer to received [`connect`] message.
 [
   "connected",
   number[] protocol,
-  string uniqName,
+  string nodeId,
   [number start, number end],
   (object options)?
 ]
 ```
 
-`protocol`, `uniqName` and `options` are same with [`connect`] message.
+`protocol`, `nodeId` and `options` are same with [`connect`] message.
 
 Fourth position contains [`connect`] receiving time and `connected` sending time.
 Time should be a milliseconds elapsed since 1 January 1970 00:00:00 UTC.
@@ -219,7 +219,7 @@ on used timer. For more details read [Logux Core docs].
 For example, standard timer generated:
 
 ```ts
-[number milliseconds, string uniqName, number orderInMs]
+[number milliseconds, string nodeId, number orderInMs]
 ```
 
 Sender and receiver should use same timer type to have same time format.

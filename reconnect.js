@@ -20,7 +20,7 @@ var FATAL_ERRORS = ['wrong-protocol', 'wrong-subprotocol', 'wrong-credentials']
  * @example
  * import { Reconnect } from 'logux-sync'
  * const recon = new Reconnect(connection)
- * ClientHost(uniqName, log, recon, options)
+ * ClientHost(nodeId, log, recon, options)
  *
  * @class
  * @extends Connection

@@ -37,17 +37,17 @@ it('stringifies', function () {
 })
 
 it('stringifies with other node name', function () {
-  var error = catchError({ otherUniqName: 'server' }, 'test', undefined, true)
+  var error = catchError({ otherNodeId: 'server' }, 'test', undefined, true)
   expect(error.toString()).toContain('SyncError: server sent test error')
 })
 
 it('stringifies local error', function () {
-  var error = catchError({ otherUniqName: 'server' }, 'test')
+  var error = catchError({ otherNodeId: 'server' }, 'test')
   expect(error.toString()).toContain('SyncError: test')
 })
 
 it('stringifies subprotocol error', function () {
-  var error = catchError({ otherUniqName: 'server' }, 'wrong-subprotocol', {
+  var error = catchError({ otherNodeId: 'server' }, 'wrong-subprotocol', {
     supported: [2, 3],
     used: [1, 0]
   }, true)

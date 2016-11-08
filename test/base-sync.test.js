@@ -28,7 +28,7 @@ it('saves all arguments', function () {
   var connection = { on: function () { } }
   var sync = new BaseSync('client', log, connection, { a: 1 })
 
-  expect(sync.uniqName).toEqual('client')
+  expect(sync.nodeId).toEqual('client')
   expect(sync.log).toBe(log)
   expect(sync.connection).toBe(connection)
   expect(sync.options).toEqual({ a: 1 })

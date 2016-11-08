@@ -24,7 +24,7 @@ function syncMappedEvent (sync, event, meta) {
  * Base methods for synchronization nodes. Client and server nodes
  * are based on this module.
  *
- * @param {string|number} uniqName Unique current node name.
+ * @param {string|number} nodeId Unique current node name.
  * @param {Log} log Logux log instance to sync with other node log.
  * @param {Connection} connection Connection to other node.
  * @param {object} [options] Synchronization options.
@@ -60,15 +60,15 @@ function syncMappedEvent (sync, event, meta) {
  * @abstract
  * @class
  */
-function BaseSync (uniqName, log, connection, options) {
+function BaseSync (nodeId, log, connection, options) {
   /**
    * Unique current node name.
    * @type {string|number}
    *
    * @example
-   * console.log(sync.uniqName + ' is started')
+   * console.log(sync.nodeId + ' is started')
    */
-  this.uniqName = uniqName
+  this.nodeId = nodeId
   /**
    * Log to synchronization.
    * @type {Log}
@@ -199,9 +199,9 @@ BaseSync.prototype = {
    * @type {string|number|undefined}
    *
    * @example
-   * console.log('Connected to ' + sync.otherUniqName)
+   * console.log('Connected to ' + sync.otherNodeId)
    */
-  otherUniqName: undefined,
+  otherNodeId: undefined,
 
   /**
    * Array with major and minor versions of other node protocol.
@@ -476,7 +476,7 @@ module.exports = BaseSync
 /**
  * @callback authCallback
  * @param {object} credentials Other credentials.
- * @param {string} uniqName Unique name of other sync instance.
+ * @param {string} nodeId Unique name of other sync instance.
  * @return {Promise} Promise with boolean value.
  */
 

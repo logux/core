@@ -1,4 +1,4 @@
-function auth (sync, uniqName, credentials, callback) {
+function auth (sync, nodeId, credentials, callback) {
   if (!sync.options.auth) {
     sync.authenticated = true
     callback()
@@ -6,7 +6,7 @@ function auth (sync, uniqName, credentials, callback) {
   }
 
   sync.authenticating = true
-  sync.options.auth(credentials, uniqName).then(function (access) {
+  sync.options.auth(credentials, nodeId).then(function (access) {
     if (access) {
       sync.authenticated = true
       sync.authenticating = false
@@ -48,7 +48,7 @@ function checkSubprotocol (sync, subprotocol) {
 module.exports = {
 
   sendConnect: function sendConnect () {
-    var message = ['connect', this.protocol, this.uniqName, this.otherSynced]
+    var message = ['connect', this.protocol, this.nodeId, this.otherSynced]
 
     var options = { }
     if (this.options.credentials) {
@@ -66,7 +66,7 @@ module.exports = {
   },
 
   sendConnected: function sendConnected (start, end) {
-    var message = ['connected', this.protocol, this.uniqName, [start, end]]
+    var message = ['connected', this.protocol, this.nodeId, [start, end]]
 
     var options = { }
     if (this.options.credentials) {
@@ -80,11 +80,11 @@ module.exports = {
     this.send(message)
   },
 
-  connectMessage: function connectMessage (ver, uniqName, synced, options) {
+  connectMessage: function connectMessage (ver, nodeId, synced, options) {
     if (!options) options = { }
 
-    this.otherUniqName = uniqName
     this.otherProtocol = ver
+    this.otherNodeId = nodeId
 
     var major = this.protocol[0]
     if (major !== ver[0]) {
@@ -99,18 +99,18 @@ module.exports = {
 
     var sync = this
     var start = this.log.timer()[0]
-    auth(this, uniqName, options.credentials, function () {
+    auth(this, nodeId, options.credentials, function () {
       sync.sendConnected(start, sync.log.timer()[0])
       sync.syncSince(synced)
     })
   },
 
-  connectedMessage: function connectedMessage (ver, uniqName, time, options) {
+  connectedMessage: function connectedMessage (ver, nodeId, time, options) {
     if (!options) options = { }
 
     this.endTimeout()
-    this.otherUniqName = uniqName
     this.otherProtocol = ver
+    this.otherNodeId = nodeId
 
     if (this.options.fixTime) {
       var now = this.log.timer()[0]
@@ -124,7 +124,7 @@ module.exports = {
     }
 
     var sync = this
-    auth(this, uniqName, options.credentials, function () {
+    auth(this, nodeId, options.credentials, function () {
       sync.syncSince(sync.synced)
     })
   }

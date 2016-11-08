@@ -71,8 +71,8 @@ it('checks protocol version', function () {
 it('saves other node name', function () {
   var test = createTest()
   test.client.connection.connect()
-  expect(test.client.otherUniqName).toEqual('server')
-  expect(test.server.otherUniqName).toEqual('client')
+  expect(test.client.otherNodeId).toEqual('server')
+  expect(test.server.otherNodeId).toEqual('client')
 })
 
 it('saves other client protocol', function () {
@@ -209,8 +209,8 @@ it('allows access for right users', function () {
   test.client.options = { credentials: 'a' }
   test.server.testMessage = jest.fn()
   test.server.options = {
-    auth: function (credentials, uniqName) {
-      return Promise.resolve(credentials === 'a' && uniqName === 'client')
+    auth: function (credentials, nodeId) {
+      return Promise.resolve(credentials === 'a' && nodeId === 'client')
     }
   }
 
