@@ -39,7 +39,7 @@ creation time manually (for example, if you got event from different machine).
 
 ```js
 import { createTimer } from 'logux-core'
-const log = new Log({ store, timer: createTimer(uniqName) })
+const log = new Log({ store, timer: createTimer(nodeId) })
 ```
 
 Log order should be same on every machine. So every creation time
