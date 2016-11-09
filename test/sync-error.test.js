@@ -31,6 +31,14 @@ it('has sync', function () {
   expect(error.sync).toBe(sync)
 })
 
+it('has received', function () {
+  var sync = { a: 1 }
+  var own = catchError(sync, 'test', 'custom')
+  expect(own.received).toBeFalsy()
+  var received = catchError(sync, 'test', 'custom', true)
+  expect(received.received).toBeTruthy()
+})
+
 it('stringifies', function () {
   var error = catchError({ }, 'test', 'custom', true)
   expect('' + error).toContain('SyncError: Logux received test error')

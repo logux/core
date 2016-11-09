@@ -72,6 +72,12 @@ function SyncError (sync, type, options, received) {
    */
   this.sync = sync
 
+  /**
+   * Error was received from other client.
+   * @type {boolean}
+   */
+  this.received = !!received
+
   this.message = ''
   if (received) {
     if (this.sync.otherNodeId) {
