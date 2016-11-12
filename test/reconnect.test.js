@@ -242,6 +242,10 @@ it('has dynamic delay', function () {
 
   attemptsIs(4, 5000)
   attemptsIs(5, 5000)
+  attemptsIs(6, 5000)
+  attemptsIs(7, 5000)
+  attemptsIs(8, 5000)
+  attemptsIs(9, 5000)
   attemptsIs(10, 5000)
 })
 
