@@ -232,9 +232,10 @@ BaseSync.prototype = {
    * Supported events:
    *
    * * `state`: synchronization state changes.
+   * * `disconnect`: low-level disconnect event from connection.
    * * `clientError`: when error was sent to other node.
    *
-   * @param {"state"|"clientError"} event The event name.
+   * @param {"state"|"disconnect"|"clientError"} event The event name.
    * @param {listener} listener The listener function.
    *
    * @return {function} Unbind listener from event.

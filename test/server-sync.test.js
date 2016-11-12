@@ -3,6 +3,23 @@ var NanoEvents = require('nanoevents')
 var ServerSync = require('../server-sync')
 var LocalPair = require('../local-pair')
 
+it('has connecting state from the beginning', function () {
+  var log = new NanoEvents()
+  var pair = new LocalPair()
+  pair.right.connect()
+
+  var sync = new ServerSync('server', log, pair.left)
+  var states = []
+  sync.on('state', function () {
+    states.push(sync.state)
+  })
+
+  expect(sync.state).toEqual('connecting')
+
+  pair.right.disconnect()
+  expect(states).toEqual(['disconnected'])
+})
+
 it('destroys on disconnect', function () {
   var log = new NanoEvents()
   var pair = new LocalPair()

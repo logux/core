@@ -51,6 +51,7 @@ var DEFAULT_OPTIONS = {
 function ServerSync (nodeId, log, connection, options) {
   options = assign({ }, DEFAULT_OPTIONS, options)
   BaseSync.call(this, nodeId, log, connection, options)
+
   if (this.options.fixTime) {
     throw new Error(
       'Server could not fix time. Set opts.fixTime for Client node.')
@@ -59,6 +60,8 @@ function ServerSync (nodeId, log, connection, options) {
     throw new Error(
       'Server could not use synced and otherSynced options.')
   }
+
+  this.state = 'connecting'
 }
 
 ServerSync.prototype = {
