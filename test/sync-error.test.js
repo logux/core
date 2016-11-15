@@ -56,12 +56,12 @@ it('stringifies local error', function () {
 
 it('stringifies subprotocol error', function () {
   var error = catchError({ otherNodeId: 'server' }, 'wrong-subprotocol', {
-    supported: [2, 3],
-    used: [1, 0]
+    supported: '2.x || 3.x',
+    used: '1.0'
   }, true)
   expect(error.toString()).toContain(
     'SyncError: server sent wrong-subprotocol error ' +
-    '(Only 2.x, 3.x application subprotocols are supported, but you use 1.0)')
+    '(Only 2.x || 3.x application subprotocols are supported, but you use 1.0)')
 })
 
 it('returns description by error type', function () {

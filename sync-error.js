@@ -124,8 +124,8 @@ SyncError.describe = function describe (type, options) {
     return 'Only ' + supported(options.supported) + ' Logux protocols ' +
            'are supported, but you use ' + options.used.join('.')
   } else if (type === 'wrong-subprotocol') {
-    return 'Only ' + supported(options.supported) + ' application ' +
-           'subprotocols are supported, but you use ' + options.used.join('.')
+    return 'Only ' + options.supported + ' application subprotocols are ' +
+           'supported, but you use ' + options.used
   } else if (type === 'wrong-credentials') {
     return 'Wrong credentials'
   } else {

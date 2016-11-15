@@ -1,3 +1,5 @@
+var SyncError = require('../sync-error')
+
 function auth (sync, nodeId, credentials, callback) {
   if (!sync.options.auth) {
     sync.authenticated = true
@@ -17,32 +19,24 @@ function auth (sync, nodeId, credentials, callback) {
       }
       sync.unauthenticated = []
     } else {
-      sync.sendError('wrong-credentials')
+      sync.sendError(new SyncError(sync, 'wrong-credentials'))
       sync.destroy()
     }
   })
 }
 
-function checkSubprotocol (sync, subprotocol) {
-  if (!subprotocol) subprotocol = [0, 0]
-  sync.otherSubprotocol = subprotocol
-
-  if (!sync.options.supports) {
-    return true
-  } else {
-    var supported = sync.options.supports.some(function (i) {
-      return i === subprotocol[0]
-    })
-
-    if (!supported) {
-      sync.sendError('wrong-subprotocol', {
-        supported: sync.options.supports,
-        used: subprotocol
-      })
-      sync.destroy()
+function emitEvent (sync) {
+  try {
+    sync.emitter.emit('connect')
+  } catch (e) {
+    if (e.name === 'SyncError') {
+      sync.sendError(e)
+      return false
+    } else {
+      throw e
     }
-    return supported
   }
+  return true
 }
 
 module.exports = {
@@ -81,6 +75,7 @@ module.exports = {
   },
 
   connectMessage: function connectMessage (ver, nodeId, synced, options) {
+    var start = this.log.timer()[0]
     if (!options) options = { }
 
     this.otherProtocol = ver
@@ -88,17 +83,21 @@ module.exports = {
 
     var major = this.protocol[0]
     if (major !== ver[0]) {
-      this.sendError('wrong-protocol', { supported: [major], used: ver })
+      this.sendError(new SyncError(this, 'wrong-protocol', {
+        supported: [major], used: ver
+      }))
       this.destroy()
       return
     }
 
-    if (!checkSubprotocol(this, options.subprotocol)) {
+    this.otherSubprotocol = options.subprotocol || '0.0.0'
+
+    if (!emitEvent(this)) {
+      this.destroy()
       return
     }
 
     var sync = this
-    var start = this.log.timer()[0]
     auth(this, nodeId, options.credentials, function () {
       sync.sendConnected(start, sync.log.timer()[0])
       sync.syncSince(synced)
@@ -119,7 +118,10 @@ module.exports = {
       this.timeFix = this.connectSended - time[0] + roundTrip / 2
     }
 
-    if (!checkSubprotocol(this, options.subprotocol)) {
+    this.otherSubprotocol = options.subprotocol || '0.0.0'
+
+    if (!emitEvent(this)) {
+      this.destroy()
       return
     }
 

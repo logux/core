@@ -53,9 +53,8 @@ function syncMappedEvent (sync, event, meta) {
  * @param {number} [options.otherSynced=0] Events with lower `added` time
  *                                         in other node’s log
  *                                         will not be synchronized.
- * @param {number[]} [options.subprotocol] Application subprotocol version.
- * @param {number[]} [options.supports] What major versions of application
- *                                      subprotocol are supported.
+ * @param {string} [options.subprotocol] Application subprotocol version
+ *                                       in SemVer format.
  *
  * @abstract
  * @class
@@ -113,17 +112,6 @@ function BaseSync (nodeId, log, connection, options) {
   this.received = { }
 
   /**
-   * Other node’s application subprotocol version.
-   * @type {number[]}
-   *
-   * @example
-   * if (sync.otherSubprotocol[0] === 4) {
-   *   useOldAPI()
-   * }
-   */
-  this.otherSubprotocol = undefined
-
-  /**
    * Latest current log `added` time, which was successfully synchronized.
    * If you save log to file, you can remember this option too for faster
    * synchronization on next connection.
@@ -178,7 +166,7 @@ function BaseSync (nodeId, log, connection, options) {
     sync.onMessage(message)
   }))
   this.unbind.push(connection.on('error', function (error) {
-    sync.sendError('wrong-format', error.received)
+    sync.sendError(new SyncError(sync, 'wrong-format', error.received))
     sync.connection.disconnect()
   }))
   this.unbind.push(connection.on('disconnect', function () {
@@ -205,7 +193,7 @@ BaseSync.prototype = {
 
   /**
    * Array with major and minor versions of other node protocol.
-   * @type {Version}
+   * @type {Version|undefined}
    *
    * @example
    * if (sync.otherProtocol[1] >= 5) {
@@ -228,14 +216,34 @@ BaseSync.prototype = {
   protocol: [0, 0],
 
   /**
+   * Other node’s application subprotocol version in SemVer format.
+   *
+   * It is `undefined` before a connection. But after a connection it always
+   * will be a string. If other node will not send its subprotocol,
+   * it will be set to `0.0.0`.
+   *
+   * @type {string|undefined}
+   *
+   * @example
+   * if (semver.satisfies(sync.otherSubprotocol, '>= 5.0.0') {
+   *   useNewAPI()
+   * } else {
+   *   useOldAPI()
+   * }
+   */
+  otherSubprotocol: undefined,
+
+  /**
    * Subscribe for synchronization events. It implements nanoevents API.
    * Supported events:
    *
    * * `state`: synchronization state changes.
+   * * `connect`: custom check before node authentication. You can throw
+   *              a {@link SyncError} to send error to other node.
    * * `disconnect`: low-level disconnect event from connection.
    * * `clientError`: when error was sent to other node.
    *
-   * @param {"state"|"disconnect"|"clientError"} event The event name.
+   * @param {"state"|"connect"|"disconnect"|"clientError"} event The event name.
    * @param {listener} listener The listener function.
    *
    * @return {function} Unbind listener from event.
@@ -253,7 +261,7 @@ BaseSync.prototype = {
    * Add one-time listener for synchronization events.
    * See {@link BaseSync#on} for supported events.
    *
-   * @param {"state"|"clientError"} event The event name.
+   * @param {"state"|"connect"|"disconnect"|"clientError"} event The event name.
    * @param {listener} listener The listener function.
    *
    * @return {function} Unbind listener from event.
@@ -341,7 +349,7 @@ BaseSync.prototype = {
 
     if (typeof msg !== 'object' || typeof msg.length !== 'number' ||
         typeof msg[0] !== 'string') {
-      this.sendError('wrong-format', JSON.stringify(msg))
+      this.sendError(new SyncError(this, 'wrong-format', JSON.stringify(msg)))
       this.connection.disconnect()
       return
     }
@@ -349,7 +357,7 @@ BaseSync.prototype = {
     var name = msg[0]
     var method = name + 'Message'
     if (typeof this[method] !== 'function') {
-      this.sendError('unknown-message', name)
+      this.sendError(new SyncError(this, 'unknown-message', name))
       this.connection.disconnect()
       return
     }
@@ -358,7 +366,7 @@ BaseSync.prototype = {
       if (this.authenticating) {
         this.unauthenticated.push(msg)
       } else {
-        this.sendError('missed-auth', JSON.stringify(msg))
+        this.sendError(new SyncError(this, 'missed-auth', JSON.stringify(msg)))
       }
       return
     }
@@ -411,7 +419,7 @@ BaseSync.prototype = {
     var sync = this
     var timeout = setTimeout(function () {
       if (sync.connected) {
-        sync.sendError('timeout', ms)
+        sync.sendError(new SyncError(sync, 'timeout', ms))
         sync.connection.disconnect()
       }
       sync.error('timeout', ms)

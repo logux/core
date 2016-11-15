@@ -27,8 +27,8 @@ var DEFAULT_OPTIONS = {
  *                                         because of wrong client time zone.
  * @param {number} [options.timeout=20000] Timeout in milliseconds
  *                                         to disconnect connection.
- * @param {number} [options.ping=0=5000] Milliseconds since last message to test
- *                                       connection by sending ping.
+ * @param {number} [options.ping=5000] Milliseconds since last message to test
+ *                                     connection by sending ping.
  * @param {filter} [options.inFilter] Function to filter events
  *                                    from other client. Best place
  *                                    for access control.
@@ -44,8 +44,8 @@ var DEFAULT_OPTIONS = {
  *                                         in other node’s log
  *                                         will not be synchronized.
  * @param {number[]} [options.subprotocol] Application subprotocol version.
- * @param {number[]} [options.supports] What major versions of application
- *                                      subprotocol are supported.
+ * @param {string} [options.subprotocol] Application subprotocol version
+ *                                       in SemVer format.
  *
  * @example
  * import { ClientSync } from 'logux-sync'

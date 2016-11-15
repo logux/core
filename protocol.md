@@ -119,8 +119,8 @@ message with all new events since `synced` (all events on first connection).
 Fifth position is optional and contains extra client option in object.
 Right now protocol supports only `subprotocol` and `credentials` keys there.
 
-Subprotocol version is a `[number major, number minor]` array. It describe
-a application subprotocol, which developer will create on top of Logux protocol.
+Subprotocol version is a string in [SemVer] format. It describes a application
+subprotocol, which developer will create on top of Logux protocol.
 If other node doesn’t support this subprotocol version,
 it could send `wrong-subprotocol` error.
 
@@ -131,6 +131,7 @@ and close connection.
 In most cases client will initiate connection, so client will send `connect`.
 
 [protocol version]: #versions
+[SemVer]: http://semver.org/
 
 ## `connected`
 

@@ -5,6 +5,7 @@ var Log = require('logux-core').Log
 var ClientSync = require('../client-sync')
 var ServerSync = require('../server-sync')
 var LocalPair = require('../local-pair')
+var SyncError = require('../sync-error')
 
 function createTest () {
   var log = new Log({ store: new MemoryStore(), timer: createTestTimer() })
@@ -87,48 +88,68 @@ it('saves other client protocol', function () {
 
 it('saves other client subprotocol', function () {
   var test = createTest()
-  test.client.options.subprotocol = [1, 0]
-  test.server.options.subprotocol = [1, 1]
+  test.client.options.subprotocol = '1.0.0'
+  test.server.options.subprotocol = '1.1.0'
 
   test.client.connection.connect()
-  expect(test.client.otherSubprotocol).toEqual([1, 1])
-  expect(test.server.otherSubprotocol).toEqual([1, 0])
+  expect(test.client.otherSubprotocol).toEqual('1.1.0')
+  expect(test.server.otherSubprotocol).toEqual('1.0.0')
 })
 
 it('has default subprotocol', function () {
   var test = createTest()
   test.client.connection.connect()
-  expect(test.server.otherSubprotocol).toEqual([0, 0])
+  expect(test.server.otherSubprotocol).toEqual('0.0.0')
 })
 
 it('checks subprotocol version', function () {
   var test = createTest()
-  test.client.options.subprotocol = [1, 0]
-  test.server.options.supports = [3, 2]
+  test.client.options.subprotocol = '1.0.0'
+  test.server.on('connect', function () {
+    throw new SyncError(test.server, 'wrong-subprotocol', {
+      supported: '2.x',
+      used: test.server.otherSubprotocol
+    })
+  })
 
   test.client.connection.connect()
   test.server.connection.emitter.emit('message', ['test'])
 
   expect(test.serverSent).toEqual([
-    ['error', 'wrong-subprotocol', { supported: [3, 2], used: [1, 0] }]
+    ['error', 'wrong-subprotocol', { supported: '2.x', used: '1.0.0' }]
   ])
   expect(test.client.connected).toBeFalsy()
 })
 
-it('checks subprotocol version on client too', function () {
+it('checks subprotocol version in client', function () {
   var test = createTest()
-  test.client.options.subprotocol = [1, 0]
-  test.client.options.supports = [1]
-  test.server.options.subprotocol = [3, 0]
-  test.server.options.supports = [3, 2, 1]
+  test.server.options.subprotocol = '1.0.0'
+  test.client.on('connect', function () {
+    throw new SyncError(test.client, 'wrong-subprotocol', {
+      supported: '2.x',
+      used: test.client.otherSubprotocol
+    })
+  })
 
   test.client.connection.connect()
-  test.client.connection.emitter.emit('message', ['test'])
 
   expect(test.clientSent).toEqual([
-    ['error', 'wrong-subprotocol', { supported: [1], used: [3, 0] }]
+    ['error', 'wrong-subprotocol', { supported: '2.x', used: '1.0.0' }]
   ])
   expect(test.client.connected).toBeFalsy()
+})
+
+it('throws regular errors during connect event', function () {
+  var test = createTest()
+
+  var error = new Error('test')
+  test.server.on('connect', function () {
+    throw error
+  })
+
+  expect(function () {
+    test.client.connection.connect()
+  }).toThrow(error)
 })
 
 it('sends credentials in connect', function () {

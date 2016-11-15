@@ -77,6 +77,7 @@ it('emits a event on error sending', function () {
     errors.push(err)
   })
 
-  sync.sendError('test', 'type')
-  expect(errors).toEqual([new SyncError(sync, 'test', 'type')])
+  var error = new SyncError(sync, 'test', 'type')
+  sync.sendError(error)
+  expect(errors).toEqual([error])
 })
