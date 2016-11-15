@@ -240,10 +240,9 @@ BaseSync.prototype = {
    * * `state`: synchronization state changes.
    * * `connect`: custom check before node authentication. You can throw
    *              a {@link SyncError} to send error to other node.
-   * * `disconnect`: low-level disconnect event from connection.
    * * `clientError`: when error was sent to other node.
    *
-   * @param {"state"|"connect"|"disconnect"|"clientError"} event The event name.
+   * @param {"state"|"connect"|"clientError"} event The event name.
    * @param {listener} listener The listener function.
    *
    * @return {function} Unbind listener from event.
@@ -261,7 +260,7 @@ BaseSync.prototype = {
    * Add one-time listener for synchronization events.
    * See {@link BaseSync#on} for supported events.
    *
-   * @param {"state"|"connect"|"disconnect"|"clientError"} event The event name.
+   * @param {"state"|"connect"|"clientError"} event The event name.
    * @param {listener} listener The listener function.
    *
    * @return {function} Unbind listener from event.
