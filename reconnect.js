@@ -35,9 +35,8 @@ function Reconnect (connection, options) {
    * @type {boolean}
    *
    * @example
-   * function pause() {
+   * function lastTry () {
    *   recon.reconnecting = false
-   *   recon.disconnect()
    * }
    */
   this.reconnecting = connection.connected
