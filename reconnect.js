@@ -11,11 +11,11 @@ var FATAL_ERRORS = ['wrong-protocol', 'wrong-subprotocol', 'wrong-credentials']
 /**
  * Wrapper for {@link Connection} to try reconnect it on evert disconnect.
  *
- * @param {Connection} connection The connection to be reconnectable
- * @param {object} [options] options
- * @param {number} [options.minDelay=1000] minimum delay between reconnecting
- * @param {number} [options.maxDelay=5000] maximum delay between reconnecting
- * @param {number} [options.attempts=Infinity] maximum reconnecting attempts
+ * @param {Connection} connection The connection to be reconnectable.
+ * @param {object} [options] Options.
+ * @param {number} [options.minDelay=1000] Minimum delay between reconnecting.
+ * @param {number} [options.maxDelay=5000] Maximum delay between reconnecting.
+ * @param {number} [options.attempts=Infinity] Maximum reconnecting attempts.
  *
  * @example
  * import { Reconnect } from 'logux-sync'
