@@ -240,13 +240,9 @@ it('has dynamic delay', function () {
     expect(delay).toEqual(ms)
   }
 
-  attemptsIs(4, 5000)
-  attemptsIs(5, 5000)
-  attemptsIs(6, 5000)
-  attemptsIs(7, 5000)
-  attemptsIs(8, 5000)
-  attemptsIs(9, 5000)
-  attemptsIs(10, 5000)
+  for (var i = 4; i < 30; i++) {
+    attemptsIs(i, 5000)
+  }
 })
 
 it('reconnects when user open a tab', function () {
