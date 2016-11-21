@@ -237,12 +237,13 @@ BaseSync.prototype = {
    * Subscribe for synchronization events. It implements nanoevents API.
    * Supported events:
    *
+   * * `synced`: `synced` or `otherSynced` property changes.
    * * `state`: synchronization state changes.
    * * `connect`: custom check before node authentication. You can throw
    *              a {@link SyncError} to send error to other node.
    * * `clientError`: when error was sent to other node.
    *
-   * @param {"state"|"connect"|"clientError"} event The event name.
+   * @param {"synced"|"state"|"connect"|"clientError"} event The event name.
    * @param {listener} listener The listener function.
    *
    * @return {function} Unbind listener from event.
@@ -260,7 +261,7 @@ BaseSync.prototype = {
    * Add one-time listener for synchronization events.
    * See {@link BaseSync#on} for supported events.
    *
-   * @param {"state"|"connect"|"clientError"} event The event name.
+   * @param {"synced"|"state"|"connect"|"clientError"} event The event name.
    * @param {listener} listener The listener function.
    *
    * @return {function} Unbind listener from event.
@@ -461,6 +462,16 @@ BaseSync.prototype = {
         sync.setState('synchronized')
       }
     })
+  },
+
+  setSynced: function setSynced (value) {
+    if (this.synced < value) this.synced = value
+    this.emitter.emit('synced')
+  },
+
+  setOtherSynced: function setOtherSynced (value) {
+    if (this.otherSynced < value) this.otherSynced = value
+    this.emitter.emit('synced')
   }
 
 }

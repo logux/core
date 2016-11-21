@@ -242,3 +242,32 @@ it('receives errors from connection', function () {
     ['error', 'wrong-format', 'options']
   ])
 })
+
+it('emits synced event', function () {
+  var sync = createSync()
+  var other = sync.connection.other()
+
+  var synced = []
+  sync.on('synced', function () {
+    synced.push([sync.synced, sync.otherSynced])
+  })
+
+  sync.connection.connect()
+  sync.sendConnect()
+  other.send(['connected', sync.protocol, 'server', [0, 0]])
+  expect(synced).toEqual([])
+
+  other.send(['ping', 1])
+  expect(synced).toEqual([[0, 1]])
+
+  other.send(['pong', 2])
+  expect(synced).toEqual([[0, 1], [0, 2]])
+
+  other.send(['sync', 3, { type: 'a' }, sync.log.timer()])
+  return wait(0).then(function () {
+    expect(synced).toEqual([[0, 1], [0, 2], [0, 3]])
+
+    other.send(['synced', 1])
+    expect(synced).toEqual([[0, 1], [0, 2], [0, 3], [1, 3]])
+  })
+})

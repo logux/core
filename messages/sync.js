@@ -66,13 +66,13 @@ module.exports = {
     }
 
     Promise.all(promises).then(function () {
-      if (sync.otherSynced < added) sync.otherSynced = added
+      sync.setOtherSynced(added)
       sync.sendSynced(added)
     })
   },
 
   syncedMessage: function syncedMessage (synced) {
-    if (this.synced < synced) this.synced = synced
+    this.setSynced(synced)
     if (this.syncing > 0) this.syncing -= 1
     if (this.syncing === 0) {
       this.endTimeout()
