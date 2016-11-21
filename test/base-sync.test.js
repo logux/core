@@ -11,12 +11,6 @@ function createSync () {
   return new BaseSync('client', log, pair.left)
 }
 
-function nextTick () {
-  return new Promise(function (resolve) {
-    setTimeout(resolve, 1)
-  })
-}
-
 function wait (ms) {
   return new Promise(function (resolve) {
     setTimeout(resolve, ms)
@@ -152,7 +146,7 @@ it('has state', function () {
   sync.connection.connect()
   sync.sendConnect()
   other.send(['connected', sync.protocol, 'server', [0, 0]])
-  return nextTick().then(function () {
+  return wait(0).then(function () {
     expect(sync.state).toEqual('synchronized')
     return sync.log.add({ type: 'a' })
   }).then(function () {
@@ -176,7 +170,7 @@ it('has state', function () {
     expect(sync.state).toEqual('sending')
 
     other.send(['connected', sync.protocol, 'server', [0, 0]])
-    return nextTick()
+    return wait(0)
   }).then(function () {
     other.send(['synced', 2])
     expect(sync.state).toEqual('synchronized')
