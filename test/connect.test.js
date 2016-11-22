@@ -133,9 +133,8 @@ it('checks subprotocol version in client', function () {
 
   test.client.connection.connect()
 
-  expect(test.clientSent).toEqual([
-    ['error', 'wrong-subprotocol', { supported: '2.x', used: '1.0.0' }]
-  ])
+  expect(test.clientSent[0]).toEqual(
+    ['error', 'wrong-subprotocol', { supported: '2.x', used: '1.0.0' }])
   expect(test.client.connected).toBeFalsy()
 })
 
