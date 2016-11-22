@@ -9,16 +9,16 @@
   "license": "MIT",
   "repository": "logux/logux-core",
   "dependencies": {
-    "nanoevents": "^0.2.0"
+    "nanoevents": "^0.3.0"
   },
   "devDependencies": {
     "docdash": "^0.4.0",
-    "eslint": "^3.10.0",
+    "eslint": "^3.10.2",
     "eslint-config-logux": "^3.0.0",
     "eslint-config-standard": "^6.2.1",
-    "eslint-plugin-promise": "^3.3.2",
+    "eslint-plugin-promise": "^3.4.0",
     "eslint-plugin-standard": "^2.0.1",
-    "jest": "^17.0.0",
+    "jest": "^17.0.3",
     "jsdoc": "^3.4.3",
     "lint-staged": "^3.2.1",
     "pre-commit": "^1.1.3",
