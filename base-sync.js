@@ -213,7 +213,7 @@ BaseSync.prototype = {
    *   throw new Error('Unsupported Logux protocol')
    * }
    */
-  protocol: [0, 0],
+  protocol: [0, 1],
 
   /**
    * Other node’s application subprotocol version in SemVer format.
