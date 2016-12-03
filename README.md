@@ -123,7 +123,7 @@ const log2 = new Log({ store2, timer: testTimer })
 
 Also, the log records the time the event was added to this log.
 This timestamp can be different on different machines.
-The timestamp is much simplier — it's just an incremented number.
+The timestamp is much simpler — it's just an incremented number.
 
 This time is used to find, which events should be sent when two
 nodes are connected again.
