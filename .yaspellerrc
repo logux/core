@@ -18,6 +18,8 @@
     "DevTools",
     "lastAdded",
     "nodeId",
-    "Versioning"
+    "Versioning",
+    "timestamp",
+    "timestamps"
   ]
 }
