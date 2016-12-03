@@ -58,14 +58,14 @@ Default timer returns an array containing:
 ```js
 const timer = createTimer('server')
 
-timer() // => [1473564435318, 'server', 0]
-timer() // => [1473564435318, 'server', 1]
-timer() // => [1473564435319, 'server', 0]
+timer() //=> [1473564435318, 'server', 0]
+timer() //=> [1473564435318, 'server', 1]
+timer() //=> [1473564435319, 'server', 0]
 
 const timer2 = createTimer('user:1')
 
-timer2() // => [1473564435320, 'user:1', 0]
-timer()  // => [1473564435320, 'user:1', 0]
+timer2() //=> [1473564435320, 'user:1', 0]
+timer()  //=> [1473564435320, 'user:1', 0]
 ```
 
 You can access the log’s timer via:
@@ -92,9 +92,9 @@ Timer should be a function, that returns a fresh time array on every call.
 ```js
 import { compareTime } from 'logux-core'
 
-compareTime(older, younder) // =>  1
-compareTime(older, older)   // =>  0
-compareTime(younder, older) // => -1
+compareTime(older, younder) //=>  1
+compareTime(older, older)   //=>  0
+compareTime(younder, older) //=> -1
 ```
 
 ### Test Timer
@@ -106,9 +106,9 @@ with number:
 import { createTestTimer } from 'logux-core'
 const testTimer = createTestTimer()
 
-testTimer() // => [1]
-testTimer() // => [2]
-testTimer() // => [3]
+testTimer() //=> [1]
+testTimer() //=> [2]
+testTimer() //=> [3]
 ```
 
 If you test two logs, don’t forget to use same test timer instance for them:
@@ -129,8 +129,8 @@ This time is used to find, which events should be sent when two
 nodes are connected again.
 
 ```js
-log.add({ type: 'beep' })                    // => added: 1
-log.add({ type: 'beep' }, { created: past }) // => added: 2
+log.add({ type: 'beep' })                    //=> added: 1
+log.add({ type: 'beep' }, { created: past }) //=> added: 2
 ```
 
 
