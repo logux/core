@@ -1,11 +1,11 @@
 # Logux Core
 
-Log for Logux, default timer and test tools. It is base classes, end-users
-should use high-level Logux tools.
+Log for Logux, default timer and test tools. These are low-level base classes,
+and Logux end-users are supposed use high-level Logux tools.
 
-Logux idea is based on shared logs. Log is list of events ordered by time.
-Every entry in Logux log contains event object and meta object with created
-and added times.
+Logux idea is based on shared logs. Log is a list of events ordered in time.
+Every entry in Logux log contains event object and meta object with `created`
+and `added` timestamps.
 
 ```js
 import { Log } from 'logux-core'
@@ -17,10 +17,11 @@ const log = new Log({ store, timer })
        alt="Sponsored by Evil Martians" width="236" height="54">
 </a>
 
+
 ## Event
 
-Logux event is a simple JS object. There is only one mandatory property, `type`.
-Logux events is very similar to Redux actions.
+Logux event is a simple JS object, having only one mandatory property — `type`.
+Logux events are very similar to Redux actions.
 
 ```js
 log.add({ type: 'beep' })
@@ -28,57 +29,61 @@ log.add({ type: 'beep' })
 
 Events from third-party libraries must prefix `type` with library name
 and `/` separator. For example, `example` library should use events types
-like `example/name`
+like `example/name`.
+
 
 ## Created Time
 
-Log order is key idea of Logux. So Logux log contains event creation time.
+Log order is the cornerstone of Logux. Thus Logux log contains creation time for each event.
 
-Log will set current time for new events automatically. But you could set
-creation time manually (for example, if you got event from different machine).
+Log will set current time for new events automatically, but you can set
+creation time manually as well (for example, if you got event from a different machine).
 
 ```js
 import { createTimer } from 'logux-core'
 const log = new Log({ store, timer: createTimer(nodeId) })
 ```
 
-Log order should be same on every machine. So every creation time
-should be unique (you could used it as event ID).
+Log order is strictly required to be the same on every machine.
+For this reason, every creation timestamp is considered unique
+(and thus could used it as an event ID).
 
-This is why creation time is a little bit tricky.
-Default timer return array with:
+This is why the creation time is a little bit tricky.
+Default timer returns an array containing:
 
-1. Milliseconds elapsed since 1 January 1970.
+1. Number of milliseconds elapsed since 1 January 1970.
 2. Unique node name.
-3. Incremented number if latest time had same milliseconds.
+3. An incremented number in case if the previous event had the same number of milliseconds.
 
 ```js
 const timer = createTimer('server')
 
-timer() //=> [1473564435318, 'server', 0]
-timer() //=> [1473564435318, 'server', 1]
-timer() //=> [1473564435319, 'server', 0]
+timer() // => [1473564435318, 'server', 0]
+timer() // => [1473564435318, 'server', 1]
+timer() // => [1473564435319, 'server', 0]
 
 const timer2 = createTimer('user:1')
 
-timer2() //=> [1473564435320, 'user:1', 0]
-timer()  //=> [1473564435320, 'user:1', 0]
+timer2() // => [1473564435320, 'user:1', 0]
+timer()  // => [1473564435320, 'user:1', 0]
 ```
 
-You could access to log’s timer by:
+You can access the log’s timer via:
 
 ```js
 const time = log.timer()
 ```
 
+
 ### Custom Timer
 
-You can change log timer to any other implementation. The only rule
-is to use same timer on every machine.
+You can use any other implementation of a log timer. The only rule
+is to use the same timer on every machine.
 
-Logux time is an array on simple comparable types (like numbers or string).
+Logux time is an array of simple comparable types (like numbers or strings).
 
-Timer should a function, that return new time array on every call.
+Timer should be a function, that returns a fresh time array on every call.
+
 
 ### Helper
 
@@ -87,9 +92,9 @@ Timer should a function, that return new time array on every call.
 ```js
 import { compareTime } from 'logux-core'
 
-compareTime(older, younder) //=>  1
-compareTime(older, older)   //=>  0
-compareTime(younder, older) //=> -1
+compareTime(older, younder) // =>  1
+compareTime(older, older)   // =>  0
+compareTime(younder, older) // => -1
 ```
 
 ### Test Timer
@@ -101,9 +106,9 @@ with number:
 import { createTestTimer } from 'logux-core'
 const testTimer = createTestTimer()
 
-testTimer() //=> [1]
-testTimer() //=> [2]
-testTimer() //=> [3]
+testTimer() // => [1]
+testTimer() // => [2]
+testTimer() // => [3]
 ```
 
 If you test two logs, don’t forget to use same test timer instance for them:
@@ -116,22 +121,22 @@ const log2 = new Log({ store2, timer: testTimer })
 
 ## Added Time
 
-Also log contains time, when event was added to this log. So added time could
-be different on different machines. And this time is much easier,
-just a incremented number.
+Also, the log records the time the event was added to this log.
+This timestamp can be different on different machines.
+The timestamp is much simplier — it's just an incremented number.
 
-This time is used to find, what events should be sent when
-two nodes connected again.
+This time is used to find, which events should be sent when two
+nodes are connected again.
 
 ```js
-log.add({ type: 'beep' })                    //=> added: 1
-log.add({ type: 'beep' }, { created: past }) //=> added: 2
+log.add({ type: 'beep' })                    // => added: 1
+log.add({ type: 'beep' }, { created: past }) // => added: 2
 ```
+
 
 ## Reading
 
-There is a two way to read events from log. First you can subscribe
-to new events:
+There are two ways to read events from the log. First, one can subscribe to new events:
 
 ```js
 log.on('event', (event, meta) => {
@@ -141,12 +146,12 @@ log.add({ type: 'test' })
 // Prints { type: 'test' }, { created: time, added: 1 }
 ```
 
-Log implements [nanoevents] API, so to unbind listener
-call function returned from `on`.
+Log implements [nanoevents] API, so to if you want to unbind the listener,
+just call the function returned by `on`.
 
 [nanoevents]: https://github.com/ai/nanoevents
 
-Second way is to run asynchronous event iterator:
+The second way is to run asynchronous event iterator:
 
 ```js
 log.each((event, meta) => {
@@ -156,7 +161,7 @@ log.each((event, meta) => {
 })
 ```
 
-Iterator could return `false` to stop iteration:
+An iterator can return `false` in order to stop the iteration process:
 
 ```js
 log.each(event => {
@@ -170,8 +175,8 @@ log.each(event => {
 })
 ```
 
-By default, `each()` order events by creation time. You could set order
-by adding time:
+By default, `each()` orders events by their creation time.
+You could specify custom ordering, e.g. by the adding time:
 
 ```js
 log.each({ order: 'added' }, (event, meta) => {
@@ -183,17 +188,18 @@ log.each({ order: 'added' }, (event, meta) => {
 })
 ```
 
+
 ## Cleaning
 
-To keep log fast, Logux clean it from outdated events.
-Note, that by default, Logux cleans every event in log.
+To keep the log fast, Logux cleans it from outdated events.
+Note, that by default, Logux removes every event from the log.
 
-If third-party library will need some events in future, it should set keeper.
-Keeper is a function that will return `true` on every important event.
+If third-party library will need some events in the future, it should setup a keeper.
+A keeper is just a function returning `true` for important events supposed to be kept in the log.
 
-Log emit `clean` event before keepers execution and cleaning.
+Log emits `clean` event before the keepers execution and cleaning.
 
-For example, DevTools could keep latest 1000 events to show log:
+For example, DevTools may need to keep latest 1000 events in the log:
 
 ```js
 let count = 0
@@ -206,9 +212,9 @@ log.keep((event, meta) => {
 })
 ```
 
-Or CRDT module could keep events with latest property value.
+Another example may be CRDT module keeping events with the latest property value.
 
-Cleaning should be started manually by `clean()` method:
+Cleaning should be started manually by calling `clean()` method:
 
 ```js
 let events = 0
@@ -221,43 +227,47 @@ log.on('event', event => {
 })
 ```
 
-### Automatically Cleaning
 
-Logux Core has a `cleanEvery()` function. It will install a listener
-to log and will run `clean()` every specified events count.
+### Automatic Cleaning
 
-By default, it will clean log after 100 events:
+Logux Core contains a function named `cleanEvery()`. It installs a listener for the log
+which will repeatedly call `clean()` after the specified number of events was logged.
+
+By default, it will clean log after each 100 events:
 
 ```js
 import { cleanEvery } from 'logux-core'
 cleanEvery(log)
 ```
 
-It returns `stopCleaning` function.
-Call if you want to remove listener from log.
+It returns a `stopCleaning` function. Call if you want to remove the listener from the log.
+
 
 ## Stores
 
-Log should be saved to `localStorage` in browser or file on server.
-Also server log could be very big (bigger than memory). This is why Logux
-has changeable log stores.
+Log should be saved to `localStorage` in browser or a file on server.
+The server log can grow very big, exceeding the available memory.
+This is why Logux has changeable log stores.
+
 
 ### MemoryStore
 
-This package contains simple in-memory store to use it in tests:
+This package contains simple in-memory store designed primarily for tests:
 
 ```js
 import { MemoryStore } from 'logux-core'
 const log = new Log({ timer, store: new MemoryStore() })
 ```
 
+
 ### Custom Store
 
-Store could be a any object with 3 methods:
+Any object implementing this 3 methods can be considered a Store:
 
-* `add(entry)` puts new log entry to store. Returns Promise `false` if event
+* `add(entry)` puts new log entry in the store. Returns a Promise `false` if event
   with same `created` time was already in log.
-* `remove(created)` removes event by event creation time.
-* `get()` returns Promise to load first events page. Events page is a object
-  with entries array in `page.entries` and `page.next` function with next page
-  Promise. Last page should not contain `page.next`.
+* `remove(created)` removes an event with specified creation time from the store.
+* `get()` returns a Promise loading the first page of events in the log.
+  Events page is an object containing an entries array in `page.entries`
+  and a `page.next` function returning the next page Promise.
+  Last page should not contain the `page.next` method.
