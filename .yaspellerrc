@@ -20,6 +20,9 @@
     "nodeId",
     "Versioning",
     "timestamp",
-    "timestamps"
+    "timestamps",
+    "IndexedDB",
+    "IndexedDBStore",
+    "indexeddb"
   ]
 }
