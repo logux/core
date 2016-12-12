@@ -92,9 +92,9 @@ Timer should be a function, that returns a fresh time array on every call.
 ```js
 import { compareTime } from 'logux-core'
 
-compareTime(older, younder) //=>  1
+compareTime(older, younger) //=>  1
 compareTime(older, older)   //=>  0
-compareTime(younder, older) //=> -1
+compareTime(younger, older) //=> -1
 ```
 
 ### Test Timer
@@ -146,7 +146,7 @@ log.add({ type: 'test' })
 // Prints { type: 'test' }, { created: time, added: 1 }
 ```
 
-Log implements [nanoevents] API, so to if you want to unbind the listener,
+Log implements [nanoevents] API, so if you want to unbind the listener,
 just call the function returned by `on`.
 
 [nanoevents]: https://github.com/ai/nanoevents
