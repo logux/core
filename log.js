@@ -3,7 +3,7 @@ var NanoEvents = require('nanoevents')
 /**
  * Log is main idea in Logux to store timed events inside.
  *
- * @param {object} opts options
+ * @param {object} opts Options.
  * @param {Store} opts.store Store for events.
  * @param {Timer} opts.timer Timer to mark events.
  *
@@ -30,7 +30,7 @@ function Log (opts) {
    * @type {Timer}
    *
    * @example
-   * const time = log.timer()
+   * const id = log.timer()
    */
   this.timer = opts.timer
   /**
@@ -41,7 +41,7 @@ function Log (opts) {
    * @example
    * sync() {
    *   sendEvents(log)
-   *   this.synced = log.added
+   *   this.synced = log.lastAdded
    * }
    */
   this.lastAdded = 0
@@ -98,12 +98,14 @@ Log.prototype = {
   },
 
   /**
-   * Add event to log. It will set created (if it missed) and added to meta
+   * Add event to log.
+   *
+   * It will set id` (if it missed) and `added` property to `meta`
    * and call all listeners.
    *
-   * @param {Event} event new event
-   * @param {object} [meta] open structure for event metadata
-   * @param {Time} meta.created event created time
+   * @param {Event} event New event.
+   * @param {object} [meta] Open structure for event metadata.
+   * @param {Time} meta.id Unique event ID.
    * @return {Promise} Promise with `false` if event was already in log
    *
    * @example
@@ -117,7 +119,7 @@ Log.prototype = {
     }
 
     if (!meta) meta = { }
-    if (typeof meta.created === 'undefined') meta.created = this.timer()
+    if (typeof meta.id === 'undefined') meta.id = this.timer()
     this.lastAdded += 1
     meta.added = this.lastAdded
 
@@ -129,9 +131,9 @@ Log.prototype = {
   },
 
   /**
-   * Remove all unnecessary events. Events could be kept by @link(Log#keep).
+   * Remove all unnecessary events. Events could be kept by {@link Log#keep}.
    *
-   * @return {Promise} when cleaning will be finished
+   * @return {Promise} When cleaning will be finished.
    *
    * @example
    * let sinceClean = 0
@@ -151,19 +153,19 @@ Log.prototype = {
       var keep = keepers.some(function (keeper) {
         return keeper.fn(event, meta)
       })
-      if (!keep) self.store.remove(meta.created)
+      if (!keep) self.store.remove(meta.id)
     })
   },
 
   /**
    * Add function to keep events from cleaning.
    *
-   * @param {keeper} keeper return true for events to keep
-   * @return {function} remove keeper from log
+   * @param {keeper} keeper Return true for events to keep.
+   * @return {function} Remove keeper from log.
    *
    * @example
    * const unkeep = log.keep((event, meta) => {
-   *   return compareTime(meta.created, lastBeep) > 0
+   *   return compareTime(meta.id, lastBeep) > 0
    * })
    * function uninstallPlugin () {
    *   unkeep()
@@ -178,19 +180,21 @@ Log.prototype = {
    *
    * Return false from callback if you want to stop iteration.
    *
-   * @param {object} [opts] iterator options
-   * @param {'added'|'created'} opts.order get events by created or added time.
+   * @param {object} [opts] Iterator options.
+   * @param {'added'|'created'} opts.order Sort events by created time or when
+   *                                       they was added to current log.
    *                                       Default is `'created'`.
-   * @param {iterator} callback function will be executed on every event
-   * @return {Promise} when iteration will be finished by iterator or events end
+   * @param {iterator} callback Function will be executed on every event.
+   * @return {Promise} When iteration will be finished
+   *                   by iterator or events end.
    *
    * @example
    * log.each((event, meta) => {
-   *   if ( compareTime(meta.created, lastBeep) <= 0 ) {
+   *   if ( compareTime(meta.id, lastBeep) <= 0 ) {
    *     return false;
    *   } else if ( event.type === 'beep' ) {
    *     beep()
-   *     lastBeep = meta.created
+   *     lastBeep = meta.id
    *     return false;
    *   }
    * })

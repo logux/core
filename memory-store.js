@@ -35,10 +35,10 @@ MemoryStore.prototype = {
   add: function add (entry) {
     this.added.unshift(entry)
 
-    var time = entry[1].created
     var list = this.created
+    var id = entry[1].id
     for (var i = 0; i < list.length; i++) {
-      var compare = compareTime(time, list[i][1].created)
+      var compare = compareTime(id, list[i][1].id)
       if (compare > 0) {
         list.splice(i, 0, entry)
         return Promise.resolve(true)
@@ -50,14 +50,14 @@ MemoryStore.prototype = {
     return Promise.resolve(true)
   },
 
-  search: function search (time) {
+  search: function search (id) {
     var list = this.created
     var high = list.length
     var low = 0
 
     while (high > low) {
       var i = (high + low) / 2 >>> 0
-      var compare = compareTime(time, list[i][1].created)
+      var compare = compareTime(id, list[i][1].id)
 
       if (compare < 0) {
         low = i + 1
@@ -71,13 +71,13 @@ MemoryStore.prototype = {
     return -1
   },
 
-  remove: function remove (time) {
-    var index = this.search(time)
+  remove: function remove (id) {
+    var index = this.search(id)
     if (index === -1) return
     this.created.splice(index, 1)
 
     for (var i = this.added.length - 1; i >= 0; i--) {
-      if (compareTime(this.added[i][1].created, time) === 0) {
+      if (compareTime(this.added[i][1].id, id) === 0) {
         this.added.splice(i, 1)
         break
       }

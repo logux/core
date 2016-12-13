@@ -107,7 +107,7 @@ it('unsubscribes listeners', function () {
   })
 })
 
-it('ignore existed created time', function () {
+it('ignore existed ID', function () {
   var log = createLog()
 
   var added = []
@@ -115,9 +115,9 @@ it('ignore existed created time', function () {
     added.push(event)
   })
 
-  return log.add({ type: 'a' }, { created: [0] }).then(function (result1) {
+  return log.add({ type: 'a' }, { id: [0] }).then(function (result1) {
     expect(result1).toBeTruthy()
-    return log.add({ type: 'b' }, { created: [0] })
+    return log.add({ type: 'b' }, { id: [0] })
   }).then(function (result2) {
     expect(result2).toBeFalsy()
     checkEvents(log, [{ type: 'a' }])
@@ -127,18 +127,18 @@ it('ignore existed created time', function () {
 
 it('iterates through added events', function () {
   return logWith([
-    [{ type: 'a' }, { created: [3] }],
-    [{ type: 'b' }, { created: [2] }],
-    [{ type: 'c' }, { created: [1] }]
+    [{ type: 'a' }, { id: [3] }],
+    [{ type: 'b' }, { id: [2] }],
+    [{ type: 'c' }, { id: [1] }]
   ]).then(function (log) {
     var entries = []
     return log.each(function (event, meta) {
       entries.push([event, meta])
     }).then(function () {
       expect(entries).toEqual([
-        [{ type: 'a' }, { created: [3], added: 1 }],
-        [{ type: 'b' }, { created: [2], added: 2 }],
-        [{ type: 'c' }, { created: [1], added: 3 }]
+        [{ type: 'a' }, { id: [3], added: 1 }],
+        [{ type: 'b' }, { id: [2], added: 2 }],
+        [{ type: 'c' }, { id: [1], added: 3 }]
       ])
     })
   })
@@ -146,9 +146,9 @@ it('iterates through added events', function () {
 
 it('iterates by added order', function () {
   return logWith([
-    [{ type: 'a' }, { created: [3] }],
-    [{ type: 'b' }, { created: [2] }],
-    [{ type: 'c' }, { created: [1] }]
+    [{ type: 'a' }, { id: [3] }],
+    [{ type: 'b' }, { id: [2] }],
+    [{ type: 'c' }, { id: [1] }]
   ]).then(function (log) {
     var events = []
     return log.each({ order: 'added' }, function (event) {
@@ -201,10 +201,10 @@ it('supports multi-pages stores', function () {
 
 it('keeps existed time', function () {
   return logWith([
-    [{ type: 'timed' }, { created: [100] }]
+    [{ type: 'timed' }, { id: [100] }]
   ]).then(function (log) {
     checkEntries(log, [
-      [{ type: 'timed' }, { created: [100], added: 1 }]
+      [{ type: 'timed' }, { id: [100], added: 1 }]
     ])
   })
 })
@@ -214,7 +214,7 @@ it('sets time for timeless events', function () {
     [{ type: 'timeless' }]
   ]).then(function (log) {
     checkEntries(log, [
-      [{ type: 'timeless' }, { created: [1], added: 1 }]
+      [{ type: 'timeless' }, { id: [1], added: 1 }]
     ])
   })
 })
