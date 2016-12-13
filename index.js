@@ -25,8 +25,9 @@ module.exports = {
 /**
  * Unique event ID.
  * Array of comparable native types (like number or string).
+ * Every next event ID should be bigger than previous.
  *
- * @typedef {array} Time
+ * @typedef {array} ID
  *
  * @example
  * [1, 'server', 0]
@@ -36,8 +37,7 @@ module.exports = {
  * Event metadata.
  *
  * @typedef {object} Meta
- * @property {Time} created Event occurred time. {@link Log#add} will fill it,
- *                          if field will be empty.
+ * @property {ID} id Event unique ID. {@link Log#add} set it automatically.
  * @property {number} added Event added sequence number.
  *                          {@link Log#add} will fill it.
  */
@@ -73,11 +73,11 @@ module.exports = {
  * @abstract
  */
 /**
- * Add new event to store. Event always will have type and time properties.
+ * Add new event to store. Event always will have `type` property.
  *
  * @param {Entry} entry Array with event and meta.
  *
- * @return {Promise} Promise with `false` if event with same `meta.created`
+ * @return {Promise} Promise with `false` if event with same `meta.id`
  *                   was already in store
  *
  * @name add
@@ -85,10 +85,9 @@ module.exports = {
  * @memberof Store#
  */
 /**
- * Remove event from store. Because every even has unique creation time,
- * this times is used as event ID.
+ * Remove event from store.
  *
- * @param {Time} time Event’s creation time.
+ * @param {ID} id Event ID.
  *
  * @return {undefined}
  *
@@ -104,7 +103,8 @@ module.exports = {
  * This tricky API is used, because store could have a lot of events. So we need
  * pagination to keep them in memory.
  *
- * @param {"created"|"added"} order What time should be used in events sorting.
+ * @param {"created"|"added"} order Sort events by created time
+ *                                  or when they was added to current log.
  *
  * @return {Promise} Promise with first {@link Page}.
  *
@@ -114,8 +114,9 @@ module.exports = {
  */
 
 /**
- * Returns current time. Time should be unique for every call.
+ * Returns next event ID. It should return unique ID on every call.
+ * Every next ID should be bigger than previous one.
  *
  * @typedef {function} Timer
- * @return {Time}
+ * @return {ID}
  */
