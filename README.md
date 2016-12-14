@@ -52,7 +52,7 @@ Default ID format:
    had the same number of milliseconds.
 
 This format is tricky to keep ID unique on every machine. Also this format
-allows you to get real time , when event was occured.
+allows you to get real time , when event was occurred.
 
 ```js
 [1473564435318, 'server', 0]
@@ -134,7 +134,7 @@ to current log will get bigger `added` number.
 
 After synchronization events from other log could have lower `id`,
 because they was created before synchronization. But `added` shows only when
-event was added to this log, now when thay was created.
+event was added to this log, now when they was created.
 
 As result events in synchronized logs will have same `id`, but different
 `added` metadata.
