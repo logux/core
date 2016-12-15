@@ -197,8 +197,15 @@ it('has synced and otherSynced option', function () {
 })
 
 it('has separated timeouts', function () {
+  var calls = []
   var log = { on: function () { } }
-  var con = { on: function () { } }
+  var con = {
+    connected: true,
+    disconnect: function (reason) {
+      calls.push(reason)
+    },
+    on: function () { }
+  }
   var sync = new BaseSync('client', log, con, { timeout: 100 })
 
   var error
@@ -211,6 +218,7 @@ it('has separated timeouts', function () {
     sync.startTimeout()
     return wait(60)
   }).then(function () {
+    expect(calls).toEqual(['timeout'])
     expect(error.message).toContain('timeout')
   })
 })

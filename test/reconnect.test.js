@@ -57,6 +57,18 @@ it('disables reconnecting on manually disconnect', function () {
   expect(recon.reconnecting).toBeFalsy()
 })
 
+it('reconnects on timeout disconnect', function () {
+  var con = {
+    on: function () { },
+    connected: true,
+    disconnect: function () { }
+  }
+  var recon = new Reconnect(con)
+
+  recon.disconnect('timeout')
+  expect(recon.reconnecting).toBeTruthy()
+})
+
 it('proxies connection methods', function () {
   var sent = []
   var con = {

@@ -418,7 +418,7 @@ BaseSync.prototype = {
     var ms = this.options.timeout
     var sync = this
     var timeout = setTimeout(function () {
-      if (sync.connected) sync.connection.disconnect()
+      if (sync.connected) sync.connection.disconnect('timeout')
       sync.error('timeout', ms)
     }, ms)
 

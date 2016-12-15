@@ -84,8 +84,8 @@ Reconnect.prototype = {
     return this.connection.connect()
   },
 
-  disconnect: function disconnect () {
-    this.reconnecting = false
+  disconnect: function disconnect (reason) {
+    if (reason !== 'timeout') this.reconnecting = false
     return this.connection.disconnect()
   },
 
