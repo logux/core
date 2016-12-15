@@ -1,4 +1,24 @@
-var compareTime = require('./compare-time')
+var getTime = require('./get-time')
+
+function compareTime (time, order, other) {
+  if (time > other.time) {
+    return 1
+  } else if (time < other.time) {
+    return -1
+  } else if (order > other.order) {
+    return 1
+  } else if (order < other.order) {
+    return -1
+  } else {
+    return 0
+  }
+}
+
+function convert (list) {
+  return list.map(function (i) {
+    return [i[0], i[1]]
+  })
+}
 
 /**
  * Simple memory-based events store.
@@ -26,58 +46,49 @@ MemoryStore.prototype = {
 
   get: function get (order) {
     if (order === 'created') {
-      return Promise.resolve({ entries: this.created.slice(0) })
+      return Promise.resolve({ entries: convert(this.created) })
     } else {
-      return Promise.resolve({ entries: this.added.slice(0) })
+      return Promise.resolve({ entries: convert(this.added) })
     }
   },
 
-  add: function add (entry) {
-    this.added.unshift(entry)
+  add: function add (event, meta) {
+    var time = getTime(meta)
+    var order = meta.id.slice(1).join('\t')
+    var cache = { id: meta.id.join('\t'), time: time, order: order }
+
+    var entry = [event, meta, cache]
 
     var list = this.created
-    var id = entry[1].id
     for (var i = 0; i < list.length; i++) {
-      var compare = compareTime(id, list[i][1].id)
+      var other = list[i][2]
+
+      var compare = compareTime(time, order, other)
       if (compare > 0) {
         list.splice(i, 0, entry)
+        this.added.unshift(entry)
         return Promise.resolve(true)
       } else if (compare === 0) {
         return Promise.resolve(false)
       }
     }
+
     list.push(entry)
+    this.added.unshift(entry)
     return Promise.resolve(true)
   },
 
-  search: function search (id) {
-    var list = this.created
-    var high = list.length
-    var low = 0
-
-    while (high > low) {
-      var i = (high + low) / 2 >>> 0
-      var compare = compareTime(id, list[i][1].id)
-
-      if (compare < 0) {
-        low = i + 1
-      } else if (compare > 0) {
-        high = i
-      } else {
-        return i
+  remove: function remove (id) {
+    var str = id.join('\t')
+    var i
+    for (i = this.created.length - 1; i >= 0; i--) {
+      if (this.created[i][2].id === str) {
+        this.created.splice(i, 1)
+        break
       }
     }
-
-    return -1
-  },
-
-  remove: function remove (id) {
-    var index = this.search(id)
-    if (index === -1) return
-    this.created.splice(index, 1)
-
-    for (var i = this.added.length - 1; i >= 0; i--) {
-      if (compareTime(this.added[i][1].id, id) === 0) {
+    for (i = this.added.length - 1; i >= 0; i--) {
+      if (this.added[i][2].id === str) {
         this.added.splice(i, 1)
         break
       }
