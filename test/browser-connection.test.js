@@ -1,7 +1,9 @@
 var BrowserConnection = require('../browser-connection')
 
 function FakeWebSocket () { }
-FakeWebSocket.prototype = { }
+FakeWebSocket.prototype = {
+  close: function () { }
+}
 
 it('throws a error on lack of WebSocket support', function () {
   delete window.WebSocket
@@ -59,7 +61,7 @@ it('emits connection states', function () {
   expect(states).toEqual(['connecting', 'connect'])
   expect(connection.connected).toBeTruthy()
 
-  connection.ws.onclose()
+  connection.disconnect()
   expect(states).toEqual(['connecting', 'connect', 'disconnect'])
   expect(connection.connected).toBeFalsy()
 })

@@ -77,6 +77,7 @@ BrowserConnection.prototype = {
   disconnect: function disconnect () {
     if (this.ws) {
       this.ws.close()
+      this.ws.onclose()
       this.ws = undefined
     }
   },
