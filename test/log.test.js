@@ -14,7 +14,10 @@ function checkEvents (log, expected) {
 }
 
 function checkEntries (log, expected) {
-  expect(log.store.created).toEqual(expected)
+  var events = log.store.created.map(function (entry) {
+    return [entry[0], entry[1]]
+  })
+  expect(events).toEqual(expected)
 }
 
 function logWith (events) {

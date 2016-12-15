@@ -124,7 +124,7 @@ Log.prototype = {
     meta.added = this.lastAdded
 
     var emitter = this.emitter
-    return this.store.add([event, meta]).then(function (wasAdded) {
+    return this.store.add(event, meta).then(function (wasAdded) {
       if (wasAdded) emitter.emit('event', event, meta)
       return wasAdded
     })
