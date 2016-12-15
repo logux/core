@@ -10,7 +10,7 @@
  * @return {number} Event created milliseconds.
  *
  * @example
- * @import { getTime } from 'logux-core'
+ * import { getTime } from 'logux-core'
  * if (event.type === 'user:add') {
  *   const time = getTime(meta)
  *   console.log('User was created at ', new Date(time))
