@@ -1,4 +1,5 @@
 var createTestTimer = require('./create-test-timer')
+var isFirstOlder = require('./is-first-older')
 var createTimer = require('./create-timer')
 var MemoryStore = require('./memory-store')
 var cleanEvery = require('./clean-every')
@@ -7,6 +8,7 @@ var Log = require('./log')
 
 module.exports = {
   createTestTimer: createTestTimer,
+  isFirstOlder: isFirstOlder,
   createTimer: createTimer,
   MemoryStore: MemoryStore,
   cleanEvery: cleanEvery,
