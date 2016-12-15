@@ -42,8 +42,11 @@ module.exports = {
  *
  * @typedef {object} Meta
  * @property {ID} id Event unique ID. {@link Log#add} set it automatically.
+ * @property {number} fix Event time fix for client.
+ * @property {number} createdAt client oriented createdAt time (id[0] + fix)
  * @property {number} added Event added sequence number.
  *                          {@link Log#add} will fill it.
+ * @property {string} userId Client unique user id.
  */
 
 /**
@@ -68,7 +71,7 @@ module.exports = {
  */
 
 /**
- * Every log store should provide two methods: add and get.
+ * Every log store should provide three methods: add, remove and get.
  *
  * See {@link MemoryStore} sources for example.
  *
@@ -107,8 +110,14 @@ module.exports = {
  * This tricky API is used, because store could have a lot of events. So we need
  * pagination to keep them in memory.
  *
- * @param {"created"|"added"} order Sort events by created time
- *                                  or when they was added to current log.
+ * @param {"created"|"added"} [options.order="added"] Sort events by created
+ *                                                    time or by sequence
+ *                                                    number for current log.
+ * @param {"DESC"|"ASC"} [options.direction="DESC"] Sorting direction
+ * @param {number} [options.limit=100] Limit for entries in page
+ * @param {array} [options.createdRange=[]] Pair of from-to time.
+ *                                          Gets events in createdAt range
+ * @param {array} [options.userIds=[]] Selects events for specified users
  *
  * @return {Promise} Promise with first {@link Page}.
  *
