@@ -77,8 +77,7 @@ it('sends ping on idle connection', function () {
     expect(test.sent).toEqual([
       ['test'],
       ['ping', 1],
-      ['ping', 1],
-      ['error', 'timeout', 100]
+      ['ping', 1]
     ])
   })
 })

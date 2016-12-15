@@ -418,10 +418,7 @@ BaseSync.prototype = {
     var ms = this.options.timeout
     var sync = this
     var timeout = setTimeout(function () {
-      if (sync.connected) {
-        sync.sendError(new SyncError(sync, 'timeout', ms))
-        sync.connection.disconnect()
-      }
+      if (sync.connected) sync.connection.disconnect()
       sync.error('timeout', ms)
     }, ms)
 
@@ -440,7 +437,7 @@ BaseSync.prototype = {
 
     var sync = this
     this.pingTimeout = setTimeout(function () {
-      sync.sendPing()
+      if (sync.connected) sync.sendPing()
     }, this.options.ping)
   },
 
