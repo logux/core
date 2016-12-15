@@ -1,4 +1,5 @@
 var createTestTimer = require('../create-test-timer')
+var isFirstOlder = require('../is-first-older')
 var createTimer = require('../create-timer')
 var MemoryStore = require('../memory-store')
 var cleanEvery = require('../clean-every')
@@ -20,6 +21,10 @@ it('has autoclean', function () {
 
 it('has time helper', function () {
   expect(core.getTime).toBe(getTime)
+})
+
+it('has compare helper', function () {
+  expect(core.isFirstOlder).toBe(isFirstOlder)
 })
 
 it('has memory store class', function () {
