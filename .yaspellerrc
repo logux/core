@@ -20,6 +20,10 @@
     "nodeId",
     "Versioning",
     "timestamp",
-    "timestamps"
+    "timestamps",
+    "getTime",
+    "isFirstOlder",
+    "firstMeta",
+    "secondMeta"
   ]
 }

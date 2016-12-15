@@ -13,7 +13,7 @@ var getTime = require('./get-time')
  * @return {boolean} Is first event is older than second.
  *
  * @example
- * @import { isFirstOlder } from 'logux-core'
+ * import { isFirstOlder } from 'logux-core'
  * if (isFirstOlder(lastBeep, meta) {
  *   beep(event)
  *   lastBeep = meta
