@@ -20,6 +20,10 @@
  * timer() //=> [1473564435319, 'server', 0]
  */
 function createTimer (nodeId) {
+  if (typeof nodeId === 'string' && nodeId.indexOf('\t') !== -1) {
+    throw new Error('Tab symbol is prohibited in Logux node ID')
+  }
+
   var lastTime = 0
   var events = 0
   return function () {
