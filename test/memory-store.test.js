@@ -12,6 +12,49 @@ it('is empty in the beginning', function () {
   return checkCreated(store, [])
 })
 
+it('has synced properties set to 0', function () {
+  var store = new MemoryStore()
+  return store.getLatestSynced(function (synced) {
+    expect(synced).toEqual({
+      latestSent: 0,
+      latestReceived: 0
+    })
+  })
+})
+
+it('stores latestReceived value', function () {
+  var store = new MemoryStore()
+  return store.setLatestSynced({ latestReceived: 1 }).then(function () {
+    expect(store.latestReceived).toEqual(1)
+  })
+})
+
+it('stores latestSent value', function () {
+  var store = new MemoryStore()
+  return store.setLatestSynced({ latestSent: 1 }).then(function () {
+    expect(store.latestSent).toEqual(1)
+  })
+})
+
+it('stores both sync values', function () {
+  var store = new MemoryStore()
+  var synced = { latestReceived: 1, latestSent: 2 }
+  return store.setLatestSynced(synced).then(function () {
+    expect(store.latestReceived).toEqual(1)
+    expect(store.latestSent).toEqual(2)
+  })
+})
+
+it('gets synced properties of store', function () {
+  var store = new MemoryStore()
+  var synced = { latestReceived: 1, latestSent: 2 }
+  return store.setLatestSynced(synced).then(function () {
+    return store.getLatestSynced().then(function (syncedVals) {
+      expect(syncedVals).toEqual(synced)
+    })
+  })
+})
+
 it('adds first event', function () {
   var store = new MemoryStore()
   store.add([{ a: 1 }, { id: [1], added: [1] }])

@@ -20,6 +20,11 @@
     "nodeId",
     "Versioning",
     "timestamp",
-    "timestamps"
+    "timestamps",
+    "latestSent",
+    "latestReceived",
+    "getLatestSynced",
+    "setLatestSynced",
+    "syncedValue"
   ]
 }
