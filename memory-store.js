@@ -1,18 +1,4 @@
-var getTime = require('./get-time')
-
-function compareTime (time, order, other) {
-  if (time > other.time) {
-    return 1
-  } else if (time < other.time) {
-    return -1
-  } else if (order > other.order) {
-    return 1
-  } else if (order < other.order) {
-    return -1
-  } else {
-    return 0
-  }
-}
+var isFirstOlder = require('./is-first-older')
 
 function convert (list) {
   return list.map(function (i) {
@@ -53,23 +39,19 @@ MemoryStore.prototype = {
   },
 
   add: function add (action, meta) {
-    var time = getTime(meta)
-    var order = meta.id.slice(1).join('\t')
-    var cache = { id: meta.id.join('\t'), time: time, order: order }
+    var cache = meta.id.slice(1).join('\t')
 
     var entry = [action, meta, cache]
 
     var list = this.created
     for (var i = 0; i < list.length; i++) {
-      var other = list[i][2]
-
-      var compare = compareTime(time, order, other)
-      if (compare > 0) {
+      var other = list[i]
+      if (meta.id[0] === other[1].id[0] && cache === other[2]) {
+        return Promise.resolve(false)
+      } else if (isFirstOlder(other[1], meta) > 0) {
         list.splice(i, 0, entry)
         this.added.unshift(entry)
         return Promise.resolve(true)
-      } else if (compare === 0) {
-        return Promise.resolve(false)
       }
     }
 
@@ -79,16 +61,19 @@ MemoryStore.prototype = {
   },
 
   remove: function remove (id) {
-    var str = id.join('\t')
-    var i
+    var num = id[0]
+    var cache = id.slice(1).join('\t')
+    var i, entry
     for (i = this.created.length - 1; i >= 0; i--) {
-      if (this.created[i][2].id === str) {
+      entry = this.created[i]
+      if (entry[1].id[0] === num && entry[2] === cache) {
         this.created.splice(i, 1)
         break
       }
     }
     for (i = this.added.length - 1; i >= 0; i--) {
-      if (this.added[i][2].id === str) {
+      entry = this.added[i]
+      if (entry[1].id[0] === num && entry[2] === cache) {
         this.added.splice(i, 1)
         break
       }

@@ -3,7 +3,6 @@ var isFirstOlder = require('./is-first-older')
 var createTimer = require('./create-timer')
 var MemoryStore = require('./memory-store')
 var cleanEvery = require('./clean-every')
-var getTime = require('./get-time')
 var Log = require('./log')
 
 module.exports = {
@@ -12,7 +11,6 @@ module.exports = {
   createTimer: createTimer,
   MemoryStore: MemoryStore,
   cleanEvery: cleanEvery,
-  getTime: getTime,
   Log: Log
 }
 

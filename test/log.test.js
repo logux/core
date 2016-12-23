@@ -139,9 +139,9 @@ it('iterates through added entries', function () {
       entries.push([action, meta])
     }).then(function () {
       expect(entries).toEqual([
-        [{ type: 'a' }, { id: [3], added: 1 }],
-        [{ type: 'b' }, { id: [2], added: 2 }],
-        [{ type: 'c' }, { id: [1], added: 3 }]
+        [{ type: 'a' }, { id: [3], time: 3, added: 1 }],
+        [{ type: 'b' }, { id: [2], time: 2, added: 2 }],
+        [{ type: 'c' }, { id: [1], time: 1, added: 3 }]
       ])
     })
   })
@@ -202,12 +202,22 @@ it('supports multi-pages stores', function () {
   })
 })
 
-it('keeps existed time', function () {
+it('keeps existed ID', function () {
   return logWith([
     [{ type: 'timed' }, { id: [100] }]
   ]).then(function (log) {
     checkEntries(log, [
-      [{ type: 'timed' }, { id: [100], added: 1 }]
+      [{ type: 'timed' }, { id: [100], time: 100, added: 1 }]
+    ])
+  })
+})
+
+it('keeps existed time', function () {
+  return logWith([
+    [{ type: 'timed' }, { id: [100], time: 1 }]
+  ]).then(function (log) {
+    checkEntries(log, [
+      [{ type: 'timed' }, { id: [100], time: 1, added: 1 }]
     ])
   })
 })
@@ -217,7 +227,7 @@ it('sets time for timeless entries', function () {
     [{ type: 'timeless' }]
   ]).then(function (log) {
     checkEntries(log, [
-      [{ type: 'timeless' }, { id: [1], added: 1 }]
+      [{ type: 'timeless' }, { id: [1], time: 1, added: 1 }]
     ])
   })
 })
