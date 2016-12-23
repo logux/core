@@ -114,16 +114,35 @@ const log2 = new Log({ store2, timer: testTimer })
 ```
 
 
+## Action Time
+
+Eveyr log entry has `meta.time` property with action created time
+(milliseconds from elapsed since 1 January 1970):
+
+```js
+if (action.type === 'user:add') {
+  console.log('User was created:', new Date(meta.time))
+}
+```
+
+This property could be different from `meta.id[0]`,
+because clients could have different system time.
+To fix it clients could calculate time difference between client and server
+to fix action’s time.
+
+As result, `meta.time` contain time according local system time
+and could be different on different machines.
+
+
 ### Helper
 
-`compareTime()` helper from this package could be useful for many cases:
+`isFirstOlder()` helper from this package could be useful for many cases:
 
 ```js
 import { compareTime } from 'logux-core'
 
-compareTime(older, younger) //=>  1
-compareTime(older, older)   //=>  0
-compareTime(younger, older) //=> -1
+isFirstOlder(meta1, meta2) //=> false
+isFirstOlder(meta2, meta1) //=> true
 ```
 
 

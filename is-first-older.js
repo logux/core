@@ -1,5 +1,3 @@
-var getTime = require('./get-time')
-
 /**
  * Compare log entries real created time.
  *
@@ -20,11 +18,9 @@ var getTime = require('./get-time')
  * }
  */
 function isFirstOlder (firstMeta, secondMeta) {
-  var firstTime = getTime(firstMeta)
-  var secondTime = getTime(secondMeta)
-  if (firstTime > secondTime) {
+  if (firstMeta.time > secondMeta.time) {
     return false
-  } else if (firstTime < secondTime) {
+  } else if (firstMeta.time < secondMeta.time) {
     return true
   }
 

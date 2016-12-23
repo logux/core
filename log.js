@@ -120,6 +120,7 @@ Log.prototype = {
 
     if (!meta) meta = { }
     if (typeof meta.id === 'undefined') meta.id = this.timer()
+    if (typeof meta.time === 'undefined') meta.time = meta.id[0]
     this.lastAdded += 1
     meta.added = this.lastAdded
 
