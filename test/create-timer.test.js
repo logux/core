@@ -1,6 +1,6 @@
 var createTimer = require('../create-timer')
 
-it('starts events from zero', function () {
+it('starts sequence from zero', function () {
   var timer = createTimer('test')
   var time = timer()
   expect(time[2]).toBe(0)

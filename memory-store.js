@@ -21,10 +21,10 @@ function convert (list) {
 }
 
 /**
- * Simple memory-based events store.
+ * Simple memory-based log store.
  *
  * It is good for tests, but not for server or client usage,
- * because it doesn’t save events to file or localStorage.
+ * because it doesn’t save log to file or localStorage.
  *
  * @example
  * import { MemoryStore } from 'logux-core'
@@ -52,12 +52,12 @@ MemoryStore.prototype = {
     }
   },
 
-  add: function add (event, meta) {
+  add: function add (action, meta) {
     var time = getTime(meta)
     var order = meta.id.slice(1).join('\t')
     var cache = { id: meta.id.join('\t'), time: time, order: order }
 
-    var entry = [event, meta, cache]
+    var entry = [action, meta, cache]
 
     var list = this.created
     for (var i = 0; i < list.length; i++) {

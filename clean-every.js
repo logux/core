@@ -1,5 +1,5 @@
 /**
- * Install a listener to log to clean log after `max` events.
+ * Install a listener to log to clean log after `max` actions.
  *
  * @param {Log} log Log to add listener.
  * @param {number} [max=100] How often clean.
@@ -11,7 +11,7 @@ module.exports = function cleanEvery (log, max) {
     max = 100
   }
   var count = 0
-  return log.on('event', function () {
+  return log.on('add', function () {
     count += 1
     if (count >= max) {
       count = 0
