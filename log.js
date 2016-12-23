@@ -177,7 +177,7 @@ Log.prototype = {
   },
 
   /**
-   * Iterates through all actopm, from last to first.
+   * Iterates through all actions, from last to first.
    *
    * Return false from callback if you want to stop iteration.
    *
