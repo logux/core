@@ -61,7 +61,7 @@ module.exports = {
  * Part of log from {@link Store}.
  *
  * @typedef {object} Page
- * @property {Entry[]} entries Pagintain’s page.
+ * @property {Entry[]} entries Pagination page.
  * @property {next|undefined}
  */
 

@@ -116,7 +116,7 @@ const log2 = new Log({ store2, timer: testTimer })
 
 ## Action Time
 
-Eveyr log entry has `meta.time` property with action created time
+Every log entry has `meta.time` property with action created time
 (milliseconds from elapsed since 1 January 1970):
 
 ```js
