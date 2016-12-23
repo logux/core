@@ -1,21 +1,21 @@
 var getTime = require('./get-time')
 
 /**
- * Compare events real created time.
+ * Compare log entries real created time.
  *
- * If event was synchronized from different machine with different time,
+ * If actions was synchronized from different machine with different time,
  * this function will use `meta.timeFix` to fix time difference
  * between machines.
  *
- * @param {Meta} firstMeta Some event metadata.
- * @param {Meta} secondMeta Other event metadata.
+ * @param {Meta} firstMeta Some action’s metadata.
+ * @param {Meta} secondMeta Other action’s metadata.
  *
- * @return {boolean} Is first event is older than second.
+ * @return {boolean} Is first action is older than second.
  *
  * @example
  * import { isFirstOlder } from 'logux-core'
  * if (isFirstOlder(lastBeep, meta) {
- *   beep(event)
+ *   beep(action)
  *   lastBeep = meta
  * }
  */

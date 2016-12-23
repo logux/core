@@ -17,19 +17,19 @@ module.exports = {
 }
 
 /**
-* Log’s event.
+* Action from the log.
 *
-* @typedef {object} Event
-* @property {string} type Event type name.
+* @typedef {object} Action
+* @property {string} type Action type name.
 *
 * @example
 * { type: 'add', id: 'project:12:price' value: 12 }
 */
 
 /**
- * Unique event ID.
+ * Unique action ID.
  * Array of comparable native types (like number or string).
- * Every next event ID should be bigger than previous.
+ * Every next action ID should be bigger than previous.
  *
  * @typedef {array} ID
  *
@@ -38,20 +38,20 @@ module.exports = {
  */
 
 /**
- * Event metadata.
+ * Action’s metadata.
  *
  * @typedef {object} Meta
- * @property {ID} id Event unique ID. {@link Log#add} set it automatically.
- * @property {number} added Event added sequence number.
+ * @property {ID} id Action unique ID. {@link Log#add} set it automatically.
+ * @property {number} added Sequence number of action in current log.
  *                          {@link Log#add} will fill it.
  */
 
 /**
- * Array with {@link Event} and its {@link Meta}.
+ * Array with {@link Action} and its {@link Meta}.
  *
  * @typedef {Array} Entry
- * @property {Event} 0 Event object.
- * @property {Meta} 1 Event metadata.
+ * @property {Action} 0 Action’s object.
+ * @property {Meta} 1 Action’s metadata.
  */
 
 /**
@@ -60,10 +60,10 @@ module.exports = {
  */
 
 /**
- * Part of events in {@link Store}.
+ * Part of log from {@link Store}.
  *
  * @typedef {object} Page
- * @property {Entry[]} entries Part of events in store.
+ * @property {Entry[]} entries Pagintain’s page.
  * @property {next|undefined}
  */
 
@@ -77,11 +77,12 @@ module.exports = {
  * @abstract
  */
 /**
- * Add new event to store. Event always will have `type` property.
+ * Add action to store. Action always will have `type` property.
  *
- * @param {Entry} entry Array with event and meta.
+ * @param {Action} action The action to add.
+ * @param {Meta} meta Action’s metadata.
  *
- * @return {Promise} Promise with `false` if event with same `meta.id`
+ * @return {Promise} Promise with `false` if action with same `meta.id`
  *                   was already in store
  *
  * @name add
@@ -89,9 +90,9 @@ module.exports = {
  * @memberof Store#
  */
 /**
- * Remove event from store.
+ * Remove Action from store.
  *
- * @param {ID} id Event ID.
+ * @param {ID} id Action ID.
  *
  * @return {undefined}
  *
@@ -101,13 +102,13 @@ module.exports = {
  */
 /**
  * Return a Promise with first {@link Page}. Page object has `entries` property
- * with part of events list and `next` property with function to load next page.
- * If it was a last page of events, `next` property should be empty.
+ * with part of actions and `next` property with function to load next page.
+ * If it was a last page, `next` property should be empty.
  *
- * This tricky API is used, because store could have a lot of events. So we need
+ * This tricky API is used, because log could be very big. So we need
  * pagination to keep them in memory.
  *
- * @param {"created"|"added"} order Sort events by created time
+ * @param {"created"|"added"} order Sort entries by created time
  *                                  or when they was added to current log.
  *
  * @return {Promise} Promise with first {@link Page}.
@@ -118,7 +119,7 @@ module.exports = {
  */
 
 /**
- * Returns next event ID. It should return unique ID on every call.
+ * Returns next action ID. It should return unique ID on every call.
  * Every next ID should be bigger than previous one.
  *
  * @typedef {function} Timer

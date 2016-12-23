@@ -19,7 +19,7 @@ it('is empty in the beginning', function () {
   return check(store, 'created', [])
 })
 
-it('adds first event', function () {
+it('adds first entry', function () {
   var store = new MemoryStore()
   store.add({ a: 1 }, { id: [1], added: [1] })
   return check(store, 'created', [
@@ -27,7 +27,7 @@ it('adds first event', function () {
   ])
 })
 
-it('stores events sorted', function () {
+it('stores entries sorted', function () {
   var store = new MemoryStore()
   store.add({ a: 1 }, { id: [3], added: 1 })
   store.add({ a: 2 }, { id: [2], added: 2 })
@@ -71,7 +71,7 @@ it('support time array in created', function () {
   ])
 })
 
-it('ignores event with same ID', function () {
+it('ignores entries with same ID', function () {
   var store = new MemoryStore()
   return store.add({ a: 1 }, { id: [1], added: [1] })
     .then(function (result1) {
@@ -85,7 +85,7 @@ it('ignores event with same ID', function () {
     })
 })
 
-it('removes events', function () {
+it('removes entries', function () {
   var store = new MemoryStore()
   store.add({ }, { id: [1], added: 1 })
   store.add({ }, { id: [2], added: 2 })
@@ -99,7 +99,7 @@ it('removes events', function () {
   ])
 })
 
-it('ignores unknown event', function () {
+it('ignores unknown entry', function () {
   var store = new MemoryStore()
   store.add({ }, { id: [1], added: 1 })
   store.remove([2])
@@ -108,7 +108,7 @@ it('ignores unknown event', function () {
   ])
 })
 
-it('returns current events state', function () {
+it('returns current entries state', function () {
   var store = new MemoryStore()
   var promise1 = check(store, 'created', [])
   var promise2 = store.add({ type: 'a' }, { id: [1], added: 1 })

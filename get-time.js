@@ -1,17 +1,17 @@
 /**
- * Return milliseconds from UNIX epoch, when event was occurred.
+ * Return milliseconds from UNIX epoch, when action was created.
  *
- * If event was synchronized from different machine with different time,
+ * If action was synchronized from different machine with different time,
  * this function will use `meta.timeFix` to fix time difference
  * between machines.
  *
- * @param {Meta} meta The event metadata.
+ * @param {Meta} meta The action’s metadata.
  *
- * @return {number} Event created milliseconds.
+ * @return {number} Milliseconds from UNIX epoch, when action was created.
  *
  * @example
  * import { getTime } from 'logux-core'
- * if (event.type === 'user:add') {
+ * if (action.type === 'user:add') {
  *   const time = getTime(meta)
  *   console.log('User was created at ', new Date(time))
  * }

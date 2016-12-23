@@ -2,11 +2,12 @@
  * Create base timer.
  *
  * Shareable logs is very sensitive for good time. Just `Date.now()`
- * is not enough. Some events could be created in same millisecond.
- * Events created in same time on different machine may have different order.
+ * is not enough. Some actions could be created in same millisecond.
+ * Actions created in same time on different machine may have different order.
  *
  * This is why Logux use more smarter timer. To solve this problems this timer
- * store time as 3 variables: current milliseconds, node name and events count.
+ * store time as 3 variables: current milliseconds, node name
+ * and sequence number in this millisecond.
  *
  * @param {string|number} nodeId Unique current node name.
  * @return {Timer} Timer function.
@@ -25,16 +26,16 @@ function createTimer (nodeId) {
   }
 
   var lastTime = 0
-  var events = 0
+  var sequence = 0
   return function () {
     var now = Date.now()
     if (now === lastTime) {
-      events += 1
+      sequence += 1
     } else {
       lastTime = now
-      events = 0
+      sequence = 0
     }
-    return [now, nodeId, events]
+    return [now, nodeId, sequence]
   }
 }
 
