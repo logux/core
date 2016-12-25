@@ -21,15 +21,15 @@ it('is empty in the beginning', function () {
 
 it('has synced values set to 0', function () {
   var store = new MemoryStore()
-  return store.getLatestSynced().then(function (synced) {
+  return store.getLastSynced().then(function (synced) {
     expect(synced).toEqual({ sent: 0, received: 0 })
   })
 })
 
 it('updates latest sent value', function () {
   var store = new MemoryStore()
-  return store.setLatestSynced({ sent: 1 }).then(function () {
-    return store.getLatestSynced()
+  return store.setLastSynced({ sent: 1 }).then(function () {
+    return store.getLastSynced()
   }).then(function (synced) {
     expect(synced).toEqual({ sent: 1, received: 0 })
   })
@@ -38,8 +38,8 @@ it('updates latest sent value', function () {
 it('updates both synced values', function () {
   var store = new MemoryStore()
   var value = { received: 1, sent: 2 }
-  return store.setLatestSynced(value).then(function () {
-    return store.getLatestSynced()
+  return store.setLastSynced(value).then(function () {
+    return store.getLastSynced()
   }).then(function (synced) {
     expect(synced).toEqual(value)
   })
@@ -143,11 +143,11 @@ it('returns current entries state', function () {
 
 it('returns latest added', function () {
   var store = new MemoryStore()
-  store.getLatestAdded().then(function (added) {
+  store.getLastAdded().then(function (added) {
     expect(added).toBe(added)
     return store.add({ type: 'a' }, { id: [1] })
   }).then(function () {
-    return store.getLatestAdded()
+    return store.getLastAdded()
   }).then(function (added) {
     expect(added).toBe(1)
   })
