@@ -33,18 +33,6 @@ function Log (opts) {
    * const id = log.timer()
    */
   this.timer = opts.timer
-  /**
-   * Latest used `added` number.
-   * All actions in this log have less or same `added` time.
-   * @type {number}
-   *
-   * @example
-   * sync() {
-   *   sendActionslog)
-   *   this.synced = log.lastAdded
-   * }
-   */
-  this.lastAdded = 0
 
   if (typeof opts.store === 'undefined') {
     throw new Error('Expected log store to be a object')
@@ -106,7 +94,8 @@ Log.prototype = {
    * @param {Action} action The new action.
    * @param {object} [meta] Open structure for action metadata.
    * @param {Time} [meta.id] Unique action ID.
-   * @return {Promise} Promise with `false` if action was already in log
+   * @return {Promise} Promise with `added` value if action was added to log
+   *                   or `false` if action was already in log
    *
    * @example
    * removeButton.addEventListener('click', () => {
@@ -121,12 +110,10 @@ Log.prototype = {
     if (!meta) meta = { }
     if (typeof meta.id === 'undefined') meta.id = this.timer()
     if (typeof meta.time === 'undefined') meta.time = meta.id[0]
-    this.lastAdded += 1
-    meta.added = this.lastAdded
 
     var emitter = this.emitter
     return this.store.add(action, meta).then(function (wasAdded) {
-      if (wasAdded) emitter.emit('add', action, meta)
+      if (wasAdded !== false) emitter.emit('add', action, meta)
       return wasAdded
     })
   },

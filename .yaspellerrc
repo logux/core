@@ -29,6 +29,7 @@
     "latestReceived",
     "getLatestSynced",
     "setLatestSynced",
-    "LatestSynced"
+    "LatestSynced",
+    "getLatestAdded"
   ]
 }
