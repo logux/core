@@ -19,46 +19,29 @@ it('is empty in the beginning', function () {
   return check(store, 'created', [])
 })
 
-it('has synced properties set to 0', function () {
+it('has synced values set to 0', function () {
   var store = new MemoryStore()
-  return store.getLatestSynced(function (synced) {
-    expect(synced).toEqual({
-      latestSent: 0,
-      latestReceived: 0
-    })
+  return store.getLatestSynced().then(function (synced) {
+    expect(synced).toEqual({ sent: 0, received: 0 })
   })
 })
 
-it('stores latestReceived value', function () {
+it('updates latest sent value', function () {
   var store = new MemoryStore()
-  return store.setLatestSynced({ latestReceived: 1 }).then(function () {
-    expect(store.latestReceived).toEqual(1)
+  return store.setLatestSynced({ sent: 1 }).then(function () {
+    return store.getLatestSynced()
+  }).then(function (synced) {
+    expect(synced).toEqual({ sent: 1, received: 0 })
   })
 })
 
-it('stores latestSent value', function () {
+it('updates both synced values', function () {
   var store = new MemoryStore()
-  return store.setLatestSynced({ latestSent: 1 }).then(function () {
-    expect(store.latestSent).toEqual(1)
-  })
-})
-
-it('stores both sync values', function () {
-  var store = new MemoryStore()
-  var synced = { latestReceived: 1, latestSent: 2 }
-  return store.setLatestSynced(synced).then(function () {
-    expect(store.latestReceived).toEqual(1)
-    expect(store.latestSent).toEqual(2)
-  })
-})
-
-it('gets synced properties of store', function () {
-  var store = new MemoryStore()
-  var synced = { latestReceived: 1, latestSent: 2 }
-  return store.setLatestSynced(synced).then(function () {
-    return store.getLatestSynced().then(function (syncedVals) {
-      expect(syncedVals).toEqual(synced)
-    })
+  var value = { received: 1, sent: 2 }
+  return store.setLatestSynced(value).then(function () {
+    return store.getLatestSynced()
+  }).then(function (synced) {
+    expect(synced).toEqual(value)
   })
 })
 

@@ -300,7 +300,7 @@ const log = new Log({ timer, store: new MemoryStore() })
 
 ### Custom Store
 
-Any object implementing this 3 methods can be considered a Store:
+Any object implementing this 5 methods can be considered a Store:
 
 * `add(entry)` puts new log entry in the store. Returns a Promise `false`
   if action with same `id` was already in log.
@@ -309,3 +309,7 @@ Any object implementing this 3 methods can be considered a Store:
   Action page is an object containing an entries array in `page.entries`
   and a `page.next` function returning the next page Promise.
   Last page should not contain the `page.next` method.
+* `getLatestSynced()` returns Promise with values for latest synchronized
+   received/sent events.
+* `setLatestSynced(values)` saves values for latest synchronized
+  received/sent events and return Promise when they will be saved to store.

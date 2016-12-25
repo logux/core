@@ -65,12 +65,17 @@ module.exports = {
  * @property {next|undefined}
  */
 
-/**
- * Every Store class should provide three standard methods:
- * add, get and remove.
+ /**
+ * The `added` values for latest synchronized received/sent events.
  *
- * Every Store for client should provide two more methods:
- * getLatestSynced, setLatestSynced.
+ * @typedef {object} LatestSynced
+ * @property {string} received The `added` value of latest received event.
+ * @property {string} sent The `added` value of latest sent event.
+ */
+
+/**
+ * Every Store class should provide 5 standard methods:
+ * add, get and remove, getLatestSynced, setLatestSynced.
  *
  * See {@link MemoryStore} sources for example.
  *
@@ -116,6 +121,37 @@ module.exports = {
  * @return {Promise} Promise with first {@link Page}.
  *
  * @name get
+ * @function
+ * @memberof Store#
+ */
+/**
+ * Remove Action from store.
+ *
+ * @param {ID} id Action ID.
+ *
+ * @return {undefined}
+ *
+ * @name remove
+ * @function
+ * @memberof Store#
+ */
+/**
+ * Get `added` values for latest synchronized received/sent events.
+ *
+ * @return {Promise} Promise with {@link LatestSynced}.
+ *
+ * @name getLatestSynced
+ * @function
+ * @memberof Store#
+ */
+/**
+ * Set `added` value for latest synchronized received or/and sent events.
+ *
+ * @param {LatestSynced} values Object with latest sent or received values.
+ *
+ * @return {Promise} Promise when values will be saved to store.
+ *
+ * @name setLatestSynced
  * @function
  * @memberof Store#
  */
