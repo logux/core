@@ -7,10 +7,10 @@ function convert (list) {
 }
 
 function insert (store, entry) {
-  store.latestAdded += 1
-  entry[1].added = store.latestAdded
+  store.lastAdded += 1
+  entry[1].added = store.lastAdded
   store.added.unshift(entry)
-  return Promise.resolve(store.latestAdded)
+  return Promise.resolve(store.lastAdded)
 }
 
 /**
@@ -21,8 +21,8 @@ function insert (store, entry) {
  *
  * Think about this store as a basic store realization.
  *
- * Every Store class should provide 5 standard methods:
- * add, get, remove, getLatestSynced and setLatestSynced.
+ * Every Store class should provide 6 standard methods:
+ * add, get, remove, getLastAdded, getLastSynced and setLastSynced.
  *
  * @example
  * import { MemoryStore } from 'logux-core'
@@ -38,9 +38,9 @@ function insert (store, entry) {
 function MemoryStore () {
   this.created = []
   this.added = []
-  this.latestReceived = 0
-  this.latestAdded = 0
-  this.latestSent = 0
+  this.lastReceived = 0
+  this.lastAdded = 0
+  this.lastSent = 0
 }
 
 MemoryStore.prototype = {
@@ -92,23 +92,23 @@ MemoryStore.prototype = {
     }
   },
 
-  getLatestAdded: function getLatestAdded () {
-    return Promise.resolve(this.latestAdded)
+  getLastAdded: function getLastAdded () {
+    return Promise.resolve(this.lastAdded)
   },
 
-  getLatestSynced: function getLatestSynced () {
+  getLastSynced: function getLastSynced () {
     return Promise.resolve({
-      received: this.latestReceived,
-      sent: this.latestSent
+      received: this.lastReceived,
+      sent: this.lastSent
     })
   },
 
-  setLatestSynced: function setLatestSynced (values) {
+  setLastSynced: function setLastSynced (values) {
     if (typeof values.sent !== 'undefined') {
-      this.latestSent = values.sent
+      this.lastSent = values.sent
     }
     if (typeof values.received !== 'undefined') {
-      this.latestReceived = values.received
+      this.lastReceived = values.received
     }
     return Promise.resolve()
   }

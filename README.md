@@ -309,8 +309,8 @@ Any object implementing this 5 methods can be considered a Store:
   Action page is an object containing an entries array in `page.entries`
   and a `page.next` function returning the next page Promise.
   Last page should not contain the `page.next` method.
-* `getLatestAdded()` returns Promise with biggest `added` in store.
-* `getLatestSynced()` returns Promise with values for latest synchronized
+* `getLastAdded()` returns Promise with biggest `added` in store.
+* `getLastSynced()` returns Promise with values for latest synchronized
   received/sent events.
-* `setLatestSynced(values)` saves values for latest synchronized
+* `setLastSynced(values)` saves values for latest synchronized
   received/sent events and return Promise when they will be saved to store.

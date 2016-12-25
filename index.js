@@ -68,14 +68,14 @@ module.exports = {
  /**
  * The `added` values for latest synchronized received/sent events.
  *
- * @typedef {object} LatestSynced
+ * @typedef {object} LastSynced
  * @property {string} received The `added` value of latest received event.
  * @property {string} sent The `added` value of latest sent event.
  */
 
 /**
  * Every Store class should provide 6 standard methods:
- * add, get and remove, getLatestAdded, getLatestSynced, setLatestSynced.
+ * add, get and remove, getLastAdded, getLastSynced, setLastSynced.
  *
  * See {@link MemoryStore} sources for example.
  *
@@ -142,27 +142,27 @@ module.exports = {
  *
  * @return {Promise} Promise with biggest `added` number.
  *
- * @name getLatestAdded
+ * @name getLastAdded
  * @function
  * @memberof Store#
  */
 /**
  * Get `added` values for latest synchronized received/sent events.
  *
- * @return {Promise} Promise with {@link LatestSynced}.
+ * @return {Promise} Promise with {@link LastSynced}.
  *
- * @name getLatestSynced
+ * @name getLastSynced
  * @function
  * @memberof Store#
  */
 /**
  * Set `added` value for latest synchronized received or/and sent events.
  *
- * @param {LatestSynced} values Object with latest sent or received values.
+ * @param {LastSynced} values Object with latest sent or received values.
  *
  * @return {Promise} Promise when values will be saved to store.
  *
- * @name setLatestSynced
+ * @name setLastSynced
  * @function
  * @memberof Store#
  */
