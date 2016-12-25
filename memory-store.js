@@ -6,6 +6,13 @@ function convert (list) {
   })
 }
 
+function insert (store, entry) {
+  store.latestAdded += 1
+  entry[1].added = store.latestAdded
+  store.added.unshift(entry)
+  return Promise.resolve(store.latestAdded)
+}
+
 /**
  * Simple memory-based log store.
  *
@@ -32,6 +39,7 @@ function MemoryStore () {
   this.created = []
   this.added = []
   this.latestReceived = 0
+  this.latestAdded = 0
   this.latestSent = 0
 }
 
@@ -47,7 +55,6 @@ MemoryStore.prototype = {
 
   add: function add (action, meta) {
     var cache = meta.id.slice(1).join('\t')
-
     var entry = [action, meta, cache]
 
     var list = this.created
@@ -57,14 +64,12 @@ MemoryStore.prototype = {
         return Promise.resolve(false)
       } else if (isFirstOlder(other[1], meta) > 0) {
         list.splice(i, 0, entry)
-        this.added.unshift(entry)
-        return Promise.resolve(true)
+        return insert(this, entry)
       }
     }
 
     list.push(entry)
-    this.added.unshift(entry)
-    return Promise.resolve(true)
+    return insert(this, entry)
   },
 
   remove: function remove (id) {
@@ -85,6 +90,10 @@ MemoryStore.prototype = {
         break
       }
     }
+  },
+
+  getLatestAdded: function getLatestAdded () {
+    return Promise.resolve(this.latestAdded)
   },
 
   getLatestSynced: function getLatestSynced () {

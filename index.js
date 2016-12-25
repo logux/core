@@ -74,8 +74,8 @@ module.exports = {
  */
 
 /**
- * Every Store class should provide 5 standard methods:
- * add, get and remove, getLatestSynced, setLatestSynced.
+ * Every Store class should provide 6 standard methods:
+ * add, get and remove, getLatestAdded, getLatestSynced, setLatestSynced.
  *
  * See {@link MemoryStore} sources for example.
  *
@@ -89,8 +89,9 @@ module.exports = {
  * @param {Action} action The action to add.
  * @param {Meta} meta Action’s metadata.
  *
- * @return {Promise} Promise with `false` if action with same `meta.id`
- *                   was already in store
+ * @return {Promise} Promise with used `added` for new entry
+ *                   or `false` if action with same `meta.id`
+ *                   was already in store.
  *
  * @name add
  * @function
@@ -132,6 +133,16 @@ module.exports = {
  * @return {undefined}
  *
  * @name remove
+ * @function
+ * @memberof Store#
+ */
+/**
+ * Return biggest `added` number in store.
+ * All actions in this log have less or same `added` time.
+ *
+ * @return {Promise} Promise with biggest `added` number.
+ *
+ * @name getLatestAdded
  * @function
  * @memberof Store#
  */

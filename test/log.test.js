@@ -264,7 +264,7 @@ it('removes keeper', function () {
     var unkeep = log.keep(function (action) {
       return action.type === 'b'
     })
-    log.clean().then(function () {
+    return log.clean().then(function () {
       checkActions(log, [{ type: 'b' }])
       unkeep()
       return log.clean()
