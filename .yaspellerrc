@@ -24,7 +24,7 @@
     "getTime",
     "isFirstOlder",
     "firstMeta",
-    "secondMeta"
+    "secondMeta",
     "latestSent",
     "latestReceived",
     "getLatestSynced",
