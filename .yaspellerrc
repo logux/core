@@ -21,6 +21,10 @@
     "Versioning",
     "timestamp",
     "timestamps",
+    "getTime",
+    "isFirstOlder",
+    "firstMeta",
+    "secondMeta"
     "latestSent",
     "latestReceived",
     "getLatestSynced",

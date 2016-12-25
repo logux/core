@@ -7,7 +7,7 @@ function createLog () {
   return new Log({ timer: createTestTimer(), store: new MemoryStore() })
 }
 
-function eventsCount (log) {
+function entriesCount (log) {
   return log.store.created.length
 }
 
@@ -22,16 +22,16 @@ it('cleans log', function () {
   cleanEvery(log, 2)
 
   return log.add({ type: 'a' }).then(function () {
-    expect(eventsCount(log)).toBe(1)
+    expect(entriesCount(log)).toBe(1)
     return log.add({ type: 'a' })
   }).then(nextTick).then(function () {
-    expect(eventsCount(log)).toBe(0)
+    expect(entriesCount(log)).toBe(0)
     return log.add({ type: 'a' })
   }).then(function () {
-    expect(eventsCount(log)).toBe(1)
+    expect(entriesCount(log)).toBe(1)
     return log.add({ type: 'a' })
   }).then(nextTick).then(function () {
-    expect(eventsCount(log)).toBe(0)
+    expect(entriesCount(log)).toBe(0)
   })
 })
 
@@ -39,8 +39,8 @@ it('cleans log on next tick', function () {
   var log = createLog()
   cleanEvery(log, 2)
 
-  log.on('event', function () {
-    expect(eventsCount(log)).toBeGreaterThan(0)
+  log.on('add', function () {
+    expect(entriesCount(log)).toBeGreaterThan(0)
   })
 
   return log.add({ type: 'a' }).then(function () {
@@ -48,7 +48,7 @@ it('cleans log on next tick', function () {
   })
 })
 
-it('uses 100 events by default', function () {
+it('uses 100 entries by default', function () {
   var log = createLog()
   cleanEvery(log)
 
@@ -58,9 +58,9 @@ it('uses 100 events by default', function () {
   }
 
   return Promise.all(promises).then(function () {
-    expect(eventsCount(log)).toBe(99)
+    expect(entriesCount(log)).toBe(99)
     return log.add({ type: 'a' })
   }).then(nextTick).then(function () {
-    expect(eventsCount(log)).toBe(0)
+    expect(entriesCount(log)).toBe(0)
   })
 })

@@ -1,11 +1,11 @@
 var NanoEvents = require('nanoevents')
 
 /**
- * Log is main idea in Logux to store timed events inside.
+ * Log is main idea in Logux to store actions with time marks.
  *
  * @param {object} opts Options.
- * @param {Store} opts.store Store for events.
- * @param {Timer} opts.timer Timer to mark events.
+ * @param {Store} opts.store Store for log.
+ * @param {Timer} opts.timer Timer to mark actions.
  *
  * @example
  * import Log from 'logux-core'
@@ -14,7 +14,7 @@ var NanoEvents = require('nanoevents')
  *   timer: createTestTimer()
  * })
  *
- * log.on('event', beeper)
+ * log.on('add', beeper)
  * log.add({ type: 'beep' })
  *
  * @class
@@ -35,12 +35,12 @@ function Log (opts) {
   this.timer = opts.timer
   /**
    * Latest used `added` number.
-   * All events in this log have less or same `added` time.
+   * All actions in this log have less or same `added` time.
    * @type {number}
    *
    * @example
    * sync() {
-   *   sendEvents(log)
+   *   sendActionslog)
    *   this.synced = log.lastAdded
    * }
    */
@@ -59,17 +59,17 @@ Log.prototype = {
   /**
    * Subscribe for log events. It implements nanoevents API. Supported events:
    *
-   * * `event`: when new event was added to log.
-   * * `clean`: before log run keepers and remove outdated events.
+   * * `add`: when new entry was added to log.
+   * * `clean`: before log run keepers and remove outdated entries.
    *
-   * @param {"event"|"clean"} event The event name.
+   * @param {"add"|"clean"} event The event name.
    * @param {listener} listener The listener function.
    *
    * @return {function} Unbind listener from event.
    *
    * @example
-   * const unbind = log.on('event', newEvent => {
-   *   if (newEvent.type === 'beep') beep()
+   * const unbind = log.on('add', (action, meta) => {
+   *   if (action.type === 'beep') beep()
    * })
    * function disableBeeps () {
    *   unbind()
@@ -83,7 +83,7 @@ Log.prototype = {
    * Add one-time listener for log events.
    * See {@link Log#on} for supported events.
    *
-   * @param {"event"|"clean"} event The event name.
+   * @param {"add"|"clean"} event The event name.
    * @param {listener} listener The listener function.
    *
    * @return {function} Unbind listener from event.
@@ -98,46 +98,47 @@ Log.prototype = {
   },
 
   /**
-   * Add event to log.
+   * Add action to log.
    *
    * It will set id` (if it missed) and `added` property to `meta`
    * and call all listeners.
    *
-   * @param {Event} event New event.
-   * @param {object} [meta] Open structure for event metadata.
-   * @param {Time} meta.id Unique event ID.
-   * @return {Promise} Promise with `false` if event was already in log
+   * @param {Action} action The new action.
+   * @param {object} [meta] Open structure for action metadata.
+   * @param {Time} [meta.id] Unique action ID.
+   * @return {Promise} Promise with `false` if action was already in log
    *
    * @example
    * removeButton.addEventListener('click', () => {
    *   log.add({ type: 'users:remove', user: id })
    * })
    */
-  add: function add (event, meta) {
-    if (typeof event.type === 'undefined') {
-      throw new Error('Expected "type" property in event')
+  add: function add (action, meta) {
+    if (typeof action.type === 'undefined') {
+      throw new Error('Expected "type" property in action')
     }
 
     if (!meta) meta = { }
     if (typeof meta.id === 'undefined') meta.id = this.timer()
+    if (typeof meta.time === 'undefined') meta.time = meta.id[0]
     this.lastAdded += 1
     meta.added = this.lastAdded
 
     var emitter = this.emitter
-    return this.store.add([event, meta]).then(function (wasAdded) {
-      if (wasAdded) emitter.emit('event', event, meta)
+    return this.store.add(action, meta).then(function (wasAdded) {
+      if (wasAdded) emitter.emit('add', action, meta)
       return wasAdded
     })
   },
 
   /**
-   * Remove all unnecessary events. Events could be kept by {@link Log#keep}.
+   * Remove all outdated actions. Actions could be kept by {@link Log#keep}.
    *
    * @return {Promise} When cleaning will be finished.
    *
    * @example
    * let sinceClean = 0
-   * log.on('event', () => {
+   * log.on('add', () => {
    *   sinceClean += 1
    *   if (sinceClean > 100) {
    *     sinceClean = 0
@@ -148,23 +149,23 @@ Log.prototype = {
   clean: function clean () {
     this.emitter.emit('clean')
     var self = this
-    return this.each(function (event, meta) {
+    return this.each(function (action, meta) {
       var keepers = self.emitter.events.keep || []
       var keep = keepers.some(function (keeper) {
-        return keeper.fn(event, meta)
+        return keeper.fn(action, meta)
       })
       if (!keep) self.store.remove(meta.id)
     })
   },
 
   /**
-   * Add function to keep events from cleaning.
+   * Add function to keep actions from cleaning.
    *
-   * @param {keeper} keeper Return true for events to keep.
+   * @param {keeper} keeper Return true for actions to keep.
    * @return {function} Remove keeper from log.
    *
    * @example
-   * const unkeep = log.keep((event, meta) => {
+   * const unkeep = log.keep((action, meta) => {
    *   return compareTime(meta.id, lastBeep) > 0
    * })
    * function uninstallPlugin () {
@@ -176,23 +177,23 @@ Log.prototype = {
   },
 
   /**
-   * Iterates through all event, from last event to first.
+   * Iterates through all actions, from last to first.
    *
    * Return false from callback if you want to stop iteration.
    *
    * @param {object} [opts] Iterator options.
-   * @param {'added'|'created'} opts.order Sort events by created time or when
+   * @param {'added'|'created'} opts.order Sort entries by created time or when
    *                                       they was added to current log.
    *                                       Default is `'created'`.
-   * @param {iterator} callback Function will be executed on every event.
+   * @param {iterator} callback Function will be executed on every action.
    * @return {Promise} When iteration will be finished
-   *                   by iterator or events end.
+   *                   by iterator or end of actions.
    *
    * @example
-   * log.each((event, meta) => {
-   *   if ( compareTime(meta.id, lastBeep) <= 0 ) {
+   * log.each((action, meta) => {
+   *   if (compareTime(meta.id, lastBeep) <= 0) {
    *     return false;
-   *   } else if ( event.type === 'beep' ) {
+   *   } else if (action.type === 'beep') {
    *     beep()
    *     lastBeep = meta.id
    *     return false;
@@ -233,20 +234,20 @@ module.exports = Log
 
 /**
  * @callback listener
- * @param {Event} event New event.
- * @param {Meta} meta The event metadata.
+ * @param {Action} action New action.
+ * @param {Meta} meta The action’s metadata.
  */
 
 /**
  * @callback iterator
- * @param {Event} event Next event.
- * @param {Meta} meta Next event metadata.
+ * @param {Action} action Next action.
+ * @param {Meta} meta Next action’s metadata.
  * @return {boolean} returning `false` will stop iteration.
  */
 
 /**
  * @callback keeper
- * @param {Event} event Next event.
- * @param {Meta} meta Next event metadata.
- * @return {boolean} true If event should be kept from cleaning.
+ * @param {Action} action Next action.
+ * @param {Meta} meta Next action’s metadata.
+ * @return {boolean} true If action should be kept from cleaning.
  */

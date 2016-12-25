@@ -3,10 +3,10 @@
 Log for Logux, default timer and test tools. These are low-level base classes,
 and Logux end-users are supposed use high-level Logux tools.
 
-Logux idea is based on shared logs. Log is a list of events ordered in time.
-Every entry in Logux log contains event object and meta object.
+Logux idea is based on shared logs. Log is a list of action ordered in time.
+Every entry in Logux log contains action object and meta object.
 
-Instead of event object, only few properties from meta could be synchronized
+Instead of action object, only few properties from meta could be synchronized
 between log. Meta is open structure and could contains any data. But at least
 it should contain two properties: `id` and `added`.
 
@@ -21,38 +21,38 @@ const log = new Log({ store, timer })
 </a>
 
 
-## Event
+## Action
 
-Logux event is a simple JS object, having only one mandatory property — `type`.
-Logux events are very similar to Redux actions.
+Logux action is a simple JS object, having only one mandatory property — `type`.
+Logux actions are very similar to Redux actions.
 
 ```js
 log.add({ type: 'beep' })
 ```
 
-Events from third-party libraries must prefix `type` with library name
-and `/` separator. For example, `example` library should use events types
+Actions from third-party libraries must prefix `type` with library name
+and `/` separator. For example, `example` library should use actions types
 like `example/name`.
 
 
-## Event ID
+## Action ID
 
 Log order is strictly required to be the same on every machine.
-For this reason, every event metadata contains ID to order events by this ID.
+For this reason, every action metadata contains ID to order actions by this ID.
 
 ID is a array of `number` or `string`. Logux will compare array items
-to find what event is older. So every new event ID should be bigger
+to find what action is older. So every new action ID should be bigger
 than previous one.
 
 Default ID format:
 
 1. Number of milliseconds elapsed since 1 January 1970.
 2. Unique node name.
-3. An incremented number in case if the previous event
+3. An incremented number in case if the previous action
    had the same number of milliseconds.
 
 This format is tricky to keep ID unique on every machine. Also this format
-allows you to get real time , when event was occurred.
+allows you to get real time , when action was occurred.
 
 ```js
 [1473564435318, 'server', 0]
@@ -60,23 +60,23 @@ allows you to get real time , when event was occurred.
 [1473564435319, 'server', 0]
 ```
 
-But you can use any event ID format. Just use same format for all clients.
+But you can use any action ID format. Just use same format for all clients.
 
 
 ### Timer
 
-Timer is a function to create unique event ID. Logux use it to set ID
-for new events automatically.
+Timer is a function to create unique action ID. Logux use it to set ID
+for new actions automatically.
 
 ```js
 log.add({ type: 'beep' })
-log.each((event, meta) => {
+log.each((action, meta) => {
   meta.id //=> [1473564435318, 'server', 0]
 })
 ```
 
 But you can set it manually as well
-(for example, if you got event from a different machine).
+(for example, if you got action from a different machine).
 
 ```js
 log.add({ type: 'beep' }, { id: [1473564435318, 'user:1', 0] })
@@ -114,32 +114,51 @@ const log2 = new Log({ store2, timer: testTimer })
 ```
 
 
+## Action Time
+
+Every log entry has `meta.time` property with action created time
+(milliseconds from elapsed since 1 January 1970):
+
+```js
+if (action.type === 'user:add') {
+  console.log('User was created:', new Date(meta.time))
+}
+```
+
+This property could be different from `meta.id[0]`,
+because clients could have different system time.
+To fix it clients could calculate time difference between client and server
+to fix action’s time.
+
+As result, `meta.time` contain time according local system time
+and could be different on different machines.
+
+
 ### Helper
 
-`compareTime()` helper from this package could be useful for many cases:
+`isFirstOlder()` helper from this package could be useful for many cases:
 
 ```js
 import { compareTime } from 'logux-core'
 
-compareTime(older, younger) //=>  1
-compareTime(older, older)   //=>  0
-compareTime(younger, older) //=> -1
+isFirstOlder(meta1, meta2) //=> false
+isFirstOlder(meta2, meta1) //=> true
 ```
 
 
 ## Added Number
 
-Event metadata has also `added` with sequence number. Every next event added
+Action metadata has also `added` with sequence number. Every next action added
 to current log will get bigger `added` number.
 
-After synchronization events from other log could have lower `id`,
+After synchronization actions from other log could have lower `id`,
 because they was created before synchronization. But `added` shows only when
-event was added to this log, now when they was created.
+action was added to this log, now when they was created.
 
-As result events in synchronized logs will have same `id`, but different
+As result actions in synchronized logs will have same `id`, but different
 `added` metadata.
 
-This time is used to find, which events should be sent when two
+This time is used to find, which actions should be sent when two
 nodes are connected again.
 
 ```js
@@ -150,12 +169,12 @@ log.add({ type: 'beep' }, { id: past }) //=> added: 2
 
 ## Reading
 
-There are two ways to read events from the log.
-First, one can subscribe to new events:
+There are two ways to read actions from the log.
+First, one can subscribe to new actions:
 
 ```js
-log.on('event', (event, meta) => {
-  console.log(event, meta)
+log.on('add', (action, meta) => {
+  console.log(action, meta)
 })
 log.add({ type: 'test' })
 // Prints { type: 'test' }, { id: id, added: 1 }
@@ -166,11 +185,11 @@ just call the function returned by `on`.
 
 [nanoevents]: https://github.com/ai/nanoevents
 
-The second way is to run asynchronous event iterator:
+The second way is to run asynchronous action iterator:
 
 ```js
-log.each((event, meta) => {
-  // for every event
+log.each((action, meta) => {
+  // for every action
 }).then(() => {
   // when iteration process all everts or iterator stop iteration
 })
@@ -179,24 +198,24 @@ log.each((event, meta) => {
 An iterator can return `false` in order to stop the iteration process:
 
 ```js
-log.each((event, meta) => {
-  if ( compareTime(meta.id, lastBeep) <= 0 ) {
+log.each((action, meta) => {
+  if (compareTime(meta.id, lastBeep) <= 0) {
     return false;
-  } else if ( event.type === 'beep' ) {
+  } else if (action.type === 'beep') {
     beep()
-    lastBeep = event.time
+    lastBeep = action.time
     return false;
   }
 })
 ```
 
-By default, `each()` orders events by their creation time.
+By default, `each()` orders actions by their creation time.
 You could specify custom ordering, e.g. by the adding time:
 
 ```js
-log.each({ order: 'added' }, (event, meta) => {
+log.each({ order: 'added' }, (action, meta) => {
   if (meta.added > lastSync) {
-    send(event, meta)
+    send(action, meta)
   } else {
     return false
   }
@@ -206,38 +225,39 @@ log.each({ order: 'added' }, (event, meta) => {
 
 ## Cleaning
 
-To keep the log fast, Logux cleans it from outdated events.
-Note, that by default, Logux removes every event from the log.
+To keep the log fast, Logux cleans it from outdated actions.
+Note, that by default, Logux removes every action from the log.
 
-If third-party library will need some events in the future,
+If third-party library will need some actions in the future,
 it should setup a keeper. A keeper is just a function returning `true`
-for important events supposed to be kept in the log.
+for important actions supposed to be kept in the log.
 
 Log emits `clean` event before the keepers execution and cleaning.
 
-For example, DevTools may need to keep latest 1000 events in the log:
+For example, DevTools may need to keep latest 1000 actions in the log:
 
 ```js
 let count = 0
 log.on('clean', () => {
   count = 0
 })
-log.keep((event, meta) => {
+log.keep((action, meta) => {
   count += 1
   return count > 1000
 })
 ```
 
-Another example may be CRDT module keeping events with the latest property value.
+Another example may be CRDT module keeping actions
+with the latest property value.
 
 Cleaning should be started manually by calling `clean()` method:
 
 ```js
-let events = 0
-log.on('event', event => {
-  events += 1
-  if (events > 100) {
-    events = 0
+let actions = 0
+log.on('add', action => {
+  actions += 1
+  if (actions > 100) {
+    actions = 0
     setImmediate(() => log.clean())
   }
 })
@@ -248,9 +268,9 @@ log.on('event', event => {
 
 Logux Core contains a function named `cleanEvery()`. It installs a listener
 for the log which will repeatedly call `clean()` after the specified
-number of events was logged.
+number of actions was logged.
 
-By default, it will clean log after each 100 events:
+By default, it will clean log after each 100 actions:
 
 ```js
 import { cleanEvery } from 'logux-core'
@@ -283,9 +303,9 @@ const log = new Log({ timer, store: new MemoryStore() })
 Any object implementing this 3 methods can be considered a Store:
 
 * `add(entry)` puts new log entry in the store. Returns a Promise `false`
-  if event with same `id` was already in log.
-* `remove(id)` removes an event from the store.
-* `get()` returns a Promise loading the first page of events in the log.
-  Events page is an object containing an entries array in `page.entries`
+  if action with same `id` was already in log.
+* `remove(id)` removes an action from the store.
+* `get()` returns a Promise loading the first page of actions in the log.
+  Action page is an object containing an entries array in `page.entries`
   and a `page.next` function returning the next page Promise.
   Last page should not contain the `page.next` method.
