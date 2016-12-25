@@ -25,5 +25,10 @@
     "isFirstOlder",
     "firstMeta",
     "secondMeta"
+    "latestSent",
+    "latestReceived",
+    "getLatestSynced",
+    "setLatestSynced",
+    "syncedValue"
   ]
 }

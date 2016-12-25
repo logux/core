@@ -66,7 +66,11 @@ module.exports = {
  */
 
 /**
- * Every log store should provide two methods: add and get.
+ * Every Store class should provide three standard methods:
+ * add, get and remove.
+ *
+ * Every Store for client should provide two more methods:
+ * getLatestSynced, setLatestSynced.
  *
  * See {@link MemoryStore} sources for example.
  *
