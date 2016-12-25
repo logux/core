@@ -14,11 +14,8 @@ function convert (list) {
  *
  * Think about this store as a basic store realization.
  *
- * Every Store class should provide three standard methods:
- * add, get and remove.
- *
- * Every Store for client should provide two more methods:
- * getLatestSynced, setLatestSynced.
+ * Every Store class should provide 5 standard methods:
+ * add, get, remove, getLatestSynced and setLatestSynced.
  *
  * @example
  * import { MemoryStore } from 'logux-core'
@@ -39,46 +36,6 @@ function MemoryStore () {
 }
 
 MemoryStore.prototype = {
-
-  /**
-   * Method `getLatestSynced` used to get tuple of latest synced added number
-   * for current and for other's node log
-   *
-   * @example
-   * log.store.getLatestSynced().then(function(synced) {
-   *   if (log.lastAdded > synced.latestReceived) sync.state = 'wait'
-   * })
-   *
-   * @return {object} Object with latest sent/received values.
-   */
-  getLatestSynced: function getLatestSynced () {
-    return Promise.resolve({
-      latestReceived: this.latestReceived,
-      latestSent: this.latestSent
-    })
-  },
-
-  /**
-   * Method `setLatestSynced` used to set latest synced added number
-   * for current and/or other node's log
-   *
-   * @param {object} [syncedValue] syncedValue Object with latest sent/received
-   *                                           values.
-   *
-   * @example
-   * log.store.setLatestSynced({ latestSent: 1, latestReceived: 2 }])
-   *
-   * @return {boolean} Sync option is set
-   */
-  setLatestSynced: function setLatestSynced (syncedValue) {
-    if (syncedValue.latestSent) {
-      this.latestSent = syncedValue.latestSent
-    }
-    if (syncedValue.latestReceived) {
-      this.latestReceived = syncedValue.latestReceived
-    }
-    return Promise.resolve(true)
-  },
 
   get: function get (order) {
     if (order === 'created') {
@@ -128,6 +85,23 @@ MemoryStore.prototype = {
         break
       }
     }
+  },
+
+  getLatestSynced: function getLatestSynced () {
+    return Promise.resolve({
+      received: this.latestReceived,
+      sent: this.latestSent
+    })
+  },
+
+  setLatestSynced: function setLatestSynced (values) {
+    if (typeof values.sent !== 'undefined') {
+      this.latestSent = values.sent
+    }
+    if (typeof values.received !== 'undefined') {
+      this.latestReceived = values.received
+    }
+    return Promise.resolve()
   }
 
 }
