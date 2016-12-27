@@ -153,7 +153,7 @@ Log.prototype = {
    *
    * @example
    * const unkeep = log.keep((action, meta) => {
-   *   return compareTime(meta.id, lastBeep) > 0
+   *   return isFirstOlder(lastBeep, meta)
    * })
    * function uninstallPlugin () {
    *   unkeep()
