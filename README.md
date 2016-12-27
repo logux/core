@@ -139,7 +139,7 @@ and could be different on different machines.
 `isFirstOlder()` helper from this package could be useful for many cases:
 
 ```js
-import { compareTime } from 'logux-core'
+import { isFirstOlder } from 'logux-core'
 
 isFirstOlder(meta1, meta2) //=> false
 isFirstOlder(meta2, meta1) //=> true
@@ -199,11 +199,11 @@ An iterator can return `false` in order to stop the iteration process:
 
 ```js
 log.each((action, meta) => {
-  if (compareTime(meta.id, lastBeep) <= 0) {
+  if (isFirstOlder(meta, lastBeep)) {
     return false;
   } else if (action.type === 'beep') {
     beep()
-    lastBeep = action.time
+    lastBeep = action.meta
     return false;
   }
 })
