@@ -212,7 +212,7 @@ it('keeps existed ID', function () {
   })
 })
 
-it('keeps existed time', function () {
+it('keeps existed ID and time', function () {
   return logWith([
     [{ type: 'timed' }, { id: [100], time: 1 }]
   ]).then(function (log) {
@@ -222,12 +222,12 @@ it('keeps existed time', function () {
   })
 })
 
-it('sets time for timeless entries', function () {
+it('sets ID and time for timeless entries', function () {
   return logWith([
     [{ type: 'timeless' }]
   ]).then(function (log) {
     checkEntries(log, [
-      [{ type: 'timeless' }, { id: [1], time: 1, added: 1 }]
+      [{ type: 'timeless' }, { id: [1, 'test', 0], time: 1, added: 1 }]
     ])
   })
 })
