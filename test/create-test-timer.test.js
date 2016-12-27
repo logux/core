@@ -3,7 +3,7 @@ var createTestTimer = require('../create-test-timer')
 it('generates uniq time marks', function () {
   var timer = createTestTimer()
   for (var i = 1; i <= 10; i++) {
-    expect(timer()).toEqual([i])
+    expect(timer()).toEqual([i, 'test', 0])
   }
 })
 

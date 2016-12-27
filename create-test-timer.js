@@ -7,9 +7,9 @@
  * import { createTestTimer } from 'logux-core'
  *
  * const timer = createTestTimer()
- * timer() //=> [1]
- * timer() //=> [2]
- * timer() //=> [3]
+ * timer() //=> [1, 'test', 0]
+ * timer() //=> [2, 'test', 0]
+ * timer() //=> [3, 'test', 0]
  *
  * const log1 = new Log({ store1, timer: testTimer })
  * const log2 = new Log({ store2, timer: testTimer })
@@ -18,7 +18,7 @@ function createTestTimer () {
   var last = 0
   return function () {
     last += 1
-    return [last]
+    return [last, 'test', 0]
   }
 }
 
