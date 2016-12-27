@@ -1,14 +1,14 @@
-var createTestTimer = require('./create-test-timer')
+var createTestIdGenerator = require('./create-test-id-generator')
+var createIdGenerator = require('./create-id-generator')
 var isFirstOlder = require('./is-first-older')
-var createTimer = require('./create-timer')
 var MemoryStore = require('./memory-store')
 var cleanEvery = require('./clean-every')
 var Log = require('./log')
 
 module.exports = {
-  createTestTimer: createTestTimer,
+  createTestIdGenerator: createTestIdGenerator,
+  createIdGenerator: createIdGenerator,
   isFirstOlder: isFirstOlder,
-  createTimer: createTimer,
   MemoryStore: MemoryStore,
   cleanEvery: cleanEvery,
   Log: Log
@@ -171,6 +171,6 @@ module.exports = {
  * Returns next action ID. It should return unique ID on every call.
  * Every next ID should be bigger than previous one.
  *
- * @typedef {function} Timer
+ * @typedef {function} IdGenerator
  * @return {ID}
  */

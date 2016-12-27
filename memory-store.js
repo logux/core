@@ -28,8 +28,8 @@ function insert (store, entry) {
  * import { MemoryStore } from 'logux-core'
  *
  * var log = new Log({
- *   store: new MemoryStore(),
- *   timer: createTestTimer()
+ *   idGenerator: createIdGenerator(),
+ *   store: new MemoryStore()
  * })
  *
  * @class

@@ -1,7 +1,7 @@
 {
   "name": "logux-core",
   "version": "0.1.0",
-  "description": "Log for Logux with default timer and test tools",
+  "description": "Log for Logux with test tools",
   "keywords": [
     "logux"
   ],
