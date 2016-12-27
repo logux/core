@@ -1,10 +1,13 @@
-var createTestTimer = require('../create-test-timer')
+var createTestIdGenerator = require('../create-test-id-generator')
 var MemoryStore = require('../memory-store')
 var cleanEvery = require('../clean-every')
 var Log = require('../log')
 
 function createLog () {
-  return new Log({ timer: createTestTimer(), store: new MemoryStore() })
+  return new Log({
+    idGenerator: createTestIdGenerator(),
+    store: new MemoryStore()
+  })
 }
 
 function entriesCount (log) {

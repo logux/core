@@ -1,17 +1,17 @@
-var createTestTimer = require('../create-test-timer')
+var createTestIdGenerator = require('../create-test-id-generator')
+var createIdGenerator = require('../create-id-generator')
 var isFirstOlder = require('../is-first-older')
-var createTimer = require('../create-timer')
 var MemoryStore = require('../memory-store')
 var cleanEvery = require('../clean-every')
 var core = require('../')
 var Log = require('../log')
 
-it('has test timer', function () {
-  expect(core.createTestTimer).toBe(createTestTimer)
+it('has test ID generator', function () {
+  expect(core.createTestIdGenerator).toBe(createTestIdGenerator)
 })
 
-it('has timer', function () {
-  expect(core.createTimer).toBe(createTimer)
+it('has ID generator', function () {
+  expect(core.createIdGenerator).toBe(createIdGenerator)
 })
 
 it('has autoclean', function () {

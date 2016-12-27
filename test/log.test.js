@@ -1,9 +1,12 @@
-var createTestTimer = require('../create-test-timer')
+var createTestIdGenerator = require('../create-test-id-generator')
 var MemoryStore = require('../memory-store')
 var Log = require('../log')
 
 function createLog () {
-  return new Log({ timer: createTestTimer(), store: new MemoryStore() })
+  return new Log({
+    idGenerator: createTestIdGenerator(),
+    store: new MemoryStore()
+  })
 }
 
 function checkActions (log, expected) {
@@ -33,15 +36,15 @@ function logWith (entries) {
   })
 }
 
-it('requires timer', function () {
+it('requires ID generator', function () {
   expect(function () {
     new Log()
-  }).toThrowError(/log timer/)
+  }).toThrowError(/log ID generator/)
 })
 
 it('requires store', function () {
   expect(function () {
-    new Log({ timer: createTestTimer() })
+    new Log({ idGenerator: createTestIdGenerator() })
   }).toThrowError(/log store/)
 })
 
@@ -192,7 +195,7 @@ it('supports multi-pages stores', function () {
       })
     }
   }
-  var log = new Log({ timer: createTestTimer(), store: store })
+  var log = new Log({ idGenerator: createTestIdGenerator(), store: store })
 
   var actions = []
   return log.each(function (action) {

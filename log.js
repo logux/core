@@ -5,13 +5,13 @@ var NanoEvents = require('nanoevents')
  *
  * @param {object} opts Options.
  * @param {Store} opts.store Store for log.
- * @param {Timer} opts.timer Timer to mark actions.
+ * @param {IdGenerator} opts.idGenerator ID generator for actions.
  *
  * @example
  * import Log from 'logux-core'
  * const log = new Log({
  *   store: new MemoryStore(),
- *   timer: createTestTimer()
+ *   idGenerator: createIdGenerator()
  * })
  *
  * log.on('add', beeper)
@@ -22,17 +22,17 @@ var NanoEvents = require('nanoevents')
 function Log (opts) {
   if (!opts) opts = { }
 
-  if (typeof opts.timer !== 'function') {
-    throw new Error('Expected log timer to be a function')
+  if (typeof opts.idGenerator !== 'function') {
+    throw new Error('Expected log ID generator to be a function')
   }
   /**
-   * Timer used in this log.
-   * @type {Timer}
+   * ID generator used in this log.
+   * @type {IdGenerator}
    *
    * @example
-   * const id = log.timer()
+   * const id = log.generateId()
    */
-  this.timer = opts.timer
+  this.generateId = opts.idGenerator
 
   if (typeof opts.store === 'undefined') {
     throw new Error('Expected log store to be a object')
@@ -108,7 +108,7 @@ Log.prototype = {
     }
 
     if (!meta) meta = { }
-    if (typeof meta.id === 'undefined') meta.id = this.timer()
+    if (typeof meta.id === 'undefined') meta.id = this.generateId()
     if (typeof meta.time === 'undefined') meta.time = meta.id[0]
 
     var emitter = this.emitter
