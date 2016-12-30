@@ -237,12 +237,30 @@ it('receives errors from connection', function () {
   var sync = new BaseSync('client', log, pair.left)
   pair.left.connect()
 
+  var emitted
+  sync.on('error', function (e) {
+    emitted = e
+  })
+
+  var error = new Error('test')
+  pair.left.emitter.emit('error', error)
+
+  expect(sync.connected).toBeFalsy()
+  expect(emitted).toEqual(error)
+})
+
+it('receives format errors from connection', function () {
+  var log = { on: function () { } }
+  var pair = new LocalPair()
+  var sync = new BaseSync('client', log, pair.left)
+  pair.left.connect()
+
   var sent = []
   pair.right.on('message', function (msg) {
     sent.push(msg)
   })
 
-  var error = new Error('test')
+  var error = new Error('Wrong message format')
   error.received = 'options'
   pair.left.emitter.emit('error', error)
   expect(sync.connected).toBeFalsy()

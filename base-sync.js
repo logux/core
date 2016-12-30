@@ -166,7 +166,11 @@ function BaseSync (nodeId, log, connection, options) {
     sync.onMessage(message)
   }))
   this.unbind.push(connection.on('error', function (error) {
-    sync.sendError(new SyncError(sync, 'wrong-format', error.received))
+    if (error.message === 'Wrong message format') {
+      sync.sendError(new SyncError(sync, 'wrong-format', error.received))
+    } else {
+      sync.emitter.emit('error', error)
+    }
     sync.connection.disconnect()
   }))
   this.unbind.push(connection.on('disconnect', function () {

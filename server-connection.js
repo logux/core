@@ -92,7 +92,12 @@ ServerConnection.prototype = {
    * @return {undefined}
    */
   send: function send (message) {
-    this.ws.send(JSON.stringify(message))
+    var json = JSON.stringify(message)
+    try {
+      this.ws.send(json)
+    } catch (e) {
+      this.emitter.emit('error', e)
+    }
   },
 
   error: function error (message) {

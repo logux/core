@@ -72,3 +72,20 @@ it('sends messages', function () {
   connection.send(['test'])
   expect(sent).toEqual(['["test"]'])
 })
+
+it('emits errors', function () {
+  var connection = new ServerConnection(new NanoEvents())
+
+  var error = new Error('test')
+  connection.ws.send = function () {
+    throw error
+  }
+
+  var emitted
+  connection.on('error', function (err) {
+    emitted = err
+  })
+
+  connection.send()
+  expect(emitted).toEqual(error)
+})
