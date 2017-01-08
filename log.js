@@ -5,13 +5,13 @@ var NanoEvents = require('nanoevents')
  *
  * @param {object} opts Options.
  * @param {Store} opts.store Store for log.
- * @param {IdGenerator} opts.idGenerator ID generator for actions.
+ * @param {string|number} opts.nodeId Unique Node ID.
  *
  * @example
- * import Log from 'logux-core'
+ * import Log from 'logux-core/log'
  * const log = new Log({
  *   store: new MemoryStore(),
- *   idGenerator: createIdGenerator()
+ *   node: 'client:134'
  * })
  *
  * log.on('add', beeper)
@@ -22,20 +22,20 @@ var NanoEvents = require('nanoevents')
 function Log (opts) {
   if (!opts) opts = { }
 
-  if (typeof opts.idGenerator !== 'function') {
-    throw new Error('Expected log ID generator to be a function')
+  if (typeof opts.nodeId === 'undefined') {
+    throw new Error('Expected node ID for Logux')
   }
   /**
-   * ID generator used in this log.
-   * @type {IdGenerator}
-   *
-   * @example
-   * const id = log.generateId()
+   * Unique node ID.
+   * @type {string|number}
    */
-  this.generateId = opts.idGenerator
+  this.nodeId = opts.nodeId
 
-  if (typeof opts.store === 'undefined') {
-    throw new Error('Expected log store to be a object')
+  this.lastTime = 0
+  this.sequence = 0
+
+  if (typeof opts.store !== 'object') {
+    throw new Error('Expected Logux store to be a object')
   }
   this.store = opts.store
 
@@ -143,6 +143,25 @@ Log.prototype = {
       })
       if (!keep) self.store.remove(meta.id)
     })
+  },
+
+  /**
+   * Generate next unique action ID.
+   *
+   * @return {ID} Unique action ID.
+   *
+   * @example
+   * const id = log.generateId()
+   */
+  generateId: function generateId () {
+    var now = Date.now()
+    if (now === this.lastTime) {
+      this.sequence += 1
+    } else {
+      this.lastTime = now
+      this.sequence = 0
+    }
+    return [now, this.nodeId, this.sequence]
   },
 
   /**
