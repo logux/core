@@ -6,7 +6,7 @@
 Log for Logux and test tools for log.
 
 Logux idea is based on shared logs. Log is a list of action ordered in time.
-Every entry in Logux log contains action object and meta object with:
+Every entry in Logux log contains action object and meta object with:
 
 * `id`: unique action ID to have same actions order on every machine.
 * `time`: action created time. Could de different on different machines,
