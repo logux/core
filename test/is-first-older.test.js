@@ -43,4 +43,5 @@ it('orders entries with different node ID length', function () {
 it('works with undefined in one meta', function () {
   var a = { id: [1, 'a', 0], time: 1 }
   expect(isFirstOlder(a, undefined)).toBeFalsy()
+  expect(isFirstOlder(undefined, a)).toBeTruthy()
 })
