@@ -6,7 +6,13 @@ In most use cases, you don’t need to create log, high-level Logux tools
 will do it for you. But you will have access to log API from that tools.
 
 Logux idea is based on shared logs. Log is a list of action ordered in time.
-Every entry in Logux log contains action object and meta object.
+Every entry in Logux log contains action object and meta object with:
+
+* `id`: unique action ID to have same actions order on every machine.
+* `time`: action created time. Could de different on different machines,
+  because could contain calculated time different between client and server.
+* `added`: sequence number when action was insert to current log.
+  It is used to find actions since last synchronization.
 
 Instead of action object, only few properties from meta could be synchronized
 between log. Meta is open structure and could contains any data. But at least
