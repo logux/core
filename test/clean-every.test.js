@@ -1,14 +1,5 @@
-var createTestIdGenerator = require('../create-test-id-generator')
-var MemoryStore = require('../memory-store')
 var cleanEvery = require('../clean-every')
-var Log = require('../log')
-
-function createLog () {
-  return new Log({
-    idGenerator: createTestIdGenerator(),
-    store: new MemoryStore()
-  })
-}
+var TestTime = require('../test-time')
 
 function entriesCount (log) {
   return log.store.created.length
@@ -21,7 +12,7 @@ function nextTick () {
 }
 
 it('cleans log', function () {
-  var log = createLog()
+  var log = TestTime.getLog()
   cleanEvery(log, 2)
 
   return log.add({ type: 'a' }).then(function () {
@@ -39,7 +30,7 @@ it('cleans log', function () {
 })
 
 it('cleans log on next tick', function () {
-  var log = createLog()
+  var log = TestTime.getLog()
   cleanEvery(log, 2)
 
   log.on('add', function () {
@@ -52,7 +43,7 @@ it('cleans log on next tick', function () {
 })
 
 it('uses 100 entries by default', function () {
-  var log = createLog()
+  var log = TestTime.getLog()
   cleanEvery(log)
 
   var promises = []

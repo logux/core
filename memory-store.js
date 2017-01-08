@@ -28,7 +28,7 @@ function insert (store, entry) {
  * import { MemoryStore } from 'logux-core'
  *
  * var log = new Log({
- *   idGenerator: createIdGenerator(),
+ *   nodeId: 'server',
  *   store: new MemoryStore()
  * })
  *

@@ -10,9 +10,6 @@
     "JS",
     "localStorage",
     "docdash",
-    "createIdGenerator",
-    "createTestIdGenerator",
-    "IdGenerator",
     "generateId",
     "JSDoc",
     "nanoevents",
@@ -31,6 +28,10 @@
     "getLastSynced",
     "setLastSynced",
     "LastSynced",
-    "getLastAdded"
+    "getLastAdded",
+    "getLog",
+    "nextLog",
+    "TestLog",
+    "TestTime"
   ]
 }

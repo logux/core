@@ -1,16 +1,14 @@
-var createTestIdGenerator = require('./create-test-id-generator')
-var createIdGenerator = require('./create-id-generator')
 var isFirstOlder = require('./is-first-older')
 var MemoryStore = require('./memory-store')
 var cleanEvery = require('./clean-every')
+var TestTime = require('./test-time')
 var Log = require('./log')
 
 module.exports = {
-  createTestIdGenerator: createTestIdGenerator,
-  createIdGenerator: createIdGenerator,
   isFirstOlder: isFirstOlder,
   MemoryStore: MemoryStore,
   cleanEvery: cleanEvery,
+  TestTime: TestTime,
   Log: Log
 }
 
@@ -165,12 +163,4 @@ module.exports = {
  * @name setLastSynced
  * @function
  * @memberof Store#
- */
-
-/**
- * Returns next action ID. It should return unique ID on every call.
- * Every next ID should be bigger than previous one.
- *
- * @typedef {function} IdGenerator
- * @return {ID}
  */

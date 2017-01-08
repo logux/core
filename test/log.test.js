@@ -1,10 +1,9 @@
-var createTestIdGenerator = require('../create-test-id-generator')
 var MemoryStore = require('../memory-store')
 var Log = require('../log')
 
 function createLog () {
   return new Log({
-    idGenerator: createTestIdGenerator(),
+    nodeId: 'test',
     store: new MemoryStore()
   })
 }
@@ -36,16 +35,16 @@ function logWith (entries) {
   })
 }
 
-it('requires ID generator', function () {
+it('requires node ID', function () {
   expect(function () {
     new Log()
-  }).toThrowError(/log ID generator/)
+  }).toThrowError(/node ID/)
 })
 
 it('requires store', function () {
   expect(function () {
-    new Log({ idGenerator: createTestIdGenerator() })
-  }).toThrowError(/log store/)
+    new Log({ nodeId: 'test' })
+  }).toThrowError(/Logux store/)
 })
 
 it('requires type for action', function () {
@@ -195,7 +194,7 @@ it('supports multi-pages stores', function () {
       })
     }
   }
-  var log = new Log({ idGenerator: createTestIdGenerator(), store: store })
+  var log = new Log({ nodeId: 'test', store: store })
 
   var actions = []
   return log.each(function (action) {
@@ -229,9 +228,13 @@ it('sets ID and time for timeless entries', function () {
   return logWith([
     [{ type: 'timeless' }]
   ]).then(function (log) {
-    checkEntries(log, [
-      [{ type: 'timeless' }, { id: [1, 'test', 0], time: 1, added: 1 }]
-    ])
+    var meta = log.store.created[0][1]
+    expect(meta.added).toEqual(1)
+    expect(typeof meta.time).toEqual('number')
+    expect(meta.id.length).toEqual(3)
+    expect(meta.id[0]).toEqual(meta.time)
+    expect(meta.id[1]).toEqual('test')
+    expect(meta.id[2]).toEqual(0)
   })
 })
 
