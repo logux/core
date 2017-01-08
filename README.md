@@ -38,7 +38,7 @@ log.add({ type: 'beep', volume: 9 })
 
 ## Basic Concepts
 
-## Action
+### Action
 
 Logux action is a simple JS object, having only one mandatory `type` property.
 Logux actions are very similar to Redux actions.
@@ -52,7 +52,7 @@ and `/` separator. For example, `example` library should use actions types
 like `example/name`.
 
 
-## Metadata
+### Metadata
 
 Action metadata is a open structure. It has only 3 mandatory properties:
 `id`, `time`, `added`.
@@ -73,7 +73,7 @@ log.add({ type: 'a' }, { 'example/foo': 1 }).then(meta => {
 ```
 
 
-## Action ID
+### Action ID
 
 Log order is strictly required to be the same on every machine.
 For this reason, every action metadata contains `meta.id`
@@ -95,7 +95,7 @@ ID is a array of:
 This format is tricky to keep ID unique on every machine.
 
 
-## Time
+### Time
 
 Action created time could be find in `meta.time`
 in milliseconds elapsed since 1 January 1970.
@@ -126,7 +126,7 @@ between client as server. So `meta.id` is same on every machine
 (as expected from ID).
 
 
-## Added Number
+### Added Number
 
 Action metadata has `added` with sequence number. Every next action added
 to current log will get bigger `added` number.
