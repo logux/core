@@ -1,9 +1,7 @@
 /**
- * Compare log entries real created time.
+ * Compare time, when log entries were created.
  *
- * If actions was synchronized from different machine with different time,
- * this function will use `meta.timeFix` to fix time difference
- * between machines.
+ * It uses `meta.time` and `meta.id` to detect entries order.
  *
  * @param {Meta} firstMeta Some action’s metadata.
  * @param {Meta} secondMeta Other action’s metadata.

@@ -1,10 +1,10 @@
 var TestLog = require('./test-log')
 
 /**
- * Log creator for tests.
+ * Creates special logs for test purposes.
  *
- * Real logs use real time in actions ID, as results
- * log content will be different on every test execution.
+ * Real logs use real time in actions ID,
+ * so log content will be different on every test execution.
  *
  * To fix it Logux has special logs for tests with simple sequence timer.
  * All logs from one test should share same time. This is why you should

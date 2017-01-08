@@ -17,12 +17,7 @@ function insert (store, entry) {
  * Simple memory-based log store.
  *
  * It is good for tests, but not for server or client usage,
- * because it doesn’t save log to file or localStorage.
- *
- * Think about this store as a basic store realization.
- *
- * Every Store class should provide 6 standard methods:
- * add, get, remove, getLastAdded, getLastSynced and setLastSynced.
+ * because it store all data in memory and will lose log on exit.
  *
  * @example
  * import { MemoryStore } from 'logux-core'

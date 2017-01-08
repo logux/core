@@ -2,7 +2,7 @@ var MemoryStore = require('./memory-store')
 var Log = require('./log')
 
 /**
- * Log to be used in tests. It already has memory store
+ * Log to be used in tests. It already has memory store, node ID,
  * and special test timer.
  *
  * Use {@link TestTime} to create test log.
