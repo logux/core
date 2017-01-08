@@ -1,5 +1,8 @@
 # Logux Core
 
+<img align="right" width="95" height="95" title="Logux logo"
+     src="https://cdn.rawgit.com/logux/logux/master/logo.svg">
+
 Log for Logux and test tools for log.
 
 Logux idea is based on shared logs. Log is a list of action ordered in time.
