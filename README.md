@@ -1,18 +1,31 @@
 # Logux Core
 
-Log for Logux, default timer and test tools. These are low-level base classes,
-and Logux end-users are supposed use high-level Logux tools.
+Log for Logux and test tools for log.
+
+In most use cases, you don’t need to create log, high-level Logux tools
+will do it for you. But you will have access to log API from that tools.
 
 Logux idea is based on shared logs. Log is a list of action ordered in time.
 Every entry in Logux log contains action object and meta object.
 
 Instead of action object, only few properties from meta could be synchronized
 between log. Meta is open structure and could contains any data. But at least
-it should contain two properties: `id` and `added`.
+it should contain two properties: `id`, `time` and `added`.
 
 ```js
-import { Log } from 'logux-core'
-const log = new Log({ store, timer })
+import isFirstOlder from 'logux-core/is-first-older'
+
+let lastBeep
+log.on('add', (action, meta) => {
+  if (action.type === 'beep') {
+    if (isFirstOlder(lastBeep, meta)) {
+      beep(action.volume)
+      lastBeep = meta
+    }
+  }
+})
+
+log.add({ type: 'beep', volume: 9 })
 ```
 
 <a href="https://evilmartians.com/?utm_source=logux-core">
@@ -20,6 +33,8 @@ const log = new Log({ store, timer })
        alt="Sponsored by Evil Martians" width="236" height="54">
 </a>
 
+
+## Basic Concepts
 
 ## Action
 
@@ -38,21 +53,15 @@ like `example/name`.
 ## Action ID
 
 Log order is strictly required to be the same on every machine.
-For this reason, every action metadata contains ID to order actions by this ID.
+For this reason, every action metadata contains `meta.id`
+to order actions by this ID.
 
-ID is a array of `number` or `string`. Logux will compare array items
-to find what action is older. So every new action ID should be bigger
-than previous one.
-
-Default ID format:
+ID is a array of:
 
 1. Number of milliseconds elapsed since 1 January 1970.
-2. Unique node name.
+2. Unique node ID.
 3. An incremented number in case if the previous action
    had the same number of milliseconds.
-
-This format is tricky to keep ID unique on every machine. Also this format
-allows you to get real time , when action was occurred.
 
 ```js
 [1473564435318, 'server', 0]
@@ -60,95 +69,43 @@ allows you to get real time , when action was occurred.
 [1473564435319, 'server', 0]
 ```
 
-But you can use any action ID format. Just use same format for all clients.
+This format is tricky to keep ID unique on every machine.
 
 
-### Timer
+## Time
 
-Timer is a function to create unique action ID. Logux use it to set ID
-for new actions automatically.
+Action created time could be find in `meta.time`
+in milliseconds elapsed since 1 January 1970.
 
 ```js
-log.add({ type: 'beep' })
-log.each((action, meta) => {
-  meta.id //=> [1473564435318, 'server', 0]
-})
+const time = new Date(meta.time)
+console.log('Last beep was at ' + time.toString())
 ```
 
-But you can set it manually as well
-(for example, if you got action from a different machine).
+Some machines could have wrong time or time zone. To fix it most of Logux clients
+detect time difference between client and server time.
+
+Several actions could be created in same milliseconds, so you should not
+use it to find older action. Use special `isFirstOlder(meta1, meta2)` helper.
 
 ```js
-log.add({ type: 'beep' }, { id: [1473564435318, 'user:1', 0] })
-```
-
-Timer with default ID format could be created by `createTimer`:
-
-```js
-import { createTimer } from 'logux-core'
-const log = new Log({ store, timer: createTimer('user:2') })
-log.timer() //=> [1473564435318, 'user:2', 0]
-```
-
-
-### Test Timer
-
-Because default timer use current time, it could not be very useful in test.
-For tests you can create simpler timer with `createTestTimer`.
-
-```js
-import { createTestTimer } from 'logux-core'
-const testTimer = createTestTimer()
-
-testTimer() //=> [1]
-testTimer() //=> [2]
-testTimer() //=> [3]
-```
-
-If you test two logs, don’t forget to use same test timer instance for them:
-
-```js
-const testTimer = createTestTimer()
-const log1 = new Log({ store1, timer: testTimer })
-const log2 = new Log({ store2, timer: testTimer })
-```
-
-
-## Action Time
-
-Every log entry has `meta.time` property with action created time
-(milliseconds from elapsed since 1 January 1970):
-
-```js
-if (action.type === 'user:add') {
-  console.log('User was created:', new Date(meta.time))
+if (isFirstOlder(lastMeta, meta)) {
+  overrideLast(action)
 }
 ```
 
-This property could be different from `meta.id[0]`,
-because clients could have different system time.
-To fix it clients could calculate time difference between client and server
-to fix action’s time.
+`meta.time` use this time difference between client and server. So it contains
+time according local system time. As result, `meta.time` could be different
+on different machines.
 
-As result, `meta.time` contain time according local system time
-and could be different on different machines.
-
-
-### Helper
-
-`isFirstOlder()` helper from this package could be useful for many cases:
-
-```js
-import { isFirstOlder } from 'logux-core'
-
-isFirstOlder(meta1, meta2) //=> false
-isFirstOlder(meta2, meta1) //=> true
-```
+`meta.id` uses time in first position, but it doesn’t use time difference
+between client as server. So `meta.id` is same on every machine
+(as expected from ID).
 
 
 ## Added Number
 
-Action metadata has also `added` with sequence number. Every next action added
+Action metadata has `added` with sequence number. Every next action added
 to current log will get bigger `added` number.
 
 After synchronization actions from other log could have lower `id`,
@@ -166,8 +123,64 @@ log.add({ type: 'beep' })               //=> added: 1
 log.add({ type: 'beep' }, { id: past }) //=> added: 2
 ```
 
+Method `Log#add` will return a Promise with `added` number of new action.
+If log already has a action with this `meta.id`, `added` will be `false`.
 
-## Reading
+```js
+log.add({ type: 'beep' }).then(action => {
+  console.log(added)
+})
+```
+
+## Methods
+
+### Adding
+
+Method `add` will generate metadata for new event, add event to log store
+and execute all `add` event listeners:
+
+```js
+log.add({ type: 'a' }).then(meta => {
+  // Event was saved to store and all listener executed
+  meta //=> { id: [1473564435318, 'server', 0], time: 1473564435318, added: 1 }
+})
+```
+
+Action ID will be generated synchronously, so you can create events
+in parallel:
+
+```js
+Promise.all([
+  log.add({ type: 'a' }),
+  log.add({ type: 'b' })
+]).then(([aMeta, bMeta]) => {
+  isFirstOlder(aMeta, bMeta) // always true
+})
+```
+
+You can pass action metadata as second argument. Metadata is a open structure.
+You can set any values there, just use project name prefix:
+
+```js
+log.add({ type: 'a' }, { 'example/foo': 1 }).then(meta => {
+  meta['example/foo'] //=> 1
+})
+```
+
+In custom synchronization tool you can set action ID manually.
+Log will not generate them.
+
+```js
+log.add(syncedAction, { id, time }).then(meta => {
+  if (!meta) console.log('Action was already in log')
+})
+```
+
+If you set ID manually, log could contains action with same ID.
+In this case log will ignore new action and pass `false` to Promise.
+
+
+### Reading
 
 There are two ways to read actions from the log.
 First, one can subscribe to new actions:
@@ -223,7 +236,39 @@ log.each({ order: 'added' }, (action, meta) => {
 ```
 
 
-## Cleaning
+### Comparing
+
+`isFirstOlder()` uses `meta.time` and `meta.id` to compare action created
+time even if they was created in same milliseconds.
+
+```js
+import isFirstOlder from 'logux-core/is-first-older'
+
+isFirstOlder(meta1, meta2) //=> false
+isFirstOlder(meta2, meta1) //=> true
+```
+
+If one of metadata will be `undefined`, this method will work with it
+as it was created in the beginning of the time.
+
+```js
+isFirstOlder(anyMeta, undefined) //=> true
+```
+
+So you could use it with defined variable without value:
+
+```js
+let lastWrite
+log.on('add', (action, meta) => {
+  if (isFirstOlder(meta, lastWrite)) {
+    write(action)
+    lastWrite = meta
+  }
+})
+```
+
+
+### Cleaning
 
 To keep the log fast, Logux cleans it from outdated actions.
 Note, that by default, Logux removes every action from the log.
@@ -281,6 +326,43 @@ It returns a `stopCleaning` function. Call if you want to remove the listener
 from the log.
 
 
+### Testing
+
+Real logs use real time in actions ID, so log content will be different
+on every test execution.
+
+To fix it Logux has special logs for tests with simple sequence timer.
+Also log already has node ID and use in-memory store.
+
+```js
+import TestTime from 'logux-core/test-time'
+
+it('tests log', () => {
+  const log = TestTime.getLog()
+  log.add({ type: 'test' })
+  lastId(log) //=> [1, 'test1', 0]
+})
+```
+
+When you test several logs in one test (for example, synchronization test),
+you expect that action added on next code line will have bigger ID:
+
+```js
+log1.add({ type: 'a' })
+log2.add({ type: 'b' })
+isFirstOlder(lastMeta(log1), lastMeta(log2))
+```
+
+To do it, both logs should know about each other. You must create they
+by same test time instance for it.
+
+```js
+const time = new TestTime()
+const log1 = time.nextLog()
+const log2 = time.nextLog()
+```
+
+
 ## Stores
 
 Log should be saved to `localStorage` in browser or a file on server.
@@ -294,23 +376,25 @@ This package contains simple in-memory store designed primarily for tests:
 
 ```js
 import { MemoryStore } from 'logux-core'
-const log = new Log({ timer, store: new MemoryStore() })
+const log = new Log({ nodeId: 'server', store: new MemoryStore() })
 ```
+
+Think about this store as a basic store realization.
 
 
 ### Custom Store
 
 Any object implementing this 5 methods can be considered a Store:
 
-* `add(entry)` puts new log entry in the store. Returns a Promise `false`
-  if action with same `id` was already in log.
+* `add(entry)` puts new log entry in the store. Returns a Promise with new
+  action meta or `false` if action with same `id` was already in log.
 * `remove(id)` removes an action from the store.
 * `get()` returns a Promise loading the first page of actions in the log.
   Action page is an object containing an entries array in `page.entries`
   and a `page.next` function returning the next page Promise.
   Last page should not contain the `page.next` method.
 * `getLastAdded()` returns Promise with biggest `added` in store.
-* `getLastSynced()` returns Promise with values for latest synchronized
-  received/sent events.
-* `setLastSynced(values)` saves values for latest synchronized
-  received/sent events and return Promise when they will be saved to store.
+* `getLastSynced()` returns Promise with `added` values for latest synchronized
+  received/sent actions.
+* `setLastSynced(values)` saves `added` values for latest synchronized
+  received/sent actions and return Promise when they will be saved to store.
