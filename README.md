@@ -2,11 +2,8 @@
 
 Log for Logux and test tools for log.
 
-In most use cases, you don’t need to create log, high-level Logux tools
-will do it for you. But you will have access to log API from that tools.
-
 Logux idea is based on shared logs. Log is a list of action ordered in time.
-Every entry in Logux log contains action object and meta object with:
+Every entry in Logux log contains action object and meta object with:
 
 * `id`: unique action ID to have same actions order on every machine.
 * `time`: action created time. Could de different on different machines,
@@ -14,9 +11,8 @@ Every entry in Logux log contains action object and meta object with:
 * `added`: sequence number when action was insert to current log.
   It is used to find actions since last synchronization.
 
-Instead of action object, only few properties from meta could be synchronized
-between log. Meta is open structure and could contains any data. But at least
-it should contain two properties: `id`, `time` and `added`.
+In most use cases, you don’t need to create log, high-level Logux tools
+will do it for you. But you will have access to log API from that tools.
 
 ```js
 import isFirstOlder from 'logux-core/is-first-older'
@@ -44,7 +40,7 @@ log.add({ type: 'beep', volume: 9 })
 
 ## Action
 
-Logux action is a simple JS object, having only one mandatory property — `type`.
+Logux action is a simple JS object, having only one mandatory `type` property.
 Logux actions are very similar to Redux actions.
 
 ```js
@@ -56,11 +52,32 @@ and `/` separator. For example, `example` library should use actions types
 like `example/name`.
 
 
+## Metadata
+
+Action metadata is a open structure. It has only 3 mandatory properties:
+`id`, `time`, `added`.
+
+```js
+log.add({ type: 'a' }).then(meta => {
+  meta //=> { id: [1473564435318, 'server', 0], time: 1473564435318, added: 1 }
+})
+```
+
+You could add own properties. Just add project name project with `/` separator.
+For example, `example` library should use meta like `example/name`.
+
+```js
+log.add({ type: 'a' }, { 'example/foo': 1 }).then(meta => {
+  meta['example/foo'] //=> 1
+})
+```
+
+
 ## Action ID
 
 Log order is strictly required to be the same on every machine.
 For this reason, every action metadata contains `meta.id`
-to order actions by this ID.
+to order actions by this ID.
 
 ID is a array of:
 
@@ -89,7 +106,7 @@ console.log('Last beep was at ' + time.toString())
 ```
 
 Some machines could have wrong time or time zone. To fix it most of Logux clients
-detect time difference between client and server time.
+detect time difference between client and server time.
 
 Several actions could be created in same milliseconds, so you should not
 use it to find older action. Use special `isFirstOlder(meta1, meta2)` helper.
@@ -125,18 +142,14 @@ This time is used to find, which actions should be sent when two
 nodes are connected again.
 
 ```js
-log.add({ type: 'beep' })               //=> added: 1
-log.add({ type: 'beep' }, { id: past }) //=> added: 2
-```
-
-Method `Log#add` will return a Promise with `added` number of new action.
-If log already has a action with this `meta.id`, `added` will be `false`.
-
-```js
-log.add({ type: 'beep' }).then(action => {
-  console.log(added)
+log.add({ type: 'beep' }).then(meta => {
+  console.log(meta.added) //=> 1
+})
+log.add({ type: 'beep' }, { id: old, time: past }).then(meta => {
+  console.log(meta.added) //=> 2
 })
 ```
+
 
 ## Methods
 
