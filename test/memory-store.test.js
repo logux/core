@@ -101,7 +101,7 @@ it('ignores entries with same ID', function () {
   var store = new MemoryStore()
   return store.add({ a: 1 }, { id: [1, 'node', 1], time: 1 })
     .then(function (result1) {
-      expect(result1).toEqual(1)
+      expect(result1).toEqual({ id: [1, 'node', 1], time: 1, added: 1 })
       return store.add({ a: 2 }, { id: [1, 'node', 1], time: 2 })
     }).then(function (result2) {
       expect(result2).toBeFalsy()

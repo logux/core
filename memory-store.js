@@ -10,7 +10,7 @@ function insert (store, entry) {
   store.lastAdded += 1
   entry[1].added = store.lastAdded
   store.added.unshift(entry)
-  return Promise.resolve(store.lastAdded)
+  return Promise.resolve(entry[1])
 }
 
 /**
