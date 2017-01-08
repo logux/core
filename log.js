@@ -1,7 +1,8 @@
 var NanoEvents = require('nanoevents')
 
 /**
- * Log is main idea in Logux to store actions with time marks.
+ * Stores actions with time marks. Log is main idea in Logux.
+ * In most end-user tools you will work with log and should know log API.
  *
  * @param {object} opts Options.
  * @param {Store} opts.store Store for log.
@@ -26,7 +27,7 @@ function Log (opts) {
     throw new Error('Expected node ID for Logux')
   }
   /**
-   * Unique node ID.
+   * Unique node ID. It is used in action IDs.
    * @type {string|number}
    */
   this.nodeId = opts.nodeId
@@ -88,12 +89,14 @@ Log.prototype = {
   /**
    * Add action to log.
    *
-   * It will set id` (if it missed) and `added` property to `meta`
-   * and call all listeners.
+   * It will set `id`, `time` (if they was missed) and `added` property
+   * to `meta` and call all listeners.
    *
    * @param {Action} action The new action.
-   * @param {object} [meta] Open structure for action metadata.
-   * @param {Time} [meta.id] Unique action ID.
+   * @param {Meta} [meta] Open structure for action metadata.
+   * @param {ID} [meta.id] Unique action ID.
+   * @param {number} [meta.time] Action created time.
+   *                             Milliseconds since UNIX epoch.
    * @return {Promise} Promise with `added` value if action was added to log
    *                   or `false` if action was already in log
    *
