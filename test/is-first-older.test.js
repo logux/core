@@ -1,15 +1,15 @@
 var isFirstOlder = require('../is-first-older')
 
 it('compares entries by time', function () {
-  var a = { id: [2], time: 2 }
-  var b = { id: [1], time: 1 }
+  var a = { id: [2, 'a', 0], time: 2 }
+  var b = { id: [1, 'a', 0], time: 1 }
   expect(isFirstOlder(a, b)).toBeFalsy()
   expect(isFirstOlder(b, a)).toBeTruthy()
 })
 
 it('compares entries by real time', function () {
-  var a = { id: [1], time: 2 }
-  var b = { id: [1], time: 1 }
+  var a = { id: [1, 'a', 0], time: 2 }
+  var b = { id: [1, 'a', 0], time: 1 }
   expect(isFirstOlder(a, b)).toBeFalsy()
   expect(isFirstOlder(b, a)).toBeTruthy()
 })
@@ -38,4 +38,9 @@ it('orders entries with different node ID length', function () {
   var b = { id: [1, '1', 2], time: 1 }
   expect(isFirstOlder(a, b)).toBeFalsy()
   expect(isFirstOlder(b, a)).toBeTruthy()
+})
+
+it('works with undefined in one meta', function () {
+  var a = { id: [1, 'a', 0], time: 1 }
+  expect(isFirstOlder(a, undefined)).toBeFalsy()
 })

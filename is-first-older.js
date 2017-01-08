@@ -16,6 +16,12 @@
  * }
  */
 function isFirstOlder (firstMeta, secondMeta) {
+  if (firstMeta && !secondMeta) {
+    return false
+  } else if (!firstMeta && secondMeta) {
+    return true
+  }
+
   if (firstMeta.time > secondMeta.time) {
     return false
   } else if (firstMeta.time < secondMeta.time) {
