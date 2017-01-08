@@ -97,7 +97,7 @@ Log.prototype = {
    * @param {ID} [meta.id] Unique action ID.
    * @param {number} [meta.time] Action created time.
    *                             Milliseconds since UNIX epoch.
-   * @return {Promise} Promise with `added` value if action was added to log
+   * @return {Promise} Promise with `meta` if action was added to log
    *                   or `false` if action was already in log
    *
    * @example
@@ -115,9 +115,13 @@ Log.prototype = {
     if (typeof meta.time === 'undefined') meta.time = meta.id[0]
 
     var emitter = this.emitter
-    return this.store.add(action, meta).then(function (wasAdded) {
-      if (wasAdded !== false) emitter.emit('add', action, meta)
-      return wasAdded
+    return this.store.add(action, meta).then(function (addedMeta) {
+      if (addedMeta === false) {
+        return false
+      } else {
+        emitter.emit('add', action, addedMeta)
+        return addedMeta
+      }
     })
   },
 

@@ -121,7 +121,7 @@ it('ignore existed ID', function () {
   })
 
   return log.add({ type: 'a' }, { id: [0] }).then(function (result1) {
-    expect(result1).toBeTruthy()
+    expect(typeof result1).toEqual('object')
     return log.add({ type: 'b' }, { id: [0] })
   }).then(function (result2) {
     expect(result2).toBeFalsy()
@@ -225,10 +225,9 @@ it('keeps existed ID and time', function () {
 })
 
 it('sets ID and time for timeless entries', function () {
-  return logWith([
-    [{ type: 'timeless' }]
-  ]).then(function (log) {
-    var meta = log.store.created[0][1]
+  var log = createLog()
+  return log.add({ type: 'timeless' }).then(function (meta) {
+    expect(meta).toEqual(log.store.created[0][1])
     expect(meta.added).toEqual(1)
     expect(typeof meta.time).toEqual('number')
     expect(meta.id.length).toEqual(3)

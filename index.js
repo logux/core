@@ -87,9 +87,8 @@ module.exports = {
  * @param {Action} action The action to add.
  * @param {Meta} meta Action’s metadata.
  *
- * @return {Promise} Promise with used `added` for new entry
- *                   or `false` if action with same `meta.id`
- *                   was already in store.
+ * @return {Promise} Promise with `meta` for new action or `false`
+ *                   if action with same `meta.id` was already in store.
  *
  * @name add
  * @function
