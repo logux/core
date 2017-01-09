@@ -5,11 +5,11 @@
 
 Log for Logux and test tools for log.
 
-Logux idea is based on shared logs. Log is a list of action ordered in time.
+Logux idea is based on shared logs. Log is a list of actions ordered in time.
 Every entry in Logux log contains action object and meta object with:
 
 * `id`: unique action ID to have same actions order on every machine.
-* `time`: action created time. Could de different on different machines,
+* `time`: action creation time. Could be different on different machines,
   because could contain calculated time different between client and server.
 * `added`: sequence number when action was insert to current log.
   It is used to find actions since last synchronization.
@@ -64,7 +64,7 @@ like `example/name`.
 
 ### Metadata
 
-Action metadata is a open structure. It has only 3 mandatory properties:
+Action metadata is an open structure. It has only 3 mandatory properties:
 `id`, `time`, `added`.
 
 ```js
@@ -89,7 +89,7 @@ Log order is strictly required to be the same on every machine.
 For this reason, every action metadata contains `meta.id`
 to order actions by this ID.
 
-ID is a array of:
+ID is an array of:
 
 1. Number of milliseconds elapsed since 1 January 1970.
 2. Unique node ID.
@@ -107,7 +107,7 @@ This format is tricky to keep ID unique on every machine.
 
 ### Time
 
-Action created time could be find in `meta.time`
+Action creation time could be find in `meta.time`
 in milliseconds elapsed since 1 January 1970.
 
 ```js
@@ -128,8 +128,8 @@ if (isFirstOlder(lastChange, meta)) {
 }
 ```
 
-`meta.time` use this time difference between client and server. So it contains
-time according local system time. As result, `meta.time` could be different
+`meta.time` uses this time difference between client and server. So it contains
+time according local system time. As a result, `meta.time` could be different
 on different machines.
 
 `meta.id` uses time in first position, but it doesn’t use time difference
@@ -144,9 +144,9 @@ to current log will get bigger `added` number.
 
 After synchronization actions from other log could have lower `id`,
 because they was created before synchronization. But `added` shows only when
-action was added to this log, now when they was created.
+action was added to this log, not when they was created.
 
-As result actions in synchronized logs will have same `id`, but different
+As result actions in synchronized logs will have the same `id`, but different
 `added` metadata.
 
 This time is used to find, which actions should be sent when two
@@ -188,7 +188,7 @@ Promise.all([
 })
 ```
 
-You can pass action metadata as second argument. Metadata is a open structure.
+You can pass action metadata as second argument. Metadata is an open structure.
 You can set any values there, just use project name prefix:
 
 ```js
@@ -267,7 +267,7 @@ log.each({ order: 'added' }, (action, meta) => {
 
 ### Comparing
 
-`isFirstOlder()` uses `meta.time` and `meta.id` to compare action created
+`isFirstOlder()` uses `meta.time` and `meta.id` to compare action creation
 time even if they was created in same milliseconds.
 
 ```js
@@ -344,7 +344,7 @@ import { cleanEvery } from 'logux-core'
 cleanEvery(log)
 ```
 
-It returns a `stopCleaning` function. Call if you want to remove the listener
+It returns a `stopCleaning` function. Call it if you want to remove the listener
 from the log.
 
 
@@ -354,7 +354,7 @@ Real logs use real time in actions ID, so log content will be different
 on every test execution.
 
 To fix it Logux has special logs for tests with simple sequence timer.
-Also log already has node ID and use in-memory store.
+Also log already has node ID and uses in-memory store.
 
 ```js
 import TestTime from 'logux-core/test-time'
