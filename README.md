@@ -20,17 +20,24 @@ will do it for you. But you will have access to log API from that tools.
 ```js
 import isFirstOlder from 'logux-core/is-first-older'
 
-let lastBeep
+let lastRename
 log.on('add', (action, meta) => {
-  if (action.type === 'beep') {
-    if (isFirstOlder(lastBeep, meta)) {
-      beep(action.volume)
-      lastBeep = meta
-    }
+  switch (action.type) {
+
+    case 'RENAME':
+      // Simple last-writer-wins
+      if (isFirstOlder(lastRename, meta)) {
+        changeName(action.name)
+        lastRename = meta
+      }
+      break
+
   }
 })
 
-log.add({ type: 'beep', volume: 9 })
+rename.addEventListener('click', () => {
+  log.add({ type: 'rename', name: name.value })
+})
 ```
 
 <a href="https://evilmartians.com/?utm_source=logux-core">
@@ -47,7 +54,7 @@ Logux action is a simple JS object, having only one mandatory `type` property.
 Logux actions are very similar to Redux actions.
 
 ```js
-log.add({ type: 'beep' })
+log.add({ type: 'RENAME', name: 'New' })
 ```
 
 Actions from third-party libraries must prefix `type` with library name
@@ -61,7 +68,7 @@ Action metadata is a open structure. It has only 3 mandatory properties:
 `id`, `time`, `added`.
 
 ```js
-log.add({ type: 'a' }).then(meta => {
+log.add({ type: 'FOO' }).then(meta => {
   meta //=> { id: [1473564435318, 'server', 0], time: 1473564435318, added: 1 }
 })
 ```
@@ -70,7 +77,7 @@ You could add own properties. Just add project name project with `/` separator.
 For example, `example` library should use meta like `example/name`.
 
 ```js
-log.add({ type: 'a' }, { 'example/foo': 1 }).then(meta => {
+log.add({ type: 'FOO' }, { 'example/foo': 1 }).then(meta => {
   meta['example/foo'] //=> 1
 })
 ```
@@ -105,7 +112,7 @@ in milliseconds elapsed since 1 January 1970.
 
 ```js
 const time = new Date(meta.time)
-console.log('Last beep was at ' + time.toString())
+console.log('Last edit was at ' + time.toString())
 ```
 
 Some machines could have wrong time or time zone. To fix it most of Logux clients
@@ -115,8 +122,9 @@ Several actions could be created in same milliseconds, so you should not
 use it to find older action. Use special `isFirstOlder(meta1, meta2)` helper.
 
 ```js
-if (isFirstOlder(lastMeta, meta)) {
-  overrideLast(action)
+if (isFirstOlder(lastChange, meta)) {
+  update(action)
+  lastChange = meta
 }
 ```
 
@@ -145,10 +153,10 @@ This time is used to find, which actions should be sent when two
 nodes are connected again.
 
 ```js
-log.add({ type: 'beep' }).then(meta => {
+log.add({ type: 'FOO' }).then(meta => {
   console.log(meta.added) //=> 1
 })
-log.add({ type: 'beep' }, { id: old, time: past }).then(meta => {
+log.add({ type: 'FOO' }, { id: old, time: past }).then(meta => {
   console.log(meta.added) //=> 2
 })
 ```
@@ -162,7 +170,7 @@ Method `add` will generate metadata for new event, add event to log store
 and execute all `add` event listeners:
 
 ```js
-log.add({ type: 'a' }).then(meta => {
+log.add({ type: 'FOO' }).then(meta => {
   // Event was saved to store and all listener executed
   meta //=> { id: [1473564435318, 'server', 0], time: 1473564435318, added: 1 }
 })
@@ -173,10 +181,10 @@ in parallel:
 
 ```js
 Promise.all([
-  log.add({ type: 'a' }),
-  log.add({ type: 'b' })
-]).then(([aMeta, bMeta]) => {
-  isFirstOlder(aMeta, bMeta) // always true
+  log.add({ type: 'FOO' }),
+  log.add({ type: 'BAR' })
+]).then(([fooMeta, barMeta]) => {
+  isFirstOlder(fooMeta, barMeta) // always true
 })
 ```
 
@@ -184,7 +192,7 @@ You can pass action metadata as second argument. Metadata is a open structure.
 You can set any values there, just use project name prefix:
 
 ```js
-log.add({ type: 'a' }, { 'example/foo': 1 }).then(meta => {
+log.add({ type: 'FOO' }, { 'example/foo': 1 }).then(meta => {
   meta['example/foo'] //=> 1
 })
 ```
@@ -211,8 +219,8 @@ First, one can subscribe to new actions:
 log.on('add', (action, meta) => {
   console.log(action, meta)
 })
-log.add({ type: 'test' })
-// Prints { type: 'test' }, { id: id, added: 1 }
+log.add({ type: 'TEST' })
+// Prints { type: 'TEST' }, { id: […], time: 1473564435318, added: 1 }
 ```
 
 Log implements [nanoevents] API, so if you want to unbind the listener,
@@ -234,11 +242,10 @@ An iterator can return `false` in order to stop the iteration process:
 
 ```js
 log.each((action, meta) => {
-  if (isFirstOlder(meta, lastBeep)) {
+  if (isFirstOlder(meta, lastVisit)) {
     return false;
-  } else if (action.type === 'beep') {
-    beep()
-    lastBeep = action.meta
+  } else if (action.type === 'RENAME') {
+    console.log('User was renamed since last visit')
     return false;
   }
 })
@@ -250,7 +257,7 @@ You could specify custom ordering, e.g. by the adding time:
 ```js
 log.each({ order: 'added' }, (action, meta) => {
   if (meta.added > lastSync) {
-    send(action, meta)
+    sendToServer(action, meta)
   } else {
     return false
   }
@@ -320,14 +327,7 @@ with the latest property value.
 Cleaning should be started manually by calling `clean()` method:
 
 ```js
-let actions = 0
-log.on('add', action => {
-  actions += 1
-  if (actions > 100) {
-    actions = 0
-    setImmediate(() => log.clean())
-  }
-})
+requestIdleCallback(() => log.clean())
 ```
 
 
@@ -361,7 +361,7 @@ import TestTime from 'logux-core/test-time'
 
 it('tests log', () => {
   const log = TestTime.getLog()
-  log.add({ type: 'test' })
+  log.add({ type: 'TEST' })
   lastId(log) //=> [1, 'test1', 0]
 })
 ```
@@ -370,8 +370,8 @@ When you test several logs in one test (for example, synchronization test),
 you expect that action added on next code line will have bigger ID:
 
 ```js
-log1.add({ type: 'a' })
-log2.add({ type: 'b' })
+log1.add({ type: 'FOO' })
+log2.add({ type: 'BAR' })
 isFirstOlder(lastMeta(log1), lastMeta(log2))
 ```
 
