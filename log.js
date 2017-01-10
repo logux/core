@@ -12,7 +12,7 @@ var NanoEvents = require('nanoevents')
  * import Log from 'logux-core/log'
  * const log = new Log({
  *   store: new MemoryStore(),
- *   node: 'client:134'
+ *   nodeId: 'client:134'
  * })
  *
  * log.on('add', beeper)
