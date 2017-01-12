@@ -115,11 +115,12 @@ const time = new Date(meta.time)
 console.log('Last edit was at ' + time.toString())
 ```
 
-Some machines could have wrong time or time zone. To fix it most of Logux clients
-detect time difference between client and server time.
+Some machines could have wrong time or time zone. To fix it most
+of Logux clients detect time difference between client and server time.
 
 Several actions could be created in same milliseconds, so you should not
-use it to find older action. Use special `isFirstOlder(meta1, meta2)` helper.
+use `meta.time` to find older action. Use special
+`isFirstOlder(meta1, meta2)` helper.
 
 ```js
 if (isFirstOlder(lastChange, meta)) {
