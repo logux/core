@@ -13,22 +13,20 @@ var DEFAULT_OPTIONS = {
  * Instead of client node, it doesn’t initialize synchronization
  * and destroy itself on disconnect.
  *
- * @param {string|number} nodeId Unique current node name.
+ * @param {string|number} nodeId Unique current machine name.
  * @param {Log} log Logux log instance to sync with other node log.
  * @param {Connection} connection Connection to other node.
  * @param {object} [options] Synchronization options.
- * @param {object} [options.credentials] This node credentials.
+ * @param {object} [options.credentials] Server credentials.
  *                                       For example, access token.
- * @param {authCallback} [options.auth] Function to check
- *                                      other node credentials.
+ * @param {authCallback} [options.auth] Function to check client credentials.
  * @param {number} [options.timeout=20000] Timeout in milliseconds
- *                                         to disconnect connection.
+ *                                         to wait answer before disconnect.
  * @param {number} [options.ping=10000] Milliseconds since last message to test
  *                                      connection by sending ping.
- * @param {filter} [options.inFilter] Function to filter events
- *                                    from other client. Best place
- *                                    for access control.
- * @param {mapper} [options.inMap] Map function to change event
+ * @param {filter} [options.inFilter] Function to filter events from client.
+ *                                    Best place for permissions control.
+ * @param {mapper} [options.inMap] Map function to change other node’s event
  *                                 before put it to current log.
  * @param {filter} [options.outFilter] Filter function to select events
  *                                     to synchronization.

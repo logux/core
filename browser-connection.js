@@ -12,12 +12,9 @@ var NanoEvents = require('nanoevents')
  * const sync = new ClientSync(nodeId, log, connection, opts)
  *
  * @class
+ * @extends Connection
  */
 function BrowserConnection (url) {
-  /**
-   * Is connection is enabled.
-   * @type {boolean}
-   */
   this.connected = false
   this.emitter = new NanoEvents()
 
@@ -26,15 +23,6 @@ function BrowserConnection (url) {
 
 BrowserConnection.prototype = {
 
-  /**
-   * Start connection. Connection should be in disconnected state
-   * from the beginning and start connection only on this method call.
-   *
-   * This method could be called again if connection moved
-   * to disconnected state.
-   *
-   * @return {undefined}
-   */
   connect: function connect () {
     if (!window.WebSocket) {
       throw new Error('Browser has no WebSocket support')
@@ -66,14 +54,6 @@ BrowserConnection.prototype = {
     }
   },
 
-  /**
-   * Finish current connection.
-   *
-   * After disconnection, connection could be started again
-   * by @{link Connection#connect}.
-   *
-   * @return {undefined}
-   */
   disconnect: function disconnect () {
     if (this.ws) {
       this.ws.close()
@@ -82,32 +62,10 @@ BrowserConnection.prototype = {
     }
   },
 
-  /*
-   * Subscribe for connection events. It should implement nanoevents API.
-   * Supported events:
-   *
-   * * `connecting`: connection establishing was started.
-   * * `connect`: connection was established by any side.
-   * * `disconnect`: connection was closed by any side.
-   * * `message`: message was receive from other node.
-   * * `error`: message was wrong.
-   *
-   * @param {"connecting"|"connect"|"disconnect"|"message"|"error"} event Event.
-   * @param {function} listener The listener function.
-   *
-   * @return {function} Unbind listener from event.
-   */
   on: function on (event, listener) {
     return this.emitter.on(event, listener)
   },
 
-  /**
-   * Send message to connection.
-   *
-   * @param {Message} message Message to be sent
-   *
-   * @return {undefined}
-   */
   send: function send (message) {
     if (this.ws) {
       this.ws.send(JSON.stringify(message))

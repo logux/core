@@ -24,33 +24,32 @@ function syncMappedEvent (sync, event, meta) {
  * Base methods for synchronization nodes. Client and server nodes
  * are based on this module.
  *
- * @param {string|number} nodeId Unique current node name.
+ * @param {string|number} nodeId Unique current machine name.
  * @param {Log} log Logux log instance to sync with other node log.
  * @param {Connection} connection Connection to other node.
  * @param {object} [options] Synchronization options.
- * @param {object} [options.credentials] This node credentials.
+ * @param {object} [options.credentials] Client credentials.
  *                                       For example, access token.
- * @param {authCallback} [options.auth] Function to check
- *                                      other node credentials.
- * @param {boolean} [options.fixTime=false] Enables log’s event time fixes
- *                                          to prevent problems
- *                                          because of wrong client time zone.
- * @param {number} [options.timeout=0] Timeout in milliseconds
- *                                     to disconnect connection.
+ * @param {authCallback} [options.auth] Function to check client credentials.
+ * @param {boolean} [options.fixTime=false] Detect difference between client
+ *                                          and server and fix time
+ *                                          in synchronized events.
+ * @param {number} [options.timeout=0] Timeout in milliseconds to wait answer
+ *                                     before disconnect.
  * @param {number} [options.ping=0] Milliseconds since last message to test
  *                                  connection by sending ping.
  * @param {filter} [options.inFilter] Function to filter events
- *                                    from other client. Best place
+ *                                    from other node. Best place
  *                                    for access control.
- * @param {mapper} [options.inMap] Map function to change event
+ * @param {mapper} [options.inMap] Map function to change other node’s event
  *                                 before put it to current log.
  * @param {filter} [options.outFilter] Filter function to select events
  *                                     to synchronization.
  * @param {mapper} [options.outMap] Map function to change event
  *                                  before sending it to other client.
- * @param {number} [options.synced=0] Events with lower `added` time in current
- *                                    log will not be synchronized.
- * @param {number} [options.otherSynced=0] Events with lower `added` time
+ * @param {number} [options.synced=0] Events with lower `added` number
+ *                                    in current log will not be synchronized.
+ * @param {number} [options.otherSynced=0] Events with lower `added` number
  *                                         in other node’s log
  *                                         will not be synchronized.
  * @param {string} [options.subprotocol] Application subprotocol version
@@ -61,7 +60,7 @@ function syncMappedEvent (sync, event, meta) {
  */
 function BaseSync (nodeId, log, connection, options) {
   /**
-   * Unique current node name.
+   * Unique current machine name.
    * @type {string|number}
    *
    * @example
@@ -69,7 +68,7 @@ function BaseSync (nodeId, log, connection, options) {
    */
   this.nodeId = nodeId
   /**
-   * Log to synchronization.
+   * Log for synchronization.
    * @type {Log}
    */
   this.log = log
@@ -79,7 +78,7 @@ function BaseSync (nodeId, log, connection, options) {
    */
   this.connection = connection
   /**
-   * Options used to create node.
+   * Synchronization options.
    * @type {object}
    */
   this.options = options || { }
@@ -113,15 +112,15 @@ function BaseSync (nodeId, log, connection, options) {
 
   /**
    * Latest current log `added` time, which was successfully synchronized.
-   * If you save log to file, you can remember this option too for faster
-   * synchronization on next connection.
+   * You can remember this option too for faster synchronization
+   * on next connection.
    * @type {number}
    */
   this.synced = this.options.synced || 0
   /**
    * Latest other node’s log `added` time, which was successfully synchronized.
-   * If you save log to file, you can remember this option too for faster
-   * synchronization on next connection.
+   * You can remember this option too for faster synchronization
+   * on next connection.
    * @type {number}
    */
   this.otherSynced = this.options.otherSynced || 0
@@ -185,7 +184,7 @@ function BaseSync (nodeId, log, connection, options) {
 BaseSync.prototype = {
 
   /**
-   * Unique name of other node.
+   * Unique name of other machine.
    * It is undefined until nodes handshake.
    *
    * @type {string|number|undefined}
@@ -222,9 +221,8 @@ BaseSync.prototype = {
   /**
    * Other node’s application subprotocol version in SemVer format.
    *
-   * It is `undefined` before a connection. But after a connection it always
-   * will be a string. If other node will not send its subprotocol,
-   * it will be set to `0.0.0`.
+   * It is undefined until nodes handshake. If other node will not send
+   * on handshake its subprotocol, it will be set to `0.0.0`.
    *
    * @type {string|undefined}
    *
@@ -241,8 +239,8 @@ BaseSync.prototype = {
    * Subscribe for synchronization events. It implements nanoevents API.
    * Supported events:
    *
-   * * `synced`: `synced` or `otherSynced` property changes.
-   * * `state`: synchronization state changes.
+   * * `synced`: `synced` or `otherSynced` was property changed.
+   * * `state`: synchronization state was changed.
    * * `connect`: custom check before node authentication. You can throw
    *              a {@link SyncError} to send error to other node.
    * * `clientError`: when error was sent to other node.
@@ -483,7 +481,7 @@ BaseSync.prototype = assign(BaseSync.prototype,
 module.exports = BaseSync
 
 /**
- * Logux protocol or application subprotocol version.
+ * Logux protocol version.
  *
  * @typedef {number[]} Version
  */

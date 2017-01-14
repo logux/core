@@ -14,33 +14,31 @@ var DEFAULT_OPTIONS = {
  * Instead of server node, it initializes synchronization
  * and sends connect message.
  *
- * @param {string|number} nodeId Unique current node name.
+ * @param {string|number} nodeId Unique current machine name.
  * @param {Log} log Logux log instance to sync with other node log.
  * @param {Connection} connection Connection to other node.
  * @param {object} [options] Synchronization options.
- * @param {object} [options.credentials] This node credentials.
+ * @param {object} [options.credentials] Client credentials.
  *                                       For example, access token.
- * @param {authCallback} [options.auth] Function to check
- *                                      other node credentials.
- * @param {boolean} [options.fixTime=true] Enables log’s event time fixes
- *                                         to prevent problems
- *                                         because of wrong client time zone.
+ * @param {authCallback} [options.auth] Function to check server credentials.
+ * @param {boolean} [options.fixTime=true] Detect difference between client
+ *                                         and server and fix time
+ *                                         in synchronized events.
  * @param {number} [options.timeout=20000] Timeout in milliseconds
- *                                         to disconnect connection.
+ *                                         to wait answer before disconnect.
  * @param {number} [options.ping=5000] Milliseconds since last message to test
  *                                     connection by sending ping.
- * @param {filter} [options.inFilter] Function to filter events
- *                                    from other client. Best place
- *                                    for access control.
- * @param {mapper} [options.inMap] Map function to change event
+ * @param {filter} [options.inFilter] Function to filter events from server.
+ *                                    Best place for permissions control.
+ * @param {mapper} [options.inMap] Map function to change other node’s event
  *                                 before put it to current log.
  * @param {filter} [options.outFilter] Filter function to select events
  *                                     to synchronization.
  * @param {mapper} [options.outMap] Map function to change event
  *                                  before sending it to other client.
- * @param {number} [options.synced=0] Events with lower `added` time in current
- *                                    log will not be synchronized.
- * @param {number} [options.otherSynced=0] Events with lower `added` time
+ * @param {number} [options.synced=0] Events with lower `added` number
+ *                                    in current log will not be synchronized.
+ * @param {number} [options.otherSynced=0] Events with lower `added` number
  *                                         in other node’s log
  *                                         will not be synchronized.
  * @param {number[]} [options.subprotocol] Application subprotocol version.

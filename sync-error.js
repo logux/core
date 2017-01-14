@@ -5,11 +5,11 @@ function supported (versions) {
 }
 
 /**
- * Unknown error received from other Logux client.
+ * Logux error in logs synchronization.
  *
- * @param {BaseSync} sync The sync client object.
- * @param {string} type The error type.
- * @param {any} options The error options.
+ * @param {BaseSync} sync The sync instance.
+ * @param {string} type The error code.
+ * @param {any} options The error option.
  * @param {boolean} received Was error received from other node.
  *
  * @example
@@ -24,7 +24,7 @@ function SyncError (sync, type, options, received) {
   Error.call(this, type)
 
   /**
-   * Always equal to `SyncError`. The best way to check error type.
+   * Always equal to `SyncError`. The best way to check error class.
    * @type {string}
    *
    * @example
@@ -33,7 +33,7 @@ function SyncError (sync, type, options, received) {
   this.name = 'SyncError'
 
   /**
-   * Error type name.
+   * The error code.
    * @type {string}
    *
    * @example
@@ -44,7 +44,7 @@ function SyncError (sync, type, options, received) {
   this.type = type
 
   /**
-   * Error extra data depends on error type.
+   * Error options depends on error type.
    * @type {any}
    *
    * @example
@@ -55,7 +55,7 @@ function SyncError (sync, type, options, received) {
   this.options = options
 
   /**
-   * Origin error description from other client.
+   * Human-readable error description.
    * @type {string}
    *
    * @example
@@ -64,7 +64,7 @@ function SyncError (sync, type, options, received) {
   this.description = SyncError.describe(type, options)
 
   /**
-   * Sync client received a error message.
+   * Current sync instance.
    * @type {BaseSync}
    *
    * @example
@@ -73,7 +73,7 @@ function SyncError (sync, type, options, received) {
   this.sync = sync
 
   /**
-   * Error was received from other client.
+   * Was error received from other client.
    * @type {boolean}
    */
   this.received = !!received

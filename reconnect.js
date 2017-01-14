@@ -9,7 +9,7 @@ var DEFAULT_OPTIONS = {
 var FATAL_ERRORS = ['wrong-protocol', 'wrong-subprotocol', 'wrong-credentials']
 
 /**
- * Wrapper for {@link Connection} to try reconnect it on evert disconnect.
+ * Wrapper for {@link Connection} for reconnecting it on every disconnect.
  *
  * @param {Connection} connection The connection to be reconnectable.
  * @param {object} [options] Options.
