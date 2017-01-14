@@ -6,7 +6,7 @@ var NanoEvents = require('nanoevents')
  *
  * @param {object} opts Options.
  * @param {Store} opts.store Store for log.
- * @param {string|number} opts.nodeId Unique Node ID.
+ * @param {string|number} opts.nodeId Unique current machine name.
  *
  * @example
  * import Log from 'logux-core/log'

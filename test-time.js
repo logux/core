@@ -37,7 +37,7 @@ function TestTime () {
  * @param {object} [opts] Log options.
  * @param {Store} [opts.store] Store for log.
  *                             Will use {@link MemoryStore} by default.
- * @param {string|number} [opts.nodeId='test'] Unique Node ID.
+ * @param {string|number} [opts.nodeId='test'] Unique current machine name.
  *
  * @return {TestLog} Test log in this time.
  *
@@ -59,7 +59,7 @@ TestTime.prototype = {
    * @param {object} [opts] Log options.
    * @param {Store} [opts.store] Store for log.
    *                             Will use {@link MemoryStore} by default.
-   * @param {string|number} [opts.nodeId='test'] Unique Node ID.
+   * @param {string|number} [opts.nodeId='test'] Unique current machine name.
    *
    * @return {TestLog} Test log in this time.
    *

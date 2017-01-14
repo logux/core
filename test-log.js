@@ -12,7 +12,7 @@ var Log = require('./log')
  * @param {object} [opts] Options.
  * @param {Store} [opts.store] Store for log.
  *                             Will use {@link MemoryStore} by default.
- * @param {string|number} [opts.nodeId='test'] Unique Node ID.
+ * @param {string|number} [opts.nodeId='test'] Unique current machine name.
  *
  * @example
  * import { TestTime } from 'logux-core'
