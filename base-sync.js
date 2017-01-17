@@ -10,13 +10,13 @@ var syncMessages = require('./messages/sync')
 
 var BEFORE_AUTH = ['connect', 'connected', 'error']
 
-function syncMappedEvent (sync, event, meta) {
+function syncMappedEvent (sync, action, meta) {
   if (sync.options.outMap) {
-    sync.options.outMap(event, meta).then(function (changed) {
+    sync.options.outMap(action, meta).then(function (changed) {
       sync.sendSync(changed[0], changed[1])
     })
   } else {
-    sync.sendSync(event, meta)
+    sync.sendSync(action, meta)
   }
 }
 
@@ -33,25 +33,20 @@ function syncMappedEvent (sync, event, meta) {
  * @param {authCallback} [options.auth] Function to check client credentials.
  * @param {boolean} [options.fixTime=false] Detect difference between client
  *                                          and server and fix time
- *                                          in synchronized events.
+ *                                          in synchronized actions.
  * @param {number} [options.timeout=0] Timeout in milliseconds to wait answer
  *                                     before disconnect.
  * @param {number} [options.ping=0] Milliseconds since last message to test
  *                                  connection by sending ping.
- * @param {filter} [options.inFilter] Function to filter events
+ * @param {filter} [options.inFilter] Function to filter actions
  *                                    from other node. Best place
  *                                    for access control.
- * @param {mapper} [options.inMap] Map function to change other node’s event
+ * @param {mapper} [options.inMap] Map function to change other node’s action
  *                                 before put it to current log.
- * @param {filter} [options.outFilter] Filter function to select events
+ * @param {filter} [options.outFilter] Filter function to select actions
  *                                     to synchronization.
- * @param {mapper} [options.outMap] Map function to change event
+ * @param {mapper} [options.outMap] Map function to change action
  *                                  before sending it to other client.
- * @param {number} [options.synced=0] Events with lower `added` number
- *                                    in current log will not be synchronized.
- * @param {number} [options.otherSynced=0] Events with lower `added` number
- *                                         in other node’s log
- *                                         will not be synchronized.
  * @param {string} [options.subprotocol] Application subprotocol version
  *                                       in SemVer format.
  *
@@ -112,27 +107,25 @@ function BaseSync (nodeId, log, connection, options) {
 
   /**
    * Latest current log `added` time, which was successfully synchronized.
-   * You can remember this option too for faster synchronization
-   * on next connection.
+   * It will be saves in log store.
    * @type {number}
    */
-  this.synced = this.options.synced || 0
+  this.synced = 0
   /**
    * Latest other node’s log `added` time, which was successfully synchronized.
-   * You can remember this option too for faster synchronization
-   * on next connection.
+   * It will be saves in log store.
    * @type {number}
    */
-  this.otherSynced = this.options.otherSynced || 0
+  this.otherSynced = 0
 
   /**
    * Current synchronization state.
    *
-   * * `disconnected`: no connection, but no new events to synchronization.
-   * * `wait`: new events for synchronization but there is no connection.
+   * * `disconnected`: no connection, but no new actions to synchronization.
+   * * `wait`: new actions for synchronization but there is no connection.
    * * `connecting`: connection was established and we wait for node answer.
-   * * `sending`: new events was sent, waiting for answer.
-   * * `synchronized`: all events was synchronized and we keep connection.
+   * * `sending`: new actions was sent, waiting for answer.
+   * * `synchronized`: all actions was synchronized and we keep connection.
    *
    * @type {"disconnected"|"wait"|"connecting"|"sending"|"synchronized"}
    *
@@ -144,7 +137,6 @@ function BaseSync (nodeId, log, connection, options) {
    * })
    */
   this.state = 'disconnected'
-  if (this.log.lastAdded > this.synced) this.state = 'wait'
 
   this.emitter = new NanoEvents()
   this.timeouts = []
@@ -152,8 +144,8 @@ function BaseSync (nodeId, log, connection, options) {
 
   this.unbind = []
   var sync = this
-  this.unbind.push(log.on('event', function (event, meta) {
-    sync.onEvent(event, meta)
+  this.unbind.push(log.on('add', function (action, meta) {
+    sync.onAdd(action, meta)
   }))
   this.unbind.push(connection.on('connecting', function () {
     sync.onConnecting()
@@ -168,7 +160,7 @@ function BaseSync (nodeId, log, connection, options) {
     if (error.message === 'Wrong message format') {
       sync.sendError(new SyncError(sync, 'wrong-format', error.received))
     } else {
-      sync.emitter.emit('error', error)
+      sync.error(error)
     }
     sync.connection.disconnect()
   }))
@@ -176,9 +168,8 @@ function BaseSync (nodeId, log, connection, options) {
     sync.onDisconnect()
   }))
 
-  if (this.connection.connected) {
-    this.onConnect()
-  }
+  this.lastAddedCache = 0
+  this.initializing = this.initialize()
 }
 
 BaseSync.prototype = {
@@ -239,13 +230,12 @@ BaseSync.prototype = {
    * Subscribe for synchronization events. It implements nanoevents API.
    * Supported events:
    *
-   * * `synced`: `synced` or `otherSynced` was property changed.
    * * `state`: synchronization state was changed.
    * * `connect`: custom check before node authentication. You can throw
    *              a {@link SyncError} to send error to other node.
    * * `clientError`: when error was sent to other node.
    *
-   * @param {"synced"|"state"|"connect"|"clientError"} event The event name.
+   * @param {"state"|"connect"|"clientError"} event The event name.
    * @param {listener} listener The listener function.
    *
    * @return {function} Unbind listener from event.
@@ -263,7 +253,7 @@ BaseSync.prototype = {
    * Add one-time listener for synchronization events.
    * See {@link BaseSync#on} for supported events.
    *
-   * @param {"synced"|"state"|"connect"|"clientError"} event The event name.
+   * @param {"state"|"connect"|"clientError"} event The event name.
    * @param {listener} listener The listener function.
    *
    * @return {function} Unbind listener from event.
@@ -339,7 +329,7 @@ BaseSync.prototype = {
     if (this.pingTimeout) clearTimeout(this.pingTimeout)
     this.connected = false
 
-    if (this.log.lastAdded > this.synced) {
+    if (this.lastAddedCache > this.synced) {
       this.setState('wait')
     } else {
       this.setState('disconnected')
@@ -380,27 +370,36 @@ BaseSync.prototype = {
     this[method].apply(this, args)
   },
 
-  onEvent: function onEvent (event, meta) {
+  onAdd: function onAdd (action, meta) {
     if (!this.connected) {
       this.setState('wait')
       return
     }
-    if (this.received[meta.added]) {
-      delete this.received[meta.added]
+    if (this.lastAddedCache < meta.added) {
+      this.lastAddedCache = meta.added
+    }
+
+    if (this.received[meta.id.join('\t')]) {
+      delete this.received[meta.id.join('\t')]
       return
     }
+
     if (this.options.outFilter) {
       var sync = this
-      this.options.outFilter(event, meta).then(function (result) {
-        if (result) syncMappedEvent(sync, event, meta)
+      this.options.outFilter(action, meta).then(function (result) {
+        if (result) syncMappedEvent(sync, action, meta)
       })
     } else {
-      syncMappedEvent(this, event, meta)
+      syncMappedEvent(this, action, meta)
     }
   },
 
-  error: function error (type, options, received) {
+  syncError: function syncError (type, options, received) {
     var err = new SyncError(this, type, options, received)
+    this.error(err)
+  },
+
+  error: function error (err) {
     this.emitter.emit('error', err)
     if (this.throwsError) {
       throw err
@@ -421,7 +420,7 @@ BaseSync.prototype = {
     var sync = this
     var timeout = setTimeout(function () {
       if (sync.connected) sync.connection.disconnect('timeout')
-      sync.error('timeout', ms)
+      sync.syncError('timeout', ms)
     }, ms)
 
     this.timeouts.push(timeout)
@@ -446,11 +445,11 @@ BaseSync.prototype = {
   syncSince: function syncSince (lastSynced) {
     var data = []
     var sync = this
-    this.log.each({ order: 'added' }, function (event, meta) {
+    this.log.each({ order: 'added' }, function (action, meta) {
       if (meta.added <= lastSynced) {
         return false
       } else {
-        data.push(event, meta)
+        data.push(action, meta)
         return true
       }
     }).then(function () {
@@ -465,12 +464,31 @@ BaseSync.prototype = {
 
   setSynced: function setSynced (value) {
     if (this.synced < value) this.synced = value
-    this.emitter.emit('synced')
+    this.log.store.setLastSynced({ sent: value })
   },
 
   setOtherSynced: function setOtherSynced (value) {
     if (this.otherSynced < value) this.otherSynced = value
-    this.emitter.emit('synced')
+    this.log.store.setLastSynced({ received: value })
+  },
+
+  now: function now () {
+    return Date.now()
+  },
+
+  initialize: function initialize () {
+    var sync = this
+    return Promise.all([
+      this.log.store.getLastSynced(),
+      this.log.store.getLastAdded()
+    ]).then(function (result) {
+      sync.synced = result[0].sent
+      sync.otherSynced = result[0].received
+      sync.lastAddedCache = result[1]
+
+      if (sync.lastAddedCache > sync.synced) sync.setState('wait')
+      if (sync.connection.connected) sync.onConnect()
+    })
   }
 
 }
@@ -500,15 +518,15 @@ module.exports = BaseSync
 
 /**
  * @callback filter
- * @param {Event} event New event from log.
- * @param {Meta} meta New event metadata.
- * @return {Promise} Promise with `true` if event be synchronized
+ * @param {Action} action New action from log.
+ * @param {Meta} meta New action metadata.
+ * @return {Promise} Promise with `true` if action be synchronized
  *                   with other log.
  */
 
 /**
  * @callback mapper
- * @param {Event} event New event from log.
- * @param {Meta} meta New event metadata.
- * @return {Promise} Promise with array of changed event and changed metadata.
+ * @param {Action} action New action from log.
+ * @param {Meta} meta New action metadata.
+ * @return {Promise} Promise with array of changed action and changed metadata.
  */

@@ -1,6 +1,4 @@
-var createTestTimer = require('logux-core').createTestTimer
-var MemoryStore = require('logux-core').MemoryStore
-var Log = require('logux-core').Log
+var TestTime = require('logux-core').TestTime
 
 var ClientSync = require('../client-sync')
 var LocalPair = require('../local-pair')
@@ -12,20 +10,24 @@ function wait (ms) {
 }
 
 function initTest (opts) {
-  var log = new Log({ store: new MemoryStore(), timer: createTestTimer() })
-  log.lastAdded = 1
-  var pair = new LocalPair()
-  var sync = new ClientSync('client', log, pair.left, opts)
+  var log = TestTime.getLog()
+  var sync
+  return log.add({ type: 'test' }).then(function () {
+    log.store.lastSent = 1
+    sync = new ClientSync('client', log, (new LocalPair()).left, opts)
 
-  sync.connection.connect()
-  sync.connection.other().send(['connected', sync.protocol, 'server'])
+    sync.connection.connect()
+    return wait(1)
+  }).then(function () {
+    sync.connection.other().send(['connected', sync.protocol, 'server'])
 
-  var sent = []
-  sync.connection.other().on('message', function (msg) {
-    sent.push(msg)
+    var sent = []
+    sync.connection.other().on('message', function (msg) {
+      sent.push(msg)
+    })
+
+    return { sync: sync, sent: sent }
   })
-
-  return { sync: sync, sent: sent, right: sync.connection.other() }
 }
 
 it('throws on ping and no timeout options', function () {
@@ -35,21 +37,26 @@ it('throws on ping and no timeout options', function () {
 })
 
 it('answers pong on ping', function () {
-  var test = initTest({ fixTime: false })
-  test.right.send(['ping', 1])
-  expect(test.sent).toEqual([['pong', 1]])
+  return initTest({ fixTime: false }).then(function (test) {
+    test.sync.connection.other().send(['ping', 1])
+    expect(test.sent).toEqual([['pong', 1]])
+  })
 })
 
 it('sends ping on idle connection', function () {
-  var test = initTest({ ping: 300, timeout: 100, fixTime: false })
-  test.sync.testMessage = function () { }
-
-  var error
-  test.sync.catch(function (err) {
-    error = err
-  })
-
-  return wait(250).then(function () {
+  var error, test
+  return initTest({
+    ping: 300,
+    timeout: 100,
+    fixTime: false
+  }).then(function (created) {
+    test = created
+    test.sync.testMessage = function () { }
+    test.sync.catch(function (err) {
+      error = err
+    })
+    return wait(250)
+  }).then(function () {
     test.sync.connection.other().send(['test'])
     return wait(250)
   }).then(function () {
@@ -62,7 +69,7 @@ it('sends ping on idle connection', function () {
   }).then(function () {
     expect(error).toBeUndefined()
     expect(test.sent).toEqual([['test'], ['ping', 1]])
-    test.right.send(['pong', 1])
+    test.sync.connection.other().send(['pong', 1])
     return wait(250)
   }).then(function () {
     expect(error).toBeUndefined()
@@ -83,8 +90,13 @@ it('sends ping on idle connection', function () {
 })
 
 it('sends only one ping if timeout is bigger than ping', function () {
-  var test = initTest({ ping: 100, timeout: 300, fixTime: false })
-  return wait(250).then(function () {
-    expect(test.sent).toEqual([['ping', 1]])
+  return initTest({
+    ping: 100,
+    timeout: 300,
+    fixTime: false
+  }).then(function (test) {
+    return wait(250).then(function () {
+      expect(test.sent).toEqual([['ping', 1]])
+    })
   })
 })

@@ -1,33 +1,41 @@
-var createTestTimer = require('logux-core').createTestTimer
-var MemoryStore = require('logux-core').MemoryStore
-var Log = require('logux-core').Log
+var TestTime = require('logux-core').TestTime
 
 var ClientSync = require('../client-sync')
 var LocalPair = require('../local-pair')
 
+function nextTick () {
+  return new Promise(function (resolve) {
+    setTimeout(resolve, 1)
+  })
+}
+
 it('connects first', function () {
-  var log = new Log({ store: new MemoryStore(), timer: createTestTimer() })
+  var log = TestTime.getLog()
   var pair = new LocalPair()
   var sync = new ClientSync('client', log, pair.left)
 
   sync.sendConnect = jest.fn()
   pair.left.connect()
-  expect(sync.sendConnect).toBeCalled()
+  return nextTick().then(function () {
+    expect(sync.sendConnect).toBeCalled()
+  })
 })
 
 it('saves last added from ping', function () {
-  var log = new Log({ store: new MemoryStore(), timer: createTestTimer() })
+  var log = TestTime.getLog()
   var pair = new LocalPair()
   var sync = new ClientSync('client', log, pair.left, { fixTime: false })
 
   pair.left.connect()
-  pair.right.send(['connected', sync.protocol, 'server'])
-  expect(sync.otherSynced).toBe(0)
+  return nextTick().then(function () {
+    pair.right.send(['connected', sync.protocol, 'server'])
+    expect(sync.otherSynced).toBe(0)
 
-  pair.right.send(['ping', 1])
-  expect(sync.otherSynced).toBe(1)
+    pair.right.send(['ping', 1])
+    expect(sync.otherSynced).toBe(1)
 
-  sync.sendPing()
-  pair.right.send(['pong', 2])
-  expect(sync.otherSynced).toBe(2)
+    sync.sendPing()
+    pair.right.send(['pong', 2])
+    expect(sync.otherSynced).toBe(2)
+  })
 })

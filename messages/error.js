@@ -9,7 +9,7 @@ module.exports = {
   },
 
   errorMessage: function errorMessage (type, options) {
-    this.error(type, options, true)
+    this.syncError(type, options, true)
   }
 
 }

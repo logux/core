@@ -1,7 +1,3 @@
-function fixTime (created, fix) {
-  return [created[0] + fix].concat(created.slice(1))
-}
-
 module.exports = {
 
   sendSync: function sendSync () {
@@ -10,11 +6,11 @@ module.exports = {
     var max = 0
     var data = []
     for (var i = 0; i < arguments.length - 1; i += 2) {
-      var created = arguments[i + 1].created
-      var added = arguments[i + 1].added
-      if (this.timeFix) created = fixTime(created, -this.timeFix)
-      if (max < added) max = added
-      data.push(arguments[i], created)
+      var meta = arguments[i + 1]
+      var time = meta.time
+      if (this.timeFix) time = time - this.timeFix
+      if (max < meta.added) max = meta.added
+      data.push(arguments[i], { id: meta.id, time: time })
     }
 
     this.syncing += 1
@@ -30,10 +26,10 @@ module.exports = {
     var sync = this
     var promises = []
     for (var i = 1; i < arguments.length - 1; i += 2) {
-      var event = arguments[i]
-      var meta = { created: arguments[i + 1] }
+      var action = arguments[i]
+      var meta = arguments[i + 1]
 
-      var process = Promise.resolve([event, meta])
+      var process = Promise.resolve([action, meta])
       if (this.options.inFilter) {
         process = process.then(function (data) {
           return sync.options.inFilter(data[0], data[1])
@@ -50,7 +46,7 @@ module.exports = {
       process.then(function (data) {
         if (!data) return false
 
-        if (sync.timeFix) meta.created = fixTime(meta.created, sync.timeFix)
+        if (sync.timeFix) data[1].time = data[1].time + sync.timeFix
         if (sync.options.inMap) {
           return sync.options.inMap(data[0], data[1])
         } else {
@@ -58,7 +54,7 @@ module.exports = {
         }
       }).then(function (changed) {
         if (!changed) return false
-        sync.received[sync.log.lastAdded + 1] = true
+        sync.received[changed[1].id.join('\t')] = true
         return sync.log.add(changed[0], changed[1])
       })
 

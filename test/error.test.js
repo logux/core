@@ -1,9 +1,11 @@
+var TestTime = require('logux-core').TestTime
+
 var LocalPair = require('../local-pair')
 var SyncError = require('../sync-error')
 var BaseSync = require('../base-sync')
 
 function createTest () {
-  var log = { on: function () { } }
+  var log = TestTime.getLog()
   var pair = new LocalPair()
   var sync = new BaseSync('server', log, pair.left)
   var messages = []

@@ -1,17 +1,17 @@
 var LocalPair = require('../local-pair')
 
 function listen (connection) {
-  var events = []
+  var actions = []
   connection.on('connect', function () {
-    events.push('connect')
+    actions.push('connect')
   })
   connection.on('disconnect', function () {
-    events.push('disconnect')
+    actions.push('disconnect')
   })
   connection.on('message', function (msg) {
-    events.push(msg)
+    actions.push(msg)
   })
-  return events
+  return actions
 }
 
 function createTracker () {

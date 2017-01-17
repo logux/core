@@ -24,13 +24,13 @@ var DEFAULT_OPTIONS = {
  *                                         to wait answer before disconnect.
  * @param {number} [options.ping=10000] Milliseconds since last message to test
  *                                      connection by sending ping.
- * @param {filter} [options.inFilter] Function to filter events from client.
+ * @param {filter} [options.inFilter] Function to filter actions from client.
  *                                    Best place for permissions control.
- * @param {mapper} [options.inMap] Map function to change other node’s event
+ * @param {mapper} [options.inMap] Map function to change other node’s action
  *                                 before put it to current log.
- * @param {filter} [options.outFilter] Filter function to select events
+ * @param {filter} [options.outFilter] Filter function to select actions
  *                                     to synchronization.
- * @param {mapper} [options.outMap] Map function to change event
+ * @param {mapper} [options.outMap] Map function to change action
  *                                  before sending it to other client.
  * @param {number[]} [options.subprotocol] Application subprotocol version.
  * @param {string} [options.subprotocol] Application subprotocol version
@@ -52,11 +52,7 @@ function ServerSync (nodeId, log, connection, options) {
 
   if (this.options.fixTime) {
     throw new Error(
-      'Server could not fix time. Set opts.fixTime for Client node.')
-  }
-  if (options && (options.synced || options.otherSynced)) {
-    throw new Error(
-      'Server could not use synced and otherSynced options.')
+      'Logux Server could not fix time. Set opts.fixTime for Client node.')
   }
 
   this.state = 'connecting'
@@ -77,6 +73,14 @@ ServerSync.prototype = {
   connectMessage: function connectMessage () {
     BaseSync.prototype.connectMessage.apply(this, arguments)
     this.endTimeout()
+  },
+
+  initialize: function initialize () {
+    var sync = this
+    return this.log.store.getLastAdded().then(function (added) {
+      sync.lastAddedCache = added
+      if (sync.connection.connected) sync.onConnect()
+    })
   }
 
 }

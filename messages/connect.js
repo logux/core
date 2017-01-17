@@ -53,8 +53,7 @@ module.exports = {
     }
     if (Object.keys(options).length > 0) message.push(options)
 
-    if (this.options.fixTime) this.connectSended = this.log.timer()[0]
-    if (this.log.lastAdded > this.synced) this.setState('sending')
+    if (this.options.fixTime) this.connectSended = this.now()
     this.startTimeout()
     this.send(message)
   },
@@ -75,7 +74,7 @@ module.exports = {
   },
 
   connectMessage: function connectMessage (ver, nodeId, synced, options) {
-    var start = this.log.timer()[0]
+    var start = this.now()
     if (!options) options = { }
 
     this.otherProtocol = ver
@@ -99,7 +98,7 @@ module.exports = {
 
     var sync = this
     auth(this, nodeId, options.credentials, function () {
-      sync.sendConnected(start, sync.log.timer()[0])
+      sync.sendConnected(start, sync.now())
       sync.syncSince(synced)
     })
   },
@@ -112,10 +111,10 @@ module.exports = {
     this.otherNodeId = nodeId
 
     if (this.options.fixTime) {
-      var now = this.log.timer()[0]
+      var now = this.now()
       var authTime = time[1] - time[0]
       var roundTrip = now - this.connectSended - authTime
-      this.timeFix = this.connectSended - time[0] + roundTrip / 2
+      this.timeFix = Math.floor(this.connectSended - time[0] + roundTrip / 2)
     }
 
     this.otherSubprotocol = options.subprotocol || '0.0.0'

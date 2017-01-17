@@ -1,10 +1,10 @@
-var NanoEvents = require('nanoevents')
+var TestTime = require('logux-core').TestTime
 
 var ServerSync = require('../server-sync')
 var LocalPair = require('../local-pair')
 
 it('has connecting state from the beginning', function () {
-  var log = new NanoEvents()
+  var log = TestTime.getLog()
   var pair = new LocalPair()
   pair.right.connect()
 
@@ -21,7 +21,7 @@ it('has connecting state from the beginning', function () {
 })
 
 it('destroys on disconnect', function () {
-  var log = new NanoEvents()
+  var log = TestTime.getLog()
   var pair = new LocalPair()
   var sync = new ServerSync('server', log, pair.left)
 
@@ -34,7 +34,7 @@ it('destroys on disconnect', function () {
 it('destroys on connect timeout', function () {
   jest.useFakeTimers()
 
-  var log = new NanoEvents()
+  var log = TestTime.getLog()
   var pair = new LocalPair()
   var sync = new ServerSync('server', log, pair.left, { timeout: 1000 })
 
@@ -53,16 +53,25 @@ it('destroys on connect timeout', function () {
 })
 
 it('throws on fixTime option', function () {
+  var log = TestTime.getLog()
+  var pair = new LocalPair()
   expect(function () {
-    new ServerSync('a', new NanoEvents(), new NanoEvents(), { fixTime: true })
+    new ServerSync('a', log, pair.left, { fixTime: true })
   }).toThrowError(/fixTime/)
 })
 
-it('throws on synced ot otherSynced option', function () {
-  expect(function () {
-    new ServerSync('a', new NanoEvents(), new NanoEvents(), {
-      otherSynced: 1,
-      synced: 1
-    })
-  }).toThrowError(/synced/)
+it('loads only last added from store', function () {
+  var log = TestTime.getLog()
+  var con = { on: function () { } }
+  var sync
+
+  log.store.setLastSynced({ sent: 1, received: 2 })
+  return log.add({ type: 'a' }).then(function () {
+    sync = new ServerSync('server', log, con)
+    return sync.initializing
+  }).then(function () {
+    expect(sync.lastAddedCache).toBe(1)
+    expect(sync.synced).toBe(0)
+    expect(sync.otherSynced).toBe(0)
+  })
 })

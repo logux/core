@@ -23,24 +23,19 @@ var DEFAULT_OPTIONS = {
  * @param {authCallback} [options.auth] Function to check server credentials.
  * @param {boolean} [options.fixTime=true] Detect difference between client
  *                                         and server and fix time
- *                                         in synchronized events.
+ *                                         in synchronized actions.
  * @param {number} [options.timeout=20000] Timeout in milliseconds
  *                                         to wait answer before disconnect.
  * @param {number} [options.ping=5000] Milliseconds since last message to test
  *                                     connection by sending ping.
- * @param {filter} [options.inFilter] Function to filter events from server.
+ * @param {filter} [options.inFilter] Function to filter actions from server.
  *                                    Best place for permissions control.
- * @param {mapper} [options.inMap] Map function to change other node’s event
+ * @param {mapper} [options.inMap] Map function to change other node’s action
  *                                 before put it to current log.
- * @param {filter} [options.outFilter] Filter function to select events
+ * @param {filter} [options.outFilter] Filter function to select actions
  *                                     to synchronization.
- * @param {mapper} [options.outMap] Map function to change event
+ * @param {mapper} [options.outMap] Map function to change action
  *                                  before sending it to other client.
- * @param {number} [options.synced=0] Events with lower `added` number
- *                                    in current log will not be synchronized.
- * @param {number} [options.otherSynced=0] Events with lower `added` number
- *                                         in other node’s log
- *                                         will not be synchronized.
  * @param {number[]} [options.subprotocol] Application subprotocol version.
  * @param {string} [options.subprotocol] Application subprotocol version
  *                                       in SemVer format.
@@ -61,8 +56,13 @@ function ClientSync (nodeId, log, connection, options) {
 ClientSync.prototype = {
 
   onConnect: function onConnect () {
-    BaseSync.prototype.onConnect.apply(this, arguments)
-    this.sendConnect()
+    if (!this.connected) {
+      this.connected = true
+      var sync = this
+      this.initializing = this.initializing.then(function () {
+        sync.sendConnect()
+      })
+    }
   }
 
 }
