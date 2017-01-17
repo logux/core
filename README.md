@@ -107,7 +107,7 @@ This format is tricky to keep ID unique on every machine.
 
 ### Time
 
-Action creation time could be find in `meta.time`
+Action creation time could be found in `meta.time`
 in milliseconds elapsed since 1 January 1970.
 
 ```js
