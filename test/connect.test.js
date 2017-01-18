@@ -275,7 +275,7 @@ it('has default timeFix', function () {
 
 it('calculates time difference', function () {
   var test = createTest()
-  var clientTime = [10000, 10000 + 1000 + 100]
+  var clientTime = [10000, 10000 + 1000 + 100 + 1]
   test.client.now = function () {
     return clientTime.shift()
   }
