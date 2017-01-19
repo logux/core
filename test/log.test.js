@@ -237,6 +237,16 @@ it('sets ID and time for timeless entries', function () {
   })
 })
 
+it('generates unique ID', function () {
+  var log = createLog()
+  var used = []
+  for (var i = 0; i < 100; i++) {
+    var id = log.generateId()
+    expect(used).not.toContainEqual(id)
+    used.push(id)
+  }
+})
+
 it('cleans entries', function () {
   return logWith([
     { type: 'a' }
