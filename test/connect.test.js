@@ -1,5 +1,6 @@
 var TestTime = require('logux-core').TestTime
 
+var BaseSync = require('../base-sync')
 var ClientSync = require('../client-sync')
 var ServerSync = require('../server-sync')
 var LocalPair = require('../local-pair')
@@ -35,6 +36,27 @@ function createTest () {
     clientSent: clientSent,
     server: server,
     client: client
+  }
+}
+
+function createBaseSyncTest () {
+  var log = new Log({ store: new MemoryStore(), timer: createTestTimer() })
+  var pair = new LocalPair()
+  var leftSync = new BaseSync('left', log, pair.left)
+
+  var leftSent = []
+  pair.right.on('message', function (msg) {
+    leftSent.push(msg)
+  })
+  var rightSent = []
+  pair.left.on('message', function (msg) {
+    rightSent.push(msg)
+  })
+
+  return {
+    leftSent: leftSent,
+    rightSent: rightSent,
+    leftSync: leftSync
   }
 }
 
@@ -76,6 +98,73 @@ it('checks protocol version', function () {
     ])
     expect(test.client.connected).toBeFalsy()
   })
+})
+
+it('checks param types on connect message', function () {
+  var test = createBaseSyncTest()
+  var protocol = test.leftSync.protocol
+  var right = test.leftSync.connection.other()
+
+  right.connect()
+  right.send(['connect', protocol])
+  expect(right.connected).toBeFalsy()
+
+  right.connect()
+  right.send(['connect', protocol, 1, 1])
+  expect(right.connected).toBeFalsy()
+
+  right.connect()
+  right.send(['connect', protocol, 'client', 'abc'])
+  expect(right.connected).toBeFalsy()
+
+  right.connect()
+  right.send(['connect', protocol, 'client', 1, []])
+  expect(right.connected).toBeFalsy()
+
+  expect(test.leftSent).toEqual([
+    ['error', 'wrong-format', '["connect",[0,1]]'],
+    ['error', 'wrong-format', '["connect",[0,1],1,1]'],
+    ['error', 'wrong-format', '["connect",[0,1],"client","abc"]'],
+    ['error', 'wrong-format', '["connect",[0,1],"client",1,[]]']
+  ])
+})
+
+it('checks param types on connected message', function () {
+  var test = createBaseSyncTest()
+  var left = test.leftSync.connection
+  var right = left.other()
+  var protocol = test.leftSync.protocol
+
+  left.connect()
+  left.send(['connect', protocol, 'left', 0])
+  right.send(['connected', protocol, 'right'])
+  expect(right.connected).toBeFalsy()
+
+  left.connect()
+  left.send(['connect', protocol, 'left', 0])
+  right.send(['connected', protocol, 1, [0, 0]])
+  expect(right.connected).toBeFalsy()
+
+  left.connect()
+  left.send(['connect', protocol, 'left', 0])
+  right.send(['connected', protocol, 'right', [0, 'abc']])
+  expect(right.connected).toBeFalsy()
+
+  left.connect()
+  left.send(['connect', protocol, 'left', 0])
+  right.send(['connected', protocol, 'right', [0, 1], 'abc'])
+  expect(right.connected).toBeFalsy()
+
+  expect(test.leftSent).toEqual([
+    ['connect', protocol, 'left', 0],
+    ['error', 'wrong-format', '["connected",[0,1],"right"]'],
+    ['connect', protocol, 'left', 0],
+    ['error', 'wrong-format', '["connected",[0,1],1,[0,0]]'],
+    ['connect', protocol, 'left', 0],
+    ['error', 'wrong-format', '["connected",[0,1],"right",[0,"abc"]]'],
+    ['connect', protocol, 'left', 0],
+    ['error', 'wrong-format', '["connected",[0,1],"right",[0,1],"abc"]']
+  ])
 })
 
 it('saves other node name', function () {

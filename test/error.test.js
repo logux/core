@@ -45,6 +45,27 @@ it('sends error on wrong message format', function () {
   ])
 })
 
+it('sends error on wrong error param types', function () {
+  var test = createTest()
+
+  test.sync.connection.other().send(['error'])
+  expect(test.sync.connection.connected).toBeFalsy()
+
+  test.sync.connection.connect()
+  test.sync.connection.other().send(['error', 1])
+  expect(test.sync.connection.connected).toBeFalsy()
+
+  test.sync.connection.connect()
+  test.sync.connection.other().send(['error', {}])
+  expect(test.sync.connection.connected).toBeFalsy()
+
+  expect(test.messages).toEqual([
+    ['error', 'wrong-format', '["error"]'],
+    ['error', 'wrong-format', '["error",1]'],
+    ['error', 'wrong-format', '["error",{}]']
+  ])
+})
+
 it('sends error on unknown message type', function () {
   var test = createTest()
   test.sync.connection.other().send(['test'])

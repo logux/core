@@ -8,6 +8,8 @@ var errorMessages = require('./messages/error')
 var pingMessages = require('./messages/ping')
 var syncMessages = require('./messages/sync')
 
+var validator = require('./validator')
+
 var BEFORE_AUTH = ['connect', 'connected', 'error']
 
 function syncMappedEvent (sync, action, meta) {
@@ -339,20 +341,12 @@ BaseSync.prototype = {
   onMessage: function onMessage (msg) {
     this.delayPing()
 
-    if (typeof msg !== 'object' || typeof msg.length !== 'number' ||
-        typeof msg[0] !== 'string') {
-      this.sendError(new SyncError(this, 'wrong-format', JSON.stringify(msg)))
-      this.connection.disconnect()
+    if (!this.validateMessage(msg)) {
       return
     }
 
     var name = msg[0]
     var method = name + 'Message'
-    if (typeof this[method] !== 'function') {
-      this.sendError(new SyncError(this, 'unknown-message', name))
-      this.connection.disconnect()
-      return
-    }
 
     if (!this.authenticated && BEFORE_AUTH.indexOf(name) === -1) {
       if (this.authenticating) {
@@ -494,7 +488,7 @@ BaseSync.prototype = {
 }
 
 BaseSync.prototype = assign(BaseSync.prototype,
-  errorMessages, connectMessages, pingMessages, syncMessages)
+  errorMessages, connectMessages, pingMessages, syncMessages, validator)
 
 module.exports = BaseSync
 

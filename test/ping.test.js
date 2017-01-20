@@ -19,7 +19,7 @@ function initTest (opts) {
     sync.connection.connect()
     return wait(1)
   }).then(function () {
-    sync.connection.other().send(['connected', sync.protocol, 'server'])
+    sync.connection.other().send(['connected', sync.protocol, 'server'], [0, 0])
 
     var sent = []
     sync.connection.other().on('message', function (msg) {
@@ -99,4 +99,40 @@ it('sends only one ping if timeout is bigger than ping', function () {
       expect(test.sent).toEqual([['ping', 1]])
     })
   })
+})
+
+it('checks ping synced type', function () {
+  var test = initTest({ fixTime: false })
+
+  test.right.send(['ping'])
+  expect(test.right.connected).toBeFalsy()
+  expect(test.sent).toEqual([['error', 'wrong-format', '["ping"]']])
+
+  test = initTest({ fixTime: false })
+  test.right.send(['ping', 'abc'])
+  expect(test.right.connected).toBeFalsy()
+  expect(test.sent).toEqual([['error', 'wrong-format', '["ping","abc"]']])
+
+  test = initTest({ fixTime: false })
+  test.right.send(['ping', []])
+  expect(test.right.connected).toBeFalsy()
+  expect(test.sent).toEqual([['error', 'wrong-format', '["ping",[]]']])
+})
+
+it('checks pong synced type', function () {
+  var test = initTest({ fixTime: false })
+
+  test.right.send(['pong'])
+  expect(test.right.connected).toBeFalsy()
+  expect(test.sent).toEqual([['error', 'wrong-format', '["pong"]']])
+
+  test = initTest({ fixTime: false })
+  test.right.send(['pong', 'abc'])
+  expect(test.right.connected).toBeFalsy()
+  expect(test.sent).toEqual([['error', 'wrong-format', '["pong","abc"]']])
+
+  test = initTest({ fixTime: false })
+  test.right.send(['pong', {}])
+  expect(test.right.connected).toBeFalsy()
+  expect(test.sent).toEqual([['error', 'wrong-format', '["pong",{}]']])
 })

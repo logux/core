@@ -25,6 +25,7 @@ module.exports = {
   syncMessage: function syncMessage (added) {
     var sync = this
     var promises = []
+
     for (var i = 1; i < arguments.length - 1; i += 2) {
       var action = arguments[i]
       var meta = arguments[i + 1]

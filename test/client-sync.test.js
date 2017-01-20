@@ -28,7 +28,7 @@ it('saves last added from ping', function () {
 
   pair.left.connect()
   return nextTick().then(function () {
-    pair.right.send(['connected', sync.protocol, 'server'])
+    pair.right.send(['connected', sync.protocol, 'server'], [0, 0])
     expect(sync.otherSynced).toBe(0)
 
     pair.right.send(['ping', 1])

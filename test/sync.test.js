@@ -90,6 +90,114 @@ it('sends sync messages', function () {
   })
 })
 
+it('check sync param types', function () {
+  var test = createTest()
+  test.client.catch(function () {})
+
+  test.client.connection.send(['sync'])
+  expect(test.server.connection.connected).toBeFalsy()
+  expect(test.serverSent).toEqual([['error', 'wrong-format', '["sync"]']])
+
+  test = createTest()
+  test.client.catch(function () {})
+  test.client.connection.send(['sync'])
+  expect(test.server.connection.connected).toBeFalsy()
+  expect(test.serverSent).toEqual([
+    ['error', 'wrong-format', '["sync"]']
+  ])
+
+  test = createTest()
+  test.client.catch(function () {})
+  test.client.connection.send(['sync', 'abc'])
+  expect(test.server.connection.connected).toBeFalsy()
+  expect(test.serverSent).toEqual([
+    ['error', 'wrong-format', '["sync","abc"]']
+  ])
+
+  test = createTest()
+  test.client.catch(function () {})
+  test.client.connection.send(['sync', 2, {}, 1])
+  expect(test.server.connection.connected).toBeFalsy()
+  expect(test.serverSent).toEqual([
+    ['error', 'wrong-format', '["sync",2,{},1]']
+  ])
+
+  test = createTest()
+  test.client.catch(function () {})
+  test.client.connection.send(['sync', 2, {}, 'abc'])
+  expect(test.server.connection.connected).toBeFalsy()
+  expect(test.serverSent).toEqual([
+    ['error', 'wrong-format', '["sync",2,{},"abc"]']
+  ])
+
+  test = createTest()
+  test.client.catch(function () {})
+  test.client.connection.send(['sync', 2, 1, {}])
+  expect(test.server.connection.connected).toBeFalsy()
+  expect(test.serverSent).toEqual([
+    ['error', 'wrong-format', '["sync",2,1,{}]']
+  ])
+
+  test = createTest()
+  test.client.catch(function () {})
+  test.client.connection.send(['sync', 2, {}, {}, {}])
+  expect(test.server.connection.connected).toBeFalsy()
+  expect(test.serverSent).toEqual([
+    ['error', 'wrong-format', '["sync",2,{},{},{}]']
+  ])
+})
+
+it('check synced param types', function () {
+  var test = createTest()
+  test.client.catch(function () {})
+
+  test.client.connection.send(['synced'])
+  expect(test.server.connection.connected).toBeFalsy()
+  expect(test.serverSent).toEqual(
+    [['error', 'wrong-format', '["synced"]']]
+  )
+
+  test = createTest()
+  test.client.catch(function () {})
+  test.client.connection.send(['synced'])
+  expect(test.server.connection.connected).toBeFalsy()
+  expect(test.serverSent).toEqual(
+    [['error', 'wrong-format', '["synced"]']]
+  )
+
+  test = createTest()
+  test.client.catch(function () {})
+  test.client.connection.send(['synced', 'abc'])
+  expect(test.server.connection.connected).toBeFalsy()
+  expect(test.serverSent).toEqual([
+    ['error', 'wrong-format', '["synced","abc"]']
+  ])
+
+  test = createTest()
+  test.client.catch(function () {})
+  test.client.connection.send(['sync', 2, {}, 1])
+  expect(test.server.connection.connected).toBeFalsy()
+  expect(test.serverSent).toEqual([
+    ['error', 'wrong-format', '["sync",2,{},1]']
+  ])
+
+  test = createTest()
+  test.client.catch(function () {})
+  test.client.connection.send(['synced', {}])
+  expect(test.server.connection.connected).toBeFalsy()
+  expect(test.serverSent).toEqual([
+    ['error', 'wrong-format', '["synced",{}]']
+  ])
+
+  test = createTest()
+  test.client.catch(function () {})
+  test.client.connection.send(['synced', []])
+  expect(test.server.connection.connected).toBeFalsy()
+  expect(test.serverSent).toEqual([
+    ['error', 'wrong-format', '["synced",[]]']
+  ])
+})
+
 it('synchronizes actions', function () {
   var test
   return createTest().then(function (created) {
