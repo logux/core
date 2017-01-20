@@ -39,25 +39,22 @@ function createTest () {
   }
 }
 
-function createBaseSyncTest () {
-  var log = new Log({ store: new MemoryStore(), timer: createTestTimer() })
+function createBase () {
+  var log = TestTime.getLog()
   var pair = new LocalPair()
-  var leftSync = new BaseSync('left', log, pair.left)
+  var client = new BaseSync('client', log, pair.left)
 
-  var leftSent = []
+  client.catch(function () { })
+
+  var sent = []
   pair.right.on('message', function (msg) {
-    leftSent.push(msg)
-  })
-  var rightSent = []
-  pair.left.on('message', function (msg) {
-    rightSent.push(msg)
+    sent.push(msg)
   })
 
-  return {
-    leftSent: leftSent,
-    rightSent: rightSent,
-    leftSync: leftSync
-  }
+  client.connection.connect()
+  return wait(1).then(function () {
+    return { sent: sent, right: pair.right, client: client }
+  })
 }
 
 function wait (ms) {
@@ -101,70 +98,33 @@ it('checks protocol version', function () {
 })
 
 it('checks param types on connect message', function () {
-  var test = createBaseSyncTest()
-  var protocol = test.leftSync.protocol
-  var right = test.leftSync.connection.other()
-
-  right.connect()
-  right.send(['connect', protocol])
-  expect(right.connected).toBeFalsy()
-
-  right.connect()
-  right.send(['connect', protocol, 1, 1])
-  expect(right.connected).toBeFalsy()
-
-  right.connect()
-  right.send(['connect', protocol, 'client', 'abc'])
-  expect(right.connected).toBeFalsy()
-
-  right.connect()
-  right.send(['connect', protocol, 'client', 1, []])
-  expect(right.connected).toBeFalsy()
-
-  expect(test.leftSent).toEqual([
-    ['error', 'wrong-format', '["connect",[0,1]]'],
-    ['error', 'wrong-format', '["connect",[0,1],1,1]'],
-    ['error', 'wrong-format', '["connect",[0,1],"client","abc"]'],
-    ['error', 'wrong-format', '["connect",[0,1],"client",1,[]]']
-  ])
+  return createBase().then(function (test) {
+    test.right.send(['connect', []])
+    expect(test.sent).toEqual([['error', 'wrong-format', '["connect",[]]']])
+    expect(test.client.connected).toBeFalsy()
+    return createBase()
+  }).then(function (test) {
+    test.right.send(['connect', test.client.protocol, 'client', 0, 'abc'])
+    expect(test.sent).toEqual([
+      ['error', 'wrong-format', '["connect",[0,1],"client",0,"abc"]']
+    ])
+    expect(test.client.connected).toBeFalsy()
+  })
 })
 
 it('checks param types on connected message', function () {
-  var test = createBaseSyncTest()
-  var left = test.leftSync.connection
-  var right = left.other()
-  var protocol = test.leftSync.protocol
-
-  left.connect()
-  left.send(['connect', protocol, 'left', 0])
-  right.send(['connected', protocol, 'right'])
-  expect(right.connected).toBeFalsy()
-
-  left.connect()
-  left.send(['connect', protocol, 'left', 0])
-  right.send(['connected', protocol, 1, [0, 0]])
-  expect(right.connected).toBeFalsy()
-
-  left.connect()
-  left.send(['connect', protocol, 'left', 0])
-  right.send(['connected', protocol, 'right', [0, 'abc']])
-  expect(right.connected).toBeFalsy()
-
-  left.connect()
-  left.send(['connect', protocol, 'left', 0])
-  right.send(['connected', protocol, 'right', [0, 1], 'abc'])
-  expect(right.connected).toBeFalsy()
-
-  expect(test.leftSent).toEqual([
-    ['connect', protocol, 'left', 0],
-    ['error', 'wrong-format', '["connected",[0,1],"right"]'],
-    ['connect', protocol, 'left', 0],
-    ['error', 'wrong-format', '["connected",[0,1],1,[0,0]]'],
-    ['connect', protocol, 'left', 0],
-    ['error', 'wrong-format', '["connected",[0,1],"right",[0,"abc"]]'],
-    ['connect', protocol, 'left', 0],
-    ['error', 'wrong-format', '["connected",[0,1],"right",[0,1],"abc"]']
-  ])
+  return createBase().then(function (test) {
+    test.right.send(['connected', []])
+    expect(test.sent).toEqual([['error', 'wrong-format', '["connected",[]]']])
+    expect(test.client.connected).toBeFalsy()
+    return createBase()
+  }).then(function (test) {
+    test.right.send(['connected', test.client.protocol, 'client', [0]])
+    expect(test.sent).toEqual([
+      ['error', 'wrong-format', '["connected",[0,1],"client",[0]]']
+    ])
+    expect(test.client.connected).toBeFalsy()
+  })
 })
 
 it('saves other node name', function () {
@@ -173,6 +133,15 @@ it('saves other node name', function () {
   return wait(1).then(function () {
     expect(test.client.otherNodeId).toEqual('server')
     expect(test.server.otherNodeId).toEqual('client')
+  })
+})
+
+it('supports number in node ID', function () {
+  var test = createTest()
+  test.client.nodeId = 1
+  test.client.connection.connect()
+  return wait(1).then(function () {
+    expect(test.server.otherNodeId).toEqual(1)
   })
 })
 

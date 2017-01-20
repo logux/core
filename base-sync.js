@@ -8,7 +8,7 @@ var errorMessages = require('./messages/error')
 var pingMessages = require('./messages/ping')
 var syncMessages = require('./messages/sync')
 
-var validator = require('./validator')
+var validate = require('./validate')
 
 var BEFORE_AUTH = ['connect', 'connected', 'error']
 
@@ -341,12 +341,8 @@ BaseSync.prototype = {
   onMessage: function onMessage (msg) {
     this.delayPing()
 
-    if (!this.validateMessage(msg)) {
-      return
-    }
-
+    if (!validate(this, msg)) return
     var name = msg[0]
-    var method = name + 'Message'
 
     if (!this.authenticated && BEFORE_AUTH.indexOf(name) === -1) {
       if (this.authenticating) {
@@ -361,7 +357,7 @@ BaseSync.prototype = {
     for (var i = 1; i < msg.length; i++) {
       args[i - 1] = msg[i]
     }
-    this[method].apply(this, args)
+    this[name + 'Message'].apply(this, args)
   },
 
   onAdd: function onAdd (action, meta) {
@@ -488,7 +484,7 @@ BaseSync.prototype = {
 }
 
 BaseSync.prototype = assign(BaseSync.prototype,
-  errorMessages, connectMessages, pingMessages, syncMessages, validator)
+  errorMessages, connectMessages, pingMessages, syncMessages)
 
 module.exports = BaseSync
 
