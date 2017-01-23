@@ -35,6 +35,11 @@ function logWith (entries) {
   })
 }
 
+var originNow = Date.now
+afterEach(function () {
+  Date.now = originNow
+})
+
 it('requires node ID', function () {
   expect(function () {
     new Log()
@@ -245,6 +250,18 @@ it('generates unique ID', function () {
     expect(used).not.toContainEqual(id)
     used.push(id)
   }
+})
+
+it('always generates biggest ID', function () {
+  var log = createLog()
+  var times = [10, 9]
+
+  Date.now = function () {
+    return times.shift()
+  }
+
+  expect(log.generateId()).toEqual([10, 'test', 0])
+  expect(log.generateId()).toEqual([10, 'test', 1])
 })
 
 it('cleans entries', function () {

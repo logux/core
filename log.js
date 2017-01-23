@@ -162,7 +162,8 @@ Log.prototype = {
    */
   generateId: function generateId () {
     var now = Date.now()
-    if (now === this.lastTime) {
+    if (now <= this.lastTime) {
+      now = this.lastTime
       this.sequence += 1
     } else {
       this.lastTime = now
