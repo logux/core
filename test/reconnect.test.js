@@ -1,6 +1,6 @@
 var NanoEvents = require('nanoevents')
 
-var LocalPair = require('../local-pair')
+var TestPair = require('../test-pair')
 var Reconnect = require('../reconnect')
 
 function wait (ms) {
@@ -98,7 +98,7 @@ it('proxies connection methods', function () {
 })
 
 it('proxies connection events', function () {
-  var pair = new LocalPair()
+  var pair = new TestPair()
   var recon = new Reconnect(pair.left)
 
   var received = []
@@ -106,84 +106,96 @@ it('proxies connection events', function () {
     received.push(msg)
   })
 
-  recon.connect()
-  pair.right.send(1)
-  pair.right.send(2)
-  unbind()
-  pair.right.send(3)
-
-  expect(received).toEqual([1, 2])
+  return recon.connect().then(function () {
+    return pair.right.sendWait(1)
+  }).then(function () {
+    return pair.right.sendWait(2)
+  }).then(function () {
+    unbind()
+    return pair.right.sendWait(3)
+  }).then(function () {
+    expect(received).toEqual([1, 2])
+  })
 })
 
 it('disables reconnection on protocol error', function () {
-  var pair = new LocalPair()
+  var pair = new TestPair()
   var recon = new Reconnect(pair.left)
-
-  recon.connect()
-
-  pair.right.send(['error', 'wrong-protocol'])
-  pair.right.disconnect()
-
-  expect(recon.reconnecting).toBeFalsy()
+  return recon.connect().then(function () {
+    pair.right.send(['error', 'wrong-protocol'])
+    pair.right.disconnect()
+    return pair.wait()
+  }).then(function () {
+    expect(recon.reconnecting).toBeFalsy()
+  })
 })
 
 it('disables reconnection on authentication error', function () {
-  var pair = new LocalPair()
+  var pair = new TestPair()
   var recon = new Reconnect(pair.left)
-
-  recon.connect()
-
-  pair.right.send(['error', 'wrong-credentials'])
-  pair.right.disconnect()
-
-  expect(recon.reconnecting).toBeFalsy()
+  return recon.connect().then(function () {
+    pair.right.send(['error', 'wrong-credentials'])
+    pair.right.disconnect()
+    return pair.wait()
+  }).then(function () {
+    expect(recon.reconnecting).toBeFalsy()
+  })
 })
 
 it('disables reconnection on subprotocol error', function () {
-  var pair = new LocalPair()
+  var pair = new TestPair()
   var recon = new Reconnect(pair.left)
-
-  recon.connect()
-
-  pair.right.send(['error', 'wrong-subprotocol'])
-  pair.right.disconnect()
-
-  expect(recon.reconnecting).toBeFalsy()
+  return recon.connect().then(function () {
+    pair.right.send(['error', 'wrong-subprotocol'])
+    pair.right.disconnect()
+    return pair.wait()
+  }).then(function () {
+    expect(recon.reconnecting).toBeFalsy()
+  })
 })
 
 it('disconnects and unbind listeners on destory', function () {
-  var pair = new LocalPair()
+  var pair = new TestPair()
+  var origin = pair.left.emitter.events.connect.length
+
   var recon = new Reconnect(pair.left)
+  expect(pair.left.emitter.events.connect.length).not.toEqual(origin)
 
-  recon.connect()
-  recon.destroy()
-
-  expect(Object.keys(pair.left.emitter.events)).toEqual([])
-  expect(pair.right.connected).toBeFalsy()
+  return recon.connect().then(function () {
+    recon.destroy()
+    return pair.wait()
+  }).then(function () {
+    expect(pair.left.emitter.events.connect.length).toEqual(origin)
+    expect(pair.right.connected).toBeFalsy()
+  })
 })
 
 it('reconnects automatically with delay', function () {
-  var pair = new LocalPair()
+  var pair = new TestPair()
   var recon = new Reconnect(pair.left, { minDelay: 50, maxDelay: 50 })
-
-  recon.connect()
-  pair.right.disconnect()
-  expect(pair.right.connected).toBeFalsy()
-
-  return wait(70).then(function () {
+  return recon.connect().then(function () {
+    pair.right.disconnect()
+    return pair.wait()
+  }).then(function () {
+    expect(pair.right.connected).toBeFalsy()
+    return wait(70)
+  }).then(function () {
     expect(pair.right.connected).toBeTruthy()
   })
 })
 
 it('allows to disable reconnecting', function () {
-  var pair = new LocalPair()
+  var pair = new TestPair()
   var recon = new Reconnect(pair.left)
-
-  recon.connect()
-  recon.reconnecting = false
-  pair.right.disconnect()
-
-  expect(pair.right.connected).toBeFalsy()
+  return recon.connect().then(function () {
+    recon.reconnecting = false
+    pair.right.disconnect()
+    return pair.wait()
+  }).then(function () {
+    return wait(1)
+  }).then(function () {
+    expect(pair.right.connected).toBeFalsy()
+  })
 })
 
 it('has maximum reconnection attempts', function () {
@@ -209,7 +221,7 @@ it('has maximum reconnection attempts', function () {
 })
 
 it('tracks connecting state', function () {
-  var pair = new LocalPair()
+  var pair = new TestPair()
   var recon = new Reconnect(pair.left, {
     minDelay: 1000,
     maxDelay: 5000
@@ -229,8 +241,8 @@ it('tracks connecting state', function () {
 })
 
 it('has dynamic delay', function () {
-  var pair = new LocalPair()
-  var recon = new Reconnect(pair.left, {
+  var con = new NanoEvents()
+  var recon = new Reconnect(con, {
     minDelay: 1000,
     maxDelay: 5000
   })
@@ -252,7 +264,7 @@ it('has dynamic delay', function () {
     expect(delay).toEqual(ms)
   }
 
-  for (var i = 4; i < 30; i++) {
+  for (var i = 4; i < 100; i++) {
     attemptsIs(i, 5000)
   }
 })
@@ -265,21 +277,24 @@ it('reconnects when user open a tab', function () {
   }
   document.removeEventListener = jest.fn()
 
-  var pair = new LocalPair()
+  var pair = new TestPair()
   var recon = new Reconnect(pair.left)
 
-  recon.connect()
-  pair.right.disconnect()
-  expect(pair.right.connected).toBeFalsy()
-
-  Object.defineProperty(document, 'hidden', {
-    get: function () {
-      return false
-    }
+  return recon.connect().then(function () {
+    pair.right.disconnect()
+    return pair.wait()
+  }).then(function () {
+    expect(pair.right.connected).toBeFalsy()
+    Object.defineProperty(document, 'hidden', {
+      get: function () {
+        return false
+      }
+    })
+    listener()
+    return pair.wait()
+  }).then(function () {
+    expect(pair.right.connected).toBeTruthy()
+    recon.destroy()
+    expect(document.removeEventListener).toBeCalled()
   })
-  listener()
-  expect(pair.right.connected).toBeTruthy()
-
-  recon.destroy()
-  expect(document.removeEventListener).toBeCalled()
 })

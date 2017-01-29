@@ -1,60 +1,30 @@
 var TestTime = require('logux-core').TestTime
 
+var TestPair = require('../test-pair')
 var BaseSync = require('../base-sync')
+var SyncError = require('../sync-error')
 var ClientSync = require('../client-sync')
 var ServerSync = require('../server-sync')
-var LocalPair = require('../local-pair')
-var SyncError = require('../sync-error')
+
+var PROTOCOL = BaseSync.prototype.protocol
 
 function createTest () {
-  var log = TestTime.getLog()
-  var pair = new LocalPair()
-  var client = new ClientSync('client', log, pair.left)
-  var server = new ServerSync('server', log, pair.right)
+  var time = new TestTime()
+  var test = new TestPair()
+  test.leftSync = new ClientSync('client', time.nextLog(), test.left)
+  test.rightSync = new ServerSync('server', time.nextLog(), test.right)
 
-  var time = 0
-  client.now = function () {
-    time += 1
-    return time
+  var current = 0
+  test.leftSync.now = function () {
+    current += 1
+    return current
   }
-  server.now = client.now
+  test.rightSync.now = test.leftSync.now
 
-  client.catch(function () { })
-  server.catch(function () { })
+  test.leftSync.catch(function () { })
+  test.rightSync.catch(function () { })
 
-  var clientSent = []
-  server.connection.on('message', function (msg) {
-    clientSent.push(msg)
-  })
-  var serverSent = []
-  client.connection.on('message', function (msg) {
-    serverSent.push(msg)
-  })
-
-  return {
-    serverSent: serverSent,
-    clientSent: clientSent,
-    server: server,
-    client: client
-  }
-}
-
-function createBase () {
-  var log = TestTime.getLog()
-  var pair = new LocalPair()
-  var client = new BaseSync('client', log, pair.left)
-
-  client.catch(function () { })
-
-  var sent = []
-  pair.right.on('message', function (msg) {
-    sent.push(msg)
-  })
-
-  client.connection.connect()
-  return wait(1).then(function () {
-    return { sent: sent, right: pair.right, client: client }
-  })
+  return test
 }
 
 function wait (ms) {
@@ -65,152 +35,154 @@ function wait (ms) {
 
 it('sends protocol version and name in connect message', function () {
   var test = createTest()
-  test.client.connection.connect()
-  return wait(1).then(function () {
-    expect(test.clientSent).toEqual([
-      ['connect', test.client.protocol, 'client', 0]
+  return test.left.connect().then(function () {
+    return test.wait()
+  }).then(function () {
+    expect(test.leftSent).toEqual([
+      ['connect', PROTOCOL, 'client', 0]
     ])
   })
 })
 
 it('answers with protocol version and name in connected message', function () {
   var test = createTest()
-  test.client.connection.connect()
-  return wait(1).then(function () {
-    expect(test.serverSent).toEqual([
-      ['connected', test.server.protocol, 'server', [2, 3]]
+  return test.left.connect().then(function () {
+    return test.wait('left')
+  }).then(function () {
+    expect(test.rightSent).toEqual([
+      ['connected', PROTOCOL, 'server', [2, 3]]
     ])
   })
 })
 
 it('checks protocol version', function () {
   var test = createTest()
-  test.client.protocol = [2, 0]
-  test.server.protocol = [1, 0]
+  test.leftSync.protocol = [2, 0]
+  test.rightSync.protocol = [1, 0]
 
-  test.client.connection.connect()
-  return wait(1).then(function () {
-    expect(test.serverSent).toEqual([
+  return test.left.connect().then(function () {
+    return test.wait('left')
+  }).then(function () {
+    expect(test.rightSent).toEqual([
       ['error', 'wrong-protocol', { supported: [1], used: [2, 0] }]
     ])
-    expect(test.client.connected).toBeFalsy()
+    expect(test.rightSync.connected).toBeFalsy()
   })
 })
 
-it('checks param types on connect message', function () {
-  return createBase().then(function (test) {
-    test.right.send(['connect', []])
-    expect(test.sent).toEqual([['error', 'wrong-format', '["connect",[]]']])
-    expect(test.client.connected).toBeFalsy()
-    return createBase()
-  }).then(function (test) {
-    test.right.send(['connect', test.client.protocol, 'client', 0, 'abc'])
-    expect(test.sent).toEqual([
-      ['error', 'wrong-format', '["connect",[0,1],"client",0,"abc"]']
-    ])
-    expect(test.client.connected).toBeFalsy()
-  })
-})
-
-it('checks param types on connected message', function () {
-  return createBase().then(function (test) {
-    test.right.send(['connected', []])
-    expect(test.sent).toEqual([['error', 'wrong-format', '["connected",[]]']])
-    expect(test.client.connected).toBeFalsy()
-    return createBase()
-  }).then(function (test) {
-    test.right.send(['connected', test.client.protocol, 'client', [0]])
-    expect(test.sent).toEqual([
-      ['error', 'wrong-format', '["connected",[0,1],"client",[0]]']
-    ])
-    expect(test.client.connected).toBeFalsy()
-  })
+it('checks types in connect message', function () {
+  var wrongs = [
+    ['connect', []],
+    ['connect', PROTOCOL, 'client', 0, 'abc'],
+    ['connected', []],
+    ['connected', PROTOCOL, 'client', [0]]
+  ]
+  return Promise.all(wrongs.map(function (msg) {
+    var log = TestTime.getLog()
+    var pair = new TestPair()
+    var sync = new BaseSync('client', log, pair.left)
+    return pair.left.connect().then(function () {
+      pair.right.send(msg)
+      return pair.wait('right')
+    }).then(function () {
+      expect(sync.connected).toBeFalsy()
+      expect(pair.leftSent).toEqual([
+        ['error', 'wrong-format', JSON.stringify(msg)]
+      ])
+    })
+  }))
 })
 
 it('saves other node name', function () {
   var test = createTest()
-  test.client.connection.connect()
-  return wait(1).then(function () {
-    expect(test.client.otherNodeId).toEqual('server')
-    expect(test.server.otherNodeId).toEqual('client')
+  test.left.connect()
+  return test.leftSync.waitFor('synchronized').then(function () {
+    expect(test.leftSync.otherNodeId).toEqual('server')
+    expect(test.rightSync.otherNodeId).toEqual('client')
   })
 })
 
 it('supports number in node ID', function () {
   var test = createTest()
-  test.client.nodeId = 1
-  test.client.connection.connect()
-  return wait(1).then(function () {
-    expect(test.server.otherNodeId).toEqual(1)
+  test.leftSync.nodeId = 1
+  test.left.connect()
+  return test.leftSync.waitFor('synchronized').then(function () {
+    expect(test.rightSync.otherNodeId).toEqual(1)
   })
 })
 
 it('saves other client protocol', function () {
   var test = createTest()
-  test.client.protocol = [1, 0]
-  test.server.protocol = [1, 1]
+  test.leftSync.protocol = [1, 0]
+  test.rightSync.protocol = [1, 1]
 
-  test.client.connection.connect()
-  return wait(1).then(function () {
-    expect(test.client.otherProtocol).toEqual([1, 1])
-    expect(test.server.otherProtocol).toEqual([1, 0])
+  test.left.connect()
+  return test.leftSync.waitFor('synchronized').then(function () {
+    expect(test.leftSync.otherProtocol).toEqual([1, 1])
+    expect(test.rightSync.otherProtocol).toEqual([1, 0])
   })
 })
 
 it('saves other client subprotocol', function () {
   var test = createTest()
-  test.client.options.subprotocol = '1.0.0'
-  test.server.options.subprotocol = '1.1.0'
+  test.leftSync.options.subprotocol = '1.0.0'
+  test.rightSync.options.subprotocol = '1.1.0'
 
-  test.client.connection.connect()
-  return wait(1).then(function () {
-    expect(test.client.otherSubprotocol).toEqual('1.1.0')
-    expect(test.server.otherSubprotocol).toEqual('1.0.0')
+  test.left.connect()
+  return test.leftSync.waitFor('synchronized').then(function () {
+    expect(test.leftSync.otherSubprotocol).toEqual('1.1.0')
+    expect(test.rightSync.otherSubprotocol).toEqual('1.0.0')
   })
 })
 
 it('has default subprotocol', function () {
   var test = createTest()
-  test.client.connection.connect()
-  return wait(1).then(function () {
-    expect(test.server.otherSubprotocol).toEqual('0.0.0')
+  test.left.connect()
+  return test.leftSync.waitFor('synchronized').then(function () {
+    expect(test.rightSync.otherSubprotocol).toEqual('0.0.0')
   })
 })
 
 it('checks subprotocol version', function () {
   var test = createTest()
-  test.client.options.subprotocol = '1.0.0'
-  test.server.on('connect', function () {
-    throw new SyncError(test.server, 'wrong-subprotocol', {
+  test.leftSync.options.subprotocol = '1.0.0'
+  test.rightSync.on('connect', function () {
+    throw new SyncError(test.rightSync, 'wrong-subprotocol', {
       supported: '2.x',
-      used: test.server.otherSubprotocol
+      used: test.rightSync.otherSubprotocol
     })
   })
 
-  test.client.connection.connect()
-  return wait(1).then(function () {
-    expect(test.serverSent).toEqual([
+  return test.left.connect().then(function () {
+    return test.wait('left')
+  }).then(function () {
+    expect(test.rightSent).toEqual([
       ['error', 'wrong-subprotocol', { supported: '2.x', used: '1.0.0' }]
     ])
-    expect(test.client.connected).toBeFalsy()
+    expect(test.rightSync.connected).toBeFalsy()
   })
 })
 
 it('checks subprotocol version in client', function () {
   var test = createTest()
-  test.server.options.subprotocol = '1.0.0'
-  test.client.on('connect', function () {
-    throw new SyncError(test.client, 'wrong-subprotocol', {
+  test.rightSync.options.subprotocol = '1.0.0'
+  test.leftSync.on('connect', function () {
+    throw new SyncError(test.leftSync, 'wrong-subprotocol', {
       supported: '2.x',
-      used: test.client.otherSubprotocol
+      used: test.leftSync.otherSubprotocol
     })
   })
 
-  test.client.connection.connect()
-  return wait(1).then(function () {
-    expect(test.clientSent[0]).toEqual(
-      ['error', 'wrong-subprotocol', { supported: '2.x', used: '1.0.0' }])
-    expect(test.client.connected).toBeFalsy()
+  return test.left.connect().then(function () {
+    return test.wait('right')
+  }).then(function () {
+    return test.wait('right')
+  }).then(function () {
+    expect(test.leftSent).toEqual([
+      ['connect', [0, 1], 'client', 0],
+      ['error', 'wrong-subprotocol', { supported: '2.x', used: '1.0.0' }]
+    ])
+    expect(test.leftSync.connected).toBeFalsy()
   })
 })
 
@@ -218,92 +190,101 @@ it('throws regular errors during connect event', function () {
   var test = createTest()
 
   var error = new Error('test')
-  test.server.on('connect', function () {
+  test.rightSync.on('connect', function () {
     throw error
   })
 
   expect(function () {
-    test.server.connectMessage(test.client.protocol, 'client', 0)
+    test.rightSync.connectMessage(PROTOCOL, 'client', 0)
   }).toThrow(error)
 })
 
 it('sends credentials in connect', function () {
   var test = createTest()
-  test.client.options = { credentials: { a: 1 } }
+  test.leftSync.options = { credentials: { a: 1 } }
 
-  test.client.connection.connect()
-  return wait(1).then(function () {
-    expect(test.clientSent).toEqual([
-      ['connect', test.client.protocol, 'client', 0, { credentials: { a: 1 } }]
+  test.left.connect()
+  return test.leftSync.waitFor('synchronized').then(function () {
+    expect(test.leftSent).toEqual([
+      ['connect', PROTOCOL, 'client', 0, { credentials: { a: 1 } }]
     ])
   })
 })
 
 it('sends credentials in connected', function () {
   var test = createTest()
-  test.server.options = { credentials: 1 }
+  test.rightSync.options = { credentials: 1 }
 
-  test.client.connection.connect()
-  return wait(1).then(function () {
-    expect(test.serverSent).toEqual([
-      ['connected', test.server.protocol, 'server', [2, 3], { credentials: 1 }]
+  test.left.connect()
+  return test.leftSync.waitFor('synchronized').then(function () {
+    expect(test.rightSent).toEqual([
+      ['connected', PROTOCOL, 'server', [2, 3], { credentials: 1 }]
     ])
   })
 })
 
 it('sends error on messages before auth', function () {
-  var test = createTest()
-  test.client.destroy()
-  test.server.testMessage = function () { }
+  var log = TestTime.getLog()
+  var test = new TestPair()
+  test.leftSync = new BaseSync('client', log, test.left)
+  test.rightSync = new ServerSync('server', log, test.right)
 
-  test.client.connection.connect()
-  test.client.connection.send(['test'])
+  test.rightSync.testMessage = function () { }
 
-  expect(test.serverSent).toEqual([
-    ['error', 'missed-auth', '["test"]']
-  ])
+  return test.left.connect().then(function () {
+    test.left.send(['test'])
+    return test.wait('left')
+  }).then(function () {
+    expect(test.rightSent).toEqual([
+      ['error', 'missed-auth', '["test"]']
+    ])
+  })
 })
 
 it('denies access for wrong users', function () {
   var test = createTest()
-  test.server.options = {
+  test.rightSync.options = {
     auth: function () {
       return Promise.resolve(false)
     }
   }
 
-  test.client.connection.connect()
-  return wait(1).then(function () {
-    expect(test.serverSent).toEqual([
+  return test.left.connect().then(function () {
+    return test.wait('left')
+  }).then(function () {
+    expect(test.rightSent).toEqual([
       ['error', 'wrong-credentials']
     ])
-    expect(test.server.connected).toBeFalsy()
+    expect(test.rightSync.connected).toBeFalsy()
   })
 })
 
 it('denies access to wrong server', function () {
   var test = createTest()
-  test.client.options = {
+  test.leftSync.options = {
     auth: function () {
       return Promise.resolve(false)
     }
   }
 
-  test.client.connection.connect()
-  return wait(1).then(function () {
-    expect(test.clientSent).toEqual([
-      ['connect', test.client.protocol, 'client', 0],
+  return test.left.connect().then(function () {
+    return test.wait('right')
+  }).then(function () {
+    return test.wait('right')
+  }).then(function () {
+    expect(test.leftSent).toEqual([
+      ['connect', PROTOCOL, 'client', 0],
       ['error', 'wrong-credentials']
     ])
-    expect(test.client.connected).toBeFalsy()
+    expect(test.leftSync.connected).toBeFalsy()
   })
 })
 
 it('allows access for right users', function () {
   var test = createTest()
-  test.client.options = { credentials: 'a' }
-  test.server.testMessage = jest.fn()
-  test.server.options = {
+  test.leftSync.options = { credentials: 'a' }
+  test.rightSync.testMessage = jest.fn()
+  test.rightSync.options = {
     auth: function (credentials, nodeId) {
       return wait(10).then(function () {
         return credentials === 'a' && nodeId === 'client'
@@ -311,47 +292,46 @@ it('allows access for right users', function () {
     }
   }
 
-  test.client.connection.connect()
-  return wait(1).then(function () {
-    test.client.send(['test'])
-    return wait(10)
+  return test.left.connect().then(function () {
+    test.left.send(['test'])
+    return test.wait('left')
   }).then(function () {
-    expect(test.serverSent).toEqual([
-      ['connected', test.server.protocol, 'server', [1, 2]]
+    expect(test.rightSent).toEqual([
+      ['connected', PROTOCOL, 'server', [1, 2]]
     ])
-    expect(test.server.testMessage).toBeCalled()
+    expect(test.rightSync.testMessage).toBeCalled()
   })
 })
 
 it('has default timeFix', function () {
   var test = createTest()
-  test.client.connection.connect()
-  return wait(1).then(function () {
-    expect(test.client.timeFix).toEqual(0)
+  test.left.connect()
+  return test.leftSync.waitFor('synchronized').then(function () {
+    expect(test.leftSync.timeFix).toEqual(0)
   })
 })
 
 it('calculates time difference', function () {
   var test = createTest()
   var clientTime = [10000, 10000 + 1000 + 100 + 1]
-  test.client.now = function () {
+  test.leftSync.now = function () {
     return clientTime.shift()
   }
   var serverTime = [0 + 50, 0 + 50 + 1000]
-  test.server.now = function () {
+  test.rightSync.now = function () {
     return serverTime.shift()
   }
 
-  test.client.options.fixTime = true
-  test.client.connection.connect()
-  return wait(1).then(function () {
-    expect(test.client.timeFix).toEqual(10000)
+  test.leftSync.options.fixTime = true
+  test.left.connect()
+  return test.leftSync.waitFor('synchronized').then(function () {
+    expect(test.leftSync.timeFix).toEqual(10000)
   })
 })
 
 it('uses timeout between connect and connected', function () {
   var log = TestTime.getLog()
-  var pair = new LocalPair()
+  var pair = new TestPair()
   var client = new ClientSync('client', log, pair.left, { timeout: 100 })
 
   var error
@@ -359,25 +339,11 @@ it('uses timeout between connect and connected', function () {
     error = err
   })
 
-  pair.left.connect()
-  return wait(110).then(function () {
+  return pair.left.connect().then(function () {
+    return wait(101)
+  }).then(function () {
     expect(error.name).toEqual('SyncError')
     expect(error.message).not.toContain('received')
     expect(error.message).toContain('timeout')
-  })
-})
-
-it('connects with timeout', function () {
-  var test = createTest()
-  test.client.options.timeout = 100
-
-  var error
-  test.client.catch(function (err) {
-    error = err
-  })
-
-  test.client.connection.connect()
-  return wait(110).then(function () {
-    expect(error).toBeUndefined()
   })
 })

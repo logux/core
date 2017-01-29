@@ -287,6 +287,31 @@ BaseSync.prototype = {
   },
 
   /**
+   * Return Promise until {@link BaseSync#state} will be changed
+   * to specific value.
+   *
+   * @param {string} state The expected synchronization state value.
+   *
+   * @return {Promise} Promise until specific state.
+   *
+   * @example
+   * sync.waitFor('synchronized').then(() => {
+   *   console.log('Everything is synchronized')
+   * })
+   */
+  waitFor: function (state) {
+    var sync = this
+    return new Promise(function (resolve) {
+      var unbind = sync.on('state', function () {
+        if (sync.state === state) {
+          unbind()
+          resolve()
+        }
+      })
+    })
+  },
+
+  /**
    * Shut down the connection and unsubscribe from log events.
    *
    * @return {undefined}

@@ -32,11 +32,6 @@ BrowserConnection.prototype = {
     this.ws = new window.WebSocket(this.url)
     var self = this
 
-    this.ws.onopen = function () {
-      self.connected = true
-      self.emitter.emit('connect')
-    }
-
     this.ws.onclose = function () {
       self.connected = false
       self.emitter.emit('disconnect')
@@ -52,6 +47,14 @@ BrowserConnection.prototype = {
       }
       self.emitter.emit('message', data)
     }
+
+    return new Promise(function (resolve) {
+      self.ws.onopen = function () {
+        self.connected = true
+        self.emitter.emit('connect')
+        resolve()
+      }
+    })
   },
 
   disconnect: function disconnect () {

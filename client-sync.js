@@ -60,7 +60,7 @@ ClientSync.prototype = {
       this.connected = true
       var sync = this
       this.initializing = this.initializing.then(function () {
-        sync.sendConnect()
+        if (sync.connected) sync.sendConnect()
       })
     }
   }

@@ -1,12 +1,20 @@
+var NanoEvents = require('nanoevents')
 var TestTime = require('logux-core').TestTime
 
-var LocalPair = require('../local-pair')
+var TestPair = require('../test-pair')
 var BaseSync = require('../base-sync')
 
-function createSync () {
-  var log = TestTime.getLog()
-  var pair = new LocalPair()
-  return new BaseSync('client', log, pair.left)
+function createSync (opts) {
+  var pair = new TestPair()
+  return new BaseSync('client', TestTime.getLog(), pair.left, opts)
+}
+
+function createTest () {
+  var test = new TestPair()
+  test.leftSync = new BaseSync('client', TestTime.getLog(), test.left)
+  return test.left.connect().then(function () {
+    return test
+  })
 }
 
 function wait (ms) {
@@ -17,7 +25,7 @@ function wait (ms) {
 
 it('saves all arguments', function () {
   var log = TestTime.getLog()
-  var connection = { on: function () { } }
+  var connection = new NanoEvents()
   var sync = new BaseSync('client', log, connection, { a: 1 })
 
   expect(sync.nodeId).toEqual('client')
@@ -40,14 +48,15 @@ it('has protocol version', function () {
 })
 
 it('unbind all listeners on destroy', function () {
-  var sync = createSync()
+  var sync = new BaseSync('client', TestTime.getLog(), new NanoEvents())
+
   expect(Object.keys(sync.log.emitter.events)).toEqual(['add'])
-  expect(Object.keys(sync.connection.emitter.events))
-    .toEqual(['connecting', 'connect', 'message', 'error', 'disconnect'])
+  expect(Object.keys(sync.connection.events).sort())
+    .toEqual(['connect', 'connecting', 'disconnect', 'error', 'message'])
 
   sync.destroy()
   expect(Object.keys(sync.log.emitter.events)).toEqual([])
-  expect(Object.keys(sync.connection.emitter.events)).toEqual([])
+  expect(Object.keys(sync.connection.events)).toEqual([])
 })
 
 it('destroys connection on destroy', function () {
@@ -62,9 +71,10 @@ it('destroys connection on destroy', function () {
 
 it('disconnects on destroy', function () {
   var sync = createSync()
-  sync.connection.connect()
-  sync.destroy()
-  expect(sync.connection.connected).toBeFalsy()
+  return sync.connection.connect().then(function () {
+    sync.destroy()
+    expect(sync.connection.connected).toBeFalsy()
+  })
 })
 
 it('throws a error on send to disconnected connection', function () {
@@ -75,30 +85,27 @@ it('throws a error on send to disconnected connection', function () {
 })
 
 it('sends messages to connection', function () {
-  var sync = createSync()
-  sync.connection.connect()
-  var messages = []
-  sync.connection.other().on('message', function (msg) {
-    messages.push(msg)
+  return createTest().then(function (test) {
+    test.leftSync.send(['test'])
+    return test.wait()
+  }).then(function (test) {
+    expect(test.leftSent).toEqual([['test']])
   })
-
-  sync.send(['test'])
-  expect(messages).toEqual([['test']])
 })
 
 it('has connection state', function () {
   var sync = createSync()
   expect(sync.connected).toBeFalsy()
-
-  sync.connection.connect()
-  expect(sync.connected).toBeTruthy()
-
-  sync.connection.disconnect()
-  expect(sync.connected).toBeFalsy()
+  return sync.connection.connect().then(function () {
+    expect(sync.connected).toBeTruthy()
+    sync.connection.disconnect()
+    expect(sync.connected).toBeFalsy()
+  })
 })
 
 it('supports one-time events', function () {
   var sync = createSync()
+
   var states = []
   sync.once('state', function () {
     states.push(sync.state)
@@ -111,25 +118,26 @@ it('supports one-time events', function () {
 })
 
 it('calls message method', function () {
-  var sync = createSync()
   var calls = []
-  sync.authenticated = true
-  sync.testMessage = function (a, b) {
-    calls.push([a, b])
-  }
-
-  sync.connection.connect()
-  sync.connection.other().send(['test', 1, 2])
-  expect(calls).toEqual([[1, 2]])
+  return createTest().then(function (test) {
+    test.leftSync.authenticated = true
+    test.leftSync.testMessage = function (a, b) {
+      calls.push([a, b])
+    }
+    test.right.send(['test', 1, 2])
+    return test.wait()
+  }).then(function () {
+    expect(calls).toEqual([[1, 2]])
+  })
 })
 
 it('sets wait state on creating', function () {
   var log = TestTime.getLog()
   var sync
   return log.add({ type: 'a' }).then(function () {
-    var pair = new LocalPair()
+    var pair = new TestPair()
     sync = new BaseSync('client', log, pair.left)
-    return wait(1)
+    return sync.initializing
   }).then(function () {
     expect(sync.state).toEqual('wait')
   })
@@ -137,45 +145,45 @@ it('sets wait state on creating', function () {
 
 it('has state', function () {
   var sync = createSync()
-  var other = sync.connection.other()
+  var pair = sync.connection.pair
+
   var states = []
   sync.on('state', function () {
     states.push(sync.state)
   })
 
   expect(sync.state).toEqual('disconnected')
-
-  sync.connection.connect()
-  sync.sendConnect()
-  other.send(['connected', sync.protocol, 'server', [0, 0]])
-  return wait(1).then(function () {
+  return sync.connection.connect().then(function () {
+    sync.sendConnect()
+    pair.right.send(['connected', sync.protocol, 'server', [0, 0]])
+    return sync.waitFor('synchronized')
+  }).then(function () {
     expect(sync.state).toEqual('synchronized')
     return sync.log.add({ type: 'a' })
   }).then(function () {
     expect(sync.state).toEqual('sending')
-
-    other.send(['synced', 1])
+    pair.right.send(['synced', 1])
+    return sync.waitFor('synchronized')
+  }).then(function () {
     expect(sync.state).toEqual('synchronized')
-
     sync.connection.disconnect()
     expect(sync.state).toEqual('disconnected')
-
     return sync.log.add({ type: 'b' })
   }).then(function () {
     expect(sync.state).toEqual('wait')
-
     sync.connection.emitter.emit('connecting')
     expect(sync.state).toEqual('connecting')
-
-    sync.connection.connect()
+    return sync.connection.connect()
+  }).then(function () {
     sync.sendConnect()
-    other.send(['connected', sync.protocol, 'server', [0, 0]])
-    return wait(1)
+    pair.right.send(['connected', sync.protocol, 'server', [0, 0]])
+    return sync.waitFor('sending')
   }).then(function () {
     expect(sync.state).toEqual('sending')
-    other.send(['synced', 2])
+    pair.right.send(['synced', 2])
+    return sync.waitFor('synchronized')
+  }).then(function () {
     expect(sync.state).toEqual('synchronized')
-
     return sync.log.add({ type: 'c' })
   }).then(function () {
     sync.connection.disconnect()
@@ -196,7 +204,7 @@ it('has state', function () {
 
 it('loads synced, otherSynced and last added from store', function () {
   var log = TestTime.getLog()
-  var con = { on: function () { } }
+  var con = new NanoEvents()
   var sync
 
   log.store.setLastSynced({ sent: 1, received: 2 })
@@ -211,16 +219,7 @@ it('loads synced, otherSynced and last added from store', function () {
 })
 
 it('has separated timeouts', function () {
-  var calls = []
-  var log = TestTime.getLog()
-  var con = {
-    connected: true,
-    disconnect: function (reason) {
-      calls.push(reason)
-    },
-    on: function () { }
-  }
-  var sync = new BaseSync('client', log, con, { timeout: 100 })
+  var sync = createSync({ timeout: 100 })
 
   var error
   sync.catch(function (e) {
@@ -232,55 +231,46 @@ it('has separated timeouts', function () {
     sync.startTimeout()
     return wait(60)
   }).then(function () {
-    expect(calls).toEqual(['timeout'])
     expect(error.message).toContain('timeout')
   })
 })
 
 it('accepts already connected connection', function () {
-  var log = TestTime.getLog()
-  var pair = new LocalPair()
-  pair.left.connect()
-  var sync = new BaseSync('client', log, pair.left)
-  return wait(1).then(function () {
+  var pair = new TestPair()
+  var sync
+  return pair.left.connect().then(function () {
+    sync = new BaseSync('client', TestTime.getLog(), pair.left)
+    return sync.initializing
+  }).then(function () {
     expect(sync.connected).toBeTruthy()
   })
 })
 
 it('receives errors from connection', function () {
-  var log = TestTime.getLog()
-  var pair = new LocalPair()
-  var sync = new BaseSync('client', log, pair.left)
-  pair.left.connect()
+  return createTest().then(function (test) {
+    var emitted
+    test.leftSync.catch(function (e) {
+      emitted = e
+    })
 
-  var emitted
-  sync.catch(function (e) {
-    emitted = e
+    var error = new Error('test')
+    test.left.emitter.emit('error', error)
+
+    expect(test.leftSync.connected).toBeFalsy()
+    expect(emitted).toEqual(error)
   })
-
-  var error = new Error('test')
-  pair.left.emitter.emit('error', error)
-
-  expect(sync.connected).toBeFalsy()
-  expect(emitted).toEqual(error)
 })
 
 it('receives format errors from connection', function () {
-  var log = TestTime.getLog()
-  var pair = new LocalPair()
-  var sync = new BaseSync('client', log, pair.left)
-  pair.left.connect()
-
-  var sent = []
-  pair.right.on('message', function (msg) {
-    sent.push(msg)
+  return createTest().then(function (test) {
+    var error = new Error('Wrong message format')
+    error.received = 'options'
+    test.left.emitter.emit('error', error)
+    return test.wait()
+  }).then(function (test) {
+    expect(test.leftSync.connected).toBeFalsy()
+    expect(test.leftSent).toEqual([
+      ['error', 'wrong-format', 'options']
+    ])
   })
-
-  var error = new Error('Wrong message format')
-  error.received = 'options'
-  pair.left.emitter.emit('error', error)
-  expect(sync.connected).toBeFalsy()
-  expect(sent).toEqual([
-    ['error', 'wrong-format', 'options']
-  ])
 })

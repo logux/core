@@ -1,23 +1,36 @@
 var LocalPair = require('../local-pair')
 
-function listen (connection) {
+function listen (tracker, connection) {
   var actions = []
   connection.on('connect', function () {
     actions.push('connect')
+    if (tracker.waiting) tracker.waiting()
   })
   connection.on('disconnect', function () {
     actions.push('disconnect')
+    if (tracker.waiting) tracker.waiting()
   })
   connection.on('message', function (msg) {
     actions.push(msg)
+    if (tracker.waiting) tracker.waiting()
   })
   return actions
 }
 
 function createTracker () {
-  var result = { pair: new LocalPair() }
-  result.left = listen(result.pair.left)
-  result.right = listen(result.pair.right)
+  var result = {
+    pair: new LocalPair(),
+    wait: function () {
+      return new Promise(function (resolve) {
+        result.waiting = function () {
+          result.waiting = false
+          resolve()
+        }
+      })
+    }
+  }
+  result.left = listen(result, result.pair.left)
+  result.right = listen(result, result.pair.right)
   return result
 }
 
@@ -43,39 +56,47 @@ it('throws a error on message in disconnected state', function () {
 
 it('throws a error on connection in connected state', function () {
   var pair = new LocalPair()
-  pair.left.connect()
-  expect(function () {
-    pair.left.connect()
-  }).toThrowError(/already established/)
+  return pair.left.connect().then(function () {
+    expect(function () {
+      pair.left.connect()
+    }).toThrowError(/already established/)
+  })
 })
 
 it('sends a connect event', function () {
   var tracker = createTracker()
 
+  var connecting = tracker.pair.left.connect()
   expect(tracker.left).toEqual([])
   expect(tracker.right).toEqual([])
 
-  tracker.pair.left.connect()
-  expect(tracker.left).toEqual(['connect'])
-  expect(tracker.right).toEqual(['connect'])
+  return connecting.then(function () {
+    expect(tracker.left).toEqual(['connect'])
+    expect(tracker.right).toEqual(['connect'])
+  })
 })
 
 it('sends a disconnect event', function () {
   var tracker = createTracker()
-  tracker.pair.left.connect()
-
-  expect(tracker.left).toEqual(['connect'])
-  expect(tracker.right).toEqual(['connect'])
-
-  tracker.pair.right.disconnect()
-  expect(tracker.left).toEqual(['connect', 'disconnect'])
-  expect(tracker.right).toEqual(['connect', 'disconnect'])
+  return tracker.pair.left.connect().then(function () {
+    tracker.pair.right.disconnect()
+    expect(tracker.left).toEqual(['connect'])
+    expect(tracker.right).toEqual(['connect', 'disconnect'])
+    return tracker.wait()
+  }).then(function () {
+    expect(tracker.left).toEqual(['connect', 'disconnect'])
+    expect(tracker.right).toEqual(['connect', 'disconnect'])
+  })
 })
 
 it('sends a message event', function () {
   var tracker = createTracker()
-  tracker.pair.left.connect()
-  tracker.pair.left.send(['test'])
-  expect(tracker.left).toEqual(['connect'])
-  expect(tracker.right).toEqual(['connect', ['test']])
+  return tracker.pair.left.connect().then(function () {
+    tracker.pair.left.send(['test'])
+    expect(tracker.right).toEqual(['connect'])
+    return tracker.wait()
+  }).then(function () {
+    expect(tracker.left).toEqual(['connect'])
+    expect(tracker.right).toEqual(['connect', ['test']])
+  })
 })

@@ -25,27 +25,42 @@ LocalConnection.prototype = {
     if (this.connected) {
       throw new Error('Connection already established')
     } else {
-      this.other().connected = true
-      this.connected = true
-      this.other().emitter.emit('connect')
-      this.emitter.emit('connect')
+      var self = this
+      return new Promise(function (resolve) {
+        setTimeout(function () {
+          self.other().connected = true
+          self.connected = true
+          self.other().emitter.emit('connect')
+          self.emitter.emit('connect')
+          resolve()
+        }, 1)
+      })
     }
   },
 
   disconnect: function disconnect () {
-    if (this.connected) {
-      this.connected = false
-      this.other().connected = false
-      this.emitter.emit('disconnect')
-      this.other().emitter.emit('disconnect')
-    } else {
+    if (!this.connected) {
       throw new Error('Connection already finished')
+    } else {
+      this.connected = false
+      this.emitter.emit('disconnect')
+      var self = this
+      return new Promise(function (resolve) {
+        setTimeout(function () {
+          self.other().connected = false
+          self.other().emitter.emit('disconnect')
+          resolve()
+        }, 1)
+      })
     }
   },
 
   send: function send (message) {
     if (this.connected) {
-      this.other().emitter.emit('message', message)
+      var self = this
+      setTimeout(function () {
+        self.other().emitter.emit('message', message)
+      }, 1)
     } else {
       throw new Error('Connection should be started before sending a message')
     }
@@ -54,7 +69,7 @@ LocalConnection.prototype = {
 }
 
 /**
- * Two paired loopback connections to be used in Logux tests
+ * Two paired loopback connections.
  *
  * @example
  * import { LocalPair } from 'logux-sync'

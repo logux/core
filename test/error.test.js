@@ -1,106 +1,101 @@
 var TestTime = require('logux-core').TestTime
 
-var LocalPair = require('../local-pair')
 var SyncError = require('../sync-error')
+var TestPair = require('../test-pair')
 var BaseSync = require('../base-sync')
 
+function createSync () {
+  var pair = new TestPair()
+  return new BaseSync('server', TestTime.getLog(), pair.left)
+}
+
 function createTest () {
-  var log = TestTime.getLog()
-  var pair = new LocalPair()
-  var sync = new BaseSync('server', log, pair.left)
-  var messages = []
-  pair.right.on('message', function (msg) {
-    messages.push(msg)
+  var test = new TestPair()
+  test.leftSync = new BaseSync('server', TestTime.getLog(), test.left)
+  return test.left.connect().then(function () {
+    return test
   })
-  pair.left.connect()
-  return {
-    messages: messages,
-    sync: sync
-  }
 }
 
 it('sends error on wrong message format', function () {
-  var test = createTest()
-
-  test.sync.connection.other().send(1)
-  expect(test.sync.connection.connected).toBeFalsy()
-
-  test.sync.connection.connect()
-  test.sync.connection.other().send({ hi: 1 })
-  expect(test.sync.connection.connected).toBeFalsy()
-
-  test.sync.connection.connect()
-  test.sync.connection.other().send([])
-  expect(test.sync.connection.connected).toBeFalsy()
-
-  test.sync.connection.connect()
-  test.sync.connection.other().send([1])
-  expect(test.sync.connection.connected).toBeFalsy()
-
-  expect(test.messages).toEqual([
-    ['error', 'wrong-format', '1'],
-    ['error', 'wrong-format', '{"hi":1}'],
-    ['error', 'wrong-format', '[]'],
-    ['error', 'wrong-format', '[1]']
-  ])
+  var wrongs = [
+    1,
+    { hi: 1 },
+    [],
+    [1]
+  ]
+  return Promise.all(wrongs.map(function (msg) {
+    return createTest().then(function (test) {
+      test.right.send(msg)
+      return test.wait('right')
+    }).then(function (test) {
+      expect(test.left.connected).toBeFalsy()
+      expect(test.leftSent).toEqual([
+        ['error', 'wrong-format', JSON.stringify(msg)]
+      ])
+    })
+  }))
 })
 
-it('sends error on wrong error param types', function () {
-  var test = createTest()
-
-  test.sync.connection.other().send(['error'])
-  expect(test.sync.connection.connected).toBeFalsy()
-
-  test.sync.connection.connect()
-  test.sync.connection.other().send(['error', 1])
-  expect(test.sync.connection.connected).toBeFalsy()
-
-  test.sync.connection.connect()
-  test.sync.connection.other().send(['error', {}])
-  expect(test.sync.connection.connected).toBeFalsy()
-
-  expect(test.messages).toEqual([
-    ['error', 'wrong-format', '["error"]'],
-    ['error', 'wrong-format', '["error",1]'],
-    ['error', 'wrong-format', '["error",{}]']
-  ])
+it('sends error on wrong error parameters', function () {
+  var wrongs = [
+    ['error'],
+    ['error', 1],
+    ['error', { }]
+  ]
+  return Promise.all(wrongs.map(function (msg) {
+    return createTest().then(function (test) {
+      test.right.send(msg)
+      return test.wait('right')
+    }).then(function (test) {
+      expect(test.left.connected).toBeFalsy()
+      expect(test.leftSent).toEqual([
+        ['error', 'wrong-format', JSON.stringify(msg)]
+      ])
+    })
+  }))
 })
 
 it('sends error on unknown message type', function () {
-  var test = createTest()
-  test.sync.connection.other().send(['test'])
-  expect(test.sync.connection.connected).toBeFalsy()
-  expect(test.messages).toEqual([
-    ['error', 'unknown-message', 'test']
-  ])
+  return createTest().then(function (test) {
+    test.right.send(['test'])
+    return test.wait('right')
+  }).then(function (test) {
+    expect(test.left.connected).toBeFalsy()
+    expect(test.leftSent).toEqual([
+      ['error', 'unknown-message', 'test']
+    ])
+  })
 })
 
 it('throws a error on error message by default', function () {
-  var sync = createTest().sync
+  var sync = createSync()
   expect(function () {
-    sync.connection.other().send(['error', 'wrong-format', '1'])
+    sync.onMessage(['error', 'wrong-format', '1'])
   }).toThrow(new SyncError(sync, 'wrong-format', '1', true))
 })
 
 it('disables throwing a error on listener', function () {
-  var sync = createTest().sync
+  var sync = createSync()
+
   var errors = []
   sync.catch(function (error) {
     errors.push(error)
   })
 
-  sync.connection.other().send(['error', 'wrong-format', '2'])
+  sync.onMessage(['error', 'wrong-format', '2'])
   expect(errors).toEqual([new SyncError(sync, 'wrong-format', '2', true)])
 })
 
 it('emits a event on error sending', function () {
-  var sync = createTest().sync
-  var errors = []
-  sync.on('clientError', function (err) {
-    errors.push(err)
-  })
+  return createTest().then(function (test) {
+    var errors = []
+    test.leftSync.on('clientError', function (err) {
+      errors.push(err)
+    })
 
-  var error = new SyncError(sync, 'test', 'type')
-  sync.sendError(error)
-  expect(errors).toEqual([error])
+    var error = new SyncError(test.leftSync, 'test', 'type')
+    test.leftSync.sendError(error)
+    expect(errors).toEqual([error])
+  })
 })

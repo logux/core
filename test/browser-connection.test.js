@@ -1,7 +1,16 @@
 var BrowserConnection = require('../browser-connection')
 
-function FakeWebSocket () { }
+function FakeWebSocket () {
+  this.sent = []
+  var self = this
+  setTimeout(function () {
+    self.onopen()
+  }, 1)
+}
 FakeWebSocket.prototype = {
+  send: function (msg) {
+    this.sent.push(msg)
+  },
   close: function () { }
 }
 
@@ -28,11 +37,11 @@ it('emits error on wrong format', function () {
     error = err
   })
 
-  connection.connect()
-  connection.ws.onmessage({ data: '{' })
-
-  expect(error.message).toEqual('Wrong message format')
-  expect(error.received).toEqual('{')
+  return connection.connect().then(function () {
+    connection.ws.onmessage({ data: '{' })
+    expect(error.message).toEqual('Wrong message format')
+    expect(error.received).toEqual('{')
+  })
 })
 
 it('emits connection states', function () {
@@ -53,32 +62,32 @@ it('emits connection states', function () {
   expect(states).toEqual([])
   expect(connection.connected).toBeFalsy()
 
-  connection.connect()
+  var connecting = connection.connect()
   expect(states).toEqual(['connecting'])
   expect(connection.connected).toBeFalsy()
 
-  connection.ws.onopen()
-  expect(states).toEqual(['connecting', 'connect'])
-  expect(connection.connected).toBeTruthy()
+  return connecting.then(function () {
+    expect(states).toEqual(['connecting', 'connect'])
+    expect(connection.connected).toBeTruthy()
 
-  connection.disconnect()
-  expect(states).toEqual(['connecting', 'connect', 'disconnect'])
-  expect(connection.connected).toBeFalsy()
+    connection.ws.onclose()
+    expect(states).toEqual(['connecting', 'connect', 'disconnect'])
+    expect(connection.connected).toBeFalsy()
+  })
 })
 
 it('closes WebSocket', function () {
   window.WebSocket = FakeWebSocket
   var connection = new BrowserConnection('ws://locahost')
 
-  connection.connect()
-  var ws = connection.ws
-  ws.close = jest.fn(function () {
-    ws.onclose()
-  })
+  return connection.connect().then(function () {
+    var ws = connection.ws
+    ws.close = jest.fn()
 
-  connection.disconnect()
-  expect(ws.close).toHaveBeenCalled()
-  expect(connection.connected).toBeFalsy()
+    connection.disconnect()
+    expect(ws.close).toHaveBeenCalled()
+    expect(connection.connected).toBeFalsy()
+  })
 })
 
 it('receives messages', function () {
@@ -90,21 +99,18 @@ it('receives messages', function () {
     received.push(msg)
   })
 
-  connection.connect()
-  connection.ws.onmessage({ data: '["test"]' })
-  expect(received).toEqual([['test']])
+  return connection.connect().then(function () {
+    connection.ws.onmessage({ data: '["test"]' })
+    expect(received).toEqual([['test']])
+  })
 })
 
 it('sends messages', function () {
   window.WebSocket = FakeWebSocket
   var connection = new BrowserConnection('ws://locahost')
 
-  connection.connect()
-  var sent = []
-  connection.ws.send = function (msg) {
-    sent.push(msg)
-  }
-
-  connection.send(['test'])
-  expect(sent).toEqual(['["test"]'])
+  return connection.connect().then(function () {
+    connection.send(['test'])
+    expect(connection.ws.sent).toEqual(['["test"]'])
+  })
 })
