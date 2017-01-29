@@ -22,7 +22,7 @@ it('saves last added from ping', function () {
   }).then(function () {
     expect(sync.otherSynced).toBe(0)
     pair.right.send(['ping', 1])
-    return pair.wait()
+    return pair.wait('right')
   }).then(function () {
     expect(sync.otherSynced).toBe(1)
     sync.sendPing()
