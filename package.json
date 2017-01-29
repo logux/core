@@ -13,7 +13,7 @@
   },
   "devDependencies": {
     "docdash": "^0.4.0",
-    "eslint": "^3.14.0",
+    "eslint": "^3.14.1",
     "eslint-config-logux": "^4.0.0",
     "eslint-config-standard": "^6.2.1",
     "eslint-plugin-es5": "^1.0.1",
