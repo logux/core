@@ -107,12 +107,15 @@ it('proxies connection events', function () {
   })
 
   return recon.connect().then(function () {
-    return pair.right.sendWait(1)
+    pair.right.send(1)
+    return pair.wait()
   }).then(function () {
-    return pair.right.sendWait(2)
+    pair.right.send(2)
+    return pair.wait()
   }).then(function () {
     unbind()
-    return pair.right.sendWait(3)
+    pair.right.send(3)
+    return pair.wait()
   }).then(function () {
     expect(received).toEqual([1, 2])
   })

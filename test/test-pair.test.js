@@ -73,18 +73,6 @@ it('tracks messages', function () {
   })
 })
 
-it('has shortcut for send and wait', function () {
-  var pair = new TestPair()
-  return pair.left.connect().then(function () {
-    return pair.right.sendWait('a')
-  }).then(function () {
-    expect(pair.rightSent).toEqual(['a'])
-    return pair.left.sendWait('b')
-  }).then(function () {
-    expect(pair.leftSent).toEqual(['b'])
-  })
-})
-
 it('clears tracked data', function () {
   var pair = new TestPair()
   return pair.left.connect().then(function () {

@@ -42,12 +42,6 @@ function TestPair () {
   this.clear()
   var pair = this
 
-  this.left.sendWait = function () {
-    this.send.apply(this, arguments)
-    return pair.wait()
-  }
-  this.right.sendWait = this.left.sendWait
-
   this.left.on('connect', function () {
     pair.leftEvents.push(['connect'])
     if (pair.waiting) pair.waiting('left')
