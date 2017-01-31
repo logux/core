@@ -19,7 +19,8 @@ function createTest (opts) {
   }).then(function () {
     return test.wait()
   }).then(function () {
-    test.right.send(['connected', test.leftSync.protocol, 'server', [0, 0]])
+    var protocol = test.leftSync.localProtocol
+    test.right.send(['connected', protocol, 'server', [0, 0]])
     test.clear()
     return test
   })

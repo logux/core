@@ -14,8 +14,8 @@ var DEFAULT_OPTIONS = {
  * and destroy itself on disconnect.
  *
  * @param {string|number} nodeId Unique current machine name.
- * @param {Log} log Logux log instance to sync with other node log.
- * @param {Connection} connection Connection to other node.
+ * @param {Log} log Logux log instance to be synchronized.
+ * @param {Connection} connection Connection to remote node.
  * @param {object} [options] Synchronization options.
  * @param {object} [options.credentials] Server credentials.
  *                                       For example, access token.
@@ -26,13 +26,12 @@ var DEFAULT_OPTIONS = {
  *                                      connection by sending ping.
  * @param {filter} [options.inFilter] Function to filter actions from client.
  *                                    Best place for permissions control.
- * @param {mapper} [options.inMap] Map function to change other node’s action
+ * @param {mapper} [options.inMap] Map function to change remote node’s action
  *                                 before put it to current log.
  * @param {filter} [options.outFilter] Filter function to select actions
  *                                     to synchronization.
  * @param {mapper} [options.outMap] Map function to change action
- *                                  before sending it to other client.
- * @param {number[]} [options.subprotocol] Application subprotocol version.
+ *                                  before sending it to remote client.
  * @param {string} [options.subprotocol] Application subprotocol version
  *                                       in SemVer format.
  *

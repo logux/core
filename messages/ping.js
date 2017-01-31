@@ -7,12 +7,12 @@ module.exports = {
   },
 
   pingMessage: function pingMessage (synced) {
-    this.setOtherSynced(synced)
+    this.setLastReceived(synced)
     this.send(['pong', this.lastAddedCache])
   },
 
   pongMessage: function pongMessage (synced) {
-    this.setOtherSynced(synced)
+    this.setLastReceived(synced)
     this.endTimeout()
   }
 

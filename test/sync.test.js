@@ -98,18 +98,18 @@ it('synchronizes actions', function () {
 
 it('remembers synced added', function () {
   return createTest().then(function (test) {
-    expect(test.leftSync.synced).toBe(0)
-    expect(test.leftSync.otherSynced).toBe(0)
+    expect(test.leftSync.lastSent).toBe(0)
+    expect(test.leftSync.lastReceived).toBe(0)
     test.leftSync.log.add({ type: 'a' })
     return test.wait('left')
   }).then(function (test) {
-    expect(test.leftSync.synced).toBe(1)
-    expect(test.leftSync.otherSynced).toBe(0)
+    expect(test.leftSync.lastSent).toBe(1)
+    expect(test.leftSync.lastReceived).toBe(0)
     test.rightSync.log.add({ type: 'b' })
     return test.wait('right')
   }).then(function (test) {
-    expect(test.leftSync.synced).toBe(1)
-    expect(test.leftSync.otherSynced).toBe(2)
+    expect(test.leftSync.lastSent).toBe(1)
+    expect(test.leftSync.lastReceived).toBe(2)
     expect(test.leftSync.log.store.lastSent).toBe(1)
     expect(test.leftSync.log.store.lastReceived).toBe(2)
   })
@@ -211,7 +211,7 @@ it('supports multiple actions in sync', function () {
     )
     return test.wait('right')
   }).then(function (test) {
-    expect(test.leftSync.otherSynced).toBe(2)
+    expect(test.leftSync.lastReceived).toBe(2)
     expect(entries(test.leftSync.log)).toEqual([
       [{ type: 'b' }, { id: [2, 'test2', 0], time: 2, added: 2 }],
       [{ type: 'a' }, { id: [1, 'test2', 0], time: 1, added: 1 }]
@@ -230,8 +230,8 @@ it('synchronizes actions on connect', function () {
     test.left.disconnect()
     return test.wait('right')
   }).then(function () {
-    expect(test.leftSync.synced).toBe(1)
-    expect(test.leftSync.otherSynced).toBe(1)
+    expect(test.leftSync.lastSent).toBe(1)
+    expect(test.leftSync.lastReceived).toBe(1)
     return Promise.all([
       test.leftSync.log.add({ type: 'c' }),
       test.leftSync.log.add({ type: 'd' }),

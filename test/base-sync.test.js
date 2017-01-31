@@ -28,7 +28,7 @@ it('saves all arguments', function () {
   var connection = new NanoEvents()
   var sync = new BaseSync('client', log, connection, { a: 1 })
 
-  expect(sync.nodeId).toEqual('client')
+  expect(sync.localNodeId).toEqual('client')
   expect(sync.log).toBe(log)
   expect(sync.connection).toBe(connection)
   expect(sync.options).toEqual({ a: 1 })
@@ -41,8 +41,8 @@ it('allows to miss options', function () {
 
 it('has protocol version', function () {
   var sync = createSync()
-  expect(sync.protocol.length).toBe(2)
-  sync.protocol.forEach(function (part) {
+  expect(sync.localProtocol.length).toBe(2)
+  sync.localProtocol.forEach(function (part) {
     expect(typeof part).toEqual('number')
   })
 })
@@ -155,7 +155,7 @@ it('has state', function () {
   expect(sync.state).toEqual('disconnected')
   return sync.connection.connect().then(function () {
     sync.sendConnect()
-    pair.right.send(['connected', sync.protocol, 'server', [0, 0]])
+    pair.right.send(['connected', sync.localProtocol, 'server', [0, 0]])
     return sync.waitFor('synchronized')
   }).then(function () {
     expect(sync.state).toEqual('synchronized')
@@ -176,7 +176,7 @@ it('has state', function () {
     return sync.connection.connect()
   }).then(function () {
     sync.sendConnect()
-    pair.right.send(['connected', sync.protocol, 'server', [0, 0]])
+    pair.right.send(['connected', sync.localProtocol, 'server', [0, 0]])
     return sync.waitFor('sending')
   }).then(function () {
     expect(sync.state).toEqual('sending')
@@ -202,7 +202,7 @@ it('has state', function () {
   })
 })
 
-it('loads synced, otherSynced and last added from store', function () {
+it('loads lastSent, lastReceived and last added from store', function () {
   var log = TestTime.getLog()
   var con = new NanoEvents()
   var sync
@@ -213,8 +213,8 @@ it('loads synced, otherSynced and last added from store', function () {
     return sync.initializing
   }).then(function () {
     expect(sync.lastAddedCache).toBe(1)
-    expect(sync.synced).toBe(1)
-    expect(sync.otherSynced).toBe(2)
+    expect(sync.lastSent).toBe(1)
+    expect(sync.lastReceived).toBe(2)
   })
 })
 

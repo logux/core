@@ -10,7 +10,7 @@ function supported (versions) {
  * @param {BaseSync} sync The sync instance.
  * @param {string} type The error code.
  * @param {any} options The error option.
- * @param {boolean} received Was error received from other node.
+ * @param {boolean} received Was error received from remote node.
  *
  * @example
  * if (error.name === 'SyncError') {
@@ -73,15 +73,15 @@ function SyncError (sync, type, options, received) {
   this.sync = sync
 
   /**
-   * Was error received from other client.
+   * Was error received from remote client.
    * @type {boolean}
    */
   this.received = !!received
 
   this.message = ''
   if (received) {
-    if (this.sync.otherNodeId) {
-      this.message += this.sync.otherNodeId + ' sent '
+    if (this.sync.remoteNodeId) {
+      this.message += this.sync.remoteNodeId + ' sent '
     } else {
       this.message += 'Logux received '
     }

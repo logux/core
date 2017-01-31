@@ -42,7 +42,12 @@ function emitEvent (sync) {
 module.exports = {
 
   sendConnect: function sendConnect () {
-    var message = ['connect', this.protocol, this.nodeId, this.otherSynced]
+    var message = [
+      'connect',
+      this.localProtocol,
+      this.localNodeId,
+      this.lastReceived
+    ]
 
     var options = { }
     if (this.options.credentials) {
@@ -59,7 +64,12 @@ module.exports = {
   },
 
   sendConnected: function sendConnected (start, end) {
-    var message = ['connected', this.protocol, this.nodeId, [start, end]]
+    var message = [
+      'connected',
+      this.localProtocol,
+      this.localNodeId,
+      [start, end]
+    ]
 
     var options = { }
     if (this.options.credentials) {
@@ -77,10 +87,10 @@ module.exports = {
     var start = this.now()
     if (!options) options = { }
 
-    this.otherProtocol = ver
-    this.otherNodeId = nodeId
+    this.remoteProtocol = ver
+    this.remoteNodeId = nodeId
 
-    var major = this.protocol[0]
+    var major = this.localProtocol[0]
     if (major !== ver[0]) {
       this.sendError(new SyncError(this, 'wrong-protocol', {
         supported: [major], used: ver
@@ -89,7 +99,7 @@ module.exports = {
       return
     }
 
-    this.otherSubprotocol = options.subprotocol || '0.0.0'
+    this.remoteSubprotocol = options.subprotocol || '0.0.0'
 
     if (!emitEvent(this)) {
       this.destroy()
@@ -107,8 +117,8 @@ module.exports = {
     if (!options) options = { }
 
     this.endTimeout()
-    this.otherProtocol = ver
-    this.otherNodeId = nodeId
+    this.remoteProtocol = ver
+    this.remoteNodeId = nodeId
 
     if (this.options.fixTime) {
       var now = this.now()
@@ -117,7 +127,7 @@ module.exports = {
       this.timeFix = Math.floor(this.connectSended - time[0] + roundTrip / 2)
     }
 
-    this.otherSubprotocol = options.subprotocol || '0.0.0'
+    this.remoteSubprotocol = options.subprotocol || '0.0.0'
 
     if (!emitEvent(this)) {
       this.destroy()
@@ -126,7 +136,7 @@ module.exports = {
 
     var sync = this
     auth(this, nodeId, options.credentials, function () {
-      sync.syncSince(sync.synced)
+      sync.syncSince(sync.lastSent)
     })
   }
 

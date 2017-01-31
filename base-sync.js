@@ -27,8 +27,8 @@ function syncMappedEvent (sync, action, meta) {
  * are based on this module.
  *
  * @param {string|number} nodeId Unique current machine name.
- * @param {Log} log Logux log instance to sync with other node log.
- * @param {Connection} connection Connection to other node.
+ * @param {Log} log Logux log instance to be synchronized.
+ * @param {Connection} connection Connection to remote node.
  * @param {object} [options] Synchronization options.
  * @param {object} [options.credentials] Client credentials.
  *                                       For example, access token.
@@ -41,14 +41,14 @@ function syncMappedEvent (sync, action, meta) {
  * @param {number} [options.ping=0] Milliseconds since last message to test
  *                                  connection by sending ping.
  * @param {filter} [options.inFilter] Function to filter actions
- *                                    from other node. Best place
+ *                                    from remote node. Best place
  *                                    for access control.
- * @param {mapper} [options.inMap] Map function to change other node’s action
+ * @param {mapper} [options.inMap] Map function to change remote node’s action
  *                                 before put it to current log.
  * @param {filter} [options.outFilter] Filter function to select actions
  *                                     to synchronization.
  * @param {mapper} [options.outMap] Map function to change action
- *                                  before sending it to other client.
+ *                                  before sending it to remote client.
  * @param {string} [options.subprotocol] Application subprotocol version
  *                                       in SemVer format.
  *
@@ -61,16 +61,16 @@ function BaseSync (nodeId, log, connection, options) {
    * @type {string|number}
    *
    * @example
-   * console.log(sync.nodeId + ' is started')
+   * console.log(sync.localNodeId + ' is started')
    */
-  this.nodeId = nodeId
+  this.localNodeId = nodeId
   /**
    * Log for synchronization.
    * @type {Log}
    */
   this.log = log
   /**
-   * Connection used to communicate to other node.
+   * Connection used to communicate to remote node.
    * @type {Connection}
    */
   this.connection = connection
@@ -96,7 +96,7 @@ function BaseSync (nodeId, log, connection, options) {
   this.connected = false
 
   /**
-   * Did other node finish authenticated.
+   * Did we finish remote node authentication.
    * @type {boolean}
    */
   this.authenticated = false
@@ -112,13 +112,13 @@ function BaseSync (nodeId, log, connection, options) {
    * It will be saves in log store.
    * @type {number}
    */
-  this.synced = 0
+  this.lastSent = 0
   /**
-   * Latest other node’s log `added` time, which was successfully synchronized.
+   * Latest remote node’s log `added` time, which was successfully synchronized.
    * It will be saves in log store.
    * @type {number}
    */
-  this.otherSynced = 0
+  this.lastReceived = 0
 
   /**
    * Current synchronization state.
@@ -177,56 +177,56 @@ function BaseSync (nodeId, log, connection, options) {
 BaseSync.prototype = {
 
   /**
-   * Unique name of other machine.
+   * Unique name of remote machine.
    * It is undefined until nodes handshake.
    *
    * @type {string|number|undefined}
    *
    * @example
-   * console.log('Connected to ' + sync.otherNodeId)
+   * console.log('Connected to ' + sync.remoteNodeId)
    */
-  otherNodeId: undefined,
-
-  /**
-   * Array with major and minor versions of other node protocol.
-   * @type {Version|undefined}
-   *
-   * @example
-   * if (sync.otherProtocol[1] >= 5) {
-   *   useNewAPI()
-   * } else {
-   *   useOldAPI()
-   * }
-   */
-  otherProtocol: undefined,
+  remoteNodeId: undefined,
 
   /**
    * Array with major and minor versions of used protocol.
    * @type {Version}
    *
    * @example
-   * if (tool.sync.protocol[0] !== 1) {
+   * if (tool.sync.localProtocol[0] !== 1) {
    *   throw new Error('Unsupported Logux protocol')
    * }
    */
-  protocol: [0, 1],
+  localProtocol: [0, 1],
 
   /**
-   * Other node’s application subprotocol version in SemVer format.
-   *
-   * It is undefined until nodes handshake. If other node will not send
-   * on handshake its subprotocol, it will be set to `0.0.0`.
-   *
-   * @type {string|undefined}
+   * Array with major and minor versions of remote node protocol.
+   * @type {Version|undefined}
    *
    * @example
-   * if (semver.satisfies(sync.otherSubprotocol, '>= 5.0.0') {
+   * if (sync.remoteProtocol[1] >= 5) {
    *   useNewAPI()
    * } else {
    *   useOldAPI()
    * }
    */
-  otherSubprotocol: undefined,
+  remoteProtocol: undefined,
+
+  /**
+   * Remote node’s application subprotocol version in SemVer format.
+   *
+   * It is undefined until nodes handshake. If remote node will not send
+   * on handshake its subprotocol, it will be set to `0.0.0`.
+   *
+   * @type {string|undefined}
+   *
+   * @example
+   * if (semver.satisfies(sync.remoteSubprotocol, '>= 5.0.0') {
+   *   useNewAPI()
+   * } else {
+   *   useOldAPI()
+   * }
+   */
+  remoteSubprotocol: undefined,
 
   /**
    * Subscribe for synchronization events. It implements nanoevents API.
@@ -234,8 +234,8 @@ BaseSync.prototype = {
    *
    * * `state`: synchronization state was changed.
    * * `connect`: custom check before node authentication. You can throw
-   *              a {@link SyncError} to send error to other node.
-   * * `clientError`: when error was sent to other node.
+   *              a {@link SyncError} to send error to remote node.
+   * * `clientError`: when error was sent to remote node.
    *
    * @param {"state"|"connect"|"clientError"} event The event name.
    * @param {listener} listener The listener function.
@@ -356,7 +356,7 @@ BaseSync.prototype = {
     if (this.pingTimeout) clearTimeout(this.pingTimeout)
     this.connected = false
 
-    if (this.lastAddedCache > this.synced) {
+    if (this.lastAddedCache > this.lastSent) {
       this.setState('wait')
     } else {
       this.setState('disconnected')
@@ -477,13 +477,13 @@ BaseSync.prototype = {
     })
   },
 
-  setSynced: function setSynced (value) {
-    if (this.synced < value) this.synced = value
+  setLastSent: function setLastSent (value) {
+    if (this.lastSent < value) this.lastSent = value
     this.log.store.setLastSynced({ sent: value })
   },
 
-  setOtherSynced: function setOtherSynced (value) {
-    if (this.otherSynced < value) this.otherSynced = value
+  setLastReceived: function setLastReceived (value) {
+    if (this.lastReceived < value) this.lastReceived = value
     this.log.store.setLastSynced({ received: value })
   },
 
@@ -497,11 +497,11 @@ BaseSync.prototype = {
       this.log.store.getLastSynced(),
       this.log.store.getLastAdded()
     ]).then(function (result) {
-      sync.synced = result[0].sent
-      sync.otherSynced = result[0].received
+      sync.lastSent = result[0].sent
+      sync.lastReceived = result[0].received
       sync.lastAddedCache = result[1]
 
-      if (sync.lastAddedCache > sync.synced) sync.setState('wait')
+      if (sync.lastAddedCache > sync.lastSent) sync.setState('wait')
       if (sync.connection.connected) sync.onConnect()
     })
   }
@@ -526,8 +526,8 @@ module.exports = BaseSync
 
 /**
  * @callback authCallback
- * @param {object} credentials Other credentials.
- * @param {string} nodeId Unique name of other sync instance.
+ * @param {object} credentials Remote node credentials.
+ * @param {string} nodeId Unique ID of remote sync instance.
  * @return {Promise} Promise with boolean value.
  */
 
@@ -535,8 +535,8 @@ module.exports = BaseSync
  * @callback filter
  * @param {Action} action New action from log.
  * @param {Meta} meta New action metadata.
- * @return {Promise} Promise with `true` if action be synchronized
- *                   with other log.
+ * @return {Promise} Promise with `true` if action should be synchronized
+ *                   with remote log.
  */
 
 /**

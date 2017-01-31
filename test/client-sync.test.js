@@ -17,18 +17,18 @@ it('saves last added from ping', function () {
   var pair = new TestPair()
   var sync = new ClientSync('client', log, pair.left, { fixTime: false })
   return pair.left.connect().then(function () {
-    pair.right.send(['connected', sync.protocol, 'server', [0, 0]])
+    pair.right.send(['connected', sync.localProtocol, 'server', [0, 0]])
     return pair.wait()
   }).then(function () {
-    expect(sync.otherSynced).toBe(0)
+    expect(sync.lastReceived).toBe(0)
     pair.right.send(['ping', 1])
     return pair.wait('right')
   }).then(function () {
-    expect(sync.otherSynced).toBe(1)
+    expect(sync.lastReceived).toBe(1)
     sync.sendPing()
     pair.right.send(['pong', 2])
     return pair.wait('left')
   }).then(function () {
-    expect(sync.otherSynced).toBe(2)
+    expect(sync.lastReceived).toBe(2)
   })
 })

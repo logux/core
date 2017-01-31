@@ -6,7 +6,7 @@ var SyncError = require('../sync-error')
 var ClientSync = require('../client-sync')
 var ServerSync = require('../server-sync')
 
-var PROTOCOL = BaseSync.prototype.protocol
+var PROTOCOL = BaseSync.prototype.localProtocol
 
 function createTest () {
   var time = new TestTime()
@@ -57,8 +57,8 @@ it('answers with protocol version and name in connected message', function () {
 
 it('checks protocol version', function () {
   var test = createTest()
-  test.leftSync.protocol = [2, 0]
-  test.rightSync.protocol = [1, 0]
+  test.leftSync.localProtocol = [2, 0]
+  test.rightSync.localProtocol = [1, 0]
 
   return test.left.connect().then(function () {
     return test.wait('left')
@@ -97,29 +97,29 @@ it('saves other node name', function () {
   var test = createTest()
   test.left.connect()
   return test.leftSync.waitFor('synchronized').then(function () {
-    expect(test.leftSync.otherNodeId).toEqual('server')
-    expect(test.rightSync.otherNodeId).toEqual('client')
+    expect(test.leftSync.remoteNodeId).toEqual('server')
+    expect(test.rightSync.remoteNodeId).toEqual('client')
   })
 })
 
 it('supports number in node ID', function () {
   var test = createTest()
-  test.leftSync.nodeId = 1
+  test.leftSync.localNodeId = 1
   test.left.connect()
   return test.leftSync.waitFor('synchronized').then(function () {
-    expect(test.rightSync.otherNodeId).toEqual(1)
+    expect(test.rightSync.remoteNodeId).toEqual(1)
   })
 })
 
 it('saves other client protocol', function () {
   var test = createTest()
-  test.leftSync.protocol = [1, 0]
-  test.rightSync.protocol = [1, 1]
+  test.leftSync.localProtocol = [1, 0]
+  test.rightSync.localProtocol = [1, 1]
 
   test.left.connect()
   return test.leftSync.waitFor('synchronized').then(function () {
-    expect(test.leftSync.otherProtocol).toEqual([1, 1])
-    expect(test.rightSync.otherProtocol).toEqual([1, 0])
+    expect(test.leftSync.remoteProtocol).toEqual([1, 1])
+    expect(test.rightSync.remoteProtocol).toEqual([1, 0])
   })
 })
 
@@ -130,8 +130,8 @@ it('saves other client subprotocol', function () {
 
   test.left.connect()
   return test.leftSync.waitFor('synchronized').then(function () {
-    expect(test.leftSync.otherSubprotocol).toEqual('1.1.0')
-    expect(test.rightSync.otherSubprotocol).toEqual('1.0.0')
+    expect(test.leftSync.remoteSubprotocol).toEqual('1.1.0')
+    expect(test.rightSync.remoteSubprotocol).toEqual('1.0.0')
   })
 })
 
@@ -139,7 +139,7 @@ it('has default subprotocol', function () {
   var test = createTest()
   test.left.connect()
   return test.leftSync.waitFor('synchronized').then(function () {
-    expect(test.rightSync.otherSubprotocol).toEqual('0.0.0')
+    expect(test.rightSync.remoteSubprotocol).toEqual('0.0.0')
   })
 })
 
@@ -149,7 +149,7 @@ it('checks subprotocol version', function () {
   test.rightSync.on('connect', function () {
     throw new SyncError(test.rightSync, 'wrong-subprotocol', {
       supported: '2.x',
-      used: test.rightSync.otherSubprotocol
+      used: test.rightSync.remoteSubprotocol
     })
   })
 
@@ -169,7 +169,7 @@ it('checks subprotocol version in client', function () {
   test.leftSync.on('connect', function () {
     throw new SyncError(test.leftSync, 'wrong-subprotocol', {
       supported: '2.x',
-      used: test.leftSync.otherSubprotocol
+      used: test.leftSync.remoteSubprotocol
     })
   })
 

@@ -64,7 +64,7 @@ it('loads only last added from store', function () {
     return sync.initializing
   }).then(function () {
     expect(sync.lastAddedCache).toBe(1)
-    expect(sync.synced).toBe(0)
-    expect(sync.otherSynced).toBe(0)
+    expect(sync.lastSent).toBe(0)
+    expect(sync.lastReceived).toBe(0)
   })
 })
