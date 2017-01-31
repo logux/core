@@ -21,7 +21,7 @@
     "eslint-plugin-standard": "^2.0.1",
     "jest": "^18.1.0",
     "jsdoc": "^3.4.3",
-    "lint-staged": "^3.2.8",
+    "lint-staged": "^3.3.0",
     "pre-commit": "^1.2.2",
     "rimraf": "^2.5.4",
     "yaspeller": "^3.0.0"
