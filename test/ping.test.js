@@ -80,6 +80,7 @@ it('sends ping on idle connection', function () {
   }).then(function () {
     expect(error.message).toContain('timeout')
     expect(test.leftSent).toEqual([['test'], ['ping', 1], ['ping', 1]])
+    expect(test.leftEvents[3]).toEqual(['disconnect', 'timeout'])
   })
 })
 

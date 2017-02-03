@@ -45,16 +45,18 @@ it('enables reconnecting if connection was already connected', function () {
   expect(recon.reconnecting).toBeTruthy()
 })
 
-it('disables reconnecting on manually disconnect', function () {
-  var con = {
-    on: function () { },
-    connected: true,
-    disconnect: function () { }
-  }
-  var recon = new Reconnect(con)
+it('disables reconnecting on non-timeout disconnect', function () {
+  var pair = new TestPair()
+  var recon = new Reconnect(pair.left)
 
-  recon.disconnect()
-  expect(recon.reconnecting).toBeFalsy()
+  return recon.connect().then(function () {
+    recon.disconnect('error')
+    expect(recon.reconnecting).toBeFalsy()
+    expect(pair.leftEvents).toEqual([
+      ['connect'],
+      ['disconnect', 'error']
+    ])
+  })
 })
 
 it('reconnects on timeout disconnect', function () {

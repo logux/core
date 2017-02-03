@@ -64,8 +64,8 @@ function TestPair () {
     if (pair.waiting) pair.waiting('right')
   })
 
-  this.left.on('disconnect', function () {
-    pair.leftEvents.push(['disconnect'])
+  this.left.on('disconnect', function (reason) {
+    pair.leftEvents.push(['disconnect', reason])
     if (pair.waiting) pair.waiting('left')
   })
   this.right.on('disconnect', function () {

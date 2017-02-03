@@ -86,7 +86,7 @@ Reconnect.prototype = {
 
   disconnect: function disconnect (reason) {
     if (reason !== 'timeout') this.reconnecting = false
-    return this.connection.disconnect()
+    return this.connection.disconnect(reason)
   },
 
   /**
@@ -102,7 +102,7 @@ Reconnect.prototype = {
     for (var i = 0; i < this.unbind.length; i++) {
       this.unbind[i]()
     }
-    this.disconnect()
+    this.disconnect('destroy')
   },
 
   reconnect: function reconnect () {

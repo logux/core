@@ -26,10 +26,10 @@ it('tracks events', function () {
       ['message', 'test']
     ])
 
-    pair.left.disconnect()
+    pair.left.disconnect('timeout')
     expect(pair.leftEvents).toEqual([
       ['connect'],
-      ['disconnect']
+      ['disconnect', 'timeout']
     ])
     expect(pair.rightEvents).toEqual([
       ['connect'],

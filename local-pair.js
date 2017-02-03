@@ -38,12 +38,12 @@ LocalConnection.prototype = {
     }
   },
 
-  disconnect: function disconnect () {
+  disconnect: function disconnect (reason) {
     if (!this.connected) {
       throw new Error('Connection already finished')
     } else {
       this.connected = false
-      this.emitter.emit('disconnect')
+      this.emitter.emit('disconnect', reason)
       var self = this
       return new Promise(function (resolve) {
         setTimeout(function () {

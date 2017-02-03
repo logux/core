@@ -164,7 +164,7 @@ function BaseSync (nodeId, log, connection, options) {
     } else {
       sync.error(error)
     }
-    sync.connection.disconnect()
+    sync.connection.disconnect('error')
   }))
   this.unbind.push(connection.on('disconnect', function () {
     sync.onDisconnect()
@@ -325,7 +325,7 @@ BaseSync.prototype = {
     if (this.connection.destroy) {
       this.connection.destroy()
     } else if (this.connected) {
-      this.connection.disconnect()
+      this.connection.disconnect('destroy')
     }
     for (var i = 0; i < this.unbind.length; i++) {
       this.unbind[i]()

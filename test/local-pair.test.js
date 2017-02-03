@@ -3,11 +3,11 @@ var LocalPair = require('../local-pair')
 function listen (tracker, connection) {
   var actions = []
   connection.on('connect', function () {
-    actions.push('connect')
+    actions.push(['connect'])
     if (tracker.waiting) tracker.waiting()
   })
-  connection.on('disconnect', function () {
-    actions.push('disconnect')
+  connection.on('disconnect', function (reason) {
+    actions.push(['disconnect', reason])
     if (tracker.waiting) tracker.waiting()
   })
   connection.on('message', function (msg) {
@@ -71,21 +71,21 @@ it('sends a connect event', function () {
   expect(tracker.right).toEqual([])
 
   return connecting.then(function () {
-    expect(tracker.left).toEqual(['connect'])
-    expect(tracker.right).toEqual(['connect'])
+    expect(tracker.left).toEqual([['connect']])
+    expect(tracker.right).toEqual([['connect']])
   })
 })
 
 it('sends a disconnect event', function () {
   var tracker = createTracker()
   return tracker.pair.left.connect().then(function () {
-    tracker.pair.right.disconnect()
-    expect(tracker.left).toEqual(['connect'])
-    expect(tracker.right).toEqual(['connect', 'disconnect'])
+    tracker.pair.right.disconnect('error')
+    expect(tracker.left).toEqual([['connect']])
+    expect(tracker.right).toEqual([['connect'], ['disconnect', 'error']])
     return tracker.wait()
   }).then(function () {
-    expect(tracker.left).toEqual(['connect', 'disconnect'])
-    expect(tracker.right).toEqual(['connect', 'disconnect'])
+    expect(tracker.left).toEqual([['connect'], ['disconnect', undefined]])
+    expect(tracker.right).toEqual([['connect'], ['disconnect', 'error']])
   })
 })
 
@@ -93,10 +93,10 @@ it('sends a message event', function () {
   var tracker = createTracker()
   return tracker.pair.left.connect().then(function () {
     tracker.pair.left.send(['test'])
-    expect(tracker.right).toEqual(['connect'])
+    expect(tracker.right).toEqual([['connect']])
     return tracker.wait()
   }).then(function () {
-    expect(tracker.left).toEqual(['connect'])
-    expect(tracker.right).toEqual(['connect', ['test']])
+    expect(tracker.left).toEqual([['connect']])
+    expect(tracker.right).toEqual([['connect'], ['test']])
   })
 })

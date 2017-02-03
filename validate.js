@@ -72,7 +72,7 @@ var validators = {
 
 function wrongFormat (sync, msg) {
   sync.sendError(new SyncError(sync, 'wrong-format', JSON.stringify(msg)))
-  sync.connection.disconnect()
+  sync.connection.disconnect('error')
   return false
 }
 
@@ -85,7 +85,7 @@ function validate (sync, msg) {
   var validator = validators[name]
   if (!validator || !sync[name + 'Message']) {
     sync.sendError(new SyncError(sync, 'unknown-message', name))
-    sync.connection.disconnect()
+    sync.connection.disconnect('error')
     return false
   }
 

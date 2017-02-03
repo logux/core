@@ -65,7 +65,7 @@ it('destroys connection on destroy', function () {
   sync.connection.destroy = jest.fn()
 
   sync.destroy()
-  expect(sync.connection.disconnect).not.toBeCalled()
+  expect(sync.connection.disconnect).not.toBeCalledWith('destroy')
   expect(sync.connection.destroy).toBeCalled()
 })
 
@@ -202,7 +202,7 @@ it('has state', function () {
   })
 })
 
-it('loads lastSent, lastReceived and last added from store', function () {
+it('loads lastSent, lastReceived and lastAdded from store', function () {
   var log = TestTime.getLog()
   var con = new NanoEvents()
   var sync
@@ -257,6 +257,10 @@ it('receives errors from connection', function () {
     test.left.emitter.emit('error', error)
 
     expect(test.leftSync.connected).toBeFalsy()
+    expect(test.leftEvents).toEqual([
+      ['connect'],
+      ['disconnect', 'error']
+    ])
     expect(emitted).toEqual(error)
   })
 })
@@ -269,6 +273,10 @@ it('receives format errors from connection', function () {
     return test.wait()
   }).then(function (test) {
     expect(test.leftSync.connected).toBeFalsy()
+    expect(test.leftEvents).toEqual([
+      ['connect'],
+      ['disconnect', 'error']
+    ])
     expect(test.leftSent).toEqual([
       ['error', 'wrong-format', 'options']
     ])
