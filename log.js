@@ -241,6 +241,29 @@ Log.prototype = {
 
       nextPage(store.get.bind(store, opts.order || 'created'))
     })
+  },
+
+  /**
+   * Change action metadata.
+   *
+   * @param {ID} id Action ID.
+   * @param {object} diff Object with values to change in action metadata.
+   *
+   * @return {Promise} Promise with `true` if metadata was changed
+   *                   or `false` on unknown ID.
+   *
+   * @example
+   * process.then(action.id, function () {
+   *   log.changeMeta(action, { status: 'processed' })
+   * })
+   */
+  changeMeta: function changeMeta (id, diff) {
+    for (var key in diff) {
+      if (key === 'id' || key === 'added') {
+        throw new Error('Changing ' + key + ' is prohibbited in Logux')
+      }
+    }
+    return this.store.changeMeta(id, diff)
   }
 }
 

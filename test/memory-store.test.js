@@ -172,13 +172,3 @@ it('resolves to false on unknown ID in changeMeta', function () {
     expect(res).toBeFalsy()
   })
 })
-
-it('does not allow to change ID or added', function () {
-  var store = new MemoryStore()
-  expect(function () {
-    store.changeMeta([1], { id: [2] })
-  }).toThrowError(/id is prohibbited/)
-  expect(function () {
-    store.changeMeta([1], { added: 2 })
-  }).toThrowError(/added is prohibbited/)
-})
