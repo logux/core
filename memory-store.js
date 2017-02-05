@@ -109,13 +109,6 @@ MemoryStore.prototype = {
   },
 
   changeMeta: function changeMeta (id, diff) {
-    var key
-    for (key in diff) {
-      if (key === 'id' || key === 'added') {
-        throw new Error('Changing ' + key + ' is prohibbited in Logux')
-      }
-    }
-
     var num = id[0]
     var cache = id.slice(1).join('\t')
     var i, entry, meta
@@ -123,7 +116,7 @@ MemoryStore.prototype = {
       entry = this.created[i]
       meta = entry[1]
       if (meta.id[0] === num && entry[2] === cache) {
-        for (key in diff) meta[key] = diff[key]
+        for (var key in diff) meta[key] = diff[key]
         return Promise.resolve(true)
       }
     }

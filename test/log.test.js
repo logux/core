@@ -312,3 +312,28 @@ it('does not fall on multiple unkeep call', function () {
   unkeep()
   unkeep()
 })
+
+it('changes meta', function () {
+  return logWith([
+    [{ type: 'A' }, { id: [1, 'node', 0] }],
+    [{ type: 'B' }, { id: [2, 'node', 0], a: 1 }]
+  ]).then(function (log) {
+    return log.changeMeta([2, 'node', 0], { a: 2, b: 2 }).then(function (r) {
+      expect(r).toBeTruthy()
+      checkEntries(log, [
+        [{ type: 'B' }, { id: [2, 'node', 0], time: 2, added: 2, a: 2, b: 2 }],
+        [{ type: 'A' }, { id: [1, 'node', 0], time: 1, added: 1 }]
+      ])
+    })
+  })
+})
+
+it('does not allow to change ID or added', function () {
+  var log = createLog()
+  expect(function () {
+    log.changeMeta([1], { id: [2] })
+  }).toThrowError(/id is prohibbited/)
+  expect(function () {
+    log.changeMeta([1], { added: 2 })
+  }).toThrowError(/added is prohibbited/)
+})
