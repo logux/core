@@ -32,6 +32,8 @@
     "getLog",
     "nextLog",
     "TestLog",
-    "TestTime"
+    "TestTime",
+    "changeMeta",
+    "diff"
   ]
 }

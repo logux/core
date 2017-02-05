@@ -113,15 +113,13 @@ it('ignores entries with same ID', function () {
 
 it('removes entries', function () {
   var store = new MemoryStore()
-  store.add({ }, { id: [1], time: 1 })
-  store.add({ }, { id: [2], time: 2 })
-  store.add({ }, { id: [3], time: 3 })
-  store.add({ }, { id: [4], time: 4 })
-  store.remove([2])
+  store.add({ }, { id: [1, 'node', 0], time: 1 })
+  store.add({ }, { id: [1, 'node', 1], time: 2 })
+  store.add({ }, { id: [3, 'node', 0], time: 3 })
+  store.remove([1, 'node', 1])
   return checkBoth(store, [
-    [{ }, { id: [4], time: 4, added: 4 }],
-    [{ }, { id: [3], time: 3, added: 3 }],
-    [{ }, { id: [1], time: 1, added: 1 }]
+    [{ }, { id: [3, 'node', 0], time: 3, added: 3 }],
+    [{ }, { id: [1, 'node', 0], time: 1, added: 1 }]
   ])
 })
 
@@ -151,4 +149,36 @@ it('returns latest added', function () {
   }).then(function (added) {
     expect(added).toBe(1)
   })
+})
+
+it('changes meta', function () {
+  var store = new MemoryStore()
+  store.add({ }, { id: [1, 'node', 0], time: 1 })
+  store.add({ }, { id: [1, 'node', 1], time: 2, a: 1 })
+  store.add({ }, { id: [3, 'node', 0], time: 3 })
+  return store.changeMeta([1, 'node', 1], { a: 2, b: 2 }).then(function (res) {
+    expect(res).toBeTruthy()
+    return checkBoth(store, [
+      [{ }, { id: [3, 'node', 0], time: 3, added: 3 }],
+      [{ }, { id: [1, 'node', 1], time: 2, added: 2, a: 2, b: 2 }],
+      [{ }, { id: [1, 'node', 0], time: 1, added: 1 }]
+    ])
+  })
+})
+
+it('resolves to false on unknown ID in changeMeta', function () {
+  var store = new MemoryStore()
+  return store.changeMeta([1], { a: 1 }).then(function (res) {
+    expect(res).toBeFalsy()
+  })
+})
+
+it('does not allow to change ID or added', function () {
+  var store = new MemoryStore()
+  expect(function () {
+    store.changeMeta([1], { id: [2] })
+  }).toThrowError(/id is prohibbited/)
+  expect(function () {
+    store.changeMeta([1], { added: 2 })
+  }).toThrowError(/added is prohibbited/)
 })

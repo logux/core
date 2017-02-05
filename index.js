@@ -163,3 +163,16 @@ module.exports = {
  * @function
  * @memberof Store#
  */
+/**
+ * Change action metadata.
+ *
+ * @param {ID} id Action ID.
+ * @param {object} diff Object with values to change in action metadata.
+ *
+ * @return {Promise} Promise with `true` if metadata was changed
+ *                   or `false` on unknown ID.
+ *
+ * @name changeMeta
+ * @function
+ * @memberof Store#
+ */
