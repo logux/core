@@ -75,18 +75,14 @@ MemoryStore.prototype = {
   },
 
   remove: function remove (id) {
+    var created = this.find(id)
+    if (created === -1) return
+    this.created.splice(created, 1)
+
     var num = id[0]
     var cache = id.slice(1).join('\t')
-    var i, entry
-    for (i = this.created.length - 1; i >= 0; i--) {
-      entry = this.created[i]
-      if (entry[1].id[0] === num && entry[2] === cache) {
-        this.created.splice(i, 1)
-        break
-      }
-    }
-    for (i = this.added.length - 1; i >= 0; i--) {
-      entry = this.added[i]
+    for (var i = this.added.length - 1; i >= 0; i--) {
+      var entry = this.added[i]
       if (entry[1].id[0] === num && entry[2] === cache) {
         this.added.splice(i, 1)
         break
@@ -95,15 +91,7 @@ MemoryStore.prototype = {
   },
 
   has: function (id) {
-    var num = id[0]
-    var cache = id.slice(1).join('\t')
-    for (var i = this.created.length - 1; i >= 0; i--) {
-      var entry = this.created[i]
-      if (entry[1].id[0] === num && entry[2] === cache) {
-        return Promise.resolve(true)
-      }
-    }
-    return Promise.resolve(false)
+    return Promise.resolve(this.find(id) !== -1)
   },
 
   getLastAdded: function getLastAdded () {
@@ -140,6 +128,18 @@ MemoryStore.prototype = {
       }
     }
     return Promise.resolve(false)
+  },
+
+  find: function find (id) {
+    var num = id[0]
+    var cache = id.slice(1).join('\t')
+    for (var i = this.created.length - 1; i >= 0; i--) {
+      var entry = this.created[i]
+      if (entry[1].id[0] === num && entry[2] === cache) {
+        return i
+      }
+    }
+    return -1
   }
 
 }
