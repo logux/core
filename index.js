@@ -1,13 +1,11 @@
 var isFirstOlder = require('./is-first-older')
 var MemoryStore = require('./memory-store')
-var cleanEvery = require('./clean-every')
 var TestTime = require('./test-time')
 var Log = require('./log')
 
 module.exports = {
   isFirstOlder: isFirstOlder,
   MemoryStore: MemoryStore,
-  cleanEvery: cleanEvery,
   TestTime: TestTime,
   Log: Log
 }
@@ -113,8 +111,11 @@ module.exports = {
  * This tricky API is used, because log could be very big. So we need
  * pagination to keep them in memory.
  *
- * @param {"created"|"added"} order Sort entries by created time
- *                                  or when they was added to current log.
+ * @param {object} opts Query options.
+ * @param {"created"|"added"} opts.order Sort entries by created time
+ *                                       or when they was added to current log.
+ * @param {string} opts.reason Return only entries with `reason`
+ *                             in `meta.reasons`.
  *
  * @return {Promise} Promise with first {@link Page}.
  *
