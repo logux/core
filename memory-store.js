@@ -40,12 +40,19 @@ function MemoryStore () {
 
 MemoryStore.prototype = {
 
-  get: function get (order) {
-    if (order === 'created') {
-      return Promise.resolve({ entries: convert(this.created) })
+  get: function get (opts) {
+    var entries
+    if (opts.order === 'created') {
+      entries = this.created
     } else {
-      return Promise.resolve({ entries: convert(this.added) })
+      entries = this.added
     }
+    if (opts.reason) {
+      entries = entries.filter(function (i) {
+        return i[1].reasons.indexOf(opts.reason) !== -1
+      })
+    }
+    return Promise.resolve({ entries: convert(entries) })
   },
 
   add: function add (action, meta) {

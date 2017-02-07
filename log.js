@@ -49,9 +49,8 @@ Log.prototype = {
    * Subscribe for log events. It implements nanoevents API. Supported events:
    *
    * * `add`: when new entry was added to log.
-   * * `clean`: before log run keepers and remove outdated entries.
    *
-   * @param {"add"|"clean"} event The event name.
+   * @param {"add"} event The event name.
    * @param {listener} listener The listener function.
    *
    * @return {function} Unbind listener from event.
@@ -72,7 +71,7 @@ Log.prototype = {
    * Add one-time listener for log events.
    * See {@link Log#on} for supported events.
    *
-   * @param {"add"|"clean"} event The event name.
+   * @param {"add"} event The event name.
    * @param {listener} listener The listener function.
    *
    * @return {function} Unbind listener from event.
@@ -113,6 +112,7 @@ Log.prototype = {
     if (!meta) meta = { }
     if (typeof meta.id === 'undefined') meta.id = this.generateId()
     if (typeof meta.time === 'undefined') meta.time = meta.id[0]
+    if (typeof meta.reasons === 'undefined') meta.reasons = []
 
     var emitter = this.emitter
     return this.store.add(action, meta).then(function (addedMeta) {
@@ -122,33 +122,6 @@ Log.prototype = {
         emitter.emit('add', action, addedMeta)
         return addedMeta
       }
-    })
-  },
-
-  /**
-   * Remove all outdated actions. Actions could be kept by {@link Log#keep}.
-   *
-   * @return {Promise} When cleaning will be finished.
-   *
-   * @example
-   * let sinceClean = 0
-   * log.on('add', () => {
-   *   sinceClean += 1
-   *   if (sinceClean > 100) {
-   *     sinceClean = 0
-   *     log.clean()
-   *   }
-   * })
-   */
-  clean: function clean () {
-    this.emitter.emit('clean')
-    var self = this
-    return this.each(function (action, meta) {
-      var keepers = self.emitter.events.keep || []
-      var keep = keepers.some(function (keeper) {
-        return keeper.fn(action, meta)
-      })
-      if (!keep) self.store.remove(meta.id)
     })
   },
 
@@ -173,32 +146,16 @@ Log.prototype = {
   },
 
   /**
-   * Add function to keep actions from cleaning.
-   *
-   * @param {keeper} keeper Return true for actions to keep.
-   * @return {function} Remove keeper from log.
-   *
-   * @example
-   * const unkeep = log.keep((action, meta) => {
-   *   return isFirstOlder(lastBeep, meta)
-   * })
-   * function uninstallPlugin () {
-   *   unkeep()
-   * }
-   */
-  keep: function keep (keeper) {
-    return this.emitter.on('keep', keeper)
-  },
-
-  /**
    * Iterates through all actions, from last to first.
    *
    * Return false from callback if you want to stop iteration.
    *
    * @param {object} [opts] Iterator options.
-   * @param {'added'|'created'} opts.order Sort entries by created time or when
-   *                                       they was added to current log.
-   *                                       Default is `'created'`.
+   * @param {'added'|'created'} [opts.order='created'] Sort entries by created
+   *                                                   time or when they was
+   *                                                   added to this log.
+   * @param {string} [opts.reason] Iterate entries, which contains `reason`
+   *                             in `meta.reasons`.
    * @param {iterator} callback Function will be executed on every action.
    * @return {Promise} When iteration will be finished
    *                   by iterator or end of actions.
@@ -217,7 +174,7 @@ Log.prototype = {
   each: function each (opts, callback) {
     if (!callback) {
       callback = opts
-      opts = { }
+      opts = { order: 'created' }
     }
 
     var store = this.store
@@ -239,7 +196,7 @@ Log.prototype = {
         })
       }
 
-      nextPage(store.get.bind(store, opts.order || 'created'))
+      nextPage(store.get.bind(store, opts))
     })
   },
 
@@ -264,6 +221,41 @@ Log.prototype = {
       }
     }
     return this.store.changeMeta(id, diff)
+  },
+
+  /**
+   * Remove reason tag from action’s metadata and remove actions without reason
+   * from log.
+   *
+   * @param {string} reason Reason’s name.
+   * @param {object} [criteria] Actions criteria.
+   * @param {number} [criteria.minAdded] Remove reason only for actions
+   *                                   with bigger `added`.
+   * @param {number} [criteria.maxAdded] Remove reason only for actions
+   *                                   with lower `added`.
+   *
+   * @return {undefined}
+   *
+   * @example
+   * onSync(lastSent) {
+   *   log.removeReason('unsynchronized', { maxAdded: lastSent })
+   * }
+   */
+  removeReason: function removeReason (reason, criteria) {
+    if (!criteria) criteria = { }
+    var log = this
+    return this.each({ reason: reason }, function (event, meta) {
+      if (criteria.minAdded && meta.added > criteria.minAdded) return
+      if (criteria.maxAdded && meta.added < criteria.maxAdded) return
+
+      if (meta.reasons.length === 1) {
+        log.store.remove(meta.id)
+      } else {
+        log.store.changeMeta(meta.id, {
+          reasons: meta.reasons.slice(meta.reasons.indexOf(reason), 1)
+        })
+      }
+    })
   }
 }
 

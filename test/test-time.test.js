@@ -21,8 +21,8 @@ it('uses special ID generator in test log', function () {
     log.add({ type: 'b' })
   ]).then(function () {
     checkEntries(log, [
-      [{ type: 'b' }, { added: 2, time: 2, id: [2, 'test1', 0] }],
-      [{ type: 'a' }, { added: 1, time: 1, id: [1, 'test1', 0] }]
+      [{ type: 'b' }, { added: 2, time: 2, id: [2, 'test1', 0], reasons: [] }],
+      [{ type: 'a' }, { added: 1, time: 1, id: [1, 'test1', 0], reasons: [] }]
     ])
   })
 })
@@ -40,10 +40,10 @@ it('creates test logs with same time', function () {
     log2.add({ type: 'b' })
   ]).then(function () {
     checkEntries(log1, [
-      [{ type: 'a' }, { added: 1, time: 1, id: [1, 'test1', 0] }]
+      [{ type: 'a' }, { added: 1, time: 1, id: [1, 'test1', 0], reasons: [] }]
     ])
     checkEntries(log2, [
-      [{ type: 'b' }, { added: 1, time: 2, id: [2, 'test2', 0] }]
+      [{ type: 'b' }, { added: 1, time: 2, id: [2, 'test2', 0], reasons: [] }]
     ])
   })
 })

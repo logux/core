@@ -298,57 +298,6 @@ log.on('add', (action, meta) => {
 ```
 
 
-### Cleaning
-
-To keep the log fast, Logux cleans it from outdated actions.
-Note, that by default, Logux removes every action from the log.
-
-If third-party library will need some actions in the future,
-it should setup a keeper. A keeper is just a function returning `true`
-for important actions supposed to be kept in the log.
-
-Log emits `clean` event before the keepers execution and cleaning.
-
-For example, DevTools may need to keep latest 1000 actions in the log:
-
-```js
-let count = 0
-log.on('clean', () => {
-  count = 0
-})
-log.keep((action, meta) => {
-  count += 1
-  return count > 1000
-})
-```
-
-Another example may be CRDT module keeping actions
-with the latest property value.
-
-Cleaning should be started manually by calling `clean()` method:
-
-```js
-requestIdleCallback(() => log.clean())
-```
-
-
-### Automatic Cleaning
-
-Logux Core contains a function named `cleanEvery()`. It installs a listener
-for the log which will repeatedly call `clean()` after the specified
-number of actions was logged.
-
-By default, it will clean log after each 100 actions:
-
-```js
-import { cleanEvery } from 'logux-core'
-cleanEvery(log)
-```
-
-It returns a `stopCleaning` function. Call it if you want to remove the listener
-from the log.
-
-
 ### Testing
 
 Real logs use real time in actions ID, so log content will be different

@@ -1,7 +1,7 @@
 var MemoryStore = require('../memory-store')
 
-function check (store, type, entries) {
-  return store.get(type).then(function (page) {
+function check (store, order, entries) {
+  return store.get({ order: order }).then(function (page) {
     expect(page.entries).toEqual(entries)
     expect(page.next).toBeUndefined()
   })

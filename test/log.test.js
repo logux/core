@@ -117,7 +117,7 @@ it('unsubscribes listeners', function () {
   })
 })
 
-it('ignore existed ID', function () {
+it('ignore entry with existed ID', function () {
   var log = createLog()
 
   var added = []
@@ -146,9 +146,9 @@ it('iterates through added entries', function () {
       entries.push([action, meta])
     }).then(function () {
       expect(entries).toEqual([
-        [{ type: 'a' }, { id: [3], time: 3, added: 1 }],
-        [{ type: 'b' }, { id: [2], time: 2, added: 2 }],
-        [{ type: 'c' }, { id: [1], time: 1, added: 3 }]
+        [{ type: 'a' }, { id: [3], time: 3, added: 1, reasons: [] }],
+        [{ type: 'b' }, { id: [2], time: 2, added: 2, reasons: [] }],
+        [{ type: 'c' }, { id: [1], time: 1, added: 3, reasons: [] }]
       ])
     })
   })
@@ -214,26 +214,27 @@ it('keeps existed ID', function () {
     [{ type: 'timed' }, { id: [100] }]
   ]).then(function (log) {
     checkEntries(log, [
-      [{ type: 'timed' }, { id: [100], time: 100, added: 1 }]
+      [{ type: 'timed' }, { id: [100], time: 100, added: 1, reasons: [] }]
     ])
   })
 })
 
-it('keeps existed ID and time', function () {
+it('keeps existed ID, time and reasons', function () {
   return logWith([
-    [{ type: 'timed' }, { id: [100], time: 1 }]
+    [{ type: 'timed' }, { id: [100], time: 1, reasons: ['a'] }]
   ]).then(function (log) {
     checkEntries(log, [
-      [{ type: 'timed' }, { id: [100], time: 1, added: 1 }]
+      [{ type: 'timed' }, { id: [100], time: 1, added: 1, reasons: ['a'] }]
     ])
   })
 })
 
-it('sets ID and time for timeless entries', function () {
+it('sets default ID, time and reason for new entries', function () {
   var log = createLog()
   return log.add({ type: 'timeless' }).then(function (meta) {
     expect(meta).toEqual(log.store.created[0][1])
     expect(meta.added).toEqual(1)
+    expect(meta.reasons).toEqual([])
     expect(typeof meta.time).toEqual('number')
     expect(meta.id.length).toEqual(3)
     expect(meta.id[0]).toEqual(meta.time)
@@ -264,55 +265,6 @@ it('always generates biggest ID', function () {
   expect(log.generateId()).toEqual([10, 'test', 1])
 })
 
-it('cleans entries', function () {
-  return logWith([
-    { type: 'a' }
-  ]).then(function (log) {
-    return log.clean().then(function () {
-      checkEntries(log, [])
-    })
-  })
-})
-
-it('keeps entries from cleaning', function () {
-  return logWith([
-    { type: 'a' },
-    { type: 'b' }
-  ]).then(function (log) {
-    log.keep(function (action) {
-      return action.type === 'b'
-    })
-    return log.clean().then(function () {
-      checkActions(log, [{ type: 'b' }])
-    })
-  })
-})
-
-it('removes keeper', function () {
-  return logWith([
-    { type: 'a' },
-    { type: 'b' }
-  ]).then(function (log) {
-    var unkeep = log.keep(function (action) {
-      return action.type === 'b'
-    })
-    return log.clean().then(function () {
-      checkActions(log, [{ type: 'b' }])
-      unkeep()
-      return log.clean()
-    }).then(function () {
-      checkActions(log, [])
-    })
-  })
-})
-
-it('does not fall on multiple unkeep call', function () {
-  var log = createLog()
-  var unkeep = log.keep(function () { })
-  unkeep()
-  unkeep()
-})
-
 it('changes meta', function () {
   return logWith([
     [{ type: 'A' }, { id: [1, 'node', 0] }],
@@ -321,8 +273,14 @@ it('changes meta', function () {
     return log.changeMeta([2, 'node', 0], { a: 2, b: 2 }).then(function (r) {
       expect(r).toBeTruthy()
       checkEntries(log, [
-        [{ type: 'B' }, { id: [2, 'node', 0], time: 2, added: 2, a: 2, b: 2 }],
-        [{ type: 'A' }, { id: [1, 'node', 0], time: 1, added: 1 }]
+        [
+          { type: 'B' },
+          { id: [2, 'node', 0], time: 2, added: 2, reasons: [], a: 2, b: 2 }
+        ],
+        [
+          { type: 'A' },
+          { id: [1, 'node', 0], time: 1, added: 1, reasons: [] }
+        ]
       ])
     })
   })
@@ -336,4 +294,54 @@ it('does not allow to change ID or added', function () {
   expect(function () {
     log.changeMeta([1], { added: 2 })
   }).toThrowError(/added is prohibbited/)
+})
+
+it('cleans log by reason', function () {
+  return logWith([
+    [{ type: 'A' }, { reasons: ['a'] }],
+    [{ type: 'AB' }, { reasons: ['a', 'b'] }],
+    [{ type: 'B' }, { reasons: ['b'] }]
+  ]).then(function (log) {
+    return log.removeReason('a').then(function () {
+      checkActions(log, [{ type: 'B' }, { type: 'AB' }])
+      expect(log.store.created[1][1].reasons).toEqual(['a'])
+    })
+  })
+})
+
+it('removes reason with minimum added', function () {
+  return logWith([
+    [{ type: '1' }, { reasons: ['a'] }],
+    [{ type: '2' }, { reasons: ['a'] }],
+    [{ type: '3' }, { reasons: ['a'] }]
+  ]).then(function (log) {
+    return log.removeReason('a', { minAdded: 2 }).then(function () {
+      checkActions(log, [{ type: '3' }])
+    })
+  })
+})
+
+it('removes reason with maximum added', function () {
+  return logWith([
+    [{ type: '1' }, { reasons: ['a'] }],
+    [{ type: '2' }, { reasons: ['a'] }],
+    [{ type: '3' }, { reasons: ['a'] }]
+  ]).then(function (log) {
+    return log.removeReason('a', { maxAdded: 2 }).then(function () {
+      checkActions(log, [{ type: '1' }])
+    })
+  })
+})
+
+it('removes reason with minimum and maximum added', function () {
+  return logWith([
+    [{ type: '1' }, { reasons: ['a'] }],
+    [{ type: '2' }, { reasons: ['a'] }],
+    [{ type: '3' }, { reasons: ['a'] }]
+  ]).then(function (log) {
+    return log.removeReason('a', { maxAdded: 2, minAdded: 2 })
+      .then(function () {
+        checkActions(log, [{ type: '3' }, { type: '1' }])
+      })
+  })
 })
