@@ -94,6 +94,18 @@ MemoryStore.prototype = {
     }
   },
 
+  has: function (id) {
+    var num = id[0]
+    var cache = id.slice(1).join('\t')
+    for (var i = this.created.length - 1; i >= 0; i--) {
+      var entry = this.created[i]
+      if (entry[1].id[0] === num && entry[2] === cache) {
+        return Promise.resolve(true)
+      }
+    }
+    return Promise.resolve(false)
+  },
+
   getLastAdded: function getLastAdded () {
     return Promise.resolve(this.lastAdded)
   },

@@ -124,13 +124,24 @@ module.exports = {
  * @memberof Store#
  */
 /**
- * Remove Action from store.
+ * Remove action from store.
  *
  * @param {ID} id Action ID.
  *
  * @return {undefined}
  *
  * @name remove
+ * @function
+ * @memberof Store#
+ */
+/**
+ * Does store already has action with this ID.
+ *
+ * @param {ID} id Action ID.
+ *
+ * @return {Promise} Promise with boolean
+ *
+ * @name has
  * @function
  * @memberof Store#
  */
