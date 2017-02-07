@@ -77,13 +77,11 @@ MemoryStore.prototype = {
   remove: function remove (id) {
     var created = this.find(id)
     if (created === -1) return
+    var added = this.created[created][1].added
     this.created.splice(created, 1)
 
-    var num = id[0]
-    var cache = id.slice(1).join('\t')
     for (var i = this.added.length - 1; i >= 0; i--) {
-      var entry = this.added[i]
-      if (entry[1].id[0] === num && entry[2] === cache) {
+      if (this.added[i][1].added === added) {
         this.added.splice(i, 1)
         break
       }
