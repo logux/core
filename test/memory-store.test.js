@@ -176,9 +176,10 @@ it('resolves to false on unknown ID in changeMeta', function () {
 it('tells that action already in store', function () {
   var store = new MemoryStore()
   store.add({ }, { id: [1, 'node', 0], time: 1 })
+  store.add({ }, { id: [2, 'node', 0], time: 2 })
   return store.has([1, 'node', 0]).then(function (result) {
     expect(result).toBeTruthy()
-    return store.has([1, 'node', 2])
+    return store.has([1, 'node', 1])
   }).then(function (result) {
     expect(result).toBeFalsy()
   })

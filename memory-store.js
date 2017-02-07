@@ -129,11 +129,24 @@ MemoryStore.prototype = {
   },
 
   find: function find (id) {
+    var list = this.created
     var num = id[0]
     var cache = id.slice(1).join('\t')
-    for (var i = this.created.length - 1; i >= 0; i--) {
-      var entry = this.created[i]
-      if (entry[1].id[0] === num && entry[2] === cache) {
+    var m = 0
+    var n = list.length - 1
+    while (m <= n) {
+      var i = (n + m) >> 1
+      var entry = list[i]
+      var otherNum = entry[1].id[0]
+      if (otherNum > num) {
+        m = i + 1
+      } else if (otherNum < num) {
+        n = i - 1
+      } else if (entry[2] > cache) {
+        m = i + 1
+      } else if (entry[2] < cache) {
+        n = i - 1
+      } else {
         return i
       }
     }
