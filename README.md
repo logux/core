@@ -365,6 +365,7 @@ Any object implementing this 5 methods can be considered a Store:
   Action page is an object containing an entries array in `page.entries`
   and a `page.next` function returning the next page Promise.
   Last page should not contain the `page.next` method.
+* `has(id)` does store has action with this ID.
 * `getLastAdded()` returns Promise with biggest `added` in store.
 * `getLastSynced()` returns Promise with `added` values for latest synchronized
   received/sent actions.
