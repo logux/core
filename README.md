@@ -163,6 +163,40 @@ log.add({ type: 'FOO' }, { id: old, time: past }).then(meta => {
 ```
 
 
+### Reasons
+
+There is no way to remove actions from log. If you need to revert change,
+you need to add other action on top. But many actions become unnecessary
+after some time (for instance, overrode by other actions) and we could
+clean them to reduce log size.
+
+This is why every action in log should have “reason of life”,
+just string tag added by action creator or by `before` listener.
+
+```js
+log.add({ type: 'FOR_SERVER' }, { reasons: ['sync'] })
+logSize(log) //=> 1
+```
+
+If action doesn’t have a reason, it will be emitted to `add` listeners,
+but will not be saved to store:
+
+```js
+logSize(log) //=> 1
+log.add({ type: 'CLICK' })
+logSize(log) //=> 1
+```
+
+When actions become unnecessary, you could remove specific reason
+from all actions. Logux will remove all actions, which lost all reasons.
+
+```js
+logSize(log) //=> 1
+log.removeReason('nonSynced')
+logSize(log) //=> 1
+```
+
+
 ## Methods
 
 ### Adding
@@ -296,6 +330,49 @@ log.on('add', (action, meta) => {
   }
 })
 ```
+
+
+### Cleaning
+
+Logux use “reasons of life” to clean log from unnecessary actions
+(for instance, overrode by other actions).
+
+Without a `reasons` in metadata action will not even be saved to store.
+So if you need to save action for a while (for instance, to synchronize
+it with server), you need to set reason.
+
+First way, is to set in `add` method:
+
+```js
+log.add({ type: 'CHANGE_NAME' }, { reasons: ['sync'] })
+```
+
+Or by `before` listener. Note, that event is emitted before ID check,
+so it is emitted even for actions, that was already in log.
+
+```js
+log.on('before', (action, meta) => {
+  meta.reasons.push('devtools')
+})
+```
+
+When you don’t need some actions anymore, you can remove your reason:
+
+```js
+sync.waitFor('synchronized').then(() => {
+  log.removeReason('sync')
+})
+```
+
+Also you can limit actions by `minAdded` and/or `maxAdded`:
+
+```js
+// Keep last 1000 actions
+log.removeReason('devtools', { maxAdded: lastAdded - 1000 })
+```
+
+Action will be in log when it has at least one reason. When all reasons
+will be removed, action will be cleaned from log.
 
 
 ### Testing
