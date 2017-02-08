@@ -25,11 +25,7 @@ function checkEntries (log, expected) {
 function logWith (entries) {
   var log = createLog()
   return Promise.all(entries.map(function (entry) {
-    if (entry.length) {
-      return log.add(entry[0], entry[1])
-    } else {
-      return log.add(entry)
-    }
+    return log.add(entry[0], entry[1])
   })).then(function () {
     return log
   })
@@ -64,7 +60,7 @@ it('sends new entries to listeners', function () {
   var actions1 = []
   var actions2 = []
 
-  return log.add({ type: 'a' }).then(function () {
+  return log.add({ type: 'A' }).then(function () {
     log.on('add', function (action, meta) {
       expect(typeof meta).toEqual('object')
       actions1.push(action)
@@ -77,11 +73,11 @@ it('sends new entries to listeners', function () {
     expect(actions1).toEqual([])
     expect(actions2).toEqual([])
 
-    return log.add({ type: 'b' })
+    return log.add({ type: 'B' })
   }).then(function () {
-    return log.add({ type: 'c' })
+    return log.add({ type: 'C' })
   }).then(function () {
-    expect(actions1).toEqual([{ type: 'b' }, { type: 'c' }])
+    expect(actions1).toEqual([{ type: 'B' }, { type: 'C' }])
     expect(actions2).toEqual(actions1)
   })
 })
@@ -94,10 +90,10 @@ it('supports one-time listeners', function () {
     actions.push(action)
   })
 
-  return log.add({ type: 'b' }).then(function () {
-    return log.add({ type: 'c' })
+  return log.add({ type: 'B' }).then(function () {
+    return log.add({ type: 'C' })
   }).then(function () {
-    expect(actions).toEqual([{ type: 'b' }])
+    expect(actions).toEqual([{ type: 'B' }])
   })
 })
 
@@ -109,11 +105,11 @@ it('unsubscribes listeners', function () {
     actions.push(action)
   })
 
-  return log.add({ type: 'a' }).then(function () {
+  return log.add({ type: 'A' }).then(function () {
     unsubscribe()
-    return log.add({ type: 'b' })
+    return log.add({ type: 'B' })
   }).then(function () {
-    expect(actions).toEqual([{ type: 'a' }])
+    expect(actions).toEqual([{ type: 'A' }])
   })
 })
 
@@ -125,30 +121,31 @@ it('ignore entry with existed ID', function () {
     added.push(action)
   })
 
-  return log.add({ type: 'a' }, { id: [0] }).then(function (result1) {
+  var meta = { id: [0], reasons: ['test'] }
+  return log.add({ type: 'A' }, meta).then(function (result1) {
     expect(typeof result1).toEqual('object')
-    return log.add({ type: 'b' }, { id: [0] })
+    return log.add({ type: 'B' }, meta)
   }).then(function (result2) {
     expect(result2).toBeFalsy()
-    checkActions(log, [{ type: 'a' }])
-    expect(added).toEqual([{ type: 'a' }])
+    checkActions(log, [{ type: 'A' }])
+    expect(added).toEqual([{ type: 'A' }])
   })
 })
 
 it('iterates through added entries', function () {
   return logWith([
-    [{ type: 'a' }, { id: [3] }],
-    [{ type: 'b' }, { id: [2] }],
-    [{ type: 'c' }, { id: [1] }]
+    [{ type: 'A' }, { id: [3], reasons: ['test'] }],
+    [{ type: 'B' }, { id: [2], reasons: ['test'] }],
+    [{ type: 'C' }, { id: [1], reasons: ['test'] }]
   ]).then(function (log) {
     var entries = []
     return log.each(function (action, meta) {
       entries.push([action, meta])
     }).then(function () {
       expect(entries).toEqual([
-        [{ type: 'a' }, { id: [3], time: 3, added: 1, reasons: [] }],
-        [{ type: 'b' }, { id: [2], time: 2, added: 2, reasons: [] }],
-        [{ type: 'c' }, { id: [1], time: 1, added: 3, reasons: [] }]
+        [{ type: 'A' }, { id: [3], time: 3, added: 1, reasons: ['test'] }],
+        [{ type: 'B' }, { id: [2], time: 2, added: 2, reasons: ['test'] }],
+        [{ type: 'C' }, { id: [1], time: 1, added: 3, reasons: ['test'] }]
       ])
     })
   })
@@ -156,18 +153,18 @@ it('iterates through added entries', function () {
 
 it('iterates by added order', function () {
   return logWith([
-    [{ type: 'a' }, { id: [3] }],
-    [{ type: 'b' }, { id: [2] }],
-    [{ type: 'c' }, { id: [1] }]
+    [{ type: 'A' }, { id: [3], reasons: ['test'] }],
+    [{ type: 'B' }, { id: [2], reasons: ['test'] }],
+    [{ type: 'C' }, { id: [1], reasons: ['test'] }]
   ]).then(function (log) {
     var actions = []
     return log.each({ order: 'added' }, function (action) {
       actions.push(action)
     }).then(function () {
       expect(actions).toEqual([
-        { type: 'c' },
-        { type: 'b' },
-        { type: 'a' }
+        { type: 'C' },
+        { type: 'B' },
+        { type: 'A' }
       ])
     })
   })
@@ -175,15 +172,15 @@ it('iterates by added order', function () {
 
 it('disables iteration on false', function () {
   return logWith([
-    { type: 'a' },
-    { type: 'b' }
+    [{ type: 'A' }, { reasons: ['test'] }],
+    [{ type: 'B' }, { reasons: ['test'] }]
   ]).then(function (log) {
     var actions = []
     return log.each(function (action) {
       actions.push(action)
       return false
     }).then(function () {
-      expect(actions).toEqual([{ type: 'b' }])
+      expect(actions).toEqual([{ type: 'B' }])
     })
   })
 })
@@ -209,30 +206,32 @@ it('supports multi-pages stores', function () {
   })
 })
 
-it('keeps existed ID', function () {
+it('copies time from ID', function () {
   return logWith([
-    [{ type: 'timed' }, { id: [100] }]
+    [{ type: 'TIMED' }, { id: [100], reasons: ['test'] }]
   ]).then(function (log) {
     checkEntries(log, [
-      [{ type: 'timed' }, { id: [100], time: 100, added: 1, reasons: [] }]
+      [
+        { type: 'TIMED' },
+        { id: [100], time: 100, added: 1, reasons: ['test'] }
+      ]
     ])
   })
 })
 
 it('keeps existed ID, time and reasons', function () {
   return logWith([
-    [{ type: 'timed' }, { id: [100], time: 1, reasons: ['a'] }]
+    [{ type: 'TIMED' }, { id: [100], time: 1, reasons: ['a'] }]
   ]).then(function (log) {
     checkEntries(log, [
-      [{ type: 'timed' }, { id: [100], time: 1, added: 1, reasons: ['a'] }]
+      [{ type: 'TIMED' }, { id: [100], time: 1, added: 1, reasons: ['a'] }]
     ])
   })
 })
 
-it('sets default ID, time and reason for new entries', function () {
+it('sets default ID and time and empty reasons for new entries', function () {
   var log = createLog()
-  return log.add({ type: 'timeless' }).then(function (meta) {
-    expect(meta).toEqual(log.store.created[0][1])
+  log.on('add', function (action, meta) {
     expect(meta.added).toEqual(1)
     expect(meta.reasons).toEqual([])
     expect(typeof meta.time).toEqual('number')
@@ -267,19 +266,19 @@ it('always generates biggest ID', function () {
 
 it('changes meta', function () {
   return logWith([
-    [{ type: 'A' }, { id: [1, 'node', 0] }],
-    [{ type: 'B' }, { id: [2, 'node', 0], a: 1 }]
+    [{ type: 'A' }, { reasons: ['t'], id: [1, 'node', 0] }],
+    [{ type: 'B' }, { reasons: ['t'], id: [2, 'node', 0], a: 1 }]
   ]).then(function (log) {
     return log.changeMeta([2, 'node', 0], { a: 2, b: 2 }).then(function (r) {
       expect(r).toBeTruthy()
       checkEntries(log, [
         [
           { type: 'B' },
-          { id: [2, 'node', 0], time: 2, added: 2, reasons: [], a: 2, b: 2 }
+          { id: [2, 'node', 0], time: 2, added: 2, reasons: ['t'], a: 2, b: 2 }
         ],
         [
           { type: 'A' },
-          { id: [1, 'node', 0], time: 1, added: 1, reasons: [] }
+          { id: [1, 'node', 0], time: 1, added: 1, reasons: ['t'] }
         ]
       ])
     })
@@ -343,5 +342,82 @@ it('removes reason with minimum and maximum added', function () {
       .then(function () {
         checkActions(log, [{ type: '3' }, { type: '1' }])
       })
+  })
+})
+
+it('does not put actions without reasons to log', function () {
+  var log = createLog()
+
+  var fired = []
+  log.on('add', function (action, meta) {
+    fired.push([action, meta.added])
+  })
+
+  return log.add({ type: 'A' }).then(function (meta) {
+    expect(meta.reasons).toEqual([])
+    expect(fired).toEqual([
+      [{ type: 'A' }, undefined]
+    ])
+    checkActions(log, [])
+    return log.add({ type: 'B' }, { reasons: ['test'] })
+  }).then(function () {
+    expect(fired).toEqual([
+      [{ type: 'A' }, undefined],
+      [{ type: 'B' }, 1]
+    ])
+    checkActions(log, [{ type: 'B' }])
+  })
+})
+
+it('checks ID for actions without reasons', function () {
+  var log = createLog()
+
+  var fired = []
+  log.on('add', function (action, meta) {
+    fired.push([action, meta.added])
+  })
+
+  return log.add({ type: 'A' }, { id: [1], reasons: ['t'] }).then(function () {
+    return log.add({ type: 'B' }, { id: [1] })
+  }).then(function (meta) {
+    expect(meta).toBeFalsy()
+    expect(fired).toEqual([
+      [{ type: 'A' }, 1]
+    ])
+    return log.add({ type: 'C' }, { id: [2] })
+  }).then(function (meta) {
+    expect(meta).not.toBeFalsy()
+    expect(fired).toEqual([
+      [{ type: 'A' }, 1],
+      [{ type: 'C' }, undefined]
+    ])
+  })
+})
+
+it('fires before event', function () {
+  var log = createLog()
+
+  var add = []
+  log.on('add', function (action) {
+    add.push(action.type)
+  })
+
+  var before = []
+  log.on('before', function (action, meta) {
+    expect(meta.added).toBeUndefined()
+    if (action.type === 'A') meta.reasons.push('test')
+    before.push(action.type)
+  })
+
+  return log.add({ type: 'A' }, { id: [1] }).then(function () {
+    checkEntries(log, [
+      [{ type: 'A' }, { id: [1], time: 1, added: 1, reasons: ['test'] }]
+    ])
+    expect(before).toEqual(['A'])
+    expect(add).toEqual(['A'])
+    return log.add({ type: 'B' }, { id: [1] })
+  }).then(function () {
+    expect(before).toEqual(['A', 'B'])
+    expect(add).toEqual(['A'])
   })
 })
