@@ -48,9 +48,11 @@ Log.prototype = {
   /**
    * Subscribe for log events. It implements nanoevents API. Supported events:
    *
-   * * `add`: when new entry was added to log.
+   * * `before`: when somebody try to add action to log.
+   *   It fires before ID check. The best place to add reason.
+   * * `add`: when new action was added to log.
    *
-   * @param {"add"} event The event name.
+   * @param {"before"|"add"} event The event name.
    * @param {listener} listener The listener function.
    *
    * @return {function} Unbind listener from event.
@@ -71,7 +73,7 @@ Log.prototype = {
    * Add one-time listener for log events.
    * See {@link Log#on} for supported events.
    *
-   * @param {"add"} event The event name.
+   * @param {"before"|"add"} event The event name.
    * @param {listener} listener The listener function.
    *
    * @return {function} Unbind listener from event.
@@ -110,19 +112,41 @@ Log.prototype = {
     }
 
     if (!meta) meta = { }
-    if (typeof meta.id === 'undefined') meta.id = this.generateId()
+
+    var newId = false
+    if (typeof meta.id === 'undefined') {
+      newId = true
+      meta.id = this.generateId()
+    }
+
     if (typeof meta.time === 'undefined') meta.time = meta.id[0]
     if (typeof meta.reasons === 'undefined') meta.reasons = []
 
     var emitter = this.emitter
-    return this.store.add(action, meta).then(function (addedMeta) {
-      if (addedMeta === false) {
-        return false
+    emitter.emit('before', action, meta)
+
+    if (meta.reasons.length === 0 && newId) {
+      emitter.emit('add', action, meta)
+      return Promise.resolve(meta)
+    } else {
+      var promise
+      if (meta.reasons.length === 0) {
+        promise = this.store.has(meta.id).then(function (already) {
+          return already ? false : meta
+        })
       } else {
-        emitter.emit('add', action, addedMeta)
-        return addedMeta
+        promise = this.store.add(action, meta)
       }
-    })
+
+      return promise.then(function (addedMeta) {
+        if (addedMeta === false) {
+          return false
+        } else {
+          emitter.emit('add', action, addedMeta)
+          return addedMeta
+        }
+      })
+    }
   },
 
   /**

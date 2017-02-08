@@ -17,12 +17,17 @@ it('creates test log', function () {
 it('uses special ID generator in test log', function () {
   var log = TestTime.getLog()
   return Promise.all([
-    log.add({ type: 'a' }),
-    log.add({ type: 'b' })
+    log.add({ type: 'a' }, { reasons: ['test'] }),
+    log.add({ type: 'b' }, { reasons: ['test'] })
   ]).then(function () {
     checkEntries(log, [
-      [{ type: 'b' }, { added: 2, time: 2, id: [2, 'test1', 0], reasons: [] }],
-      [{ type: 'a' }, { added: 1, time: 1, id: [1, 'test1', 0], reasons: [] }]
+      [
+        { type: 'b' },
+        { added: 2, time: 2, id: [2, 'test1', 0], reasons: ['test'] }
+      ], [
+        { type: 'a' },
+        { added: 1, time: 1, id: [1, 'test1', 0], reasons: ['test'] }
+      ]
     ])
   })
 })
@@ -36,14 +41,20 @@ it('creates test logs with same time', function () {
   expect(log2.nodeId).toEqual('test2')
 
   return Promise.all([
-    log1.add({ type: 'a' }),
-    log2.add({ type: 'b' })
+    log1.add({ type: 'a' }, { reasons: ['test'] }),
+    log2.add({ type: 'b' }, { reasons: ['test'] })
   ]).then(function () {
     checkEntries(log1, [
-      [{ type: 'a' }, { added: 1, time: 1, id: [1, 'test1', 0], reasons: [] }]
+      [
+        { type: 'a' },
+        { added: 1, time: 1, id: [1, 'test1', 0], reasons: ['test'] }
+      ]
     ])
     checkEntries(log2, [
-      [{ type: 'b' }, { added: 1, time: 2, id: [2, 'test2', 0], reasons: [] }]
+      [
+        { type: 'b' },
+        { added: 1, time: 2, id: [2, 'test2', 0], reasons: ['test'] }
+      ]
     ])
   })
 })
