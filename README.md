@@ -191,8 +191,9 @@ from all actions. Logux will remove all actions, which lost all reasons.
 
 ```js
 logSize(log) //=> 1
-log.removeReason('nonSynced')
-logSize(log) //=> 1
+
+log.removeReason('sync')
+logSize(log) //=> 0
 ```
 
 
