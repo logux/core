@@ -173,17 +173,16 @@ clean them to reduce log size.
 This is why every action in log should have “reason of life”,
 just string tag added by action creator or by `before` listener.
 
-```js
-log.add({ type: 'FOR_SERVER' }, { reasons: ['sync'] })
-logSize(log) //=> 1
-```
-
 If action doesn’t have a reason, it will be emitted to `add` listeners,
-but will not be saved to store:
+but will not be saved to store.
 
 ```js
-logSize(log) //=> 1
-log.add({ type: 'CLICK' })
+log.add({ type: 'OPEN_MENU' })
+// Event listeners was emitted with OPEN_MENU
+logSize(log) //=> 0
+
+log.add({ type: 'FOR_SERVER' }, { reasons: ['sync'] })
+// Event listeners was emitted with FOR_SERVER and it will saved to log
 logSize(log) //=> 1
 ```
 
