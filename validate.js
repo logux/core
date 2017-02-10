@@ -65,10 +65,6 @@ var validators = {
     return (msg.length === 2 || msg.length === 3) && isString(msg[1])
   },
 
-  test: function test () {
-    return true
-  },
-
   duilian: function duilian (msg) {
     return (msg.length === 2) && isString(msg[1])
   }

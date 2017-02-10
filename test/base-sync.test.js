@@ -80,7 +80,7 @@ it('disconnects on destroy', function () {
 it('throws a error on send to disconnected connection', function () {
   var sync = createSync()
   expect(function () {
-    sync.send(['test'])
+    sync.sendDuilian()
   }).toThrowError(/disconnected/)
 })
 
@@ -115,20 +115,6 @@ it('supports one-time events', function () {
   sync.setState('synchronized')
 
   expect(states).toEqual(['sending'])
-})
-
-it('calls message method', function () {
-  var calls = []
-  return createTest().then(function (test) {
-    test.leftSync.authenticated = true
-    test.leftSync.testMessage = function (a, b) {
-      calls.push([a, b])
-    }
-    test.right.send(['test', 1, 2])
-    return test.wait()
-  }).then(function () {
-    expect(calls).toEqual([[1, 2]])
-  })
 })
 
 it('sets wait state on creating', function () {

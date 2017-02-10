@@ -507,8 +507,12 @@ BaseSync.prototype = {
     })
   },
 
-  sendDuilian: function sendDuilian () {
-    this.send(['duilian', Object.keys(DUILIANS)[0]])
+  sendDuilian: function sendDuilian (num) {
+    var starts = Object.keys(DUILIANS)
+    if (typeof num === 'undefined') {
+      num = Math.floor(Math.random() * starts.length)
+    }
+    this.send(['duilian', starts[num]])
   },
 
   duilianMessage: function duilianMessage (line) {
@@ -520,7 +524,8 @@ BaseSync.prototype = {
 }
 
 var DUILIANS = {
-  '世事洞眀皆學問': '人情練達即文章'
+  '世事洞眀皆學問': '人情練達即文章',
+  '書山有路勤爲徑': '學海無涯苦作舟'
 }
 
 BaseSync.prototype = assign(BaseSync.prototype,

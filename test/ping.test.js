@@ -49,37 +49,36 @@ it('sends ping on idle connection', function () {
     fixTime: false
   }).then(function (created) {
     test = created
-    test.leftSync.testMessage = function () { }
     test.leftSync.catch(function (err) {
       error = err
     })
     return wait(250)
   }).then(function () {
-    test.right.send(['test'])
+    test.right.send(['duilian', ''])
     return wait(250)
   }).then(function () {
-    test.leftSync.send(['test'])
+    test.leftSync.send(['duilian', ''])
     return wait(250)
   }).then(function () {
     expect(error).toBeUndefined()
-    expect(test.leftSent).toEqual([['test']])
+    expect(test.leftSent).toEqual([['duilian', '']])
     return wait(100)
   }).then(function () {
     expect(error).toBeUndefined()
-    expect(test.leftSent).toEqual([['test'], ['ping', 1]])
+    expect(test.leftSent).toEqual([['duilian', ''], ['ping', 1]])
     test.right.send(['pong', 1])
     return wait(250)
   }).then(function () {
     expect(error).toBeUndefined()
-    expect(test.leftSent).toEqual([['test'], ['ping', 1]])
+    expect(test.leftSent).toEqual([['duilian', ''], ['ping', 1]])
     return wait(100)
   }).then(function () {
     expect(error).toBeUndefined()
-    expect(test.leftSent).toEqual([['test'], ['ping', 1], ['ping', 1]])
+    expect(test.leftSent).toEqual([['duilian', ''], ['ping', 1], ['ping', 1]])
     return wait(250)
   }).then(function () {
     expect(error.message).toContain('timeout')
-    expect(test.leftSent).toEqual([['test'], ['ping', 1], ['ping', 1]])
+    expect(test.leftSent).toEqual([['duilian', ''], ['ping', 1], ['ping', 1]])
     expect(test.leftEvents[3]).toEqual(['disconnect', 'timeout'])
   })
 })

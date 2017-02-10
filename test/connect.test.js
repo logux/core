@@ -229,14 +229,12 @@ it('sends error on messages before auth', function () {
   test.leftSync = new BaseSync('client', log, test.left)
   test.rightSync = new ServerSync('server', log, test.right)
 
-  test.rightSync.testMessage = function () { }
-
   return test.left.connect().then(function () {
-    test.left.send(['test'])
+    test.leftSync.sendDuilian(0)
     return test.wait('left')
   }).then(function () {
     expect(test.rightSent).toEqual([
-      ['error', 'missed-auth', '["test"]']
+      ['error', 'missed-auth', '["duilian","世事洞眀皆學問"]']
     ])
   })
 })
@@ -292,13 +290,10 @@ it('allows access for right users', function () {
   }
 
   return test.left.connect().then(function () {
-    test.leftSync.sendDuilian()
+    test.leftSync.sendDuilian(0)
     return test.wait('left')
   }).then(function () {
-    expect(test.rightSent).toEqual([
-      ['connected', PROTOCOL, 'server', [1, 2]],
-      ['duilian', '人情練達即文章']
-    ])
+    expect(test.rightSent[0]).toEqual(['connected', PROTOCOL, 'server', [1, 2]])
   })
 })
 
