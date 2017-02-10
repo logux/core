@@ -505,8 +505,22 @@ BaseSync.prototype = {
       if (sync.lastAddedCache > sync.lastSent) sync.setState('wait')
       if (sync.connection.connected) sync.onConnect()
     })
+  },
+
+  sendDuilian: function sendDuilian () {
+    this.send(['duilian', Object.keys(DUILIANS)[0]])
+  },
+
+  duilianMessage: function duilianMessage (line) {
+    if (DUILIANS[line]) {
+      this.send(['duilian', DUILIANS[line]])
+    }
   }
 
+}
+
+var DUILIANS = {
+  '世事洞眀皆學問': '人情練達即文章'
 }
 
 BaseSync.prototype = assign(BaseSync.prototype,

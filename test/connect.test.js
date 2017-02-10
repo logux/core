@@ -283,7 +283,6 @@ it('denies access to wrong server', function () {
 it('allows access for right users', function () {
   var test = createTest()
   test.leftSync.options = { credentials: 'a' }
-  test.rightSync.testMessage = jest.fn()
   test.rightSync.options = {
     auth: function (credentials, nodeId) {
       return wait(10).then(function () {
@@ -293,13 +292,13 @@ it('allows access for right users', function () {
   }
 
   return test.left.connect().then(function () {
-    test.left.send(['test'])
+    test.leftSync.sendDuilian()
     return test.wait('left')
   }).then(function () {
     expect(test.rightSent).toEqual([
-      ['connected', PROTOCOL, 'server', [1, 2]]
+      ['connected', PROTOCOL, 'server', [1, 2]],
+      ['duilian', '人情練達即文章']
     ])
-    expect(test.rightSync.testMessage).toBeCalled()
   })
 })
 
