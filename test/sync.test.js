@@ -22,6 +22,13 @@ function createTest () {
   var log2 = time.nextLog()
   var test = new TestPair()
 
+  log1.on('before', function (action, meta) {
+    meta.reasons = ['test']
+  })
+  log2.on('before', function (action, meta) {
+    meta.reasons = ['test']
+  })
+
   test.leftSync = new ClientSync('client', log1, test.left, { fixTime: false })
   test.rightSync = new ServerSync('server', log2, test.right)
 
@@ -193,12 +200,24 @@ it('fixes created time', function () {
     })
   }).then(function (test) {
     expect(entries(test.leftSync.log)).toEqual([
-      [{ type: 'b' }, { id: [2, 'test2', 0], time: 102, added: 2 }],
-      [{ type: 'a' }, { id: [101, 'test1', 0], time: 101, added: 1 }]
+      [
+        { type: 'b' },
+        { id: [2, 'test2', 0], time: 102, added: 2, reasons: ['test'] }
+      ],
+      [
+        { type: 'a' },
+        { id: [101, 'test1', 0], time: 101, added: 1, reasons: ['test'] }
+      ]
     ])
     expect(entries(test.rightSync.log)).toEqual([
-      [{ type: 'b' }, { id: [2, 'test2', 0], time: 2, added: 1 }],
-      [{ type: 'a' }, { id: [101, 'test1', 0], time: 1, added: 2 }]
+      [
+        { type: 'b' },
+        { id: [2, 'test2', 0], time: 2, added: 1, reasons: ['test'] }
+      ],
+      [
+        { type: 'a' },
+        { id: [101, 'test1', 0], time: 1, added: 2, reasons: ['test'] }
+      ]
     ])
   })
 })
@@ -213,8 +232,14 @@ it('supports multiple actions in sync', function () {
   }).then(function (test) {
     expect(test.leftSync.lastReceived).toBe(2)
     expect(entries(test.leftSync.log)).toEqual([
-      [{ type: 'b' }, { id: [2, 'test2', 0], time: 2, added: 2 }],
-      [{ type: 'a' }, { id: [1, 'test2', 0], time: 1, added: 1 }]
+      [
+        { type: 'b' },
+        { id: [2, 'test2', 0], time: 2, added: 2, reasons: ['test'] }
+      ],
+      [
+        { type: 'a' },
+        { id: [1, 'test2', 0], time: 1, added: 1, reasons: ['test'] }
+      ]
     ])
   })
 })

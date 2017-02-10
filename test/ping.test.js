@@ -12,7 +12,7 @@ function wait (ms) {
 function createTest (opts) {
   var log = TestTime.getLog()
   var test = new TestPair()
-  return log.add({ type: 'test' }).then(function () {
+  return log.add({ type: 'test' }, { reasons: ['test'] }).then(function () {
     log.store.lastSent = 1
     test.leftSync = new ClientSync('client', log, test.left, opts)
     return test.left.connect()

@@ -59,7 +59,7 @@ it('loads only last added from store', function () {
   var con = { on: function () { } }
   var sync
   log.store.setLastSynced({ sent: 1, received: 2 })
-  return log.add({ type: 'a' }).then(function () {
+  return log.add({ type: 'a' }, { reasons: ['test'] }).then(function () {
     sync = new ServerSync('server', log, con)
     return sync.initializing
   }).then(function () {

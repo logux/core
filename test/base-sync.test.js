@@ -6,12 +6,17 @@ var BaseSync = require('../base-sync')
 
 function createSync (opts) {
   var pair = new TestPair()
-  return new BaseSync('client', TestTime.getLog(), pair.left, opts)
+  var log = TestTime.getLog()
+  log.on('before', function (action, meta) {
+    meta.reasons = ['test']
+  })
+  return new BaseSync('client', log, pair.left, opts)
 }
 
 function createTest () {
-  var test = new TestPair()
-  test.leftSync = new BaseSync('client', TestTime.getLog(), test.left)
+  var sync = createSync()
+  var test = sync.connection.pair
+  test.leftSync = sync
   return test.left.connect().then(function () {
     return test
   })
@@ -120,7 +125,7 @@ it('supports one-time events', function () {
 it('sets wait state on creating', function () {
   var log = TestTime.getLog()
   var sync
-  return log.add({ type: 'a' }).then(function () {
+  return log.add({ type: 'a' }, { reasons: ['test'] }).then(function () {
     var pair = new TestPair()
     sync = new BaseSync('client', log, pair.left)
     return sync.initializing
@@ -194,7 +199,7 @@ it('loads lastSent, lastReceived and lastAdded from store', function () {
   var sync
 
   log.store.setLastSynced({ sent: 1, received: 2 })
-  return log.add({ type: 'a' }).then(function () {
+  return log.add({ type: 'a' }, { reasons: ['test'] }).then(function () {
     sync = new BaseSync('client', log, con)
     return sync.initializing
   }).then(function () {
