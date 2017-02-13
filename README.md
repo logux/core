@@ -338,6 +338,7 @@ Logux use “reasons of life” to clean log from unnecessary actions
 (for instance, overrode by other actions).
 
 Without a `reasons` in metadata action will not even be saved to store.
+But reason-less action still will be emitted in `add` event.
 So if you need to save action for a while (for instance, to synchronize
 it with server), you need to set reason.
 
@@ -374,6 +375,14 @@ log.removeReason('devtools', { maxAdded: lastAdded - 1000 })
 Action will be in log when it has at least one reason. When all reasons
 will be removed, action will be cleaned from log.
 
+Log will emit `clean` event on cleaning any action.
+
+```js
+log.on('clean', (action, meta) => {
+  console.log('Action was cleaned: ', action, meta.id)
+})
+```
+
 
 ### Testing
 
@@ -409,6 +418,81 @@ by same test time instance for it.
 const time = new TestTime()
 const log1 = time.nextLog()
 const log2 = time.nextLog()
+```
+
+
+## Events
+
+All events doesn’t support asynchronous listeners. If you need asynchronous
+calls inside listeners, you should care about calling order by your own.
+
+```js
+let prevTask = Promise.resolve()
+log.on('add', (action, meta) => {
+  prevTask = prevTask.then(() => {
+    return processAsync(action, meta)
+  })
+})
+```
+
+### `before`
+
+Event is emitted with added action, before it will be placed to store.
+It is the best place to automatically set `reasons` (for example, to keep
+last 1000 action in log for DevTools).
+
+```js
+log.on('before', (action, meta) => {
+  meta.reasons.push('devtools')
+})
+```
+
+Instead of `add` event, `before` event will be emitted even if action
+with same ID already presented in store.
+
+
+### `add`
+
+Event is emitted on any new action added to log.
+
+It will emitted for reason-less action and for actions without a `reasons`.
+If action have reasons to put it to store, event will be emitted
+after store saved a event and `meta` will contain `added` property.
+
+It will not be emitted only if action with same `meta.id` is already presented
+in store.
+
+It is the best place for action listeners to change application store according
+new actions.
+
+```js
+let lastChange
+log.on('action', (action, meta) => {
+  if (action.type === 'CHANGE_NAME' && isFirstOlder(lastChange, meta)) {
+    lastChange = meta
+    user.name = action.name
+  }
+})
+```
+
+Note, that action could be passed in different order, rather that was created.
+Action `B` created after action `A`, could be emitted before `A`.
+
+To prevent problems, always check action created time by `isFirstOlder()`
+and look into a log for more younger action.
+
+
+### `clean`
+
+Event is emitted when action was cleaned from log, or when reason-less
+action was added to log, but didn’t saved to store, because of empty `reasons`.
+
+It is the best place to warn developers about cleaning process.
+
+```js
+log.on('clean', (action, meta) => {
+  console.log('Action was cleaned: ', action, meta.id)
+})
 ```
 
 

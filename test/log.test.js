@@ -301,9 +301,16 @@ it('cleans log by reason', function () {
     [{ type: 'AB' }, { reasons: ['a', 'b'] }],
     [{ type: 'B' }, { reasons: ['b'] }]
   ]).then(function (log) {
+    var cleaned = []
+    log.on('clean', function (action, meta) {
+      cleaned.push([action, meta.added, meta.reasons])
+    })
     return log.removeReason('a').then(function () {
       checkActions(log, [{ type: 'B' }, { type: 'AB' }])
-      expect(log.store.created[1][1].reasons).toEqual(['a'])
+      expect(log.store.created[1][1].reasons).toEqual(['b'])
+      expect(cleaned).toEqual([
+        [{ type: 'A' }, 1, []]
+      ])
     })
   })
 })
@@ -348,22 +355,33 @@ it('removes reason with minimum and maximum added', function () {
 it('does not put actions without reasons to log', function () {
   var log = createLog()
 
-  var fired = []
+  var added = []
   log.on('add', function (action, meta) {
-    fired.push([action, meta.added])
+    expect(meta.id).not.toBeUndefined()
+    added.push([action, meta.added])
+  })
+  var cleaned = []
+  log.on('clean', function (action, meta) {
+    cleaned.push([action, meta.added])
   })
 
   return log.add({ type: 'A' }).then(function (meta) {
     expect(meta.reasons).toEqual([])
-    expect(fired).toEqual([
+    expect(added).toEqual([
+      [{ type: 'A' }, undefined]
+    ])
+    expect(cleaned).toEqual([
       [{ type: 'A' }, undefined]
     ])
     checkActions(log, [])
     return log.add({ type: 'B' }, { reasons: ['test'] })
   }).then(function () {
-    expect(fired).toEqual([
+    expect(added).toEqual([
       [{ type: 'A' }, undefined],
       [{ type: 'B' }, 1]
+    ])
+    expect(cleaned).toEqual([
+      [{ type: 'A' }, undefined]
     ])
     checkActions(log, [{ type: 'B' }])
   })
@@ -372,23 +390,31 @@ it('does not put actions without reasons to log', function () {
 it('checks ID for actions without reasons', function () {
   var log = createLog()
 
-  var fired = []
+  var added = []
   log.on('add', function (action, meta) {
-    fired.push([action, meta.added])
+    added.push([action, meta.added])
+  })
+  var cleaned = []
+  log.on('clean', function (action, meta) {
+    cleaned.push([action, meta.added])
   })
 
   return log.add({ type: 'A' }, { id: [1], reasons: ['t'] }).then(function () {
     return log.add({ type: 'B' }, { id: [1] })
   }).then(function (meta) {
     expect(meta).toBeFalsy()
-    expect(fired).toEqual([
+    expect(added).toEqual([
       [{ type: 'A' }, 1]
     ])
+    expect(cleaned).toEqual([])
     return log.add({ type: 'C' }, { id: [2] })
   }).then(function (meta) {
     expect(meta).not.toBeFalsy()
-    expect(fired).toEqual([
+    expect(added).toEqual([
       [{ type: 'A' }, 1],
+      [{ type: 'C' }, undefined]
+    ])
+    expect(cleaned).toEqual([
       [{ type: 'C' }, undefined]
     ])
   })

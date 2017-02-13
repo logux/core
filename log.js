@@ -51,8 +51,9 @@ Log.prototype = {
    * * `before`: when somebody try to add action to log.
    *   It fires before ID check. The best place to add reason.
    * * `add`: when new action was added to log.
+   * * `clean`: when action was cleaned from store.
    *
-   * @param {"before"|"add"} event The event name.
+   * @param {"before"|"add"|"clean"} event The event name.
    * @param {listener} listener The listener function.
    *
    * @return {function} Unbind listener from event.
@@ -73,7 +74,7 @@ Log.prototype = {
    * Add one-time listener for log events.
    * See {@link Log#on} for supported events.
    *
-   * @param {"before"|"add"} event The event name.
+   * @param {"before"|"add"|"clean"} event The event name.
    * @param {listener} listener The listener function.
    *
    * @return {function} Unbind listener from event.
@@ -127,18 +128,20 @@ Log.prototype = {
 
     if (meta.reasons.length === 0 && newId) {
       emitter.emit('add', action, meta)
+      emitter.emit('clean', action, meta)
       return Promise.resolve(meta)
+    } else if (meta.reasons.length === 0) {
+      return this.store.has(meta.id).then(function (already) {
+        if (already) {
+          return false
+        } else {
+          emitter.emit('add', action, meta)
+          emitter.emit('clean', action, meta)
+          return meta
+        }
+      })
     } else {
-      var promise
-      if (meta.reasons.length === 0) {
-        promise = this.store.has(meta.id).then(function (already) {
-          return already ? false : meta
-        })
-      } else {
-        promise = this.store.add(action, meta)
-      }
-
-      return promise.then(function (addedMeta) {
+      return this.store.add(action, meta).then(function (addedMeta) {
         if (addedMeta === false) {
           return false
         } else {
@@ -268,16 +271,17 @@ Log.prototype = {
   removeReason: function removeReason (reason, criteria) {
     if (!criteria) criteria = { }
     var log = this
-    return this.each({ reason: reason }, function (event, meta) {
+    return this.each({ reason: reason }, function (action, meta) {
       if (criteria.minAdded && meta.added > criteria.minAdded) return
       if (criteria.maxAdded && meta.added < criteria.maxAdded) return
 
-      if (meta.reasons.length === 1) {
+      var reasons = meta.reasons
+      reasons.splice(reasons.indexOf(reason), 1)
+      if (meta.reasons.length === 0) {
         log.store.remove(meta.id)
+        log.emitter.emit('clean', action, meta)
       } else {
-        log.store.changeMeta(meta.id, {
-          reasons: meta.reasons.slice(meta.reasons.indexOf(reason), 1)
-        })
+        log.store.changeMeta(meta.id, { reasons: reasons })
       }
     })
   }
