@@ -114,18 +114,14 @@ MemoryStore.prototype = {
   },
 
   changeMeta: function changeMeta (id, diff) {
-    var num = id[0]
-    var cache = id.slice(1).join('\t')
-    var i, entry, meta
-    for (i = this.created.length - 1; i >= 0; i--) {
-      entry = this.created[i]
-      meta = entry[1]
-      if (meta.id[0] === num && entry[2] === cache) {
-        for (var key in diff) meta[key] = diff[key]
-        return Promise.resolve(true)
-      }
+    var index = this.find(id)
+    if (index === -1) {
+      return Promise.resolve(false)
+    } else {
+      var meta = this.created[index][1]
+      for (var key in diff) meta[key] = diff[key]
+      return Promise.resolve(true)
     }
-    return Promise.resolve(false)
   },
 
   find: function find (id) {
