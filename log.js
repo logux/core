@@ -181,9 +181,8 @@ Log.prototype = {
    * @param {'added'|'created'} [opts.order='created'] Sort entries by created
    *                                                   time or when they was
    *                                                   added to this log.
-   * @param {string} [opts.reason] Iterate entries, which contains `reason`
-   *                             in `meta.reasons`.
    * @param {iterator} callback Function will be executed on every action.
+   *
    * @return {Promise} When iteration will be finished
    *                   by iterator or end of actions.
    *
@@ -257,11 +256,11 @@ Log.prototype = {
    * @param {string} reason Reason’s name.
    * @param {object} [criteria] Actions criteria.
    * @param {number} [criteria.minAdded] Remove reason only for actions
-   *                                   with bigger `added`.
+   *                                     with bigger `added`.
    * @param {number} [criteria.maxAdded] Remove reason only for actions
-   *                                   with lower `added`.
+   *                                     with lower `added`.
    *
-   * @return {undefined}
+   * @return {Promise} Promise when cleaning will be finished.
    *
    * @example
    * onSync(lastSent) {
@@ -271,18 +270,8 @@ Log.prototype = {
   removeReason: function removeReason (reason, criteria) {
     if (!criteria) criteria = { }
     var log = this
-    return this.each({ reason: reason }, function (action, meta) {
-      if (criteria.minAdded && meta.added > criteria.minAdded) return
-      if (criteria.maxAdded && meta.added < criteria.maxAdded) return
-
-      var reasons = meta.reasons
-      reasons.splice(reasons.indexOf(reason), 1)
-      if (meta.reasons.length === 0) {
-        log.store.remove(meta.id)
-        log.emitter.emit('clean', action, meta)
-      } else {
-        log.store.changeMeta(meta.id, { reasons: reasons })
-      }
+    return this.store.removeReason(reason, criteria, function (action, meta) {
+      log.emitter.emit('clean', action, meta)
     })
   }
 }
@@ -290,21 +279,8 @@ Log.prototype = {
 module.exports = Log
 
 /**
- * @callback listener
- * @param {Action} action New action.
- * @param {Meta} meta The action’s metadata.
- */
-
-/**
  * @callback iterator
  * @param {Action} action Next action.
  * @param {Meta} meta Next action’s metadata.
  * @return {boolean} returning `false` will stop iteration.
- */
-
-/**
- * @callback keeper
- * @param {Action} action Next action.
- * @param {Meta} meta Next action’s metadata.
- * @return {boolean} true If action should be kept from cleaning.
  */
