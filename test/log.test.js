@@ -315,30 +315,6 @@ it('cleans log by reason', function () {
   })
 })
 
-it('removes reason with minimum added', function () {
-  return logWith([
-    [{ type: '1' }, { reasons: ['a'] }],
-    [{ type: '2' }, { reasons: ['a'] }],
-    [{ type: '3' }, { reasons: ['a'] }]
-  ]).then(function (log) {
-    return log.removeReason('a', { minAdded: 2 }).then(function () {
-      checkActions(log, [{ type: '3' }])
-    })
-  })
-})
-
-it('removes reason with maximum added', function () {
-  return logWith([
-    [{ type: '1' }, { reasons: ['a'] }],
-    [{ type: '2' }, { reasons: ['a'] }],
-    [{ type: '3' }, { reasons: ['a'] }]
-  ]).then(function (log) {
-    return log.removeReason('a', { maxAdded: 2 }).then(function () {
-      checkActions(log, [{ type: '1' }])
-    })
-  })
-})
-
 it('removes reason with minimum and maximum added', function () {
   return logWith([
     [{ type: '1' }, { reasons: ['a'] }],

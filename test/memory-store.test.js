@@ -14,6 +14,8 @@ function checkBoth (store, entries) {
   ])
 }
 
+function nope () { }
+
 it('is empty in the beginning', function () {
   var store = new MemoryStore()
   return check(store, 'created', [])
@@ -176,11 +178,76 @@ it('resolves to false on unknown ID in changeMeta', function () {
 it('tells that action already in store', function () {
   var store = new MemoryStore()
   store.add({ }, { id: [1, 'node', 0], time: 1 })
+  store.add({ }, { id: [1, 'node', 1], time: 2 })
+  store.add({ }, { id: [1, 'node', 2], time: 2 })
+  store.add({ }, { id: [1, 'node', 3], time: 2 })
   store.add({ }, { id: [2, 'node', 0], time: 2 })
   return store.has([1, 'node', 0]).then(function (result) {
     expect(result).toBeTruthy()
-    return store.has([1, 'node', 1])
+    return store.has([1, 'node', 2])
+  }).then(function (result) {
+    expect(result).toBeTruthy()
+    return store.has([2, 'node', 1])
   }).then(function (result) {
     expect(result).toBeFalsy()
   })
+})
+
+it('removes reasons and actions without reason', function () {
+  var store = new MemoryStore()
+  store.add({ type: '1' }, { id: [1], time: 1, reasons: ['a'] })
+  store.add({ type: '2' }, { id: [2], time: 2, reasons: ['a'] })
+  store.add({ type: '3' }, { id: [3], time: 3, reasons: ['a', 'b'] })
+  store.add({ type: '4' }, { id: [4], time: 4, reasons: ['b'] })
+  var removed = []
+  return store.removeReason('a', { }, function (action, meta) {
+    removed.push([action, meta])
+  }).then(function () {
+    expect(removed).toEqual([
+      [{ type: '2' }, { added: 2, id: [2], time: 2, reasons: [] }],
+      [{ type: '1' }, { added: 1, id: [1], time: 1, reasons: [] }]
+    ])
+    return checkBoth(store, [
+      [{ type: '4' }, { added: 4, id: [4], time: 4, reasons: ['b'] }],
+      [{ type: '3' }, { added: 3, id: [3], time: 3, reasons: ['b'] }]
+    ])
+  })
+})
+
+it('removes reason with minimum added', function () {
+  var store = new MemoryStore()
+  store.add({ type: '1' }, { id: [1], time: 1, reasons: ['a'] })
+  store.add({ type: '2' }, { id: [2], time: 2, reasons: ['a'] })
+  store.add({ type: '3' }, { id: [3], time: 3, reasons: ['a'] })
+  return store.removeReason('a', { minAdded: 2 }, nope).then(function () {
+    return checkBoth(store, [
+      [{ type: '1' }, { added: 1, id: [1], time: 1, reasons: ['a'] }]
+    ])
+  })
+})
+
+it('removes reason with minimum added', function () {
+  var store = new MemoryStore()
+  store.add({ type: '1' }, { id: [1], time: 1, reasons: ['a'] })
+  store.add({ type: '2' }, { id: [2], time: 2, reasons: ['a'] })
+  store.add({ type: '3' }, { id: [3], time: 3, reasons: ['a'] })
+  return store.removeReason('a', { maxAdded: 2 }, nope).then(function () {
+    return checkBoth(store, [
+      [{ type: '3' }, { added: 3, id: [3], time: 3, reasons: ['a'] }]
+    ])
+  })
+})
+
+it('removes reason with minimum added', function () {
+  var store = new MemoryStore()
+  store.add({ type: '1' }, { id: [1], time: 1, reasons: ['a'] })
+  store.add({ type: '2' }, { id: [2], time: 2, reasons: ['a'] })
+  store.add({ type: '3' }, { id: [3], time: 3, reasons: ['a'] })
+  return store.removeReason('a', { maxAdded: 2, minAdded: 2 }, nope)
+    .then(function () {
+      return checkBoth(store, [
+        [{ type: '3' }, { added: 3, id: [3], time: 3, reasons: ['a'] }],
+        [{ type: '1' }, { added: 1, id: [1], time: 1, reasons: ['a'] }]
+      ])
+    })
 })

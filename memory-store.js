@@ -47,11 +47,6 @@ MemoryStore.prototype = {
     } else {
       entries = this.added
     }
-    if (opts.reason) {
-      entries = entries.filter(function (i) {
-        return i[1].reasons.indexOf(opts.reason) !== -1
-      })
-    }
     return Promise.resolve({ entries: convert(entries) })
   },
 
@@ -72,6 +67,30 @@ MemoryStore.prototype = {
 
     list.push(entry)
     return insert(this, entry)
+  },
+
+  removeReason: function (reason, criteria, callback) {
+    var removed = []
+    this.created = this.created.filter(function (entry) {
+      var meta = entry[1]
+      if (meta.reasons.indexOf(reason) === -1) return true
+      if (criteria.minAdded && meta.added < criteria.minAdded) return true
+      if (criteria.maxAdded && meta.added > criteria.maxAdded) return true
+
+      var reasons = meta.reasons
+      reasons.splice(reasons.indexOf(reason), 1)
+      if (meta.reasons.length === 0) {
+        callback(entry[0], meta)
+        removed.push(meta.added)
+        return false
+      } else {
+        return true
+      }
+    })
+    this.added = this.added.filter(function (entry) {
+      return removed.indexOf(entry[1].added) === -1
+    })
+    return Promise.resolve()
   },
 
   remove: function remove (id) {

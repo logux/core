@@ -40,6 +40,12 @@ module.exports = {
  *                          {@link Log#add} will fill it.
  */
 
+ /**
+  * @callback listener
+  * @param {Action} action New action.
+  * @param {Meta} meta The action’s metadata.
+  */
+
 /**
  * Array with {@link Action} and its {@link Meta}.
  *
@@ -112,10 +118,8 @@ module.exports = {
  * pagination to keep them in memory.
  *
  * @param {object} opts Query options.
- * @param {"created"|"added"} opts.order Sort entries by created time
- *                                       or when they was added to current log.
- * @param {string} opts.reason Return only entries with `reason`
- *                             in `meta.reasons`.
+ * @param {"created"|"added"} [opts.order] Sort entries by created time or
+ *                                         when they was added to current log.
  *
  * @return {Promise} Promise with first {@link Page}.
  *
@@ -124,13 +128,19 @@ module.exports = {
  * @memberof Store#
  */
 /**
- * Remove action from store.
+ * Remove reason from action’s metadata and remove actions without reasons.
  *
- * @param {ID} id Action ID.
+ * @param {string} reason The reason name.
+ * @param {object} criteria Actions criteria.
+ * @param {number} [criteria.minAdded] Remove reason only for actions
+ *                                     with bigger `added`.
+ * @param {number} [criteria.maxAdded] Remove reason only for actions
+ *                                     with lower `added`.
+ * @param {listener} callback Callback for every removed action.
  *
- * @return {undefined}
+ * @return {Promise} Promise when cleaning will be finished.
  *
- * @name remove
+ * @name removeReason
  * @function
  * @memberof Store#
  */
