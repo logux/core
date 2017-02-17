@@ -293,6 +293,9 @@ it('does not allow to change ID or added', function () {
   expect(function () {
     log.changeMeta([1], { added: 2 })
   }).toThrowError(/added is prohibbited/)
+  expect(function () {
+    log.changeMeta([1], { time: 2 })
+  }).toThrowError(/time is prohibbited/)
 })
 
 it('cleans log by reason', function () {

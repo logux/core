@@ -242,7 +242,7 @@ Log.prototype = {
    */
   changeMeta: function changeMeta (id, diff) {
     for (var key in diff) {
-      if (key === 'id' || key === 'added') {
+      if (key === 'id' || key === 'added' || key === 'time') {
         throw new Error('Changing ' + key + ' is prohibbited in Logux')
       }
     }
