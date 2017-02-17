@@ -13,6 +13,30 @@ function insert (store, entry) {
   return Promise.resolve(entry[1])
 }
 
+function find (list, id) {
+  var num = id[0]
+  var cache = id.slice(1).join('\t')
+  var m = 0
+  var n = list.length - 1
+  while (m <= n) {
+    var i = (n + m) >> 1
+    var entry = list[i]
+    var otherNum = entry[1].id[0]
+    if (otherNum > num) {
+      m = i + 1
+    } else if (otherNum < num) {
+      n = i - 1
+    } else if (entry[2] > cache) {
+      m = i + 1
+    } else if (entry[2] < cache) {
+      n = i - 1
+    } else {
+      return i
+    }
+  }
+  return -1
+}
+
 /**
  * Simple memory-based log store.
  *
@@ -40,16 +64,6 @@ function MemoryStore () {
 
 MemoryStore.prototype = {
 
-  get: function get (opts) {
-    var entries
-    if (opts.order === 'created') {
-      entries = this.created
-    } else {
-      entries = this.added
-    }
-    return Promise.resolve({ entries: convert(entries) })
-  },
-
   add: function add (action, meta) {
     var cache = meta.id.slice(1).join('\t')
     var entry = [action, meta, cache]
@@ -67,6 +81,31 @@ MemoryStore.prototype = {
 
     list.push(entry)
     return insert(this, entry)
+  },
+
+  has: function (id) {
+    return Promise.resolve(find(this.created, id) !== -1)
+  },
+
+  get: function get (opts) {
+    var entries
+    if (opts.order === 'created') {
+      entries = this.created
+    } else {
+      entries = this.added
+    }
+    return Promise.resolve({ entries: convert(entries) })
+  },
+
+  changeMeta: function changeMeta (id, diff) {
+    var index = find(this.created, id)
+    if (index === -1) {
+      return Promise.resolve(false)
+    } else {
+      var meta = this.created[index][1]
+      for (var key in diff) meta[key] = diff[key]
+      return Promise.resolve(true)
+    }
   },
 
   removeReason: function (reason, criteria, callback) {
@@ -93,10 +132,6 @@ MemoryStore.prototype = {
     return Promise.resolve()
   },
 
-  has: function (id) {
-    return Promise.resolve(this.find(id) !== -1)
-  },
-
   getLastAdded: function getLastAdded () {
     return Promise.resolve(this.lastAdded)
   },
@@ -116,42 +151,6 @@ MemoryStore.prototype = {
       this.lastReceived = values.received
     }
     return Promise.resolve()
-  },
-
-  changeMeta: function changeMeta (id, diff) {
-    var index = this.find(id)
-    if (index === -1) {
-      return Promise.resolve(false)
-    } else {
-      var meta = this.created[index][1]
-      for (var key in diff) meta[key] = diff[key]
-      return Promise.resolve(true)
-    }
-  },
-
-  find: function find (id) {
-    var list = this.created
-    var num = id[0]
-    var cache = id.slice(1).join('\t')
-    var m = 0
-    var n = list.length - 1
-    while (m <= n) {
-      var i = (n + m) >> 1
-      var entry = list[i]
-      var otherNum = entry[1].id[0]
-      if (otherNum > num) {
-        m = i + 1
-      } else if (otherNum < num) {
-        n = i - 1
-      } else if (entry[2] > cache) {
-        m = i + 1
-      } else if (entry[2] < cache) {
-        n = i - 1
-      } else {
-        return i
-      }
-    }
-    return -1
   }
 
 }
