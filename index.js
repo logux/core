@@ -76,8 +76,9 @@ module.exports = {
  */
 
 /**
- * Every Store class should provide 6 standard methods:
- * add, get and remove, getLastAdded, getLastSynced, setLastSynced.
+ * Every Store class should provide 8 standard methods:
+ * add, has, get, changeMeta, removeReason,
+ * getLastAdded, getLastSynced, setLastSynced.
  *
  * See {@link MemoryStore} sources for example.
  *
@@ -99,13 +100,13 @@ module.exports = {
  * @memberof Store#
  */
 /**
- * Remove Action from store.
+ * Does store already has action with this ID.
  *
  * @param {ID} id Action ID.
  *
- * @return {undefined}
+ * @return {Promise} Promise with boolean
  *
- * @name remove
+ * @name has
  * @function
  * @memberof Store#
  */
@@ -128,6 +129,19 @@ module.exports = {
  * @memberof Store#
  */
 /**
+ * Change action metadata.
+ *
+ * @param {ID} id Action ID.
+ * @param {object} diff Object with values to change in action metadata.
+ *
+ * @return {Promise} Promise with `true` if metadata was changed
+ *                   or `false` on unknown ID.
+ *
+ * @name changeMeta
+ * @function
+ * @memberof Store#
+ */
+/**
  * Remove reason from action’s metadata and remove actions without reasons.
  *
  * @param {string} reason The reason name.
@@ -141,17 +155,6 @@ module.exports = {
  * @return {Promise} Promise when cleaning will be finished.
  *
  * @name removeReason
- * @function
- * @memberof Store#
- */
-/**
- * Does store already has action with this ID.
- *
- * @param {ID} id Action ID.
- *
- * @return {Promise} Promise with boolean
- *
- * @name has
  * @function
  * @memberof Store#
  */
@@ -182,19 +185,6 @@ module.exports = {
  * @return {Promise} Promise when values will be saved to store.
  *
  * @name setLastSynced
- * @function
- * @memberof Store#
- */
-/**
- * Change action metadata.
- *
- * @param {ID} id Action ID.
- * @param {object} diff Object with values to change in action metadata.
- *
- * @return {Promise} Promise with `true` if metadata was changed
- *                   or `false` on unknown ID.
- *
- * @name changeMeta
  * @function
  * @memberof Store#
  */

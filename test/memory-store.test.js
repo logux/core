@@ -113,27 +113,6 @@ it('ignores entries with same ID', function () {
     })
 })
 
-it('removes entries', function () {
-  var store = new MemoryStore()
-  store.add({ }, { id: [1, 'node', 0], time: 1 })
-  store.add({ }, { id: [1, 'node', 1], time: 2 })
-  store.add({ }, { id: [3, 'node', 0], time: 3 })
-  store.remove([1, 'node', 1])
-  return checkBoth(store, [
-    [{ }, { id: [3, 'node', 0], time: 3, added: 3 }],
-    [{ }, { id: [1, 'node', 0], time: 1, added: 1 }]
-  ])
-})
-
-it('ignores unknown entry', function () {
-  var store = new MemoryStore()
-  store.add({ }, { id: [1], time: 1, added: 1 })
-  store.remove([2])
-  return check(store, 'created', [
-    [{ }, { id: [1], time: 1, added: 1 }]
-  ])
-})
-
 it('returns current entries state', function () {
   var store = new MemoryStore()
   var promise1 = check(store, 'created', [])
