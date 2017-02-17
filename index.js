@@ -77,8 +77,8 @@ module.exports = {
 
 /**
  * Every Store class should provide 8 standard methods:
- * add, has, get, changeMeta, removeReason,
- * getLastAdded, getLastSynced, setLastSynced.
+ * `add`, `has`, `get`, `changeMeta`, `removeReason`,
+ * `getLastAdded`, `getLastSynced`, `setLastSynced`.
  *
  * See {@link MemoryStore} sources for example.
  *
