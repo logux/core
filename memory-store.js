@@ -138,9 +138,17 @@ MemoryStore.prototype = {
     var removed = []
     this.created = this.created.filter(function (entry) {
       var meta = entry[1]
-      if (meta.reasons.indexOf(reason) === -1) return true
-      if (criteria.minAdded && meta.added < criteria.minAdded) return true
-      if (criteria.maxAdded && meta.added > criteria.maxAdded) return true
+      var c = criteria
+
+      if (meta.reasons.indexOf(reason) === -1) {
+        return true
+      }
+      if (typeof c.minAdded !== 'undefined' && meta.added < c.minAdded) {
+        return true
+      }
+      if (typeof c.maxAdded !== 'undefined' && meta.added > c.maxAdded) {
+        return true
+      }
 
       var reasons = meta.reasons
       reasons.splice(reasons.indexOf(reason), 1)
