@@ -298,6 +298,28 @@ it('does not allow to change ID or added', function () {
   }).toThrowError(/time is prohibbited/)
 })
 
+it('removes action on setting entry reasons', function () {
+  return logWith([
+    [{ type: 'A' }, { reasons: ['test'], id: [1] }],
+    [{ type: 'B' }, { reasons: ['test'], id: [2] }]
+  ]).then(function (log) {
+    var cleaned = []
+    log.on('clean', function (action, meta) {
+      cleaned.push([action, meta])
+    })
+
+    return log.changeMeta([2], { reasons: [], a: 1 }).then(function (r) {
+      expect(r).toBeTruthy()
+      expect(cleaned).toEqual([
+        [{ type: 'B' }, { id: [2], time: 2, added: 2, reasons: [], a: 1 }]
+      ])
+      checkEntries(log, [
+        [{ type: 'A' }, { id: [1], time: 1, added: 1, reasons: ['test'] }]
+      ])
+    })
+  })
+})
+
 it('cleans log by reason', function () {
   return logWith([
     [{ type: 'A' }, { reasons: ['a'] }],

@@ -87,6 +87,32 @@ MemoryStore.prototype = {
     return Promise.resolve(find(this.created, id) !== -1)
   },
 
+  remove: function remove (id) {
+    var created = find(this.created, id)
+    if (created === -1) return Promise.resolve(false)
+
+    var entry = [this.created[created][0], this.created[created][1]]
+    this.created.splice(created, 1)
+
+    var added = entry[1].added
+    var m = 0
+    var n = this.added.length - 1
+    while (m <= n) {
+      var i = (n + m) >> 1
+      var otherAdded = this.added[i][1].added
+      if (otherAdded > added) {
+        m = i + 1
+      } else if (otherAdded < added) {
+        n = i - 1
+      } else {
+        this.added.splice(i, 1)
+        break
+      }
+    }
+
+    return Promise.resolve(entry)
+  },
+
   get: function get (opts) {
     var entries
     if (opts.order === 'created') {

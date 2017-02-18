@@ -522,6 +522,7 @@ Any object implementing this 5 methods can be considered a Store:
 * `add(entry)` puts new log entry in the store. Returns a Promise with new
   action meta or `false` if action with same `id` was already in log.
 * `has(id)` does store has action with this ID.
+* `remove(id)` removes action.
 * `get()` returns a Promise loading the first page of actions in the log.
   Action page is an object containing an entries array in `page.entries`
   and a `page.next` function returning the next page Promise.

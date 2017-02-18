@@ -77,7 +77,7 @@ module.exports = {
 
 /**
  * Every Store class should provide 8 standard methods:
- * `add`, `has`, `get`, `changeMeta`, `removeReason`,
+ * `add`, `has`, `get`, `remove`, `changeMeta`, `removeReason`,
  * `getLastAdded`, `getLastSynced`, `setLastSynced`.
  *
  * See {@link MemoryStore} sources for example.
@@ -107,6 +107,17 @@ module.exports = {
  * @return {Promise} Promise with boolean
  *
  * @name has
+ * @function
+ * @memberof Store#
+ */
+/**
+ * Remove action from store.
+ *
+ * @param {ID} id Action ID.
+ *
+ * @return {Promise} Promise with entry if action was in store.
+ *
+ * @name remove
  * @function
  * @memberof Store#
  */

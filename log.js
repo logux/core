@@ -227,7 +227,7 @@ Log.prototype = {
   },
 
   /**
-   * Change action metadata.
+   * Change action metadata. You will remove action by setting `reasons: []`.
    *
    * @param {ID} id Action ID.
    * @param {object} diff Object with values to change in action metadata.
@@ -241,12 +241,25 @@ Log.prototype = {
    * })
    */
   changeMeta: function changeMeta (id, diff) {
-    for (var key in diff) {
+    var key
+    for (key in diff) {
       if (key === 'id' || key === 'added' || key === 'time') {
         throw new Error('Changing ' + key + ' is prohibbited in Logux')
       }
     }
-    return this.store.changeMeta(id, diff)
+
+    var emitter = this.emitter
+    if (diff.reasons && diff.reasons.length === 0) {
+      return this.store.remove(id).then(function (entry) {
+        if (entry) {
+          for (key in diff) entry[1][key] = diff[key]
+          emitter.emit('clean', entry[0], entry[1])
+        }
+        return !!entry
+      })
+    } else {
+      return this.store.changeMeta(id, diff)
+    }
   },
 
   /**

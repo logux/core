@@ -230,3 +230,36 @@ it('removes reason with minimum added', function () {
       ])
     })
 })
+
+it('removes entries', function () {
+  var store = new MemoryStore()
+  store.add({ type: '1' }, { id: [1, 'node1', 0], time: 1 })
+  store.add({ type: '2' }, { id: [1, 'node1', 1], time: 2 })
+  store.add({ type: '3' }, { id: [1, 'node1', 2], time: 2 })
+  store.add({ type: '4' }, { id: [1, 'node1', 3], time: 2 })
+  store.add({ type: '5' }, { id: [1, 'node2', 0], time: 2 })
+  store.add({ type: '6' }, { id: [4, 'node1', 0], time: 4 })
+  store.remove([1, 'node1', 2]).then(function (result) {
+    expect(result).toEqual([
+      { type: '3' }, { id: [1, 'node1', 2], time: 2, added: 3 }
+    ])
+    return checkBoth(store, [
+      [{ type: '6' }, { id: [4, 'node1', 0], time: 4, added: 6 }],
+      [{ type: '5' }, { id: [1, 'node2', 0], time: 2, added: 5 }],
+      [{ type: '4' }, { id: [1, 'node1', 3], time: 2, added: 4 }],
+      [{ type: '2' }, { id: [1, 'node1', 1], time: 2, added: 2 }],
+      [{ type: '1' }, { id: [1, 'node1', 0], time: 1, added: 1 }]
+    ])
+  })
+})
+
+it('ignores unknown entry', function () {
+  var store = new MemoryStore()
+  store.add({ }, { id: [1], time: 1, added: 1 })
+  store.remove([2]).then(function (result) {
+    expect(result).toBeFalsy()
+    return check(store, 'created', [
+      [{ }, { id: [1], time: 1, added: 1 }]
+    ])
+  })
+})
