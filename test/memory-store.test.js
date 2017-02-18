@@ -205,7 +205,7 @@ it('removes reason with minimum added', function () {
   })
 })
 
-it('removes reason with minimum added', function () {
+it('removes reason with maximum added', function () {
   var store = new MemoryStore()
   store.add({ type: '1' }, { id: [1], time: 1, reasons: ['a'] })
   store.add({ type: '2' }, { id: [2], time: 2, reasons: ['a'] })
@@ -217,7 +217,7 @@ it('removes reason with minimum added', function () {
   })
 })
 
-it('removes reason with minimum added', function () {
+it('removes reason with minimum and maximum added', function () {
   var store = new MemoryStore()
   store.add({ type: '1' }, { id: [1], time: 1, reasons: ['a'] })
   store.add({ type: '2' }, { id: [2], time: 2, reasons: ['a'] })
@@ -229,6 +229,16 @@ it('removes reason with minimum added', function () {
         [{ type: '1' }, { added: 1, id: [1], time: 1, reasons: ['a'] }]
       ])
     })
+})
+
+it('removes reason with zero at maximum added', function () {
+  var store = new MemoryStore()
+  store.add({ type: '1' }, { id: [1], time: 1, reasons: ['a'] })
+  return store.removeReason('a', { maxAdded: 0 }, nope).then(function () {
+    return checkBoth(store, [
+      [{ type: '1' }, { added: 1, id: [1], time: 1, reasons: ['a'] }]
+    ])
+  })
 })
 
 it('removes entries', function () {
