@@ -238,10 +238,9 @@ BaseSync.prototype = {
    *              a {@link SyncError} to send error to remote node.
    * * `error`: synchronization error was raised.
    * * `clientError`: when error was sent to remote node.
-   * * `debug`: when debug information for developer received from remote node.
+   * * `debug`: when debug information received from remote node.
    *
-   * @param {"state"|"connect"|"error"|"clientError"|"debug"} event The event
-   *                                                                name.
+   * @param {"state"|"connect"|"error"|"clientError"|"debug"} event Event name.
    * @param {listener} listener The listener function.
    *
    * @return {function} Unbind listener from event.
@@ -259,8 +258,7 @@ BaseSync.prototype = {
    * Add one-time listener for synchronization events.
    * See {@link BaseSync#on} for supported events.
    *
-   * @param {"state"|"connect"|"error"|"clientError"|"debug"} event The event
-   *                                                                name.
+   * @param {"state"|"connect"|"error"|"clientError"|"debug"} event Event name.
    * @param {listener} listener The listener function.
    *
    * @return {function} Unbind listener from event.
