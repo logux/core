@@ -7,6 +7,7 @@ var connectMessages = require('./messages/connect')
 var errorMessages = require('./messages/error')
 var pingMessages = require('./messages/ping')
 var syncMessages = require('./messages/sync')
+var debugMessages = require('./messages/debug')
 
 var validate = require('./validate')
 
@@ -237,8 +238,10 @@ BaseSync.prototype = {
    *              a {@link SyncError} to send error to remote node.
    * * `error`: synchronization error was raised.
    * * `clientError`: when error was sent to remote node.
+   * * `debug`: when debug information for developer received from remote node.
    *
-   * @param {"state"|"connect"|"error"|"clientError"} event The event name.
+   * @param {"state"|"connect"|"error"|"clientError"|"debug"} event The event
+   *                                                                name.
    * @param {listener} listener The listener function.
    *
    * @return {function} Unbind listener from event.
@@ -256,7 +259,8 @@ BaseSync.prototype = {
    * Add one-time listener for synchronization events.
    * See {@link BaseSync#on} for supported events.
    *
-   * @param {"state"|"connect"|"error"|"clientError"} event The event name.
+   * @param {"state"|"connect"|"error"|"clientError"|"debug"} event The event
+   *                                                                name.
    * @param {listener} listener The listener function.
    *
    * @return {function} Unbind listener from event.
@@ -529,7 +533,7 @@ var DUILIANS = {
 }
 
 BaseSync.prototype = assign(BaseSync.prototype,
-  errorMessages, connectMessages, pingMessages, syncMessages)
+  errorMessages, connectMessages, pingMessages, syncMessages, debugMessages)
 
 module.exports = BaseSync
 

@@ -67,7 +67,13 @@ var validators = {
 
   duilian: function duilian (msg) {
     return (msg.length === 2) && isString(msg[1])
+  },
+
+  debug: function debug (msg) {
+    return (msg.length === 3) && isString(msg[1]) &&
+           (msg[1] === 'error' && isString(msg[2]))
   }
+
 }
 
 function wrongFormat (sync, msg) {
