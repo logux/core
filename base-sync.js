@@ -1,15 +1,20 @@
 var NanoEvents = require('nanoevents')
-var assign = require('object-assign')
-
-var SyncError = require('./sync-error')
 
 var connectMessages = require('./messages/connect')
 var errorMessages = require('./messages/error')
 var pingMessages = require('./messages/ping')
 var syncMessages = require('./messages/sync')
 var debugMessages = require('./messages/debug')
-
+var SyncError = require('./sync-error')
 var validate = require('./validate')
+
+var MIXINS = [
+  errorMessages,
+  connectMessages,
+  pingMessages,
+  syncMessages,
+  debugMessages
+]
 
 var BEFORE_AUTH = ['connect', 'connected', 'error']
 
@@ -525,13 +530,17 @@ BaseSync.prototype = {
 
 }
 
+for (var i = 0; i <= MIXINS.length; i++) {
+  var mixin = MIXINS[i]
+  for (var name in mixin) {
+    BaseSync.prototype[name] = mixin[name]
+  }
+}
+
 var DUILIANS = {
   '世事洞眀皆學問': '人情練達即文章',
   '書山有路勤爲徑': '學海無涯苦作舟'
 }
-
-BaseSync.prototype = assign(BaseSync.prototype,
-  errorMessages, connectMessages, pingMessages, syncMessages, debugMessages)
 
 module.exports = BaseSync
 

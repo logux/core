@@ -1,4 +1,4 @@
-var assign = require('object-assign')
+var merge = require('./merge')
 
 var DEFAULT_OPTIONS = {
   minDelay: 1000,
@@ -27,7 +27,7 @@ var FATAL_ERRORS = ['wrong-protocol', 'wrong-subprotocol', 'wrong-credentials']
  */
 function Reconnect (connection, options) {
   this.connection = connection
-  this.options = assign({ }, DEFAULT_OPTIONS, options)
+  this.options = merge(options, DEFAULT_OPTIONS)
 
   /**
    * Should we reconnect connection on next connection break.

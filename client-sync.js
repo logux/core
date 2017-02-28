@@ -1,6 +1,5 @@
-var assign = require('object-assign')
-
 var BaseSync = require('./base-sync')
+var merge = require('./merge')
 
 var DEFAULT_OPTIONS = {
   fixTime: true,
@@ -48,7 +47,7 @@ var DEFAULT_OPTIONS = {
  * @class
  */
 function ClientSync (nodeId, log, connection, options) {
-  options = assign({ }, DEFAULT_OPTIONS, options)
+  options = merge(options, DEFAULT_OPTIONS)
   BaseSync.call(this, nodeId, log, connection, options)
 }
 
@@ -66,6 +65,6 @@ ClientSync.prototype = {
 
 }
 
-ClientSync.prototype = assign({ }, BaseSync.prototype, ClientSync.prototype)
+ClientSync.prototype = merge(ClientSync.prototype, BaseSync.prototype)
 
 module.exports = ClientSync

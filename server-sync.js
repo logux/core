@@ -1,6 +1,5 @@
-var assign = require('object-assign')
-
 var BaseSync = require('./base-sync')
+var merge = require('./merge')
 
 var DEFAULT_OPTIONS = {
   timeout: 20000,
@@ -46,7 +45,7 @@ var DEFAULT_OPTIONS = {
  * @class
  */
 function ServerSync (nodeId, log, connection, options) {
-  options = assign({ }, DEFAULT_OPTIONS, options)
+  options = merge(options, DEFAULT_OPTIONS)
   BaseSync.call(this, nodeId, log, connection, options)
 
   if (this.options.fixTime) {
@@ -84,6 +83,6 @@ ServerSync.prototype = {
 
 }
 
-ServerSync.prototype = assign({ }, BaseSync.prototype, ServerSync.prototype)
+ServerSync.prototype = merge(ServerSync.prototype, BaseSync.prototype)
 
 module.exports = ServerSync
