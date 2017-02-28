@@ -80,7 +80,7 @@ it('checks types in connect message', function () {
   return Promise.all(wrongs.map(function (msg) {
     var log = TestTime.getLog()
     var pair = new TestPair()
-    var sync = new BaseSync('client', log, pair.left)
+    var sync = new ServerSync('server', log, pair.left)
     return pair.left.connect().then(function () {
       pair.right.send(msg)
       return pair.wait('right')

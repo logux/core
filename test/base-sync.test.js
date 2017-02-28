@@ -256,6 +256,10 @@ it('receives errors from connection', function () {
   })
 })
 
+it('does not fall on sync without connection', function () {
+  return createSync().syncSince(0)
+})
+
 it('receives format errors from connection', function () {
   return createTest().then(function (test) {
     var error = new Error('Wrong message format')

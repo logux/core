@@ -1,4 +1,5 @@
 var BaseSync = require('./base-sync')
+var validate = require('./validate')
 var merge = require('./merge')
 
 var DEFAULT_OPTIONS = {
@@ -66,6 +67,12 @@ ServerSync.prototype = {
   onDisconnect: function onDisconnect () {
     BaseSync.prototype.onDisconnect.call(this)
     this.destroy()
+  },
+
+  onMessage: function onMessage (msg) {
+    if (validate(this, msg)) {
+      BaseSync.prototype.onMessage.call(this, msg)
+    }
   },
 
   connectMessage: function connectMessage () {

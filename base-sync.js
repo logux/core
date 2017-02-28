@@ -6,7 +6,6 @@ var pingMessages = require('./messages/ping')
 var syncMessages = require('./messages/sync')
 var debugMessages = require('./messages/debug')
 var SyncError = require('./sync-error')
-var validate = require('./validate')
 
 var MIXINS = [
   errorMessages,
@@ -373,8 +372,6 @@ BaseSync.prototype = {
 
   onMessage: function onMessage (msg) {
     this.delayPing()
-
-    if (!validate(this, msg)) return
     var name = msg[0]
 
     if (!this.authenticated && BEFORE_AUTH.indexOf(name) === -1) {

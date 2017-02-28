@@ -1,17 +1,17 @@
 var TestTime = require('logux-core').TestTime
 
+var ServerSync = require('../server-sync')
 var SyncError = require('../sync-error')
 var TestPair = require('../test-pair')
-var BaseSync = require('../base-sync')
 
 function createSync () {
   var pair = new TestPair()
-  return new BaseSync('server', TestTime.getLog(), pair.left)
+  return new ServerSync('server', TestTime.getLog(), pair.left)
 }
 
 function createTest () {
   var test = new TestPair()
-  test.leftSync = new BaseSync('server', TestTime.getLog(), test.left)
+  test.leftSync = new ServerSync('server', TestTime.getLog(), test.left)
   return test.left.connect().then(function () {
     return test
   })

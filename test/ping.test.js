@@ -1,5 +1,6 @@
 var TestTime = require('logux-core').TestTime
 
+var ServerSync = require('../server-sync')
 var ClientSync = require('../client-sync')
 var TestPair = require('../test-pair')
 
@@ -105,10 +106,13 @@ it('checks types', function () {
     ['pong', {}]
   ]
   return Promise.all(wrongs.map(function (command) {
-    return createTest({ fixTime: false }).then(function (test) {
+    var test = new TestPair()
+    var log = TestTime.getLog()
+    test.leftSync = new ServerSync('server', log, test.left)
+    return test.left.connect().then(function () {
       test.right.send(command)
       return test.wait('right')
-    }).then(function (test) {
+    }).then(function () {
       expect(test.leftSync.connected).toBeFalsy()
       expect(test.leftSent).toEqual([
         ['error', 'wrong-format', JSON.stringify(command)]
