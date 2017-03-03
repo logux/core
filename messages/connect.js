@@ -124,7 +124,7 @@ module.exports = {
       var now = this.now()
       var authTime = time[1] - time[0]
       var roundTrip = now - this.connectSended - authTime
-      this.timeFix = Math.floor(this.connectSended - time[0] + roundTrip / 2)
+      this.timeFix = Math.floor(this.connectSended - time[0] + (roundTrip / 2))
     }
 
     this.remoteSubprotocol = options.subprotocol || '0.0.0'
