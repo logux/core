@@ -13,8 +13,8 @@
   },
   "devDependencies": {
     "docdash": "^0.4.0",
-    "eslint": "^3.16.1",
-    "eslint-config-logux": "^8.0.0",
+    "eslint": "^3.17.0",
+    "eslint-config-logux": "^9.0.0",
     "eslint-config-standard": "^7.0.0",
     "eslint-plugin-es5": "^1.0.1",
     "eslint-plugin-jest": "^19.0.1",
@@ -26,7 +26,7 @@
     "lint-staged": "^3.3.1",
     "pre-commit": "^1.2.2",
     "rimraf": "^2.6.1",
-    "yaspeller-ci": "^0.1.0"
+    "yaspeller-ci": "^0.2.0"
   },
   "scripts": {
     "lint-staged": "lint-staged",
