@@ -83,7 +83,7 @@ MemoryStore.prototype = {
     return insert(this, entry)
   },
 
-  has: function (id) {
+  has: function has (id) {
     return Promise.resolve(find(this.created, id) !== -1)
   },
 
