@@ -48,12 +48,12 @@ Log.prototype = {
   /**
    * Subscribe for log events. It implements nanoevents API. Supported events:
    *
-   * * `before`: when somebody try to add action to log.
+   * * `preadd`: when somebody try to add action to log.
    *   It fires before ID check. The best place to add reason.
    * * `add`: when new action was added to log.
    * * `clean`: when action was cleaned from store.
    *
-   * @param {"before"|"add"|"clean"} event The event name.
+   * @param {"preadd"|"add"|"clean"} event The event name.
    * @param {listener} listener The listener function.
    *
    * @return {function} Unbind listener from event.
@@ -74,7 +74,7 @@ Log.prototype = {
    * Add one-time listener for log events.
    * See {@link Log#on} for supported events.
    *
-   * @param {"before"|"add"|"clean"} event The event name.
+   * @param {"preadd"|"add"|"clean"} event The event name.
    * @param {listener} listener The listener function.
    *
    * @return {function} Unbind listener from event.
@@ -124,7 +124,7 @@ Log.prototype = {
     if (typeof meta.reasons === 'undefined') meta.reasons = []
 
     var emitter = this.emitter
-    emitter.emit('before', action, meta)
+    emitter.emit('preadd', action, meta)
 
     if (meta.reasons.length === 0 && newId) {
       emitter.emit('add', action, meta)

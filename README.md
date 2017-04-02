@@ -171,7 +171,7 @@ after some time (for instance, overrode by other actions) and we could
 clean them to reduce log size.
 
 This is why every action in log should have “reason of life”,
-just string tag added by action creator or by `before` listener.
+just string tag added by action creator or by `preadd` listener.
 
 If action doesn’t have a reason, it will be emitted to `add` listeners,
 but will not be saved to store.
@@ -348,11 +348,11 @@ First way, is to set in `add` method:
 log.add({ type: 'CHANGE_NAME' }, { reasons: ['sync'] })
 ```
 
-Or by `before` listener. Note, that event is emitted before ID check,
+Or by `preadd` listener. Note, that event is emitted before ID check,
 so it is emitted even for actions, that was already in log.
 
 ```js
-log.on('before', (action, meta) => {
+log.on('preadd', (action, meta) => {
   meta.reasons.push('devtools')
 })
 ```
@@ -435,19 +435,19 @@ log.on('add', (action, meta) => {
 })
 ```
 
-### `before`
+### `preadd`
 
 Event is emitted with added action, before it will be placed to store.
 It is the best place to automatically set `reasons` (for example, to keep
 last 1000 action in log for DevTools).
 
 ```js
-log.on('before', (action, meta) => {
+log.on('preadd', (action, meta) => {
   meta.reasons.push('devtools')
 })
 ```
 
-Instead of `add` event, `before` event will be emitted even if action
+Instead of `add` event, `preadd` event will be emitted even if action
 with same ID already presented in store.
 
 

@@ -421,7 +421,7 @@ it('checks ID for actions without reasons', function () {
   })
 })
 
-it('fires before event', function () {
+it('fires preadd event', function () {
   var log = createLog()
 
   var add = []
@@ -429,22 +429,22 @@ it('fires before event', function () {
     add.push(action.type)
   })
 
-  var before = []
-  log.on('before', function (action, meta) {
+  var preadd = []
+  log.on('preadd', function (action, meta) {
     expect(meta.added).toBeUndefined()
     if (action.type === 'A') meta.reasons.push('test')
-    before.push(action.type)
+    preadd.push(action.type)
   })
 
   return log.add({ type: 'A' }, { id: [1] }).then(function () {
     checkEntries(log, [
       [{ type: 'A' }, { id: [1], time: 1, added: 1, reasons: ['test'] }]
     ])
-    expect(before).toEqual(['A'])
+    expect(preadd).toEqual(['A'])
     expect(add).toEqual(['A'])
     return log.add({ type: 'B' }, { id: [1] })
   }).then(function () {
-    expect(before).toEqual(['A', 'B'])
+    expect(preadd).toEqual(['A', 'B'])
     expect(add).toEqual(['A'])
   })
 })

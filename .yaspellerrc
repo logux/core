@@ -38,6 +38,7 @@
     "TestTime",
     "changeMeta",
     "diff",
-    "removeReason"
+    "removeReason",
+    "preadd"
   ]
 }
