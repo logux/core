@@ -22,10 +22,10 @@ function createTest () {
   var log2 = time.nextLog()
   var test = new TestPair()
 
-  log1.on('before', function (action, meta) {
+  log1.on('preadd', function (action, meta) {
     meta.reasons = ['test']
   })
-  log2.on('before', function (action, meta) {
+  log2.on('preadd', function (action, meta) {
     meta.reasons = ['test']
   })
 

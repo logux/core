@@ -7,7 +7,7 @@ var BaseSync = require('../base-sync')
 function createSync (opts) {
   var pair = new TestPair()
   var log = TestTime.getLog()
-  log.on('before', function (action, meta) {
+  log.on('preadd', function (action, meta) {
     meta.reasons = ['test']
   })
   return new BaseSync('client', log, pair.left, opts)
