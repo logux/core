@@ -83,7 +83,7 @@ LocalConnection.prototype = {
  */
 function LocalPair (delay) {
   /**
-   * Delay for connection and send events to emulate real conection latency.
+   * Delay for connection and send events to emulate real connection latency.
    * @type {number}
    */
   this.delay = delay || 1
