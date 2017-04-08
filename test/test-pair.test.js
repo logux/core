@@ -131,3 +131,8 @@ it('filters events in wait()', function () {
     expect(pair.rightSent).toEqual(['right1', 'right2'])
   })
 })
+
+it('passes delay', function () {
+  var pair = new TestPair(50)
+  expect(pair.delay).toEqual(50)
+})

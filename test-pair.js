@@ -20,6 +20,8 @@ function clone (obj) {
  * Two paired loopback connections with events tracking
  * to be used in Logux tests.
  *
+ * @param {number} [delay=1] Delay for connection and send events.
+ *
  * @example
  * import { testPair } from 'logux-sync'
  * it('tracks events', () => {
@@ -36,8 +38,8 @@ function clone (obj) {
  * @extends LocalPair
  * @class
  */
-function TestPair () {
-  LocalPair.call(this)
+function TestPair (delay) {
+  LocalPair.call(this, delay)
 
   this.clear()
   var pair = this

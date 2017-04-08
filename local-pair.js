@@ -33,7 +33,7 @@ LocalConnection.prototype = {
           self.other().emitter.emit('connect')
           self.emitter.emit('connect')
           resolve()
-        }, 1)
+        }, self.pair.delay)
       })
     }
   },
@@ -60,7 +60,7 @@ LocalConnection.prototype = {
       var self = this
       setTimeout(function () {
         self.other().emitter.emit('message', message)
-      }, 1)
+      }, self.pair.delay)
     } else {
       throw new Error('Connection should be started before sending a message')
     }
@@ -71,6 +71,8 @@ LocalConnection.prototype = {
 /**
  * Two paired loopback connections.
  *
+ * @param {number} [delay=1] Delay for connection and send events.
+ *
  * @example
  * import { LocalPair } from 'logux-sync'
  * const pair = new LocalPair()
@@ -79,7 +81,12 @@ LocalConnection.prototype = {
  *
  * @class
  */
-function LocalPair () {
+function LocalPair (delay) {
+  /**
+   * Delay for connection and send events to emulate real conection latency.
+   * @type {number}
+   */
+  this.delay = delay || 1
   /**
    * First connection. Will be connected to {@link LocalPair#right} one
    * after {@link Connection#connect}.

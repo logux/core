@@ -17,9 +17,9 @@ function listen (tracker, connection) {
   return actions
 }
 
-function createTracker () {
+function createTracker (delay) {
   var result = {
-    pair: new LocalPair(),
+    pair: new LocalPair(delay),
     wait: function () {
       return new Promise(function (resolve) {
         result.waiting = function () {
@@ -98,5 +98,21 @@ it('sends a message event', function () {
   }).then(function () {
     expect(tracker.left).toEqual([['connect']])
     expect(tracker.right).toEqual([['connect'], ['test']])
+  })
+})
+
+it('emulates delay', function () {
+  var tracker = createTracker(50)
+  expect(tracker.pair.delay).toEqual(50)
+
+  var prevTime = Date.now()
+  return tracker.pair.left.connect().then(function () {
+    expect(Date.now() - prevTime).toBeGreaterThanOrEqual(50)
+
+    prevTime = Date.now()
+    tracker.pair.left.send(['test'])
+    return tracker.wait()
+  }).then(function () {
+    expect(Date.now() - prevTime).toBeGreaterThanOrEqual(50)
   })
 })
