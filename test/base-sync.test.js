@@ -179,6 +179,7 @@ it('has state', function () {
   }).then(function () {
     sync.connection.disconnect()
     expect(states).toEqual([
+      'connecting',
       'synchronized',
       'sending',
       'synchronized',

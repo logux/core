@@ -25,6 +25,7 @@ LocalConnection.prototype = {
     if (this.connected) {
       throw new Error('Connection already established')
     } else {
+      this.emitter.emit('connecting')
       var self = this
       return new Promise(function (resolve) {
         setTimeout(function () {

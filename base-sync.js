@@ -130,7 +130,7 @@ function BaseSync (nodeId, log, connection, options) {
    *
    * * `disconnected`: no connection, but no new actions to synchronization.
    * * `wait`: new actions for synchronization but there is no connection.
-   * * `connecting`: connection was established and we wait for node answer.
+   * * `connecting`: connection was started and we wait for node answer.
    * * `sending`: new actions was sent, waiting for answer.
    * * `synchronized`: all actions was synchronized and we keep connection.
    *
