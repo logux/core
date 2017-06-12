@@ -40,11 +40,11 @@ module.exports = {
  *                          {@link Log#add} will fill it.
  */
 
- /**
-  * @callback listener
-  * @param {Action} action New action.
-  * @param {Meta} meta The action’s metadata.
-  */
+/**
+ * @callback listener
+ * @param {Action} action New action.
+ * @param {Meta} meta The action’s metadata.
+ */
 
 /**
  * Array with {@link Action} and its {@link Meta}.
@@ -67,7 +67,7 @@ module.exports = {
  * @property {next|undefined}
  */
 
- /**
+/**
  * The `added` values for latest synchronized received/sent events.
  *
  * @typedef {object} LastSynced
