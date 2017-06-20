@@ -462,10 +462,9 @@ BaseSync.prototype = {
     }, this.options.ping)
   },
 
-  syncSince: function syncSince (lastSynced) {
+  syncSinceQuery: function syncSinceQuery (lastSynced) {
     var data = []
-    var sync = this
-    this.log.each({ order: 'added' }, function (action, meta) {
+    return this.log.each({ order: 'added' }, function (action, meta) {
       if (meta.added <= lastSynced) {
         return false
       } else {
@@ -473,6 +472,13 @@ BaseSync.prototype = {
         return true
       }
     }).then(function () {
+      return data
+    })
+  },
+
+  syncSince: function syncSince (lastSynced) {
+    var sync = this
+    this.syncSinceQuery(lastSynced).then(function (data) {
       if (!sync.connected) return
       if (data.length > 0) {
         sync.sendSync.apply(sync, data)
