@@ -191,22 +191,25 @@ it('maps input actions', function () {
 })
 
 it('fixes created time', function () {
-  return createTest().then(function (test) {
-    test.leftSync.timeFix = 100
-    test.leftSync.log.add({ type: 'a' }, { id: [101, 'test1', 0], time: 101 })
-    test.rightSync.log.add({ type: 'b' }, { id: [2, 'test2', 0], time: 2 })
-    return test.leftSync.waitFor('synchronized').then(function () {
-      return test
-    })
-  }).then(function (test) {
+  var test
+  return createTest().then(function (created) {
+    test = created
+    test.leftSync.timeFix = 10
+    return Promise.all([
+      test.leftSync.log.add({ type: 'a' }, { id: [11, 'test1', 0], time: 11 }),
+      test.rightSync.log.add({ type: 'b' }, { id: [2, 'test2', 0], time: 2 })
+    ])
+  }).then(function () {
+    return test.leftSync.waitFor('synchronized')
+  }).then(function () {
     expect(entries(test.leftSync.log)).toEqual([
       [
         { type: 'b' },
-        { id: [2, 'test2', 0], time: 102, added: 2, reasons: ['test'] }
+        { id: [2, 'test2', 0], time: 12, added: 2, reasons: ['test'] }
       ],
       [
         { type: 'a' },
-        { id: [101, 'test1', 0], time: 101, added: 1, reasons: ['test'] }
+        { id: [11, 'test1', 0], time: 11, added: 1, reasons: ['test'] }
       ]
     ])
     expect(entries(test.rightSync.log)).toEqual([
@@ -216,7 +219,7 @@ it('fixes created time', function () {
       ],
       [
         { type: 'a' },
-        { id: [101, 'test1', 0], time: 1, added: 2, reasons: ['test'] }
+        { id: [11, 'test1', 0], time: 1, added: 2, reasons: ['test'] }
       ]
     ])
   })
@@ -248,8 +251,11 @@ it('synchronizes actions on connect', function () {
   var test
   return createTest().then(function (created) {
     test = created
-    test.leftSync.log.add({ type: 'a' })
-    test.rightSync.log.add({ type: 'b' })
+    return Promise.all([
+      test.leftSync.log.add({ type: 'a' }),
+      test.rightSync.log.add({ type: 'b' })
+    ])
+  }).then(function () {
     return test.leftSync.waitFor('synchronized')
   }).then(function () {
     test.left.disconnect()
