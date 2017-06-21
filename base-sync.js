@@ -294,8 +294,9 @@ BaseSync.prototype = {
   },
 
   /**
-   * Return Promise until {@link BaseSync#state} will be changed
-   * to specific value.
+   * Return Promise until {@link BaseSync#state} sync will have specific state.
+   *
+   * If current state is correct, method will return resolved Promise.
    *
    * @param {string} state The expected synchronization state value.
    *
@@ -307,6 +308,10 @@ BaseSync.prototype = {
    * })
    */
   waitFor: function (state) {
+    if (this.state === state) {
+      return Promise.resolve()
+    }
+
     var sync = this
     return new Promise(function (resolve) {
       var unbind = sync.on('state', function () {

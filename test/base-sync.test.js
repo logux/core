@@ -194,6 +194,10 @@ it('has state', function () {
   })
 })
 
+it('does not wait for state change is current state is correct', function () {
+  return createSync().waitFor('disconnected')
+})
+
 it('loads lastSent, lastReceived and lastAdded from store', function () {
   var log = TestTime.getLog()
   var con = new NanoEvents()
