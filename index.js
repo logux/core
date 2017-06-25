@@ -104,12 +104,12 @@ module.exports = function eachTest (test) {
 
   test('changes meta', storeFactory => () => {
     store = storeFactory()
-    return store.add({}, { id: [1], time: 1, a: 1 }).then(() => {
+    return store.add({ }, { id: [1], time: 1, a: 1 }).then(() => {
       return store.changeMeta([1], { a: 2, b: 2 })
     }).then(result => {
       expect(result).toBeTruthy()
       return check(store, [
-        [{}, { id: [1], time: 1, added: 1, a: 2, b: 2 }]
+        [{ }, { id: [1], time: 1, added: 1, a: 2, b: 2 }]
       ])
     })
   })
@@ -146,11 +146,11 @@ module.exports = function eachTest (test) {
 
   test('ignores unknown entry', storeFactory => () => {
     store = storeFactory()
-    store.add({}, { id: [1], time: 1, added: 1 })
+    store.add({ }, { id: [1], time: 1, added: 1 })
     store.remove([2]).then(result => {
       expect(result).toBeFalsy()
       return check(storeFactory, 'created', [
-        [{}, { id: [1], time: 1, added: 1 }]
+        [{ }, { id: [1], time: 1, added: 1 }]
       ])
     })
   })
@@ -164,7 +164,7 @@ module.exports = function eachTest (test) {
       store.add({ type: '3' }, { id: [3], time: 3, reasons: ['a', 'b'] }),
       store.add({ type: '4' }, { id: [4], time: 4, reasons: ['b'] })
     ]).then(() => {
-      return store.removeReason('a', {}, (action, meta) => {
+      return store.removeReason('a', { }, (action, meta) => {
         removed.push([action, meta])
       })
     }).then(() => {
@@ -223,11 +223,11 @@ module.exports = function eachTest (test) {
 
   test('removes reason with zero at maximum added', storeFactory => () => {
     store = storeFactory()
-    return store.add({}, { id: [1], time: 1, reasons: ['a'] })
+    return store.add({ }, { id: [1], time: 1, reasons: ['a'] })
       .then(() => store.removeReason('a', { maxAdded: 0 }, nope))
       .then(() => {
         return check(store, [
-          [{}, { added: 1, id: [1], time: 1, reasons: ['a'] }]
+          [{ }, { added: 1, id: [1], time: 1, reasons: ['a'] }]
         ])
       })
   })
