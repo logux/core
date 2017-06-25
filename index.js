@@ -31,11 +31,11 @@ function all (request, list) {
 function check (storeInstance, created, added) {
   if (!added) added = created
   return all(storeInstance.get({ order: 'created' })).then(entries => {
-    assert.equal(entries, created)
+    assert.deepEqual(entries, created)
   }).then(() => {
     return all(storeInstance.get({ order: 'added' }))
   }).then(entries => {
-    assert.equal(entries, added)
+    assert.deepEqual(entries, added)
   })
 }
 
@@ -57,7 +57,7 @@ module.exports = function eachTest (test) {
       assert.equal(added, 0)
       return store.getLastSynced()
     }).then(synced => {
-      assert.equal(synced, { sent: 0, received: 0 })
+      assert.deepEqual(synced, { sent: 0, received: 0 })
     })
   })
 
@@ -66,7 +66,7 @@ module.exports = function eachTest (test) {
     return store.setLastSynced({ sent: 1 }).then(() => {
       return store.getLastSynced()
     }).then(synced => {
-      return assert.equal(synced, { sent: 1, received: 0 })
+      return assert.deepEqual(synced, { sent: 1, received: 0 })
     })
   })
 
@@ -98,7 +98,7 @@ module.exports = function eachTest (test) {
       }).then(() => {
         return store.getLastAdded()
       }).then(added => {
-        assert.ok(added === 1)
+        assert.equal(added, 1)
       })
     })
   })
@@ -108,7 +108,7 @@ module.exports = function eachTest (test) {
     return store.add({ }, { id: [1], time: 1, a: 1 }).then(() => {
       return store.changeMeta([1], { a: 2, b: 2 })
     }).then(result => {
-      assert.ok(result === true)
+      assert.equal(result, true)
       return check(store, [
         [{ }, { id: [1], time: 1, added: 1, a: 2, b: 2 }]
       ])
@@ -118,7 +118,7 @@ module.exports = function eachTest (test) {
   test('resolves to false on unknown ID in changeMeta', storeFactory => () => {
     const store = storeFactory()
     return store.changeMeta([1], { a: 1 }).then(result => {
-      assert.ok(result === false)
+      assert.equal(result, false)
     })
   })
 
@@ -135,7 +135,7 @@ module.exports = function eachTest (test) {
     ])
       .then(() => store.remove([1, 'node1', 2]))
       .then(result => {
-        assert.equal(result, [
+        assert.deepEqual(result, [
           { type: '3' }, { id: [1, 'node1', 2], time: 2, added: 3 }
         ])
         return checkBoth(store, [
@@ -152,7 +152,7 @@ module.exports = function eachTest (test) {
     const store = storeFactory()
     store.add({ }, { id: [1], time: 1, added: 1 })
     store.remove([2]).then(result => {
-      assert.ok(result === false)
+      assert.equal(result, false)
       return check(storeFactory, 'created', [
         [{ }, { id: [1], time: 1, added: 1 }]
       ])
