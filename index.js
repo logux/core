@@ -1,20 +1,6 @@
 'use strict'
 
 const assert = require('assert')
-/**
- * Pass all common tests for Logux store to callback.
- *
- * @param {creator} test Callback to create tests in your test framework.
- *
- * @returns {undefined}
- *
- * @example
- * const eachTest = require('logux-store-tests')
- *
- * eachTest((desc, creator) => {
- *   it(desc, creator(() => new CustomStore()))
- * })
- */
 
 function all (request, list) {
   if (!list) list = []
@@ -48,7 +34,21 @@ function checkBoth (storeInstance, entries) {
 
 function nope () { }
 
-module.exports = function eachTest (test) {
+/**
+ * Pass all common tests for Logux store to callback.
+ *
+ * @param {creator} test Callback to create tests in your test framework.
+ *
+ * @returns {undefined}
+ *
+ * @example
+ * const eachTest = require('logux-store-tests')
+ *
+ * eachTest((desc, creator) => {
+ *   it(desc, creator(() => new CustomStore()))
+ * })
+ */
+function eachTest (test) {
   test('is empty in the beginning', storeFactory => () => {
     const store = storeFactory()
     return check(store, []).then(() => {
@@ -236,6 +236,8 @@ module.exports = function eachTest (test) {
       })
   })
 }
+
+module.exports = eachTest
 
 /**
  * @callback creator
