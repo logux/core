@@ -1912,6 +1912,10 @@ log-update@^1.0.2:
     ansi-escapes "^1.0.0"
     cli-cursor "^1.0.2"
 
+logux-store-tests@MrMeison/logux-store-tests#move-common-tests:
+  version "0.0.0"
+  resolved "https://codeload.github.com/MrMeison/logux-store-tests/tar.gz/680f1aebb85b6127d513a186a449e71d06616add"
+
 longest@^1.0.1:
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/longest/-/longest-1.0.1.tgz#30a0b2da38f73770e8294a0d22e6625ed77d0097"
