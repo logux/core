@@ -1920,7 +1920,7 @@ log-update@^1.0.2:
 
 logux-store-tests@logux/logux-store-tests:
   version "0.0.0"
-  resolved "https://codeload.github.com/logux/logux-store-tests/tar.gz/047c7a3490a6f0114760607bb5244218151c3114"
+  resolved "https://codeload.github.com/logux/logux-store-tests/tar.gz/de57498b520a050615e856bdffe8539bb1b1bca8"
 
 longest@^1.0.1:
   version "1.0.1"
