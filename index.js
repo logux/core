@@ -124,25 +124,28 @@ module.exports = function eachTest (test) {
 
   test('removes entries', storeFactory => () => {
     const store = storeFactory()
-    store.add({ type: '1' }, { id: [1, 'node1', 0], time: 1 })
-    store.add({ type: '1' }, { id: [1, 'node1', 0], time: 1 })
-    store.add({ type: '2' }, { id: [1, 'node1', 1], time: 2 })
-    store.add({ type: '3' }, { id: [1, 'node1', 2], time: 2 })
-    store.add({ type: '4' }, { id: [1, 'node1', 3], time: 2 })
-    store.add({ type: '5' }, { id: [1, 'node2', 0], time: 2 })
-    store.add({ type: '6' }, { id: [4, 'node1', 0], time: 4 })
-    store.remove([1, 'node1', 2]).then(result => {
-      expect(result).toEqual([
-        { type: '3' }, { id: [1, 'node1', 2], time: 2, added: 3 }
-      ])
-      return checkBoth(store, [
-        [{ type: '6' }, { id: [4, 'node1', 0], time: 4, added: 6 }],
-        [{ type: '5' }, { id: [1, 'node2', 0], time: 2, added: 5 }],
-        [{ type: '4' }, { id: [1, 'node1', 3], time: 2, added: 4 }],
-        [{ type: '2' }, { id: [1, 'node1', 1], time: 2, added: 2 }],
-        [{ type: '1' }, { id: [1, 'node1', 0], time: 1, added: 1 }]
-      ])
-    })
+    return Promise.all([
+      store.add({ type: '1' }, { id: [1, 'node1', 0], time: 1 }),
+      store.add({ type: '1' }, { id: [1, 'node1', 0], time: 1 }),
+      store.add({ type: '2' }, { id: [1, 'node1', 1], time: 2 }),
+      store.add({ type: '3' }, { id: [1, 'node1', 2], time: 2 }),
+      store.add({ type: '4' }, { id: [1, 'node1', 3], time: 2 }),
+      store.add({ type: '5' }, { id: [1, 'node2', 0], time: 2 }),
+      store.add({ type: '6' }, { id: [4, 'node1', 0], time: 4 })
+    ])
+      .then(() => store.remove([1, 'node1', 2]))
+      .then(result => {
+        assert.equal(result, [
+          { type: '3' }, { id: [1, 'node1', 2], time: 2, added: 3 }
+        ])
+        return checkBoth(store, [
+          [{ type: '6' }, { id: [4, 'node1', 0], time: 4, added: 6 }],
+          [{ type: '5' }, { id: [1, 'node2', 0], time: 2, added: 5 }],
+          [{ type: '4' }, { id: [1, 'node1', 3], time: 2, added: 4 }],
+          [{ type: '2' }, { id: [1, 'node1', 1], time: 2, added: 2 }],
+          [{ type: '1' }, { id: [1, 'node1', 0], time: 1, added: 1 }]
+        ])
+      })
   })
 
   test('ignores unknown entry', storeFactory => () => {
