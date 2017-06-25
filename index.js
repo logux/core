@@ -1,4 +1,6 @@
 'use strict'
+
+const assert = require('assert')
 /**
  * Pass all common tests for Logux store to callback.
  *
@@ -13,7 +15,6 @@
  *   it(desc, creator(() => new CustomStore()))
  * })
  */
-let store
 
 function all (request, list) {
   if (!list) list = []
@@ -30,11 +31,11 @@ function all (request, list) {
 function check (storeInstance, created, added) {
   if (!added) added = created
   return all(storeInstance.get({ order: 'created' })).then(entries => {
-    expect(entries).toEqual(created)
+    assert.equal(entries, created)
   }).then(() => {
     return all(storeInstance.get({ order: 'added' }))
   }).then(entries => {
-    expect(entries).toEqual(added)
+    assert.equal(entries, added)
   })
 }
 
@@ -49,28 +50,28 @@ function nope () { }
 
 module.exports = function eachTest (test) {
   test('is empty in the beginning', storeFactory => () => {
-    store = storeFactory()
+    const store = storeFactory()
     return check(store, []).then(() => {
       return store.getLastAdded()
     }).then(added => {
-      expect(added).toEqual(0)
+      assert.equal(added, 0)
       return store.getLastSynced()
     }).then(synced => {
-      expect(synced).toEqual({ sent: 0, received: 0 })
+      assert.equal(synced, { sent: 0, received: 0 })
     })
   })
 
   test('updates latest sent value', storeFactory => () => {
-    store = storeFactory()
+    const store = storeFactory()
     return store.setLastSynced({ sent: 1 }).then(() => {
       return store.getLastSynced()
     }).then(synced => {
-      return expect(synced).toEqual({ sent: 1, received: 0 })
+      return assert.equal(synced, { sent: 1, received: 0 })
     })
   })
 
   test('stores entries sorted', storeFactory => () => {
-    store = storeFactory()
+    const store = storeFactory()
     return Promise.all([
       store.add({ type: '1' }, { id: [1, 'a'], time: 1 }),
       store.add({ type: '2' }, { id: [1, 'c'], time: 2 }),
@@ -89,25 +90,25 @@ module.exports = function eachTest (test) {
   })
 
   test('returns latest added', storeFactory => () => {
-    store = storeFactory()
+    const store = storeFactory()
     return store.add({ type: 'A' }, { id: [1], time: 1 }).then(() => {
       return store.getLastAdded().then(added => {
-        expect(added).toBe(added)
+        assert.ok(added)
         return store.add({ type: 'A' }, { id: [1] })
       }).then(() => {
         return store.getLastAdded()
       }).then(added => {
-        expect(added).toBe(1)
+        assert.ok(added === 1)
       })
     })
   })
 
   test('changes meta', storeFactory => () => {
-    store = storeFactory()
+    const store = storeFactory()
     return store.add({ }, { id: [1], time: 1, a: 1 }).then(() => {
       return store.changeMeta([1], { a: 2, b: 2 })
     }).then(result => {
-      expect(result).toBeTruthy()
+      assert.ok(result === true)
       return check(store, [
         [{ }, { id: [1], time: 1, added: 1, a: 2, b: 2 }]
       ])
@@ -115,14 +116,14 @@ module.exports = function eachTest (test) {
   })
 
   test('resolves to false on unknown ID in changeMeta', storeFactory => () => {
-    store = storeFactory()
-    return store.changeMeta([1], { a: 1 }).then(res => {
-      expect(res).toBeFalsy()
+    const store = storeFactory()
+    return store.changeMeta([1], { a: 1 }).then(result => {
+      assert.ok(result === false)
     })
   })
 
   test('removes entries', storeFactory => () => {
-    store = storeFactory()
+    const store = storeFactory()
     store.add({ type: '1' }, { id: [1, 'node1', 0], time: 1 })
     store.add({ type: '1' }, { id: [1, 'node1', 0], time: 1 })
     store.add({ type: '2' }, { id: [1, 'node1', 1], time: 2 })
@@ -145,10 +146,10 @@ module.exports = function eachTest (test) {
   })
 
   test('ignores unknown entry', storeFactory => () => {
-    store = storeFactory()
+    const store = storeFactory()
     store.add({ }, { id: [1], time: 1, added: 1 })
     store.remove([2]).then(result => {
-      expect(result).toBeFalsy()
+      assert.ok(result === false)
       return check(storeFactory, 'created', [
         [{ }, { id: [1], time: 1, added: 1 }]
       ])
@@ -156,7 +157,7 @@ module.exports = function eachTest (test) {
   })
 
   test('removes reasons and actions without reason', storeFactory => () => {
-    store = storeFactory()
+    const store = storeFactory()
     const removed = []
     return Promise.all([
       store.add({ type: '1' }, { id: [1], time: 1, reasons: ['a'] }),
@@ -176,7 +177,7 @@ module.exports = function eachTest (test) {
   })
 
   test('removes reason with minimum added', storeFactory => () => {
-    store = storeFactory()
+    const store = storeFactory()
     return Promise.all([
       store.add({ type: '1' }, { id: [1], time: 1, reasons: ['a'] }),
       store.add({ type: '2' }, { id: [2], time: 2, reasons: ['a'] }),
@@ -191,7 +192,7 @@ module.exports = function eachTest (test) {
   })
 
   test('removes reason with maximum added', storeFactory => () => {
-    store = storeFactory()
+    const store = storeFactory()
     return Promise.all([
       store.add({ type: '1' }, { id: [1], time: 1, reasons: ['a'] }),
       store.add({ type: '2' }, { id: [2], time: 2, reasons: ['a'] }),
@@ -206,7 +207,7 @@ module.exports = function eachTest (test) {
   })
 
   test('removes reason with minimum and maximum added', storeFactory => () => {
-    store = storeFactory()
+    const store = storeFactory()
     return Promise.all([
       store.add({ type: '1' }, { id: [1], time: 1, reasons: ['a'] }),
       store.add({ type: '2' }, { id: [2], time: 2, reasons: ['a'] }),
@@ -222,7 +223,7 @@ module.exports = function eachTest (test) {
   })
 
   test('removes reason with zero at maximum added', storeFactory => () => {
-    store = storeFactory()
+    const store = storeFactory()
     return store.add({ }, { id: [1], time: 1, reasons: ['a'] })
       .then(() => store.removeReason('a', { maxAdded: 0 }, nope))
       .then(() => {
