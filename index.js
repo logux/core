@@ -1,5 +1,6 @@
 'use strict'
 
+const TestTime = require('logux-core').TestTime
 const assert = require('assert')
 
 function all (request, list) {
@@ -264,6 +265,48 @@ function eachTest (test) {
       return store.has([2, 'node', 1])
     }).then(result => {
       assert.ok(!result)
+    })
+  })
+
+  test('ignores entries with same ID', storeFactory => () => {
+    const store = storeFactory()
+    const id = [1, 'a', 1]
+    return store.add({ a: 1 }, { id, time: 1 }).then(meta => {
+      assert.deepEqual(meta, { id, time: 1, added: 1 })
+      return store.add({ a: 2 }, { id, time: 2 })
+    }).then(meta => {
+      assert.ok(!meta)
+      return checkBoth(store, [
+        [{ a: 1 }, { id, time: 1, added: 1 }]
+      ])
+    })
+  })
+
+  test('stores any metadata', storeFactory => () => {
+    const store = storeFactory()
+    return store.add(
+      { type: 'A' },
+      { id: [1, 'a'], time: 1, test: 1 }
+    ).then(() => {
+      return checkBoth(store, [
+        [{ type: 'A' }, { added: 1, id: [1, 'a'], time: 1, test: 1 }]
+      ])
+    })
+  })
+
+  test('works with real log', storeFactory => () => {
+    const store = storeFactory()
+    const log = TestTime.getLog({ store })
+    const entries = []
+    return Promise.all([
+      log.add({ type: 'A' }, { id: [2], reasons: ['test'] }),
+      log.add({ type: 'B' }, { id: [1], reasons: ['test'] })
+    ]).then(() => {
+      return log.each(action => {
+        entries.push(action)
+      })
+    }).then(() => {
+      assert.deepEqual(entries, [{ type: 'A' }, { type: 'B' }])
     })
   })
 }
