@@ -249,7 +249,7 @@ function eachTest (test) {
 
   test('tells that action already in store', storeFactory => () => {
     const store = storeFactory()
-    Promise.all([
+    return Promise.all([
       store.add({ }, { id: [1, 'node', 0], time: 1 }),
       store.add({ }, { id: [1, 'node', 1], time: 2 }),
       store.add({ }, { id: [1, 'node', 2], time: 2 }),
