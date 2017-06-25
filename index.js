@@ -14,21 +14,16 @@ function all (request, list) {
   })
 }
 
-function check (storeInstance, created, added) {
-  if (!added) added = created
-  return all(storeInstance.get({ order: 'created' })).then(entries => {
-    assert.deepEqual(entries, created)
-  }).then(() => {
-    return all(storeInstance.get({ order: 'added' }))
-  }).then(entries => {
-    assert.deepEqual(entries, added)
+function check (store, order, list) {
+  return all(store.get({ order })).then(entries => {
+    assert.deepEqual(entries, list)
   })
 }
 
-function checkBoth (storeInstance, entries) {
+function checkBoth (store, entries) {
   return Promise.all([
-    check(storeInstance, 'created', entries),
-    check(storeInstance, 'added', entries)
+    check(store, 'created', entries),
+    check(store, 'added', entries)
   ])
 }
 
@@ -51,7 +46,7 @@ function nope () { }
 function eachTest (test) {
   test('is empty in the beginning', storeFactory => () => {
     const store = storeFactory()
-    return check(store, []).then(() => {
+    return checkBoth(store, []).then(() => {
       return store.getLastAdded()
     }).then(added => {
       assert.equal(added, 0)
@@ -70,21 +65,35 @@ function eachTest (test) {
     })
   })
 
+  test('updates both synced values', storeFactory => () => {
+    const store = storeFactory()
+    return store.setLastSynced({ sent: 2, received: 1 }).then(() => {
+      return store.getLastSynced()
+    }).then(synced => {
+      return assert.deepEqual(synced, { sent: 2, received: 1 })
+    })
+  })
+
   test('stores entries sorted', storeFactory => () => {
     const store = storeFactory()
     return Promise.all([
-      store.add({ type: '1' }, { id: [1, 'a'], time: 1 }),
-      store.add({ type: '2' }, { id: [1, 'c'], time: 2 }),
-      store.add({ type: '3' }, { id: [1, 'b'], time: 2 })
+      store.add({ type: '1' }, { id: [1, 'a', 0], time: 1 }),
+      store.add({ type: '2' }, { id: [1, 'c', 0], time: 2 }),
+      store.add({ type: '3' }, { id: [1, 'b', 1], time: 2 }),
+      store.add({ type: '4' }, { id: [3, 'b', 0], time: 2 })
     ]).then(() => {
-      return check(store, [
-        [{ type: '2' }, { added: 2, id: [1, 'c'], time: 2 }],
-        [{ type: '3' }, { added: 3, id: [1, 'b'], time: 2 }],
-        [{ type: '1' }, { added: 1, id: [1, 'a'], time: 1 }]
-      ], [
-        [{ type: '3' }, { added: 3, id: [1, 'b'], time: 2 }],
-        [{ type: '2' }, { added: 2, id: [1, 'c'], time: 2 }],
-        [{ type: '1' }, { added: 1, id: [1, 'a'], time: 1 }]
+      return check(store, 'created', [
+        [{ type: '2' }, { added: 2, id: [1, 'c', 0], time: 2 }],
+        [{ type: '3' }, { added: 3, id: [1, 'b', 1], time: 2 }],
+        [{ type: '4' }, { added: 4, id: [3, 'b', 0], time: 2 }],
+        [{ type: '1' }, { added: 1, id: [1, 'a', 0], time: 1 }]
+      ])
+    }).then(() => {
+      return check(store, 'added', [
+        [{ type: '4' }, { added: 4, id: [3, 'b', 0], time: 2 }],
+        [{ type: '3' }, { added: 3, id: [1, 'b', 1], time: 2 }],
+        [{ type: '2' }, { added: 2, id: [1, 'c', 0], time: 2 }],
+        [{ type: '1' }, { added: 1, id: [1, 'a', 0], time: 1 }]
       ])
     })
   })
@@ -109,7 +118,7 @@ function eachTest (test) {
       return store.changeMeta([1], { a: 2, b: 2 })
     }).then(result => {
       assert.equal(result, true)
-      return check(store, [
+      return checkBoth(store, [
         [{ }, { id: [1], time: 1, added: 1, a: 2, b: 2 }]
       ])
     })
@@ -148,12 +157,13 @@ function eachTest (test) {
       })
   })
 
-  test('ignores unknown entry', storeFactory => () => {
+  test('ignores removing unknown entry', storeFactory => () => {
     const store = storeFactory()
-    store.add({ }, { id: [1], time: 1, added: 1 })
-    store.remove([2]).then(result => {
+    return store.add({ }, { id: [1], time: 1, added: 1 }).then(() => {
+      return store.remove([2])
+    }).then(result => {
       assert.equal(result, false)
-      return check(storeFactory, 'created', [
+      return check(store, 'created', [
         [{ }, { id: [1], time: 1, added: 1 }]
       ])
     })
@@ -172,7 +182,7 @@ function eachTest (test) {
         removed.push([action, meta])
       })
     }).then(() => {
-      return check(store, [
+      return checkBoth(store, [
         [{ type: '4' }, { added: 4, id: [4], time: 4, reasons: ['b'] }],
         [{ type: '3' }, { added: 3, id: [3], time: 3, reasons: ['b'] }]
       ])
@@ -188,7 +198,7 @@ function eachTest (test) {
     ]).then(() => {
       return store.removeReason('a', { minAdded: 2 }, nope)
     }).then(() => {
-      return check(store, [
+      return checkBoth(store, [
         [{ type: '1' }, { added: 1, id: [1], time: 1, reasons: ['a'] }]
       ])
     })
@@ -203,7 +213,7 @@ function eachTest (test) {
     ]).then(() => {
       return store.removeReason('a', { maxAdded: 2 }, nope)
     }).then(() => {
-      return check(store, [
+      return checkBoth(store, [
         [{ type: '3' }, { added: 3, id: [3], time: 3, reasons: ['a'] }]
       ])
     })
@@ -218,7 +228,7 @@ function eachTest (test) {
     ]).then(() => {
       return store.removeReason('a', { maxAdded: 2, minAdded: 2 }, nope)
     }).then(() => {
-      return check(store, [
+      return checkBoth(store, [
         [{ type: '3' }, { added: 3, id: [3], time: 3, reasons: ['a'] }],
         [{ type: '1' }, { added: 1, id: [1], time: 1, reasons: ['a'] }]
       ])
@@ -230,10 +240,31 @@ function eachTest (test) {
     return store.add({ }, { id: [1], time: 1, reasons: ['a'] })
       .then(() => store.removeReason('a', { maxAdded: 0 }, nope))
       .then(() => {
-        return check(store, [
+        return checkBoth(store, [
           [{ }, { added: 1, id: [1], time: 1, reasons: ['a'] }]
         ])
       })
+  })
+
+  test('tells that action already in store', storeFactory => () => {
+    const store = storeFactory()
+    Promise.all([
+      store.add({ }, { id: [1, 'node', 0], time: 1 }),
+      store.add({ }, { id: [1, 'node', 1], time: 2 }),
+      store.add({ }, { id: [1, 'node', 2], time: 2 }),
+      store.add({ }, { id: [1, 'node', 3], time: 2 }),
+      store.add({ }, { id: [2, 'node', 0], time: 2 })
+    ]).then(() => {
+      return store.has([1, 'node', 0])
+    }).then(result => {
+      assert.ok(result)
+      return store.has([1, 'node', 2])
+    }).then(result => {
+      assert.ok(result)
+      return store.has([2, 'node', 1])
+    }).then(result => {
+      assert.ok(!result)
+    })
   })
 }
 
