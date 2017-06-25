@@ -39,21 +39,21 @@ it('adds first entry', function () {
 
 it('supports time array in created', function () {
   var store = new MemoryStore()
-  store.add({}, { id: [1, 1, 1], time: 1 })
-  store.add({}, { id: [2, 1, 1], time: 2 })
-  store.add({}, { id: [2, 1, 3], time: 2 })
-  store.add({}, { id: [2, 2, 1], time: 2 })
-  store.add({}, { id: [2, 1, 2], time: 2 })
-  store.add({}, { id: [2, 3, 1], time: 2 })
-  store.add({}, { id: [3, 1, 1], time: 3 })
+  store.add({ }, { id: [1, 1, 1], time: 1 })
+  store.add({ }, { id: [2, 1, 1], time: 2 })
+  store.add({ }, { id: [2, 1, 3], time: 2 })
+  store.add({ }, { id: [2, 2, 1], time: 2 })
+  store.add({ }, { id: [2, 1, 2], time: 2 })
+  store.add({ }, { id: [2, 3, 1], time: 2 })
+  store.add({ }, { id: [3, 1, 1], time: 3 })
   return check(store, 'created', [
-    [{}, { id: [3, 1, 1], time: 3, added: 7 }],
-    [{}, { id: [2, 3, 1], time: 2, added: 6 }],
-    [{}, { id: [2, 2, 1], time: 2, added: 4 }],
-    [{}, { id: [2, 1, 3], time: 2, added: 3 }],
-    [{}, { id: [2, 1, 2], time: 2, added: 5 }],
-    [{}, { id: [2, 1, 1], time: 2, added: 2 }],
-    [{}, { id: [1, 1, 1], time: 1, added: 1 }]
+    [{ }, { id: [3, 1, 1], time: 3, added: 7 }],
+    [{ }, { id: [2, 3, 1], time: 2, added: 6 }],
+    [{ }, { id: [2, 2, 1], time: 2, added: 4 }],
+    [{ }, { id: [2, 1, 3], time: 2, added: 3 }],
+    [{ }, { id: [2, 1, 2], time: 2, added: 5 }],
+    [{ }, { id: [2, 1, 1], time: 2, added: 2 }],
+    [{ }, { id: [1, 1, 1], time: 1, added: 1 }]
   ])
 })
 
@@ -66,11 +66,11 @@ it('returns current entries state', function () {
 
 it('tells that action already in store', function () {
   var store = new MemoryStore()
-  store.add({}, { id: [1, 'node', 0], time: 1 })
-  store.add({}, { id: [1, 'node', 1], time: 2 })
-  store.add({}, { id: [1, 'node', 2], time: 2 })
-  store.add({}, { id: [1, 'node', 3], time: 2 })
-  store.add({}, { id: [2, 'node', 0], time: 2 })
+  store.add({ }, { id: [1, 'node', 0], time: 1 })
+  store.add({ }, { id: [1, 'node', 1], time: 2 })
+  store.add({ }, { id: [1, 'node', 2], time: 2 })
+  store.add({ }, { id: [1, 'node', 3], time: 2 })
+  store.add({ }, { id: [2, 'node', 0], time: 2 })
   return store.has([1, 'node', 0]).then(function (result) {
     expect(result).toBeTruthy()
     return store.has([1, 'node', 2])
