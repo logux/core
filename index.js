@@ -1,6 +1,5 @@
 'use strict'
 
-const TestTime = require('logux-core').TestTime
 const assert = require('assert')
 
 function all (request, list) {
@@ -291,22 +290,6 @@ function eachTest (test) {
       return checkBoth(store, [
         [{ type: 'A' }, { added: 1, id: [1, 'a'], time: 1, test: 1 }]
       ])
-    })
-  })
-
-  test('works with real log', storeFactory => () => {
-    const store = storeFactory()
-    const log = TestTime.getLog({ store })
-    const entries = []
-    return Promise.all([
-      log.add({ type: 'A' }, { id: [2], reasons: ['test'] }),
-      log.add({ type: 'B' }, { id: [1], reasons: ['test'] })
-    ]).then(() => {
-      return log.each(action => {
-        entries.push(action)
-      })
-    }).then(() => {
-      assert.deepEqual(entries, [{ type: 'A' }, { type: 'B' }])
     })
   })
 }
