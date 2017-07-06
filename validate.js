@@ -21,19 +21,15 @@ function isTwoNumbers (value) {
     isNumber(value[0]) && isNumber(value[0])
 }
 
-function isNodeId (value) {
-  return isString(value) || isNumber(value)
-}
-
 var validators = {
 
   connect: function connect (msg) {
-    return isNumber(msg[1]) && isNodeId(msg[2]) && isNumber(msg[3]) &&
+    return isNumber(msg[1]) && isString(msg[2]) && isNumber(msg[3]) &&
       (msg.length === 4 || (msg.length === 5 && isObject(msg[4])))
   },
 
   connected: function connected (msg) {
-    return isNumber(msg[1]) && isNodeId(msg[2]) && isTwoNumbers(msg[3]) &&
+    return isNumber(msg[1]) && isString(msg[2]) && isTwoNumbers(msg[3]) &&
       (msg.length === 4 || (msg.length === 5 && isObject(msg[4])))
   },
 

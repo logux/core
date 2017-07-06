@@ -31,7 +31,7 @@ function syncMappedEvent (sync, action, meta) {
  * Base methods for synchronization nodes. Client and server nodes
  * are based on this module.
  *
- * @param {string|number} nodeId Unique current machine name.
+ * @param {string} nodeId Unique current machine name.
  * @param {Log} log Logux log instance to be synchronized.
  * @param {Connection} connection Connection to remote node.
  * @param {object} [options] Synchronization options.
@@ -63,7 +63,7 @@ function syncMappedEvent (sync, action, meta) {
 function BaseSync (nodeId, log, connection, options) {
   /**
    * Unique current machine name.
-   * @type {string|number}
+   * @type {string}
    *
    * @example
    * console.log(sync.localNodeId + ' is started')
@@ -185,7 +185,7 @@ BaseSync.prototype = {
    * Unique name of remote machine.
    * It is undefined until nodes handshake.
    *
-   * @type {string|number|undefined}
+   * @type {string|undefined}
    *
    * @example
    * console.log('Connected to ' + sync.remoteNodeId)

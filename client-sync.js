@@ -13,7 +13,7 @@ var DEFAULT_OPTIONS = {
  * Instead of server node, it initializes synchronization
  * and sends connect message.
  *
- * @param {string|number} nodeId Unique current machine name.
+ * @param {string} nodeId Unique current machine name.
  * @param {Log} log Logux log instance to be synchronized.
  * @param {Connection} connection Connection to remote node.
  * @param {object} [options] Synchronization options.

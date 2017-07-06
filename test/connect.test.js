@@ -120,15 +120,6 @@ it('saves other node name', function () {
   })
 })
 
-it('supports number in node ID', function () {
-  var test = createTest()
-  test.leftSync.localNodeId = 1
-  test.left.connect()
-  return test.leftSync.waitFor('synchronized').then(function () {
-    expect(test.rightSync.remoteNodeId).toEqual(1)
-  })
-})
-
 it('saves other client protocol', function () {
   var test = createTest()
   test.leftSync.minProtocol = 1
