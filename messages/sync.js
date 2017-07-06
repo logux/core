@@ -6,24 +6,29 @@ module.exports = {
     var max = 0
     var data = []
     for (var i = 0; i < arguments.length - 1; i += 2) {
-      var meta = arguments[i + 1]
-      var time = meta.time
-      var id = meta.id
+      var originMeta = arguments[i + 1]
+      if (max < originMeta.added) max = originMeta.added
 
-      if (this.timeFix) time = time - this.timeFix
-      id[0] -= this.baseTime
-      time -= this.baseTime
-
-      if (id[1] === this.localNodeId) {
-        if (id[2] === 0) {
-          id = id[0]
-        } else {
-          id = [id[0], id[2]]
+      var meta = { }
+      for (var key in originMeta) {
+        if (key !== 'added') {
+          meta[key] = originMeta[key]
         }
       }
 
-      if (max < meta.added) max = meta.added
-      data.push(arguments[i], { id: id, time: time })
+      if (this.timeFix) meta.time -= this.timeFix
+      meta.id[0] -= this.baseTime
+      meta.time -= this.baseTime
+
+      if (meta.id[1] === this.localNodeId) {
+        if (meta.id[2] === 0) {
+          meta.id = meta.id[0]
+        } else {
+          meta.id = [meta.id[0], meta.id[2]]
+        }
+      }
+
+      data.push(arguments[i], meta)
     }
 
     this.syncing += 1

@@ -23,10 +23,10 @@ function createTest () {
   var test = new TestPair()
 
   log1.on('preadd', function (action, meta) {
-    meta.reasons = ['test']
+    meta.reasons = ['t']
   })
   log2.on('preadd', function (action, meta) {
-    meta.reasons = ['test']
+    meta.reasons = ['t']
   })
 
   test.leftSync = new ClientSync('client', log1, test.left, { fixTime: false })
@@ -43,27 +43,29 @@ function createTest () {
 }
 
 it('sends sync messages', function () {
+  var actionA = { type: 'a' }
+  var actionB = { type: 'b' }
   return createTest().then(function (test) {
-    test.leftSync.log.add({ type: 'a' })
+    test.leftSync.log.add(actionA)
     return test.wait('left')
   }).then(function (test) {
     expect(test.leftSent).toEqual([
-      ['sync', 1, { type: 'a' }, { id: [1, 'test1', 0], time: 1 }]
+      ['sync', 1, actionA, { id: [1, 'test1', 0], time: 1, reasons: ['t'] }]
     ])
     expect(test.rightSent).toEqual([
       ['synced', 1]
     ])
 
-    test.rightSync.log.add({ type: 'b' })
+    test.rightSync.log.add(actionB)
     return test.wait('right')
   }).then(function (test) {
     expect(test.leftSent).toEqual([
-      ['sync', 1, { type: 'a' }, { id: [1, 'test1', 0], time: 1 }],
+      ['sync', 1, actionA, { id: [1, 'test1', 0], time: 1, reasons: ['t'] }],
       ['synced', 2]
     ])
     expect(test.rightSent).toEqual([
       ['synced', 1],
-      ['sync', 2, { type: 'b' }, { id: [2, 'test2', 0], time: 2 }]
+      ['sync', 2, actionB, { id: [2, 'test2', 0], time: 2, reasons: ['t'] }]
     ])
   })
 })
@@ -209,12 +211,17 @@ it('compress time', function () {
     return test.leftSync.waitFor('synchronized')
   }).then(function () {
     expect(test.leftSent).toEqual([
-      ['sync', 1, { type: 'a' }, { id: [-99, 'test1', 0], time: -99 }]
+      [
+        'sync',
+        1,
+        { type: 'a' },
+        { id: [-99, 'test1', 0], time: -99, reasons: ['t'] }
+      ]
     ])
     expect(entries(test.rightSync.log)).toEqual([
       [
         { type: 'a' },
-        { id: [1, 'test1', 0], time: 1, added: 1, reasons: ['test'] }
+        { id: [1, 'test1', 0], time: 1, added: 1, reasons: ['t'] }
       ]
     ])
   })
@@ -227,29 +234,47 @@ it('compress IDs', function () {
     return Promise.all([
       test.leftSync.log.add({ type: 'a' }, { id: [1, 'client', 0], time: 1 }),
       test.leftSync.log.add({ type: 'a' }, { id: [1, 'client', 1], time: 1 }),
-      test.leftSync.log.add({ type: 'a' }, { id: [1, 'other', 0], time: 1 })
+      test.leftSync.log.add({ type: 'a' }, { id: [1, 'o', 0], time: 1 })
     ])
   }).then(function () {
     return test.leftSync.waitFor('synchronized')
   }).then(function () {
     expect(test.leftSent).toEqual([
-      ['sync', 1, { type: 'a' }, { id: 1, time: 1 }],
-      ['sync', 2, { type: 'a' }, { id: [1, 1], time: 1 }],
-      ['sync', 3, { type: 'a' }, { id: [1, 'other', 0], time: 1 }]
+      ['sync', 1, { type: 'a' }, { id: 1, time: 1, reasons: ['t'] }],
+      ['sync', 2, { type: 'a' }, { id: [1, 1], time: 1, reasons: ['t'] }],
+      ['sync', 3, { type: 'a' }, { id: [1, 'o', 0], time: 1, reasons: ['t'] }]
     ])
     expect(entries(test.rightSync.log)).toEqual([
       [
         { type: 'a' },
-        { id: [1, 'other', 0], time: 1, added: 3, reasons: ['test'] }
+        { id: [1, 'o', 0], time: 1, added: 3, reasons: ['t'] }
       ],
       [
         { type: 'a' },
-        { id: [1, 'client', 1], time: 1, added: 2, reasons: ['test'] }
+        { id: [1, 'client', 1], time: 1, added: 2, reasons: ['t'] }
       ],
       [
         { type: 'a' },
-        { id: [1, 'client', 0], time: 1, added: 1, reasons: ['test'] }
+        { id: [1, 'client', 0], time: 1, added: 1, reasons: ['t'] }
       ]
+    ])
+  })
+})
+
+it('synchronizes any meta fields', function () {
+  var a = { type: 'a' }
+  var test
+  return createTest().then(function (created) {
+    test = created
+    return test.leftSync.log.add(a, { id: [1, 'test1', 0], time: 1, one: 1 })
+  }).then(function () {
+    return test.leftSync.waitFor('synchronized')
+  }).then(function () {
+    expect(test.leftSent).toEqual([
+      ['sync', 1, a, { id: [1, 'test1', 0], time: 1, one: 1, reasons: ['t'] }]
+    ])
+    expect(entries(test.rightSync.log)).toEqual([
+      [a, { id: [1, 'test1', 0], time: 1, added: 1, one: 1, reasons: ['t'] }]
     ])
   })
 })
@@ -269,21 +294,21 @@ it('fixes created time', function () {
     expect(entries(test.leftSync.log)).toEqual([
       [
         { type: 'b' },
-        { id: [2, 'test2', 0], time: 12, added: 2, reasons: ['test'] }
+        { id: [2, 'test2', 0], time: 12, added: 2, reasons: ['t'] }
       ],
       [
         { type: 'a' },
-        { id: [11, 'test1', 0], time: 11, added: 1, reasons: ['test'] }
+        { id: [11, 'test1', 0], time: 11, added: 1, reasons: ['t'] }
       ]
     ])
     expect(entries(test.rightSync.log)).toEqual([
       [
         { type: 'b' },
-        { id: [2, 'test2', 0], time: 2, added: 1, reasons: ['test'] }
+        { id: [2, 'test2', 0], time: 2, added: 1, reasons: ['t'] }
       ],
       [
         { type: 'a' },
-        { id: [11, 'test1', 0], time: 1, added: 2, reasons: ['test'] }
+        { id: [11, 'test1', 0], time: 1, added: 2, reasons: ['t'] }
       ]
     ])
   })
@@ -301,11 +326,11 @@ it('supports multiple actions in sync', function () {
     expect(entries(test.leftSync.log)).toEqual([
       [
         { type: 'b' },
-        { id: [2, 'test2', 0], time: 2, added: 2, reasons: ['test'] }
+        { id: [2, 'test2', 0], time: 2, added: 2, reasons: ['t'] }
       ],
       [
         { type: 'a' },
-        { id: [1, 'test2', 0], time: 1, added: 1, reasons: ['test'] }
+        { id: [1, 'test2', 0], time: 1, added: 1, reasons: ['t'] }
       ]
     ])
   })
