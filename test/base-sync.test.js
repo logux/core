@@ -46,10 +46,9 @@ it('allows to miss options', function () {
 
 it('has protocol version', function () {
   var sync = createSync()
-  expect(sync.localProtocol.length).toBe(2)
-  sync.localProtocol.forEach(function (part) {
-    expect(typeof part).toEqual('number')
-  })
+  expect(typeof sync.localProtocol).toEqual('number')
+  expect(typeof sync.minProtocol).toEqual('number')
+  expect(sync.localProtocol).toBeGreaterThanOrEqual(sync.minProtocol)
 })
 
 it('unbind all listeners on destroy', function () {

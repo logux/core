@@ -55,18 +55,36 @@ it('answers with protocol version and name in connected message', function () {
   })
 })
 
-it('checks protocol version', function () {
+it('checks client protocol version', function () {
   var test = createTest()
-  test.leftSync.localProtocol = [2, 0]
-  test.rightSync.localProtocol = [1, 0]
+  test.leftSync.localProtocol = 1
+  test.rightSync.minProtocol = 2
 
   return test.left.connect().then(function () {
     return test.wait('left')
   }).then(function () {
     expect(test.rightSent).toEqual([
-      ['error', 'wrong-protocol', { supported: [1], used: [2, 0] }]
+      ['error', 'wrong-protocol', { supported: 2, used: 1 }]
     ])
     expect(test.rightSync.connected).toBeFalsy()
+  })
+})
+
+it('checks server protocol version', function () {
+  var test = createTest()
+  test.leftSync.minProtocol = 2
+  test.rightSync.localProtocol = 1
+
+  return test.left.connect().then(function () {
+    return test.wait('left')
+  }).then(function () {
+    return test.wait('right')
+  }).then(function () {
+    expect(test.leftSent).toEqual([
+      ['connect', PROTOCOL, 'client', 0],
+      ['error', 'wrong-protocol', { supported: 2, used: 1 }]
+    ])
+    expect(test.leftSent.connected).toBeFalsy()
   })
 })
 
@@ -113,13 +131,15 @@ it('supports number in node ID', function () {
 
 it('saves other client protocol', function () {
   var test = createTest()
-  test.leftSync.localProtocol = [1, 0]
-  test.rightSync.localProtocol = [1, 1]
+  test.leftSync.minProtocol = 1
+  test.leftSync.localProtocol = 1
+  test.rightSync.minProtocol = 1
+  test.rightSync.localProtocol = 2
 
   test.left.connect()
   return test.leftSync.waitFor('synchronized').then(function () {
-    expect(test.leftSync.remoteProtocol).toEqual([1, 1])
-    expect(test.rightSync.remoteProtocol).toEqual([1, 0])
+    expect(test.leftSync.remoteProtocol).toEqual(2)
+    expect(test.rightSync.remoteProtocol).toEqual(1)
   })
 })
 
@@ -179,7 +199,7 @@ it('checks subprotocol version in client', function () {
     return test.wait('right')
   }).then(function () {
     expect(test.leftSent).toEqual([
-      ['connect', [0, 1], 'client', 0],
+      ['connect', PROTOCOL, 'client', 0],
       ['error', 'wrong-subprotocol', { supported: '2.x', used: '1.0.0' }]
     ])
     expect(test.leftSync.connected).toBeFalsy()

@@ -28,12 +28,12 @@ function isNodeId (value) {
 var validators = {
 
   connect: function connect (msg) {
-    return isTwoNumbers(msg[1]) && isNodeId(msg[2]) && isNumber(msg[3]) &&
+    return isNumber(msg[1]) && isNodeId(msg[2]) && isNumber(msg[3]) &&
       (msg.length === 4 || (msg.length === 5 && isObject(msg[4])))
   },
 
   connected: function connected (msg) {
-    return isTwoNumbers(msg[1]) && isNodeId(msg[2]) && isTwoNumbers(msg[3]) &&
+    return isNumber(msg[1]) && isNodeId(msg[2]) && isTwoNumbers(msg[3]) &&
       (msg.length === 4 || (msg.length === 5 && isObject(msg[4])))
   },
 

@@ -25,6 +25,20 @@ function auth (sync, nodeId, credentials, callback) {
   })
 }
 
+function checkProtocol (sync, ver) {
+  sync.remoteProtocol = ver
+
+  if (ver >= sync.minProtocol) {
+    return true
+  } else {
+    sync.sendError(new SyncError(sync, 'wrong-protocol', {
+      supported: sync.minProtocol, used: ver
+    }))
+    sync.destroy()
+    return false
+  }
+}
+
 function emitEvent (sync) {
   try {
     sync.emitter.emit('connect')
@@ -87,17 +101,8 @@ module.exports = {
     var start = this.now()
     if (!options) options = { }
 
-    this.remoteProtocol = ver
     this.remoteNodeId = nodeId
-
-    var major = this.localProtocol[0]
-    if (major !== ver[0]) {
-      this.sendError(new SyncError(this, 'wrong-protocol', {
-        supported: [major], used: ver
-      }))
-      this.destroy()
-      return
-    }
+    if (!checkProtocol(this, ver)) return
 
     this.remoteSubprotocol = options.subprotocol || '0.0.0'
 
@@ -117,8 +122,8 @@ module.exports = {
     if (!options) options = { }
 
     this.endTimeout()
-    this.remoteProtocol = ver
     this.remoteNodeId = nodeId
+    if (!checkProtocol(this, ver)) return
 
     if (this.options.fixTime) {
       var now = this.now()

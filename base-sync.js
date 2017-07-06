@@ -194,21 +194,30 @@ BaseSync.prototype = {
 
   /**
    * Array with major and minor versions of used protocol.
-   * @type {Version}
+   * @type {number}
    *
    * @example
-   * if (tool.sync.localProtocol[0] !== 1) {
+   * if (tool.sync.localProtocol !== 1) {
    *   throw new Error('Unsupported Logux protocol')
    * }
    */
-  localProtocol: [0, 1],
+  localProtocol: 0,
+
+  /**
+   * Minimum version of Logux protocol, which is supported.
+   * @type {number}
+   *
+   * @example
+   * console.log(`You need Logux protocol ${sync.minProtocol} or higher`)
+   */
+  minProtocol: 0,
 
   /**
    * Array with major and minor versions of remote node protocol.
-   * @type {Version|undefined}
+   * @type {number|undefined}
    *
    * @example
-   * if (sync.remoteProtocol[1] >= 5) {
+   * if (sync.remoteProtocol >= 5) {
    *   useNewAPI()
    * } else {
    *   useOldAPI()
@@ -551,12 +560,6 @@ var DUILIANS = {
 }
 
 module.exports = BaseSync
-
-/**
- * Logux protocol version.
- *
- * @typedef {number[]} Version
- */
 
 /**
  * @callback errorListener

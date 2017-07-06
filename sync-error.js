@@ -1,9 +1,3 @@
-function supported (versions) {
-  return versions.map(function (i) {
-    return i + '.x'
-  }).join(', ')
-}
-
 /**
  * Logux error in logs synchronization.
  *
@@ -121,8 +115,8 @@ SyncError.describe = function describe (type, options) {
   } else if (type === 'missed-auth') {
     return 'Start authentication before sending message ' + options
   } else if (type === 'wrong-protocol') {
-    return 'Only ' + supported(options.supported) + ' Logux protocols ' +
-           'are supported, but you use ' + options.used.join('.')
+    return 'Logux supports protocols only from version ' + options.supported +
+           ', but you use ' + options.used
   } else if (type === 'wrong-subprotocol') {
     return 'Only ' + options.supported + ' application subprotocols are ' +
            'supported, but you use ' + options.used
