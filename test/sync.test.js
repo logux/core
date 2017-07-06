@@ -36,6 +36,8 @@ function createTest () {
     return test.wait('left')
   }).then(function () {
     test.clear()
+    test.leftSync.baseTime = 0
+    test.rightSync.baseTime = 0
     return test
   })
 }
@@ -187,6 +189,30 @@ it('maps input actions', function () {
   }).then(function (test) {
     expect(actions(test.leftSync.log)).toEqual([{ type: 'a' }])
     expect(actions(test.rightSync.log)).toEqual([{ type: 'a1' }])
+  })
+})
+
+it('compress time', function () {
+  var test
+  return createTest().then(function (created) {
+    test = created
+    test.leftSync.baseTime = 100
+    test.rightSync.baseTime = 100
+    return Promise.all([
+      test.leftSync.log.add({ type: 'a' }, { id: [1, 'test1', 0], time: 1 })
+    ])
+  }).then(function () {
+    return test.leftSync.waitFor('synchronized')
+  }).then(function () {
+    expect(test.leftSent).toEqual([
+      ['sync', 1, { type: 'a' }, { id: [-99, 'test1', 0], time: -99 }]
+    ])
+    expect(entries(test.rightSync.log)).toEqual([
+      [
+        { type: 'a' },
+        { id: [1, 'test1', 0], time: 1, added: 1, reasons: ['test'] }
+      ]
+    ])
   })
 })
 

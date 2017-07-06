@@ -8,9 +8,14 @@ module.exports = {
     for (var i = 0; i < arguments.length - 1; i += 2) {
       var meta = arguments[i + 1]
       var time = meta.time
+      var id = meta.id
+
       if (this.timeFix) time = time - this.timeFix
+      id[0] -= this.baseTime
+      time -= this.baseTime
+
       if (max < meta.added) max = meta.added
-      data.push(arguments[i], { id: meta.id, time: time })
+      data.push(arguments[i], { id: id, time: time })
     }
 
     this.syncing += 1
@@ -29,6 +34,9 @@ module.exports = {
     for (var i = 1; i < arguments.length - 1; i += 2) {
       var action = arguments[i]
       var meta = arguments[i + 1]
+
+      meta.id[0] = meta.id[0] + this.baseTime
+      meta.time = meta.time + this.baseTime
 
       var process = Promise.resolve([action, meta])
       if (this.options.inFilter) {

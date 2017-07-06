@@ -78,6 +78,8 @@ module.exports = {
   },
 
   sendConnected: function sendConnected (start, end) {
+    this.baseTime = end
+
     var message = [
       'connected',
       this.localProtocol,
@@ -124,6 +126,8 @@ module.exports = {
     this.endTimeout()
     this.remoteNodeId = nodeId
     if (!checkProtocol(this, ver)) return
+
+    this.baseTime = time[1]
 
     if (this.options.fixTime) {
       var now = this.now()

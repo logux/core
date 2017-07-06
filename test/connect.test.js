@@ -339,6 +339,8 @@ it('calculates time difference', function () {
   test.leftSync.options.fixTime = true
   test.left.connect()
   return test.leftSync.waitFor('synchronized').then(function () {
+    expect(test.leftSync.baseTime).toEqual(1050)
+    expect(test.rightSync.baseTime).toEqual(1050)
     expect(test.leftSync.timeFix).toEqual(10000)
   })
 })
