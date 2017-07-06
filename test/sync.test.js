@@ -74,6 +74,10 @@ it('check sync types', function () {
     ['sync', 0, { type: 'a' }],
     ['sync', 0, { type: 'a' }, []],
     ['sync', 0, { }, { }],
+    ['sync', 0, { }, { id: 0 }],
+    ['sync', 0, { }, { time: 0 }],
+    ['sync', 0, { }, { id: 0, time: '0' }],
+    ['sync', 0, { }, { id: [1, 'node'], time: 0 }],
     ['synced'],
     ['synced', 'abc']
   ]

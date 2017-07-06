@@ -18,7 +18,17 @@ function isArray (value) {
 
 function isTwoNumbers (value) {
   return isArray(value) && value.length === 2 &&
-    isNumber(value[0]) && isNumber(value[0])
+         isNumber(value[0]) && isNumber(value[0])
+}
+
+function isID (value) {
+  return isArray(value) && isNumber(value[0]) &&
+         isString(value[1]) && isNumber(value[2])
+}
+
+function isMeta (value) {
+  return isObject(value) && isNumber(value.time) &&
+        (isNumber(value.id) || isTwoNumbers(value.id) || isID(value.id))
 }
 
 var validators = {
@@ -46,8 +56,11 @@ var validators = {
     if (msg.length % 2 !== 0) return false
 
     for (var i = 2; i < msg.length; i++) {
-      if (!isObject(msg[i])) return false
-      if (i % 2 === 0 && !isString(msg[i].type)) return false
+      if (i % 2 === 0) {
+        if (!isObject(msg[i]) || !isString(msg[i].type)) return false
+      } else if (!isMeta(msg[i])) {
+        return false
+      }
     }
 
     return true
