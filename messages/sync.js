@@ -14,6 +14,14 @@ module.exports = {
       id[0] -= this.baseTime
       time -= this.baseTime
 
+      if (id[1] === this.localNodeId) {
+        if (id[2] === 0) {
+          id = id[0]
+        } else {
+          id = [id[0], id[2]]
+        }
+      }
+
       if (max < meta.added) max = meta.added
       data.push(arguments[i], { id: id, time: time })
     }
@@ -34,6 +42,12 @@ module.exports = {
     for (var i = 1; i < arguments.length - 1; i += 2) {
       var action = arguments[i]
       var meta = arguments[i + 1]
+
+      if (typeof meta.id === 'number') {
+        meta.id = [meta.id, this.remoteNodeId, 0]
+      } else if (meta.id.length === 2) {
+        meta.id = [meta.id[0], this.remoteNodeId, meta.id[1]]
+      }
 
       meta.id[0] = meta.id[0] + this.baseTime
       meta.time = meta.time + this.baseTime

@@ -216,6 +216,40 @@ it('compress time', function () {
   })
 })
 
+it('compress IDs', function () {
+  var test
+  return createTest().then(function (created) {
+    test = created
+    return Promise.all([
+      test.leftSync.log.add({ type: 'a' }, { id: [1, 'client', 0], time: 1 }),
+      test.leftSync.log.add({ type: 'a' }, { id: [1, 'client', 1], time: 1 }),
+      test.leftSync.log.add({ type: 'a' }, { id: [1, 'other', 0], time: 1 })
+    ])
+  }).then(function () {
+    return test.leftSync.waitFor('synchronized')
+  }).then(function () {
+    expect(test.leftSent).toEqual([
+      ['sync', 1, { type: 'a' }, { id: 1, time: 1 }],
+      ['sync', 2, { type: 'a' }, { id: [1, 1], time: 1 }],
+      ['sync', 3, { type: 'a' }, { id: [1, 'other', 0], time: 1 }]
+    ])
+    expect(entries(test.rightSync.log)).toEqual([
+      [
+        { type: 'a' },
+        { id: [1, 'other', 0], time: 1, added: 3, reasons: ['test'] }
+      ],
+      [
+        { type: 'a' },
+        { id: [1, 'client', 1], time: 1, added: 2, reasons: ['test'] }
+      ],
+      [
+        { type: 'a' },
+        { id: [1, 'client', 0], time: 1, added: 1, reasons: ['test'] }
+      ]
+    ])
+  })
+})
+
 it('fixes created time', function () {
   var test
   return createTest().then(function (created) {
