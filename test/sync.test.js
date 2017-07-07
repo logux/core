@@ -16,7 +16,7 @@ function entries (log) {
   })
 }
 
-function createTest () {
+function createTest (before) {
   var time = new TestTime()
   var log1 = time.nextLog()
   var log2 = time.nextLog()
@@ -31,6 +31,8 @@ function createTest () {
 
   test.leftSync = new ClientSync('client', log1, test.left, { fixTime: false })
   test.rightSync = new ServerSync('server', log2, test.right)
+
+  if (before) before(test)
 
   return test.left.connect().then(function () {
     return test.wait('left')
@@ -333,6 +335,23 @@ it('supports multiple actions in sync', function () {
         { id: [1, 'test2', 0], time: 1, added: 1, reasons: ['t'] }
       ]
     ])
+  })
+})
+
+it('changes multiple actions in map', function () {
+  var test
+  return createTest(function (created) {
+    test = created
+    test.leftSync.options.outMap = function (action, meta) {
+      return Promise.resolve([{ type: action.type.toUpperCase() }, meta])
+    }
+    test.leftSync.log.add({ type: 'a' })
+    test.leftSync.log.add({ type: 'b' })
+  }).then(function () {
+    return test.leftSync.waitFor('synchronized')
+  }).then(function () {
+    expect(test.rightSync.lastReceived).toBe(2)
+    expect(actions(test.rightSync.log)).toEqual([{ type: 'B' }, { type: 'A' }])
   })
 })
 

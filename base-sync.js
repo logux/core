@@ -496,7 +496,15 @@ BaseSync.prototype = {
     this.syncSinceQuery(lastSynced).then(function (data) {
       if (!sync.connected) return
       if (data.entries.length > 0) {
-        sync.sendSync(data.added, data.entries)
+        if (sync.options.outMap) {
+          Promise.all(data.entries.map(function (i) {
+            return sync.options.outMap(i[0], i[1])
+          })).then(function (changed) {
+            sync.sendSync(data.added, changed)
+          })
+        } else {
+          sync.sendSync(data.added, data.entries)
+        }
       } else {
         sync.setState('synchronized')
       }
