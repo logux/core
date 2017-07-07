@@ -316,10 +316,10 @@ it('fixes created time', function () {
 
 it('supports multiple actions in sync', function () {
   return createTest().then(function (test) {
-    test.rightSync.sendSync(
-      { type: 'a' }, { id: [1, 'test2', 0], time: 1, added: 1 },
-      { type: 'b' }, { id: [2, 'test2', 0], time: 2, added: 2 }
-    )
+    test.rightSync.sendSync(2, [
+      [{ type: 'a' }, { id: [1, 'test2', 0], time: 1, added: 1 }],
+      [{ type: 'b' }, { id: [2, 'test2', 0], time: 2, added: 2 }]
+    ])
     return test.wait('right')
   }).then(function (test) {
     expect(test.leftSync.lastReceived).toBe(2)

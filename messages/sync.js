@@ -1,13 +1,11 @@
 module.exports = {
 
-  sendSync: function sendSync () {
+  sendSync: function sendSync (added, entries) {
     this.startTimeout()
 
-    var max = 0
     var data = []
-    for (var i = 0; i < arguments.length - 1; i += 2) {
-      var originMeta = arguments[i + 1]
-      if (max < originMeta.added) max = originMeta.added
+    for (var i = 0; i < entries.length; i++) {
+      var originMeta = entries[i][1]
 
       var meta = { }
       for (var key in originMeta) {
@@ -28,12 +26,12 @@ module.exports = {
         }
       }
 
-      data.push(arguments[i], meta)
+      data.push(entries[i][0], meta)
     }
 
     this.syncing += 1
     this.setState('sending')
-    this.send(['sync', max].concat(data))
+    this.send(['sync', added].concat(data))
   },
 
   sendSynced: function sendSynced (added) {
@@ -60,14 +58,13 @@ module.exports = {
       var process = Promise.resolve([action, meta])
       if (this.options.inFilter) {
         process = process.then(function (data) {
-          return sync.options.inFilter(data[0], data[1])
-            .then(function (result) {
-              if (result) {
-                return data
-              } else {
-                return false
-              }
-            })
+          return sync.options.inFilter(data[0], data[1]).then(function (res) {
+            if (res) {
+              return data
+            } else {
+              return false
+            }
+          })
         })
       }
 

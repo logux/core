@@ -20,10 +20,10 @@ var BEFORE_AUTH = ['connect', 'connected', 'error']
 function syncMappedEvent (sync, action, meta) {
   if (sync.options.outMap) {
     sync.options.outMap(action, meta).then(function (changed) {
-      sync.sendSync(changed[0], changed[1])
+      sync.sendSync(meta.added, [changed])
     })
   } else {
-    sync.sendSync(action, meta)
+    sync.sendSync(meta.added, [[action, meta]])
   }
 }
 
@@ -477,12 +477,13 @@ BaseSync.prototype = {
   },
 
   syncSinceQuery: function syncSinceQuery (lastSynced) {
-    var data = []
+    var data = { added: 0, entries: [] }
     return this.log.each({ order: 'added' }, function (action, meta) {
       if (meta.added <= lastSynced) {
         return false
       } else {
-        data.push(action, meta)
+        if (data.added < meta.added) data.added = meta.added
+        data.entries.push([action, meta])
         return true
       }
     }).then(function () {
@@ -494,8 +495,8 @@ BaseSync.prototype = {
     var sync = this
     this.syncSinceQuery(lastSynced).then(function (data) {
       if (!sync.connected) return
-      if (data.length > 0) {
-        sync.sendSync.apply(sync, data)
+      if (data.entries.length > 0) {
+        sync.sendSync(data.added, data.entries)
       } else {
         sync.setState('synchronized')
       }
