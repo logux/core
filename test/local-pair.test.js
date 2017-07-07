@@ -122,6 +122,6 @@ it('emulates delay', function () {
     tracker.pair.left.send(['test'])
     return tracker.wait()
   }).then(function () {
-    expect(Date.now() - prevTime).toBeGreaterThanOrEqual(50)
+    expect(Date.now() - prevTime).toBeGreaterThanOrEqual(48)
   })
 })
