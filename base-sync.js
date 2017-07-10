@@ -201,7 +201,7 @@ BaseSync.prototype = {
    *   throw new Error('Unsupported Logux protocol')
    * }
    */
-  localProtocol: 0,
+  localProtocol: 1,
 
   /**
    * Minimum version of Logux protocol, which is supported.
@@ -210,7 +210,7 @@ BaseSync.prototype = {
    * @example
    * console.log(`You need Logux protocol ${sync.minProtocol} or higher`)
    */
-  minProtocol: 0,
+  minProtocol: 1,
 
   /**
    * Array with major and minor versions of remote node protocol.
