@@ -56,12 +56,18 @@ function eachTest (test) {
     })
   })
 
-  test('updates latest sent value', storeFactory => () => {
+  test('updates latest synced values', storeFactory => () => {
     const store = storeFactory()
     return store.setLastSynced({ sent: 1 }).then(() => {
       return store.getLastSynced()
     }).then(synced => {
       return assert.deepEqual(synced, { sent: 1, received: 0 })
+    }).then(() => {
+      return store.setLastSynced({ received: 1 })
+    }).then(() => {
+      return store.getLastSynced()
+    }).then(synced => {
+      return assert.deepEqual(synced, { sent: 1, received: 1 })
     })
   })
 
