@@ -320,6 +320,20 @@ it('removes action on setting entry reasons', function () {
   })
 })
 
+it('checks action existence', function () {
+  return logWith([
+    [{ type: 'A' }, { reasons: ['test'], id: [1] }]
+  ]).then(function (log) {
+    return log.has([1]).then(function (exist) {
+      expect(exist).toBeTruthy()
+    }).then(function () {
+      return log.has([2])
+    }).then(function (exist) {
+      expect(exist).toBeFalsy()
+    })
+  })
+})
+
 it('cleans log by reason', function () {
   return logWith([
     [{ type: 'A' }, { reasons: ['a'] }],

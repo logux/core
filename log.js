@@ -286,6 +286,24 @@ Log.prototype = {
     return this.store.removeReason(reason, criteria, function (action, meta) {
       log.emitter.emit('clean', action, meta)
     })
+  },
+
+  /**
+   * Does log already has action with this ID.
+   *
+   * @param {ID} id Action ID.
+   *
+   * @return {Promise} Promise with boolean.
+   *
+   * @example
+   * if (action.type === 'logux/undo') {
+   *   log.has(action.id).then(exist => {
+   *     if (exist) removeFromHistory(action.id)
+   *   })
+   * }
+   */
+  has: function has (id) {
+    return this.store.has(id)
   }
 }
 
