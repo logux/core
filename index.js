@@ -104,7 +104,7 @@ module.exports = {
  *
  * @param {ID} id Action ID.
  *
- * @return {Promise} Promise with boolean
+ * @return {Promise} Promise with boolean.
  *
  * @name has
  * @function
