@@ -316,6 +316,9 @@ it('removes action on setting entry reasons', function () {
       checkEntries(log, [
         [{ type: 'A' }, { id: [1], time: 1, added: 1, reasons: ['test'] }]
       ])
+      return log.changeMeta([3], { reasons: [] })
+    }).then(function (r) {
+      expect(r).toBeFalsy()
     })
   })
 })
