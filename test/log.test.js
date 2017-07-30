@@ -323,16 +323,17 @@ it('removes action on setting entry reasons', function () {
   })
 })
 
-it('checks action existence', function () {
+it('returns action by ID', function () {
   return logWith([
     [{ type: 'A' }, { reasons: ['test'], id: [1] }]
   ]).then(function (log) {
-    return log.has([1]).then(function (exist) {
-      expect(exist).toBeTruthy()
-    }).then(function () {
-      return log.has([2])
-    }).then(function (exist) {
-      expect(exist).toBeFalsy()
+    return log.byId([1]).then(function (result) {
+      expect(result[0]).toEqual({ type: 'A' })
+      expect(result[1].reasons).toEqual(['test'])
+      return log.byId([2])
+    }).then(function (result) {
+      expect(result[0]).toBe(null)
+      expect(result[1]).toBe(null)
     })
   })
 })
