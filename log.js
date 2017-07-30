@@ -131,8 +131,8 @@ Log.prototype = {
       emitter.emit('clean', action, meta)
       return Promise.resolve(meta)
     } else if (meta.reasons.length === 0) {
-      return this.store.has(meta.id).then(function (already) {
-        if (already) {
+      return this.store.byId(meta.id).then(function (result) {
+        if (result[0]) {
           return false
         } else {
           emitter.emit('add', action, meta)
@@ -297,13 +297,13 @@ Log.prototype = {
    *
    * @example
    * if (action.type === 'logux/undo') {
-   *   log.has(action.id).then(exist => {
-   *     if (exist) removeFromHistory(action.id)
+   *   log.byId(action.id).then(([undidAction, undidMeta]) => {
+   *     log.changeMeta(meta.id, { reasons: undidMeta.reasons })
    *   })
    * }
    */
-  has: function has (id) {
-    return this.store.has(id)
+  byId: function byId (id) {
+    return this.store.byId(id)
   }
 }
 

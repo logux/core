@@ -100,17 +100,6 @@ module.exports = {
  * @memberof Store#
  */
 /**
- * Does store already has action with this ID.
- *
- * @param {ID} id Action ID.
- *
- * @return {Promise} Promise with boolean.
- *
- * @name has
- * @function
- * @memberof Store#
- */
-/**
  * Remove action from store.
  *
  * @param {ID} id Action ID.
@@ -149,6 +138,17 @@ module.exports = {
  *                   or `false` on unknown ID.
  *
  * @name changeMeta
+ * @function
+ * @memberof Store#
+ */
+/**
+ * Return action by action ID.
+ *
+ * @param {ID} id Action ID.
+ *
+ * @return {Promise} Promise with array of action and metadata.
+ *
+ * @name byId
  * @function
  * @memberof Store#
  */

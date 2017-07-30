@@ -83,8 +83,14 @@ MemoryStore.prototype = {
     return insert(this, entry)
   },
 
-  has: function has (id) {
-    return Promise.resolve(find(this.created, id) !== -1)
+  byId: function byId (id) {
+    var created = find(this.created, id)
+    if (created === -1) {
+      return Promise.resolve([null, null])
+    } else {
+      var entry = this.created[created]
+      return Promise.resolve([entry[0], entry[1]])
+    }
   },
 
   remove: function remove (id) {

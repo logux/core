@@ -39,6 +39,7 @@
     "changeMeta",
     "diff",
     "removeReason",
-    "preadd"
+    "preadd",
+    "byId"
   ]
 }
