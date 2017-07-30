@@ -252,24 +252,26 @@ function eachTest (test) {
       })
   })
 
-  test('tells that action already in store', storeFactory => () => {
+  test('returns action by ID', storeFactory => () => {
     const store = storeFactory()
     return Promise.all([
-      store.add({ }, { id: [1, 'node', 0], time: 1 }),
-      store.add({ }, { id: [1, 'node', 1], time: 2 }),
-      store.add({ }, { id: [1, 'node', 2], time: 2 }),
-      store.add({ }, { id: [1, 'node', 3], time: 2 }),
-      store.add({ }, { id: [2, 'node', 0], time: 2 })
+      store.add({ type: 'A' }, { id: [1, 'node', 0], time: 1 }),
+      store.add({ type: 'B' }, { id: [1, 'node', 1], time: 2 }),
+      store.add({ type: 'C' }, { id: [1, 'node', 2], time: 2 }),
+      store.add({ type: 'D' }, { id: [1, 'node', 3], time: 2 }),
+      store.add({ type: 'E' }, { id: [2, 'node', 0], time: 2 })
     ]).then(() => {
-      return store.has([1, 'node', 0])
+      return store.byId([1, 'node', 0])
     }).then(result => {
-      assert.ok(result)
-      return store.has([1, 'node', 2])
+      assert.deepEqual(result[0], { type: 'A' })
+      assert.deepEqual(result[1].time, 1)
+      return store.byId([1, 'node', 2])
     }).then(result => {
-      assert.ok(result)
-      return store.has([2, 'node', 1])
+      assert.deepEqual(result[0], { type: 'C' })
+      return store.byId([2, 'node', 1])
     }).then(result => {
-      assert.ok(!result)
+      assert.deepEqual(result[0], null)
+      assert.deepEqual(result[1], null)
     })
   })
 
