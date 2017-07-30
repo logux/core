@@ -14,6 +14,13 @@ it('creates test log', function () {
   expect(log.store instanceof MemoryStore).toBeTruthy()
 })
 
+it('creates test log with specific parameters', function () {
+  var store = new MemoryStore()
+  var log = TestTime.getLog({ store: store, nodeId: 'other' })
+  expect(log.nodeId).toEqual('other')
+  expect(log.store).toBe(store)
+})
+
 it('uses special ID generator in test log', function () {
   var log = TestTime.getLog()
   return Promise.all([
