@@ -18,12 +18,14 @@ var MIXINS = [
 var BEFORE_AUTH = ['connect', 'connected', 'error']
 
 function syncMappedEvent (sync, action, meta) {
+  var added = meta.added
+  if (typeof added === 'undefined') added = sync.lastSent
   if (sync.options.outMap) {
     sync.options.outMap(action, meta).then(function (changed) {
-      sync.sendSync(meta.added, [changed])
+      sync.sendSync(added, [changed])
     })
   } else {
-    sync.sendSync(meta.added, [[action, meta]])
+    sync.sendSync(added, [[action, meta]])
   }
 }
 

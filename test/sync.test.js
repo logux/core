@@ -71,6 +71,20 @@ it('sends sync messages', function () {
   })
 })
 
+it('uses last added on non-added action', function () {
+  return createTest().then(function (test) {
+    test.leftSync.log.on('preadd', function (action, meta) {
+      meta.reasons = []
+    })
+    test.leftSync.log.add({ type: 'a' })
+    return test.wait('left')
+  }).then(function (test) {
+    expect(test.leftSent).toEqual([
+      ['sync', 0, { type: 'a' }, { id: [1, 'test1', 0], time: 1, reasons: [] }]
+    ])
+  })
+})
+
 it('checks sync types', function () {
   var wrongs = [
     ['sync'],
