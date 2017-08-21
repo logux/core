@@ -35,7 +35,7 @@ function createTest (before) {
   if (before) before(test)
 
   return test.left.connect().then(function () {
-    return test.wait('left')
+    return test.leftSync.waitFor('synchronized')
   }).then(function () {
     test.clear()
     test.leftSync.baseTime = 0
