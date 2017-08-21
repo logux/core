@@ -72,7 +72,7 @@ it('sends sync messages', function () {
   })
 })
 
-it('check sync types', function () {
+it('checks sync types', function () {
   var wrongs = [
     ['sync'],
     ['sync', 0, { type: 'a' }],
@@ -200,7 +200,7 @@ it('maps input actions', function () {
   })
 })
 
-it('compress time', function () {
+it('compresses time', function () {
   var test
   return createTest().then(function (created) {
     test = created
@@ -229,7 +229,7 @@ it('compress time', function () {
   })
 })
 
-it('compress IDs', function () {
+it('compresses IDs', function () {
   var test
   return createTest().then(function (created) {
     test = created
