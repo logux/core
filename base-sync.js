@@ -477,16 +477,32 @@ BaseSync.prototype = {
   },
 
   syncSinceQuery: function syncSinceQuery (lastSynced) {
-    var data = { added: 0, entries: [] }
+    var sync = this
+    var promises = []
     return this.log.each({ order: 'added' }, function (action, meta) {
-      if (meta.added <= lastSynced) {
-        return false
+      if (meta.added <= lastSynced) return false
+      if (sync.options.outFilter) {
+        promises.push(sync.options.outFilter(action, meta).then(function (r) {
+          if (r) {
+            return [action, meta]
+          } else {
+            return false
+          }
+        }))
       } else {
-        if (data.added < meta.added) data.added = meta.added
-        data.entries.push([action, meta])
-        return true
+        promises.push(Promise.resolve([action, meta]))
       }
+      return true
     }).then(function () {
+      return Promise.all(promises)
+    }).then(function (entries) {
+      var data = { added: 0 }
+      data.entries = entries.filter(function (entry) {
+        if (entry && data.added < entry[1].added) {
+          data.added = entry[1].added
+        }
+        return entry !== false
+      })
       return data
     })
   },

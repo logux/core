@@ -34,9 +34,8 @@ function createTest (before) {
 
   if (before) before(test)
 
-  return test.left.connect().then(function () {
-    return test.leftSync.waitFor('synchronized')
-  }).then(function () {
+  test.left.connect()
+  return test.leftSync.waitFor('synchronized').then(function () {
     test.clear()
     test.leftSync.baseTime = 0
     test.rightSync.baseTime = 0
@@ -133,19 +132,30 @@ it('remembers synced added', function () {
 })
 
 it('filters output actions', function () {
-  return createTest().then(function (test) {
+  var test
+  return createTest(function (created) {
+    test = created
     test.leftSync.options.outFilter = function (action, meta) {
       expect(meta.id).toBeDefined()
       expect(meta.time).toBeDefined()
       expect(meta.added).toBeDefined()
       return Promise.resolve(action.type === 'b')
     }
-    test.leftSync.log.add({ type: 'a' })
-    test.leftSync.log.add({ type: 'b' })
-    return test.wait('left')
-  }).then(function (test) {
-    expect(actions(test.leftSync.log)).toEqual([{ type: 'b' }, { type: 'a' }])
+    return Promise.all([
+      test.leftSync.log.add({ type: 'a' }),
+      test.leftSync.log.add({ type: 'b' })
+    ])
+  }).then(function () {
     expect(actions(test.rightSync.log)).toEqual([{ type: 'b' }])
+  }).then(function () {
+    return Promise.all([
+      test.leftSync.log.add({ type: 'a' }),
+      test.leftSync.log.add({ type: 'b' })
+    ])
+  }).then(function () {
+    return test.leftSync.waitFor('synchronized')
+  }).then(function () {
+    expect(actions(test.rightSync.log)).toEqual([{ type: 'b' }, { type: 'b' }])
   })
 })
 
