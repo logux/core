@@ -197,7 +197,7 @@ it('allows to disable reconnecting', function () {
     pair.right.disconnect()
     return pair.wait()
   }).then(function () {
-    return wait(1)
+    return Promise.resolve()
   }).then(function () {
     expect(pair.right.connected).toBeFalsy()
   })

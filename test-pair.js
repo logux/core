@@ -110,8 +110,7 @@ TestPair.prototype = {
    * @return {undefined}
    *
    * @example
-   * client.connection.connect()
-   * return wait(1).then(() => {
+   * client.connection.connect().then(() => {
    *   pair.clear() // Remove all connecting messages
    *   return client.log.add({ type: 'a' })
    * }).then(() => {
