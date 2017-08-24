@@ -131,16 +131,15 @@ function BaseSync (nodeId, log, connection, options) {
    * Current synchronization state.
    *
    * * `disconnected`: no connection, but no new actions to synchronization.
-   * * `wait`: new actions for synchronization but there is no connection.
    * * `connecting`: connection was started and we wait for node answer.
    * * `sending`: new actions was sent, waiting for answer.
    * * `synchronized`: all actions was synchronized and we keep connection.
    *
-   * @type {"disconnected"|"wait"|"connecting"|"sending"|"synchronized"}
+   * @type {"disconnected"|"connecting"|"sending"|"synchronized"}
    *
    * @example
    * sync.on('state', () => {
-   *   if (sync.state === 'wait' && sync.state === 'sending') {
+   *   if (sync.state === 'sending') {
    *     console.log('Do not close browser')
    *   }
    * })
@@ -378,12 +377,7 @@ BaseSync.prototype = {
     this.endTimeout()
     if (this.pingTimeout) clearTimeout(this.pingTimeout)
     this.connected = false
-
-    if (this.lastAddedCache > this.lastSent) {
-      this.setState('wait')
-    } else {
-      this.setState('disconnected')
-    }
+    this.setState('disconnected')
   },
 
   onMessage: function onMessage (msg) {
@@ -407,10 +401,7 @@ BaseSync.prototype = {
   },
 
   onAdd: function onAdd (action, meta) {
-    if (!this.connected) {
-      this.setState('wait')
-      return
-    }
+    if (!this.connected) return
     if (this.lastAddedCache < meta.added) {
       this.lastAddedCache = meta.added
     }
@@ -552,8 +543,6 @@ BaseSync.prototype = {
       sync.lastSent = result[0].sent
       sync.lastReceived = result[0].received
       sync.lastAddedCache = result[1]
-
-      if (sync.lastAddedCache > sync.lastSent) sync.setState('wait')
       if (sync.connection.connected) sync.onConnect()
     })
   },

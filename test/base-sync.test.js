@@ -121,18 +121,6 @@ it('supports one-time events', function () {
   expect(states).toEqual(['sending'])
 })
 
-it('sets wait state on creating', function () {
-  var log = TestTime.getLog()
-  var sync
-  return log.add({ type: 'a' }, { reasons: ['test'] }).then(function () {
-    var pair = new TestPair()
-    sync = new BaseSync('client', log, pair.left)
-    return sync.initializing
-  }).then(function () {
-    expect(sync.state).toEqual('wait')
-  })
-})
-
 it('has state', function () {
   var sync = createSync()
   var pair = sync.connection.pair
@@ -160,7 +148,7 @@ it('has state', function () {
     expect(sync.state).toEqual('disconnected')
     return sync.log.add({ type: 'b' })
   }).then(function () {
-    expect(sync.state).toEqual('wait')
+    expect(sync.state).toEqual('disconnected')
     sync.connection.emitter.emit('connecting')
     expect(sync.state).toEqual('connecting')
     return sync.connection.connect()
@@ -183,12 +171,11 @@ it('has state', function () {
       'sending',
       'synchronized',
       'disconnected',
-      'wait',
       'connecting',
       'sending',
       'synchronized',
       'sending',
-      'wait'
+      'disconnected'
     ])
   })
 })
