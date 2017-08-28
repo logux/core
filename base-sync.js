@@ -571,8 +571,7 @@ for (var i = 0; i <= MIXINS.length; i++) {
 }
 
 var DUILIANS = {
-  '世事洞眀皆學問': '人情練達即文章',
-  '書山有路勤爲徑': '學海無涯苦作舟'
+  '金木水火土': '板城烧锅酒'
 }
 
 module.exports = BaseSync

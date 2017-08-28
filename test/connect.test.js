@@ -245,7 +245,7 @@ it('sends error on messages before auth', function () {
     return test.wait('left')
   }).then(function () {
     expect(test.rightSent).toEqual([
-      ['error', 'missed-auth', '["duilian","世事洞眀皆學問"]']
+      ['error', 'missed-auth', '["duilian","金木水火土"]']
     ])
   })
 })
