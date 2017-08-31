@@ -122,7 +122,13 @@ Log.prototype = {
 
     if (typeof meta.time === 'undefined') meta.time = meta.id[0]
     if (typeof meta.reasons === 'undefined') meta.reasons = []
-    if (typeof meta.keepLast === 'string') meta.reasons.push(meta.keepLast)
+
+    if (
+      typeof meta.keepLast === 'string' &&
+      meta.reasons.indexOf(meta.keepLast) === -1
+    ) {
+      meta.reasons.push(meta.keepLast)
+    }
 
     var emitter = this.emitter
     emitter.emit('preadd', action, meta)
