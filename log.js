@@ -122,6 +122,7 @@ Log.prototype = {
 
     if (typeof meta.time === 'undefined') meta.time = meta.id[0]
     if (typeof meta.reasons === 'undefined') meta.reasons = []
+    if (typeof meta.keepLast === 'string') meta.reasons.push(meta.keepLast)
 
     var emitter = this.emitter
     emitter.emit('preadd', action, meta)
@@ -145,10 +146,15 @@ Log.prototype = {
         if (addedMeta === false) {
           return false
         } else {
+          if (typeof addedMeta.keepLast !== 'undefined') {
+            this.removeReason(addedMeta.keepLast, {
+              maxAdded: addedMeta.added - 1
+            })
+          }
           emitter.emit('add', action, addedMeta)
           return addedMeta
         }
-      })
+      }.bind(this))
     }
   },
 

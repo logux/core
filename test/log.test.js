@@ -466,3 +466,13 @@ it('fires preadd event', function () {
     expect(add).toEqual(['A'])
   })
 })
+
+it('removes reasons when `keepLast` option is used', function () {
+  return logWith([
+    [{ type: '1' }, { keepLast: 'a' }],
+    [{ type: '2' }, { keepLast: 'a' }],
+    [{ type: '3' }, { keepLast: 'a' }]
+  ]).then(function (log) {
+    return checkActions(log, [{ type: '3' }])
+  })
+})
