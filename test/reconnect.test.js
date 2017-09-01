@@ -305,10 +305,10 @@ it('reconnects when user open a tab', function () {
 })
 
 it('reconnects when user became online', function () {
-  var networkStatusListener
+  var listener
   window.addEventListener = function (name, callback) {
     expect(name).toEqual('online')
-    networkStatusListener = callback
+    listener = callback
   }
   window.removeEventListener = jest.fn()
 
@@ -325,7 +325,7 @@ it('reconnects when user became online', function () {
         return true
       }
     })
-    networkStatusListener()
+    listener()
     return pair.wait()
   }).then(function () {
     expect(pair.right.connected).toBeTruthy()

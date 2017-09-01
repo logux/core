@@ -66,20 +66,22 @@ function Reconnect (connection, options) {
     clearTimeout(self.timer)
   })
 
-  if (typeof document !== 'undefined' &&
-      typeof document.hidden !== 'undefined') {
-    var listener = this.visibilityChanged.bind(this)
-    document.addEventListener('visibilitychange', listener, false)
-    this.unbind.push(function () {
-      document.removeEventListener('visibilitychange', listener, false)
-    })
+  function visibility () {
+    if (self.reconnecting && !self.connected && !self.connecting) {
+      if (!document.hidden) self.connect()
+    }
   }
-
-  if (typeof window !== 'undefined') {
-    var networkStatusListener = this.networkStatusChanged.bind(this)
-    window.addEventListener('online', networkStatusListener, false)
+  function network () {
+    if (self.reconnecting && !self.connected && !self.connecting) {
+      if (navigator.onLine) self.connect()
+    }
+  }
+  if (typeof document !== 'undefined') {
+    document.addEventListener('visibilitychange', visibility, false)
+    window.addEventListener('online', network, false)
     this.unbind.push(function () {
-      window.removeEventListener('online', networkStatusListener, false)
+      document.removeEventListener('visibilitychange', visibility, false)
+      window.removeEventListener('online', network, false)
     })
   }
 }
@@ -143,18 +145,6 @@ Reconnect.prototype = {
     var deviation = Math.floor(rand * 0.5 * base)
     if (Math.floor(rand * 10) === 1) deviation = -deviation
     return Math.min(base + deviation, this.options.maxDelay) || 0
-  },
-
-  visibilityChanged: function visibilityChanged () {
-    if (this.reconnecting && !this.connected && !this.connecting) {
-      if (!document.hidden) this.connect()
-    }
-  },
-
-  networkStatusChanged: function networkStatusChanged () {
-    if (this.reconnecting && !this.connected && !this.connecting) {
-      if (navigator.onLine) this.connect()
-    }
   }
 
 }
