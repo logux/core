@@ -123,27 +123,24 @@ Log.prototype = {
     if (typeof meta.time === 'undefined') meta.time = meta.id[0]
     if (typeof meta.reasons === 'undefined') meta.reasons = []
 
-    if (
-      typeof meta.keepLast === 'string' &&
-      meta.reasons.indexOf(meta.keepLast) === -1
-    ) {
+    if (meta.keepLast && meta.reasons.indexOf(meta.keepLast) === -1) {
       meta.reasons.push(meta.keepLast)
     }
 
-    var emitter = this.emitter
-    emitter.emit('preadd', action, meta)
+    var log = this
+    this.emitter.emit('preadd', action, meta)
 
     if (meta.reasons.length === 0 && newId) {
-      emitter.emit('add', action, meta)
-      emitter.emit('clean', action, meta)
+      this.emitter.emit('add', action, meta)
+      this.emitter.emit('clean', action, meta)
       return Promise.resolve(meta)
     } else if (meta.reasons.length === 0) {
       return this.store.byId(meta.id).then(function (result) {
         if (result[0]) {
           return false
         } else {
-          emitter.emit('add', action, meta)
-          emitter.emit('clean', action, meta)
+          log.emitter.emit('add', action, meta)
+          log.emitter.emit('clean', action, meta)
           return meta
         }
       })
@@ -152,15 +149,15 @@ Log.prototype = {
         if (addedMeta === false) {
           return false
         } else {
-          if (typeof addedMeta.keepLast !== 'undefined') {
-            this.removeReason(addedMeta.keepLast, {
+          if (addedMeta.keepLast) {
+            log.removeReason(addedMeta.keepLast, {
               maxAdded: addedMeta.added - 1
             })
           }
-          emitter.emit('add', action, addedMeta)
+          log.emitter.emit('add', action, addedMeta)
           return addedMeta
         }
-      }.bind(this))
+      })
     }
   },
 
