@@ -99,6 +99,10 @@ Log.prototype = {
    * @param {ID} [meta.id] Unique action ID.
    * @param {number} [meta.time] Action created time.
    *                             Milliseconds since UNIX epoch.
+   * @param {string[]} [meta.reasons] Why action should be kept in log.
+   *                                  Action without reasons will be removed.
+   * @param {string} [meta.keepLast] Set code as reason and remove this reasons
+   *                                 from previous actions.
    * @return {Promise} Promise with `meta` if action was added to log
    *                   or `false` if action was already in log
    *
