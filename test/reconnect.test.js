@@ -303,3 +303,33 @@ it('reconnects when user open a tab', function () {
     expect(document.removeEventListener).toBeCalled()
   })
 })
+
+it('reconnects when user became online', function () {
+  var networkStatusListener
+  window.addEventListener = function (name, callback) {
+    expect(name).toEqual('online')
+    networkStatusListener = callback
+  }
+  window.removeEventListener = jest.fn()
+
+  var pair = new TestPair()
+  var recon = new Reconnect(pair.left)
+
+  return recon.connect().then(function () {
+    pair.right.disconnect()
+    return pair.wait()
+  }).then(function () {
+    expect(pair.right.connected).toBeFalsy()
+    Object.defineProperty(navigator, 'onLine', {
+      get: function () {
+        return true
+      }
+    })
+    networkStatusListener()
+    return pair.wait()
+  }).then(function () {
+    expect(pair.right.connected).toBeTruthy()
+    recon.destroy()
+    expect(document.removeEventListener).toBeCalled()
+  })
+})

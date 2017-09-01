@@ -74,6 +74,14 @@ function Reconnect (connection, options) {
       document.removeEventListener('visibilitychange', listener, false)
     })
   }
+
+  if (typeof window !== 'undefined') {
+    var networkStatusListener = this.networkStatusChanged.bind(this)
+    window.addEventListener('online', networkStatusListener, false)
+    this.unbind.push(function () {
+      window.removeEventListener('online', networkStatusListener, false)
+    })
+  }
 }
 
 Reconnect.prototype = {
@@ -140,6 +148,12 @@ Reconnect.prototype = {
   visibilityChanged: function visibilityChanged () {
     if (this.reconnecting && !this.connected && !this.connecting) {
       if (!document.hidden) this.connect()
+    }
+  },
+
+  networkStatusChanged: function networkStatusChanged () {
+    if (this.reconnecting && !this.connected && !this.connecting) {
+      if (navigator.onLine) this.connect()
     }
   }
 
