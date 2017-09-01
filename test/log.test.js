@@ -467,7 +467,7 @@ it('fires preadd event', function () {
   })
 })
 
-it('removes reasons when `keepLast` option is used', function () {
+it('removes reasons when keepLast option is used', function () {
   return logWith([
     [{ type: '1' }, { keepLast: 'a' }],
     [{ type: '2' }, { keepLast: 'a' }],
