@@ -196,6 +196,20 @@ log.removeReason('sync')
 logSize(log) //=> 0
 ```
 
+If you need to keep only last value, there is a shortcut for it:
+
+```js
+log.add(action, { keepLast: 'app/lastName' })
+```
+
+It will be equal to:
+
+```js
+log.add(action, { reasons: ['app/lastName'] }).then(meta => {
+  log.removeReason('app/lastName', { maxAdded: meta.added - 1 })
+})
+```
+
 
 ## Methods
 
