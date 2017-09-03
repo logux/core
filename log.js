@@ -125,7 +125,14 @@ Log.prototype = {
     }
 
     if (typeof meta.time === 'undefined') meta.time = meta.id[0]
-    if (typeof meta.reasons === 'undefined') meta.reasons = []
+
+    if (meta.reasons == null) {
+      meta.reasons = []
+    } else if (Array.isArray(meta.reasons)) {
+      meta.reasons = meta.reasons.map(String)
+    } else {
+      meta.reasons = [String(meta.reasons)]
+    }
 
     if (meta.keepLast) meta.reasons.push(meta.keepLast)
 

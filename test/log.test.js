@@ -476,3 +476,20 @@ it('removes reasons when keepLast option is used', function () {
     return checkActions(log, [{ type: '3' }])
   })
 })
+
+it('ensures `reasons` to be array of string values', function () {
+  var log = createLog()
+
+  return log.add({ type: '1' }).then(function (meta) {
+    expect(meta.reasons).toEqual([])
+    return log.add({ type: '2' }, { reasons: null })
+  }).then(function (meta) {
+    expect(meta.reasons).toEqual([])
+    return log.add({ type: '3' }, { reasons: 'a' })
+  }).then(function (meta) {
+    expect(meta.reasons).toEqual(['a'])
+    return log.add({ type: '4' }, { reasons: [null, false, 1, { foo: 'bar' }] })
+  }).then(function (meta) {
+    expect(meta.reasons).toEqual(['null', 'false', '1', '[object Object]'])
+  })
+})
