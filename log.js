@@ -24,7 +24,7 @@ function Log (opts) {
   if (!opts) opts = { }
 
   if (typeof opts.nodeId === 'undefined') {
-    throw new Error('Expected node ID for Logux')
+    throw new Error('Expected node ID')
   }
   /**
    * Unique node ID. It is used in action IDs.
@@ -36,7 +36,7 @@ function Log (opts) {
   this.sequence = 0
 
   if (typeof opts.store !== 'object') {
-    throw new Error('Expected Logux store to be a object')
+    throw new Error('Expected store')
   }
   this.store = opts.store
 
@@ -113,7 +113,7 @@ Log.prototype = {
    */
   add: function add (action, meta) {
     if (typeof action.type === 'undefined') {
-      throw new Error('Expected "type" property in action')
+      throw new Error('Expected "type" in action')
     }
 
     if (!meta) meta = { }
@@ -255,7 +255,7 @@ Log.prototype = {
     var key
     for (key in diff) {
       if (key === 'id' || key === 'added' || key === 'time') {
-        throw new Error('Changing ' + key + ' is prohibbited in Logux')
+        throw new Error('Meta "' + key + '" is read-only')
       }
     }
 

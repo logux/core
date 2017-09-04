@@ -45,7 +45,7 @@ it('requires node ID', function () {
 it('requires store', function () {
   expect(function () {
     new Log({ nodeId: 'test' })
-  }).toThrowError(/Logux store/)
+  }).toThrowError(/store/)
 })
 
 it('requires type for action', function () {
@@ -289,13 +289,13 @@ it('does not allow to change ID or added', function () {
   var log = createLog()
   expect(function () {
     log.changeMeta([1], { id: [2] })
-  }).toThrowError(/id is prohibbited/)
+  }).toThrowError(/"id" is read-only/)
   expect(function () {
     log.changeMeta([1], { added: 2 })
-  }).toThrowError(/added is prohibbited/)
+  }).toThrowError(/"added" is read-only/)
   expect(function () {
     log.changeMeta([1], { time: 2 })
-  }).toThrowError(/time is prohibbited/)
+  }).toThrowError(/"time" is read-only/)
 })
 
 it('removes action on setting entry reasons', function () {
