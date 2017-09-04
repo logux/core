@@ -134,7 +134,7 @@ Log.prototype = {
 
     meta.reasons.forEach(function (reason) {
       if (typeof reason !== 'string') {
-        throw new Error('Expected "reasons" to contain string values')
+        throw new Error('Expected "reasons" to be strings')
       }
     })
 

@@ -487,6 +487,6 @@ it('ensures `reasons` to be array of string values', function () {
     expect(meta.reasons).toEqual(['a'])
     return log.add({ type: '3' }, { reasons: [false, 1] })
   }).catch(function (err) {
-    expect(err.message).toEqual('Expected "reasons" to contain string values')
+    expect(err.message).toEqual('Expected "reasons" to be strings')
   })
 })
