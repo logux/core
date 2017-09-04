@@ -132,11 +132,9 @@ Log.prototype = {
       meta.reasons = [meta.reasons]
     }
 
-    meta.reasons = meta.reasons.map(function (reason) {
+    meta.reasons.forEach(function (reason) {
       if (typeof reason !== 'string') {
         throw new Error('Expected "reasons" to contain string values')
-      } else {
-        return reason
       }
     })
 
