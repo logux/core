@@ -126,13 +126,19 @@ Log.prototype = {
 
     if (typeof meta.time === 'undefined') meta.time = meta.id[0]
 
-    if (meta.reasons == null) {
+    if (typeof meta.reasons === 'undefined') {
       meta.reasons = []
-    } else if (Array.isArray(meta.reasons)) {
-      meta.reasons = meta.reasons.map(String)
-    } else {
-      meta.reasons = [String(meta.reasons)]
+    } else if (!Array.isArray(meta.reasons)) {
+      meta.reasons = [meta.reasons]
     }
+
+    meta.reasons = meta.reasons.map(function (reason) {
+      if (typeof reason !== 'string') {
+        throw new Error('Expected "reasons" to contain string values')
+      } else {
+        return reason
+      }
+    })
 
     if (meta.keepLast) meta.reasons.push(meta.keepLast)
 
