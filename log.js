@@ -125,7 +125,18 @@ Log.prototype = {
     }
 
     if (typeof meta.time === 'undefined') meta.time = meta.id[0]
-    if (typeof meta.reasons === 'undefined') meta.reasons = []
+
+    if (typeof meta.reasons === 'undefined') {
+      meta.reasons = []
+    } else if (!Array.isArray(meta.reasons)) {
+      meta.reasons = [meta.reasons]
+    }
+
+    meta.reasons.forEach(function (reason) {
+      if (typeof reason !== 'string') {
+        throw new Error('Expected "reasons" to be strings')
+      }
+    })
 
     if (meta.keepLast) meta.reasons.push(meta.keepLast)
 
