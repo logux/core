@@ -84,6 +84,24 @@ it('sends ping on idle connection', function () {
   })
 })
 
+it('does not ping before authentication', function () {
+  var log = TestTime.getLog()
+  var test = new TestPair()
+  test.leftSync = new ClientSync('client', log, test.left, {
+    ping: 100,
+    timeout: 300,
+    fixTime: false
+  })
+  return test.left.connect().then(function () {
+    return test.wait()
+  }).then(function () {
+    test.clear()
+    return wait(250)
+  }).then(function () {
+    expect(test.leftSent).toEqual([])
+  })
+})
+
 it('sends only one ping if timeout is bigger than ping', function () {
   return createTest({
     ping: 100,

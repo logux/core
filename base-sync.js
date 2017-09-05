@@ -465,7 +465,7 @@ BaseSync.prototype = {
 
     var sync = this
     this.pingTimeout = setTimeout(function () {
-      if (sync.connected) sync.sendPing()
+      if (sync.connected && sync.authenticated) sync.sendPing()
     }, this.options.ping)
   },
 
