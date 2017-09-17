@@ -213,6 +213,40 @@ function eachTest (test) {
     })
   })
 
+  test('removes reason for older action', storeFactory => () => {
+    const store = storeFactory()
+    return Promise.all([
+      store.add({ type: '1' }, { id: [1], time: 1, reasons: ['a'] }),
+      store.add({ type: '2' }, { id: [2], time: 2, reasons: ['a'] }),
+      store.add({ type: '3' }, { id: [3], time: 3, reasons: ['a'] })
+    ]).then(() => {
+      const m2 = { id: [2], time: 2 }
+      return store.removeReason('a', { olderThan: m2 }, nope)
+    }).then(() => {
+      return checkBoth(store, [
+        [{ type: '3' }, { added: 3, id: [3], time: 3, reasons: ['a'] }],
+        [{ type: '2' }, { added: 2, id: [2], time: 2, reasons: ['a'] }]
+      ])
+    })
+  })
+
+  test('removes reason for younger action', storeFactory => () => {
+    const store = storeFactory()
+    return Promise.all([
+      store.add({ type: '1' }, { id: [1], time: 1, reasons: ['a'] }),
+      store.add({ type: '2' }, { id: [2], time: 2, reasons: ['a'] }),
+      store.add({ type: '3' }, { id: [3], time: 3, reasons: ['a'] })
+    ]).then(() => {
+      const m2 = { id: [2], time: 2 }
+      return store.removeReason('a', { youngerThan: m2 }, nope)
+    }).then(() => {
+      return checkBoth(store, [
+        [{ type: '2' }, { added: 2, id: [2], time: 2, reasons: ['a'] }],
+        [{ type: '1' }, { added: 1, id: [1], time: 1, reasons: ['a'] }]
+      ])
+    })
+  })
+
   test('removes reason with minimum added', storeFactory => () => {
     const store = storeFactory()
     return Promise.all([
