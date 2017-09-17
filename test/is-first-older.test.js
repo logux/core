@@ -28,6 +28,13 @@ it('compares entries by other ID parts with priority', function () {
   expect(isFirstOlder(b, a)).toBeTruthy()
 })
 
+it('compares entries with same time', function () {
+  var a = { id: [2, 'a', 0], time: 1 }
+  var b = { id: [1, 'a', 0], time: 1 }
+  expect(isFirstOlder(a, b)).toBeFalsy()
+  expect(isFirstOlder(b, a)).toBeTruthy()
+})
+
 it('returns false for same entry', function () {
   var a = { id: [1, 'b', 1], time: 1 }
   expect(isFirstOlder(a, a)).toBeFalsy()
