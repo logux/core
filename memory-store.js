@@ -37,6 +37,10 @@ function find (list, id) {
   return -1
 }
 
+function isDefined (value) {
+  return typeof value !== 'undefined'
+}
+
 /**
  * Simple memory-based log store.
  *
@@ -149,10 +153,16 @@ MemoryStore.prototype = {
       if (meta.reasons.indexOf(reason) === -1) {
         return true
       }
-      if (typeof c.minAdded !== 'undefined' && meta.added < c.minAdded) {
+      if (isDefined(c.olderThan) && !isFirstOlder(meta, c.olderThan)) {
         return true
       }
-      if (typeof c.maxAdded !== 'undefined' && meta.added > c.maxAdded) {
+      if (isDefined(c.youngerThan) && !isFirstOlder(c.youngerThan, meta)) {
+        return true
+      }
+      if (isDefined(c.minAdded) && meta.added < c.minAdded) {
+        return true
+      }
+      if (isDefined(c.maxAdded) && meta.added > c.maxAdded) {
         return true
       }
 

@@ -161,6 +161,10 @@ module.exports = {
  *                                     with bigger `added`.
  * @param {number} [criteria.maxAdded] Remove reason only for actions
  *                                     with lower `added`.
+ * @param {Meta} [criteria.olderThan] Remove reason only older
+ *                                    than specific action.
+ * @param {Meta} [criteria.youngerThan] Remove reason only younger
+ *                                      than specific action.
  * @param {listener} callback Callback for every removed action.
  *
  * @return {Promise} Promise when cleaning will be finished.
