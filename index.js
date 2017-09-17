@@ -204,7 +204,7 @@ function eachTest (test) {
     ]).then(() => {
       const m1 = { id: [1], time: 1 }
       const m3 = { id: [3], time: 3 }
-      return store.removeReason('a', { olderThen: m3, youngerThen: m1 }, nope)
+      return store.removeReason('a', { olderThan: m3, youngerThan: m1 }, nope)
     }).then(() => {
       return checkBoth(store, [
         [{ type: '3' }, { added: 3, id: [3], time: 3, reasons: ['a'] }],
