@@ -138,7 +138,10 @@ Log.prototype = {
       }
     })
 
-    if (meta.keepLast) meta.reasons.push(meta.keepLast)
+    if (meta.keepLast) {
+      this.removeReason(meta.keepLast, { olderThan: meta })
+      meta.reasons.push(meta.keepLast)
+    }
 
     var log = this
     this.emitter.emit('preadd', action, meta)
@@ -162,11 +165,6 @@ Log.prototype = {
         if (addedMeta === false) {
           return false
         } else {
-          if (addedMeta.keepLast) {
-            log.removeReason(addedMeta.keepLast, {
-              maxAdded: addedMeta.added - 1
-            })
-          }
           log.emitter.emit('add', action, addedMeta)
           return addedMeta
         }
