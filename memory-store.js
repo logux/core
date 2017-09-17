@@ -140,7 +140,7 @@ MemoryStore.prototype = {
     }
   },
 
-  removeReason: function (reason, criteria, callback) {
+  removeReason: function removeReason (reason, criteria, callback) {
     var removed = []
     this.created = this.created.filter(function (entry) {
       var meta = entry[1]
