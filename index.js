@@ -195,6 +195,24 @@ function eachTest (test) {
     })
   })
 
+  test('removes reason by time', storeFactory => () => {
+    const store = storeFactory()
+    return Promise.all([
+      store.add({ type: '1' }, { id: [1], time: 1, reasons: ['a'] }),
+      store.add({ type: '2' }, { id: [2], time: 2, reasons: ['a'] }),
+      store.add({ type: '3' }, { id: [3], time: 3, reasons: ['a'] })
+    ]).then(() => {
+      const m1 = { id: [1], time: 1 }
+      const m3 = { id: [3], time: 3 }
+      return store.removeReason('a', { olderThen: m3, youngerThen: m1 }, nope)
+    }).then(() => {
+      return checkBoth(store, [
+        [{ type: '3' }, { added: 3, id: [3], time: 3, reasons: ['a'] }],
+        [{ type: '1' }, { added: 1, id: [1], time: 1, reasons: ['a'] }]
+      ])
+    })
+  })
+
   test('removes reason with minimum added', storeFactory => () => {
     const store = storeFactory()
     return Promise.all([
