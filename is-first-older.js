@@ -36,6 +36,12 @@ function isFirstOlder (firstMeta, secondMeta) {
     return true
   }
 
+  if (firstMeta.id[0] > secondMeta.id[0]) {
+    return false
+  } else if (firstMeta.id[0] < secondMeta.id[0]) {
+    return true
+  }
+
   return false
 }
 
