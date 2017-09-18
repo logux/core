@@ -82,21 +82,6 @@ it('sends new entries to listeners', function () {
   })
 })
 
-it('supports one-time listeners', function () {
-  var log = createLog()
-
-  var actions = []
-  log.once('add', function (action) {
-    actions.push(action)
-  })
-
-  return log.add({ type: 'B' }).then(function () {
-    return log.add({ type: 'C' })
-  }).then(function () {
-    expect(actions).toEqual([{ type: 'B' }])
-  })
-})
-
 it('unsubscribes listeners', function () {
   var log = createLog()
 
