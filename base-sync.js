@@ -269,24 +269,6 @@ BaseSync.prototype = {
   },
 
   /**
-   * Add one-time listener for synchronization events.
-   * See {@link BaseSync#on} for supported events.
-   *
-   * @param {"state"|"connect"|"error"|"clientError"|"debug"} event Event name.
-   * @param {listener} listener The listener function.
-   *
-   * @return {function} Unbind listener from event.
-   *
-   * @example
-   * sync.once('clientError', () => {
-   *   everythingFine = false
-   * })
-   */
-  once: function once (event, listener) {
-    return this.emitter.once(event, listener)
-  },
-
-  /**
    * Disable throwing a error on error message and create error listener.
    *
    * @param {errorListener} listener The listener function.

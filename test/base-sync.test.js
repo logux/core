@@ -28,6 +28,14 @@ function wait (ms) {
   })
 }
 
+function listeners (emitter) {
+  return Object.keys(emitter.events).map(function (i) {
+    return emitter.events[i].length
+  }).reduce(function (all, i) {
+    return all + i
+  }, 0)
+}
+
 it('saves all arguments', function () {
   var log = TestTime.getLog()
   var connection = new NanoEvents()
@@ -54,13 +62,12 @@ it('has protocol version', function () {
 it('unbind all listeners on destroy', function () {
   var sync = new BaseSync('client', TestTime.getLog(), new NanoEvents())
 
-  expect(Object.keys(sync.log.emitter.events)).toEqual(['add'])
-  expect(Object.keys(sync.connection.events).sort())
-    .toEqual(['connect', 'connecting', 'disconnect', 'error', 'message'])
+  expect(listeners(sync.log.emitter)).toBeGreaterThan(0)
+  expect(listeners(sync.connection)).toBeGreaterThan(0)
 
   sync.destroy()
-  expect(Object.keys(sync.log.emitter.events)).toEqual([])
-  expect(Object.keys(sync.connection.events)).toEqual([])
+  expect(listeners(sync.log.emitter)).toEqual(0)
+  expect(listeners(sync.connection)).toEqual(0)
 })
 
 it('destroys connection on destroy', function () {
@@ -105,20 +112,6 @@ it('has connection state', function () {
     sync.connection.disconnect()
     expect(sync.connected).toBeFalsy()
   })
-})
-
-it('supports one-time events', function () {
-  var sync = createSync()
-
-  var states = []
-  sync.once('state', function () {
-    states.push(sync.state)
-  })
-
-  sync.setState('sending')
-  sync.setState('synchronized')
-
-  expect(states).toEqual(['sending'])
 })
 
 it('has state', function () {
