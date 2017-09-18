@@ -26,6 +26,10 @@ function Log (opts) {
   if (typeof opts.nodeId === 'undefined') {
     throw new Error('Expected node ID')
   }
+  if (typeof opts.store !== 'object') {
+    throw new Error('Expected store')
+  }
+
   /**
    * Unique node ID. It is used in action IDs.
    * @type {string|number}
@@ -35,9 +39,6 @@ function Log (opts) {
   this.lastTime = 0
   this.sequence = 0
 
-  if (typeof opts.store !== 'object') {
-    throw new Error('Expected store')
-  }
   this.store = opts.store
 
   this.emitter = new NanoEvents()
