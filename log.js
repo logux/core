@@ -71,24 +71,6 @@ Log.prototype = {
   },
 
   /**
-   * Add one-time listener for log events.
-   * See {@link Log#on} for supported events.
-   *
-   * @param {"preadd"|"add"|"clean"} event The event name.
-   * @param {listener} listener The listener function.
-   *
-   * @return {function} Unbind listener from event.
-   *
-   * @example
-   * log.once('clean', () => {
-   *   console.log('Autocleaning works')
-   * })
-   */
-  once: function (event, listener) {
-    return this.emitter.once(event, listener)
-  },
-
-  /**
    * Add action to log.
    *
    * It will set `id`, `time` (if they was missed) and `added` property

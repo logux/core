@@ -9,7 +9,7 @@
   "license": "MIT",
   "repository": "logux/logux-core",
   "dependencies": {
-    "nanoevents": "^0.4.1"
+    "nanoevents": "^1.0.0"
   },
   "devDependencies": {
     "docdash": "^0.4.0",
