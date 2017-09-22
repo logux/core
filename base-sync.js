@@ -481,6 +481,7 @@ BaseSync.prototype = {
   syncSince: function syncSince (lastSynced) {
     var sync = this
     this.syncSinceQuery(lastSynced).then(function (data) {
+      if (!sync.connected) return
       if (data.entries.length > 0) {
         if (sync.options.outMap) {
           Promise.all(data.entries.map(function (i) {
