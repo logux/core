@@ -337,13 +337,9 @@ BaseSync.prototype = {
   },
 
   send: function send (msg) {
-    if (this.connected) {
-      this.delayPing()
-      this.connection.send(msg)
-    } else {
-      var json = JSON.stringify(msg)
-      throw new Error('Could not send ' + json + ' to disconnected connection')
-    }
+    if (!this.connected) return
+    this.delayPing()
+    this.connection.send(msg)
   },
 
   onConnecting: function onConnecting () {
@@ -485,7 +481,6 @@ BaseSync.prototype = {
   syncSince: function syncSince (lastSynced) {
     var sync = this
     this.syncSinceQuery(lastSynced).then(function (data) {
-      if (!sync.connected) return
       if (data.entries.length > 0) {
         if (sync.options.outMap) {
           Promise.all(data.entries.map(function (i) {

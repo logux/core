@@ -88,11 +88,9 @@ it('disconnects on destroy', function () {
   })
 })
 
-it('throws a error on send to disconnected connection', function () {
+it('does not throw error on send to disconnected connection', function () {
   var sync = createSync()
-  expect(function () {
-    sync.sendDuilian()
-  }).toThrowError(/disconnected/)
+  sync.sendDuilian()
 })
 
 it('sends messages to connection', function () {
