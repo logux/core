@@ -26,7 +26,7 @@
     "jest": "^21.1.0",
     "jsdoc": "^3.5.5",
     "lint-staged": "^4.2.2",
-    "logux-store-tests": "logux/logux-store-tests",
+    "logux-store-tests": "^0.1.1",
     "pre-commit": "^1.2.2",
     "rimraf": "^2.6.2",
     "yaspeller-ci": "^0.7.0"
