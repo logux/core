@@ -352,6 +352,21 @@ function eachTest (test) {
       ])
     })
   })
+
+  test('sorts actions with same time', storeFactory => () => {
+    const store = storeFactory()
+    return Promise.all([
+      store.add({ type: 'B' }, { id: [2, 'a', 0], time: 1 }),
+      store.add({ type: 'C' }, { id: [3, 'a', 0], time: 1 }),
+      store.add({ type: 'A' }, { id: [1, 'a', 0], time: 1 })
+    ]).then(() => {
+      return check(store, 'created', [
+        [{ type: 'C' }, { added: 2, id: [3, 'a', 0], time: 1 }],
+        [{ type: 'B' }, { added: 1, id: [2, 'a', 0], time: 1 }],
+        [{ type: 'A' }, { added: 3, id: [1, 'a', 0], time: 1 }]
+      ])
+    })
+  })
 }
 
 module.exports = eachTest
