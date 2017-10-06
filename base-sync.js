@@ -352,7 +352,9 @@ BaseSync.prototype = {
   },
 
   onDisconnect: function onDisconnect () {
-    this.endTimeout()
+    while (this.timeouts.length > 0) {
+      this.endTimeout()
+    }
     if (this.pingTimeout) clearTimeout(this.pingTimeout)
     this.connected = false
     this.setState('disconnected')

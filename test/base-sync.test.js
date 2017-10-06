@@ -208,6 +208,24 @@ it('has separated timeouts', function () {
   })
 })
 
+it('stops timeouts on disconnect', function () {
+  var sync = createSync({ timeout: 10 })
+
+  var error
+  sync.catch(function (e) {
+    error = e
+  })
+
+  sync.startTimeout()
+  sync.startTimeout()
+  sync.onDisconnect()
+
+  return wait(50).then(function () {
+    sync.startTimeout()
+    expect(error).not.toBeDefined()
+  })
+})
+
 it('accepts already connected connection', function () {
   var pair = new TestPair()
   var sync
