@@ -362,6 +362,24 @@ it('supports multiple actions in sync', function () {
   })
 })
 
+it('starts and ends timeout', function () {
+  return createTest().then(function (test) {
+    test.leftSync.sendSync(1, [
+      [{ type: 'a' }, { id: [1, 'test2', 0], time: 1, added: 1 }]
+    ])
+    test.leftSync.sendSync(2, [
+      [{ type: 'a' }, { id: [2, 'test2', 0], time: 2, added: 1 }]
+    ])
+    expect(test.leftSync.timeouts.length).toEqual(2)
+
+    test.leftSync.syncedMessage(1)
+    expect(test.leftSync.timeouts.length).toEqual(1)
+
+    test.leftSync.syncedMessage(2)
+    expect(test.leftSync.timeouts.length).toEqual(0)
+  })
+})
+
 it('changes multiple actions in map', function () {
   var test
   return createTest(function (created) {

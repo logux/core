@@ -93,10 +93,10 @@ module.exports = {
   },
 
   syncedMessage: function syncedMessage (synced) {
+    this.endTimeout()
     this.setLastSent(synced)
     if (this.syncing > 0) this.syncing -= 1
     if (this.syncing === 0) {
-      this.endTimeout()
       this.setState('synchronized')
     }
   }
