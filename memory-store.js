@@ -1,11 +1,5 @@
 var isFirstOlder = require('./is-first-older')
 
-function convert (list) {
-  return list.map(function (i) {
-    return [i[0], i[1]]
-  })
-}
-
 function insert (store, entry) {
   store.lastAdded += 1
   entry[1].added = store.lastAdded
@@ -14,23 +8,9 @@ function insert (store, entry) {
 }
 
 function find (list, id) {
-  var num = id[0]
-  var cache = id.slice(1).join('\t')
-  var m = 0
-  var n = list.length - 1
-  while (m <= n) {
-    var i = (n + m) >> 1
-    var entry = list[i]
-    var otherNum = entry[1].id[0]
-    if (otherNum > num) {
-      m = i + 1
-    } else if (otherNum < num) {
-      n = i - 1
-    } else if (entry[2] > cache) {
-      m = i + 1
-    } else if (entry[2] < cache) {
-      n = i - 1
-    } else {
+  for (var i = 0; i < list.length; i++) {
+    var oId = list[i][1].id
+    if (id[0] === oId[0] && id[1] === oId[1] && id[2] === oId[2]) {
       return i
     }
   }
@@ -69,13 +49,14 @@ function MemoryStore () {
 MemoryStore.prototype = {
 
   add: function add (action, meta) {
-    var cache = meta.id.slice(1).join('\t')
-    var entry = [action, meta, cache]
+    var entry = [action, meta]
+    var id = meta.id
 
     var list = this.created
     for (var i = 0; i < list.length; i++) {
       var other = list[i]
-      if (meta.id[0] === other[1].id[0] && cache === other[2]) {
+      var oId = other[1].id
+      if (id[0] === oId[0] && id[1] === oId[1] && id[2] === oId[2]) {
         return Promise.resolve(false)
       } else if (isFirstOlder(other[1], meta) > 0) {
         list.splice(i, 0, entry)
@@ -130,7 +111,7 @@ MemoryStore.prototype = {
     } else {
       entries = this.added
     }
-    return Promise.resolve({ entries: convert(entries) })
+    return Promise.resolve({ entries: entries.slice(0) })
   },
 
   changeMeta: function changeMeta (id, diff) {
