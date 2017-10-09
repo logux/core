@@ -147,20 +147,36 @@ function eachTest (test) {
       store.add({ type: '4' }, { id: [1, 'node1', 3], time: 2 }),
       store.add({ type: '5' }, { id: [1, 'node2', 0], time: 2 }),
       store.add({ type: '6' }, { id: [4, 'node1', 0], time: 4 })
-    ])
-      .then(() => store.remove([1, 'node1', 2]))
-      .then(result => {
-        assert.deepEqual(result, [
-          { type: '3' }, { id: [1, 'node1', 2], time: 2, added: 3 }
-        ])
-        return checkBoth(store, [
-          [{ type: '6' }, { id: [4, 'node1', 0], time: 4, added: 6 }],
-          [{ type: '5' }, { id: [1, 'node2', 0], time: 2, added: 5 }],
-          [{ type: '4' }, { id: [1, 'node1', 3], time: 2, added: 4 }],
-          [{ type: '2' }, { id: [1, 'node1', 1], time: 2, added: 2 }],
-          [{ type: '1' }, { id: [1, 'node1', 0], time: 1, added: 1 }]
-        ])
-      })
+    ]).then(() => {
+      return store.remove([1, 'node1', 2])
+    }).then(result => {
+      assert.deepEqual(result, [
+        { type: '3' }, { id: [1, 'node1', 2], time: 2, added: 3 }
+      ])
+      return checkBoth(store, [
+        [{ type: '6' }, { id: [4, 'node1', 0], time: 4, added: 6 }],
+        [{ type: '5' }, { id: [1, 'node2', 0], time: 2, added: 5 }],
+        [{ type: '4' }, { id: [1, 'node1', 3], time: 2, added: 4 }],
+        [{ type: '2' }, { id: [1, 'node1', 1], time: 2, added: 2 }],
+        [{ type: '1' }, { id: [1, 'node1', 0], time: 1, added: 1 }]
+      ])
+    })
+  })
+
+  test('removes entry with 0 time', storeFactory => () => {
+    const store = storeFactory()
+    return Promise.all([
+      store.add({ type: '1' }, { id: [1, 'node1', 0], time: 1 }),
+      store.add({ type: '2' }, { id: [2, 'node1', 0], time: 2 }),
+      store.add({ type: '3' }, { id: [3, 'node1', 0], time: 0 })
+    ]).then(() => {
+      store.remove([3, 'node1', 0])
+    }).then(() => {
+      return checkBoth(store, [
+        [{ type: '2' }, { id: [2, 'node1', 0], time: 2, added: 2 }],
+        [{ type: '1' }, { id: [1, 'node1', 0], time: 1, added: 1 }]
+      ])
+    })
   })
 
   test('ignores removing unknown entry', storeFactory => () => {
