@@ -1,6 +1,9 @@
 # Change Log
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## 0.2.1
+* Fix removing action with different `time` from memory store.
+
 ## 0.2
 * Rename `meta.created` to `meta.id`.
 * Rename `event` event to `add`.
