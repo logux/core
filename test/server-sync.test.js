@@ -1,13 +1,8 @@
 var TestTime = require('logux-core').TestTime
+var delay = require('nanodelay')
 
 var ServerSync = require('../server-sync')
 var TestPair = require('../test-pair')
-
-function wait (ms) {
-  return new Promise(function (resolve) {
-    setTimeout(resolve, ms)
-  })
-}
 
 it('has connecting state from the beginning', function () {
   var pair = new TestPair()
@@ -39,7 +34,7 @@ it('destroys on connect timeout', function () {
   sync.destroy = jest.fn()
   return pair.left.connect().then(function () {
     expect(sync.destroy).not.toBeCalled()
-    return wait(200)
+    return delay(200)
   }).then(function () {
     expect(error.message).toContain('timeout')
     expect(sync.destroy).toBeCalled()

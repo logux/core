@@ -1,14 +1,9 @@
 var TestTime = require('logux-core').TestTime
+var delay = require('nanodelay')
 
 var ServerSync = require('../server-sync')
 var ClientSync = require('../client-sync')
 var TestPair = require('../test-pair')
-
-function wait (ms) {
-  return new Promise(function (resolve) {
-    setTimeout(resolve, ms)
-  })
-}
 
 function createTest (opts) {
   var log = TestTime.getLog()
@@ -43,41 +38,40 @@ it('answers pong on ping', function () {
 })
 
 it('sends ping on idle connection', function () {
-  var error, test
+  var error
   return createTest({
     ping: 300,
     timeout: 100,
     fixTime: false
-  }).then(function (created) {
-    test = created
+  }).then(function (test) {
     test.leftSync.catch(function (err) {
       error = err
     })
-    return wait(250)
-  }).then(function () {
+    return delay(250, test)
+  }).then(function (test) {
     test.right.send(['duilian', ''])
-    return wait(250)
-  }).then(function () {
+    return delay(250, test)
+  }).then(function (test) {
     test.leftSync.send(['duilian', ''])
-    return wait(250)
-  }).then(function () {
+    return delay(250, test)
+  }).then(function (test) {
     expect(error).toBeUndefined()
     expect(test.leftSent).toEqual([['duilian', '']])
-    return wait(100)
-  }).then(function () {
+    return delay(100, test)
+  }).then(function (test) {
     expect(error).toBeUndefined()
     expect(test.leftSent).toEqual([['duilian', ''], ['ping', 1]])
     test.right.send(['pong', 1])
-    return wait(250)
-  }).then(function () {
+    return delay(250, test)
+  }).then(function (test) {
     expect(error).toBeUndefined()
     expect(test.leftSent).toEqual([['duilian', ''], ['ping', 1]])
-    return wait(100)
-  }).then(function () {
+    return delay(100, test)
+  }).then(function (test) {
     expect(error).toBeUndefined()
     expect(test.leftSent).toEqual([['duilian', ''], ['ping', 1], ['ping', 1]])
-    return wait(250)
-  }).then(function () {
+    return delay(250, test)
+  }).then(function (test) {
     expect(error.message).toContain('timeout')
     expect(test.leftSent).toEqual([['duilian', ''], ['ping', 1], ['ping', 1]])
     expect(test.leftEvents[3]).toEqual(['disconnect', 'timeout'])
@@ -96,7 +90,7 @@ it('does not ping before authentication', function () {
     return test.wait()
   }).then(function () {
     test.clear()
-    return wait(250)
+    return delay(250)
   }).then(function () {
     expect(test.leftSent).toEqual([])
   })
@@ -108,7 +102,7 @@ it('sends only one ping if timeout is bigger than ping', function () {
     timeout: 300,
     fixTime: false
   }).then(function (test) {
-    return wait(250).then(function () {
+    return delay(250).then(function () {
       expect(test.leftSent).toEqual([['ping', 1]])
     })
   })

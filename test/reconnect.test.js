@@ -1,13 +1,8 @@
 var NanoEvents = require('nanoevents')
+var delay = require('nanodelay')
 
 var TestPair = require('../test-pair')
 var Reconnect = require('../reconnect')
-
-function wait (ms) {
-  return new Promise(function (resolve) {
-    setTimeout(resolve, ms)
-  })
-}
 
 it('saves connection and options', function () {
   var con = { on: function () { } }
@@ -183,7 +178,7 @@ it('reconnects automatically with delay', function () {
     return pair.wait()
   }).then(function () {
     expect(pair.right.connected).toBeFalsy()
-    return wait(70)
+    return delay(70)
   }).then(function () {
     expect(pair.right.connected).toBeTruthy()
   })
@@ -219,7 +214,7 @@ it('has maximum reconnection attempts', function () {
 
   recon.connect()
 
-  return wait(10).then(function () {
+  return delay(10).then(function () {
     expect(recon.reconnecting).toBeFalsy()
     expect(connects).toBe(3)
   })
@@ -254,8 +249,8 @@ it('has dynamic delay', function () {
 
   function attemptsIsAround (attempt, ms) {
     recon.attempts = attempt
-    var delay = recon.nextDelay()
-    expect(Math.abs(delay - ms)).toBeLessThan(1000)
+    var time = recon.nextDelay()
+    expect(Math.abs(time - ms)).toBeLessThan(1000)
   }
 
   attemptsIsAround(0, 1000)
@@ -265,8 +260,8 @@ it('has dynamic delay', function () {
 
   function attemptsIs (attempt, ms) {
     recon.attempts = attempt
-    var delay = recon.nextDelay()
-    expect(delay).toEqual(ms)
+    var time = recon.nextDelay()
+    expect(time).toEqual(ms)
   }
 
   for (var i = 4; i < 100; i++) {

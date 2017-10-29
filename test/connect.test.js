@@ -1,4 +1,5 @@
 var TestTime = require('logux-core').TestTime
+var delay = require('nanodelay')
 
 var TestPair = require('../test-pair')
 var BaseSync = require('../base-sync')
@@ -25,12 +26,6 @@ function createTest () {
   test.rightSync.catch(function () { })
 
   return test
-}
-
-function wait (ms) {
-  return new Promise(function (resolve) {
-    setTimeout(resolve, ms)
-  })
 }
 
 it('sends protocol version and name in connect message', function () {
@@ -294,7 +289,7 @@ it('allows access for right users', function () {
   test.leftSync.options = { credentials: 'a' }
   test.rightSync.options = {
     auth: function (credentials, nodeId) {
-      return wait(10).then(function () {
+      return delay(10).then(function () {
         return credentials === 'a' && nodeId === 'client'
       })
     }
@@ -347,7 +342,7 @@ it('uses timeout between connect and connected', function () {
   })
 
   return pair.left.connect().then(function () {
-    return wait(101)
+    return delay(101)
   }).then(function () {
     expect(error.name).toEqual('SyncError')
     expect(error.message).not.toContain('received')

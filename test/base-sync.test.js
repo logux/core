@@ -1,5 +1,6 @@
 var NanoEvents = require('nanoevents')
 var TestTime = require('logux-core').TestTime
+var delay = require('nanodelay')
 
 var TestPair = require('../test-pair')
 var BaseSync = require('../base-sync')
@@ -19,12 +20,6 @@ function createTest () {
   test.leftSync = sync
   return test.left.connect().then(function () {
     return test
-  })
-}
-
-function wait (ms) {
-  return new Promise(function (resolve) {
-    setTimeout(resolve, ms)
   })
 }
 
@@ -200,9 +195,9 @@ it('has separated timeouts', function () {
   })
 
   sync.startTimeout()
-  return wait(60).then(function () {
+  return delay(60).then(function () {
     sync.startTimeout()
-    return wait(60)
+    return delay(60)
   }).then(function () {
     expect(error.message).toContain('timeout')
   })
@@ -220,7 +215,7 @@ it('stops timeouts on disconnect', function () {
   sync.startTimeout()
   sync.onDisconnect()
 
-  return wait(50).then(function () {
+  return delay(50).then(function () {
     sync.startTimeout()
     expect(error).not.toBeDefined()
   })
