@@ -220,7 +220,7 @@ it('sets default ID and time and empty reasons for new entries', function () {
     expect(meta.added).toEqual(1)
     expect(meta.reasons).toEqual([])
     expect(typeof meta.time).toEqual('number')
-    expect(meta.id.length).toEqual(3)
+    expect(meta.id).toHaveLength(3)
     expect(meta.id[0]).toEqual(meta.time)
     expect(meta.id[1]).toEqual('test')
     expect(meta.id[2]).toEqual(0)
