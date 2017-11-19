@@ -370,13 +370,13 @@ it('starts and ends timeout', function () {
     test.leftSync.sendSync(2, [
       [{ type: 'a' }, { id: [2, 'test2', 0], time: 2, added: 1 }]
     ])
-    expect(test.leftSync.timeouts.length).toEqual(2)
+    expect(test.leftSync.timeouts).toHaveLength(2)
 
     test.leftSync.syncedMessage(1)
-    expect(test.leftSync.timeouts.length).toEqual(1)
+    expect(test.leftSync.timeouts).toHaveLength(1)
 
     test.leftSync.syncedMessage(2)
-    expect(test.leftSync.timeouts.length).toEqual(0)
+    expect(test.leftSync.timeouts).toHaveLength(0)
   })
 })
 

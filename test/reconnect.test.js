@@ -159,13 +159,13 @@ it('disconnects and unbind listeners on destory', function () {
   var origin = pair.left.emitter.events.connect.length
 
   var recon = new Reconnect(pair.left)
-  expect(pair.left.emitter.events.connect.length).not.toEqual(origin)
+  expect(pair.left.emitter.events.connect).not.toHaveLength(origin)
 
   return recon.connect().then(function () {
     recon.destroy()
     return pair.wait()
   }).then(function () {
-    expect(pair.left.emitter.events.connect.length).toEqual(origin)
+    expect(pair.left.emitter.events.connect).toHaveLength(origin)
     expect(pair.right.connected).toBeFalsy()
   })
 })
