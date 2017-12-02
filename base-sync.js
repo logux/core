@@ -527,12 +527,8 @@ BaseSync.prototype = {
     })
   },
 
-  sendDuilian: function sendDuilian (num) {
-    var starts = Object.keys(DUILIANS)
-    if (typeof num === 'undefined') {
-      num = Math.floor(Math.random() * starts.length)
-    }
-    this.send(['duilian', starts[num]])
+  sendDuilian: function sendDuilian () {
+    this.send(['duilian', Object.keys(DUILIANS)[0]])
   },
 
   duilianMessage: function duilianMessage (line) {
