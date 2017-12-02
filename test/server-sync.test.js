@@ -75,15 +75,15 @@ it('supports connection before initializing', function () {
   }
 
   var pair = new TestPair()
-  var sync = new ServerSync('server', log, pair.left, { timeout: 10, ping: 10 })
+  var sync = new ServerSync('server', log, pair.left, { timeout: 50, ping: 50 })
 
   return pair.right.connect().then(function () {
     pair.right.send(['connect', sync.localProtocol, 'client', 0])
-    return delay(20)
+    return delay(70)
   }).then(function () {
     expect(pair.leftSent).toEqual([])
     returnLastAdded(10)
-    return delay(20)
+    return delay(70)
   }).then(function () {
     expect(sync.connected).toBeTruthy()
     expect(pair.leftSent).toHaveLength(2)
