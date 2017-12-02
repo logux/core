@@ -1,4 +1,5 @@
 var TestTime = require('logux-core').TestTime
+var delay = require('nanodelay')
 
 var ClientSync = require('../client-sync')
 var TestPair = require('../test-pair')
@@ -30,5 +31,31 @@ it('saves last added from ping', function () {
     return pair.wait('left')
   }).then(function () {
     expect(sync.lastReceived).toBe(2)
+  })
+})
+
+it('does not connect before initializing', function () {
+  var log = TestTime.getLog()
+
+  var returnLastAdded
+  log.store.getLastAdded = function () {
+    return new Promise(function (resolve) {
+      returnLastAdded = resolve
+    })
+  }
+
+  var pair = new TestPair()
+  var sync = new ClientSync('client', log, pair.left, { fixTime: false })
+
+  return pair.left.connect().then(function () {
+    return delay(10)
+  }).then(function () {
+    expect(pair.leftSent).toEqual([])
+    returnLastAdded(10)
+    return delay(10)
+  }).then(function () {
+    expect(pair.leftSent).toEqual([
+      ['connect', sync.localProtocol, 'client', 0]
+    ])
   })
 })
