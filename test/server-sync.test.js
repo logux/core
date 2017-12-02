@@ -63,3 +63,31 @@ it('loads only last added from store', function () {
     expect(sync.lastReceived).toBe(0)
   })
 })
+
+it('supports connection before initializing', function () {
+  var log = TestTime.getLog()
+
+  var returnLastAdded
+  log.store.getLastAdded = function () {
+    return new Promise(function (resolve) {
+      returnLastAdded = resolve
+    })
+  }
+
+  var pair = new TestPair()
+  var sync = new ServerSync('server', log, pair.left, { timeout: 10, ping: 10 })
+
+  return pair.right.connect().then(function () {
+    pair.right.send(['connect', sync.localProtocol, 'client', 0])
+    return delay(20)
+  }).then(function () {
+    expect(pair.leftSent).toEqual([])
+    returnLastAdded(10)
+    return delay(20)
+  }).then(function () {
+    expect(sync.connected).toBeTruthy()
+    expect(pair.leftSent).toHaveLength(2)
+    expect(pair.leftSent[0][0]).toEqual('connected')
+    expect(pair.leftSent[1]).toEqual(['ping', 10])
+  })
+})

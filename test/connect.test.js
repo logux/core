@@ -196,12 +196,12 @@ it('throws regular errors during connect event', function () {
   var test = createTest()
 
   var error = new Error('test')
-  test.rightSync.on('connect', function () {
+  test.leftSync.on('connect', function () {
     throw error
   })
 
   expect(function () {
-    test.rightSync.connectMessage(PROTOCOL, 'client', 0)
+    test.leftSync.connectMessage(PROTOCOL, 'client', 0)
   }).toThrow(error)
 })
 
@@ -236,7 +236,7 @@ it('sends error on messages before auth', function () {
   test.rightSync = new ServerSync('server', log, test.right)
 
   return test.left.connect().then(function () {
-    test.leftSync.sendDuilian(0)
+    test.leftSync.sendDuilian()
     return test.wait('left')
   }).then(function () {
     expect(test.rightSent).toEqual([
@@ -297,7 +297,7 @@ it('allows access for right users', function () {
 
   return test.left.connect().then(function () {
     test.leftSync.sendDuilian(0)
-    return test.wait('left')
+    return delay(20)
   }).then(function () {
     expect(test.rightSent[0]).toEqual(['connected', PROTOCOL, 'server', [1, 2]])
   })

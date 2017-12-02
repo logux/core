@@ -55,17 +55,15 @@ function ServerSync (nodeId, log, connection, options) {
   }
 
   this.state = 'connecting'
-  var sync = this
-  this.waitForInit = new Promise(function (resolve) {
-    sync.didInit = resolve
-  })
 }
 
 ServerSync.prototype = {
 
   onConnect: function onConnect () {
-    BaseSync.prototype.onConnect.call(this)
-    this.startTimeout()
+    if (this.initialized) {
+      BaseSync.prototype.onConnect.call(this)
+      this.startTimeout()
+    }
   },
 
   onDisconnect: function onDisconnect () {
@@ -80,9 +78,11 @@ ServerSync.prototype = {
   },
 
   connectMessage: function connectMessage () {
-    BaseSync.prototype.connectMessage.apply(this, arguments)
+    this.authenticating = true
     var sync = this
-    this.waitForInit.then(function () {
+    var args = arguments
+    this.initializing.then(function () {
+      BaseSync.prototype.connectMessage.apply(sync, args)
       sync.endTimeout()
     })
   },
@@ -90,11 +90,9 @@ ServerSync.prototype = {
   initialize: function initialize () {
     var sync = this
     return this.log.store.getLastAdded().then(function (added) {
+      sync.initialized = true
       sync.lastAddedCache = added
-      if (sync.connection.connected) {
-        sync.onConnect()
-        sync.didInit()
-      }
+      if (sync.connection.connected) sync.onConnect()
     })
   }
 

@@ -176,6 +176,7 @@ function BaseSync (nodeId, log, connection, options) {
     sync.onDisconnect()
   }))
 
+  this.initialized = false
   this.lastAddedCache = 0
   this.initializing = this.initialize()
 }
@@ -520,6 +521,7 @@ BaseSync.prototype = {
       this.log.store.getLastSynced(),
       this.log.store.getLastAdded()
     ]).then(function (result) {
+      sync.initialized = true
       sync.lastSent = result[0].sent
       sync.lastReceived = result[0].received
       sync.lastAddedCache = result[1]
