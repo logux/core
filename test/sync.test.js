@@ -343,8 +343,8 @@ it('fixes created time', function () {
 it('supports multiple actions in sync', function () {
   return createTest().then(function (test) {
     test.rightSync.sendSync(2, [
-      [{ type: 'a' }, { id: [1, 'test2', 0], time: 1, added: 1 }],
-      [{ type: 'b' }, { id: [2, 'test2', 0], time: 2, added: 2 }]
+      [{ type: 'b' }, { id: [2, 'test2', 0], time: 2, added: 2 }],
+      [{ type: 'a' }, { id: [1, 'test2', 0], time: 1, added: 1 }]
     ])
     return test.wait('right')
   }).then(function (test) {
@@ -399,8 +399,12 @@ it('changes multiple actions in map', function () {
 
 it('synchronizes actions on connect', function () {
   var test
+  var added = []
   return createTest().then(function (created) {
     test = created
+    test.leftSync.log.on('add', function (action) {
+      added.push(action.type)
+    })
     return Promise.all([
       test.leftSync.log.add({ type: 'a' }),
       test.rightSync.log.add({ type: 'b' })
@@ -416,7 +420,8 @@ it('synchronizes actions on connect', function () {
     return Promise.all([
       test.leftSync.log.add({ type: 'c' }),
       test.leftSync.log.add({ type: 'd' }),
-      test.rightSync.log.add({ type: 'e' })
+      test.rightSync.log.add({ type: 'e' }),
+      test.rightSync.log.add({ type: 'f' })
     ])
   }).then(function () {
     return test.left.connect()
@@ -425,6 +430,7 @@ it('synchronizes actions on connect', function () {
     return test.leftSync.waitFor('synchronized')
   }).then(function () {
     expect(actions(test.leftSync.log)).toEqual([
+      { type: 'f' },
       { type: 'e' },
       { type: 'd' },
       { type: 'c' },
@@ -432,5 +438,6 @@ it('synchronizes actions on connect', function () {
       { type: 'a' }
     ])
     expect(actions(test.leftSync.log)).toEqual(actions(test.rightSync.log))
+    expect(added).toEqual(['a', 'b', 'c', 'd', 'e', 'f'])
   })
 })

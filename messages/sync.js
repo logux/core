@@ -26,7 +26,7 @@ module.exports = {
         }
       }
 
-      data.push(entries[i][0], meta)
+      data.unshift(entries[i][0], meta)
     }
 
     this.syncing += 1
