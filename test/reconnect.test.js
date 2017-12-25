@@ -40,21 +40,25 @@ it('enables reconnecting if connection was already connected', function () {
   expect(recon.reconnecting).toBeTruthy()
 })
 
-it('disables reconnecting on non-timeout disconnect', function () {
+it('disables reconnecting on destroy and empty disconnect', function () {
   var pair = new TestPair()
   var recon = new Reconnect(pair.left)
 
   return recon.connect().then(function () {
-    recon.disconnect('error')
+    recon.disconnect('destroy')
     expect(recon.reconnecting).toBeFalsy()
     expect(pair.leftEvents).toEqual([
       ['connect'],
-      ['disconnect', 'error']
+      ['disconnect', 'destroy']
     ])
+    return recon.connect()
+  }).then(function () {
+    recon.disconnect()
+    expect(recon.reconnecting).toBeFalsy()
   })
 })
 
-it('reconnects on timeout disconnect', function () {
+it('reconnects on timeout and error disconnect', function () {
   var con = {
     on: function () { },
     connected: true,
@@ -63,6 +67,9 @@ it('reconnects on timeout disconnect', function () {
   var recon = new Reconnect(con)
 
   recon.disconnect('timeout')
+  expect(recon.reconnecting).toBeTruthy()
+
+  recon.disconnect('error')
   expect(recon.reconnecting).toBeTruthy()
 })
 

@@ -95,7 +95,7 @@ Reconnect.prototype = {
   },
 
   disconnect: function disconnect (reason) {
-    if (reason !== 'timeout') this.reconnecting = false
+    if (reason !== 'timeout' && reason !== 'error') this.reconnecting = false
     return this.connection.disconnect(reason)
   },
 
