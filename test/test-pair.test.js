@@ -105,7 +105,7 @@ it('clones messages', function () {
 
 it('returns self in wait()', function () {
   var pair = new TestPair()
-  pair.left.connect().then(function () {
+  return pair.left.connect().then(function () {
     pair.left.send('test')
     return pair.wait()
   }).then(function (test) {
@@ -115,9 +115,11 @@ it('returns self in wait()', function () {
 
 it('filters events in wait()', function () {
   var pair = new TestPair()
-  pair.left.connect().then(function () {
+  return pair.left.connect().then(function () {
     pair.left.send('left1')
-    pair.right.send('right1')
+    setTimeout(function () {
+      pair.right.send('right1')
+    }, 1)
     return pair.wait()
   }).then(function () {
     expect(pair.rightSent).toEqual([])
@@ -125,8 +127,10 @@ it('filters events in wait()', function () {
   }).then(function () {
     expect(pair.rightSent).toEqual(['right1'])
     pair.left.send('left2')
-    pair.right.send('righ2')
-    return pair.wait('right')
+    setTimeout(function () {
+      pair.right.send('right2')
+    }, 1)
+    return pair.wait('left')
   }).then(function () {
     expect(pair.rightSent).toEqual(['right1', 'right2'])
   })
