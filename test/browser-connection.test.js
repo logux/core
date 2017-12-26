@@ -14,8 +14,11 @@ FakeWebSocket.prototype = {
   close: function () { }
 }
 
+afterEach(function () {
+  delete global.WebSocket
+})
+
 it('throws a error on lack of WebSocket support', function () {
-  delete window.WebSocket
   var connection = new BrowserConnection('ws://locahost')
   expect(function () {
     connection.connect()
@@ -30,7 +33,7 @@ it('throws on message in disconnected state', function () {
 })
 
 it('emits error on wrong format', function () {
-  window.WebSocket = FakeWebSocket
+  global.WebSocket = FakeWebSocket
   var connection = new BrowserConnection('ws://locahost')
   var error
   connection.on('error', function (err) {
@@ -45,7 +48,7 @@ it('emits error on wrong format', function () {
 })
 
 it('emits connection states', function () {
-  window.WebSocket = FakeWebSocket
+  global.WebSocket = FakeWebSocket
   var connection = new BrowserConnection('ws://locahost')
 
   var states = []
@@ -77,7 +80,7 @@ it('emits connection states', function () {
 })
 
 it('closes WebSocket', function () {
-  window.WebSocket = FakeWebSocket
+  global.WebSocket = FakeWebSocket
   var connection = new BrowserConnection('ws://locahost')
 
   return connection.connect().then(function () {
@@ -91,7 +94,7 @@ it('closes WebSocket', function () {
 })
 
 it('receives messages', function () {
-  window.WebSocket = FakeWebSocket
+  global.WebSocket = FakeWebSocket
   var connection = new BrowserConnection('ws://locahost')
 
   var received = []
@@ -106,7 +109,7 @@ it('receives messages', function () {
 })
 
 it('sends messages', function () {
-  window.WebSocket = FakeWebSocket
+  global.WebSocket = FakeWebSocket
   var connection = new BrowserConnection('ws://locahost')
 
   return connection.connect().then(function () {

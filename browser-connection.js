@@ -24,12 +24,12 @@ function BrowserConnection (url) {
 BrowserConnection.prototype = {
 
   connect: function connect () {
-    if (!window.WebSocket) {
+    if (typeof WebSocket === 'undefined') {
       throw new Error('Browser has no WebSocket support')
     }
 
     this.emitter.emit('connecting')
-    this.ws = new window.WebSocket(this.url)
+    this.ws = new WebSocket(this.url)
     var self = this
 
     this.ws.onclose = function () {
