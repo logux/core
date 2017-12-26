@@ -16,11 +16,15 @@ function entries (log) {
   })
 }
 
+var destroyable
+
 function createTest (before) {
   var time = new TestTime()
   var log1 = time.nextLog()
   var log2 = time.nextLog()
   var test = new TestPair()
+
+  destroyable = test
 
   log1.on('preadd', function (action, meta) {
     meta.reasons = ['t']
@@ -42,6 +46,11 @@ function createTest (before) {
     return test
   })
 }
+
+afterEach(function () {
+  destroyable.leftSync.destroy()
+  destroyable.rightSync.destroy()
+})
 
 it('sends sync messages', function () {
   var actionA = { type: 'a' }

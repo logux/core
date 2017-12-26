@@ -3,18 +3,20 @@ var TestTime = require('logux-core').TestTime
 var ServerSync = require('../server-sync')
 var TestPair = require('../test-pair')
 
-function createSync () {
-  var pair = new TestPair()
-  return new ServerSync('server', TestTime.getLog(), pair.left)
-}
+var sync
 
 function createTest () {
   var test = new TestPair()
-  test.leftSync = new ServerSync('server', TestTime.getLog(), test.left)
+  sync = new ServerSync('server', TestTime.getLog(), test.left)
+  test.leftSync = sync
   return test.left.connect().then(function () {
     return test
   })
 }
+
+afterEach(function () {
+  sync.destroy()
+})
 
 it('sends debug messages', function () {
   return createTest().then(function (test) {
@@ -26,7 +28,8 @@ it('sends debug messages', function () {
 })
 
 it('emits a debug on debug error messages', function () {
-  var sync = createSync()
+  var pair = new TestPair()
+  sync = new ServerSync('server', TestTime.getLog(), pair.left)
   sync.authenticated = true
 
   var debugs = []

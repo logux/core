@@ -4,6 +4,8 @@ var ServerSync = require('../server-sync')
 var SyncError = require('../sync-error')
 var TestPair = require('../test-pair')
 
+var sync
+
 function createSync () {
   var pair = new TestPair()
   return new ServerSync('server', TestTime.getLog(), pair.left)
@@ -11,11 +13,16 @@ function createSync () {
 
 function createTest () {
   var test = new TestPair()
-  test.leftSync = new ServerSync('server', TestTime.getLog(), test.left)
+  sync = new ServerSync('server', TestTime.getLog(), test.left)
+  test.leftSync = sync
   return test.left.connect().then(function () {
     return test
   })
 }
+
+afterEach(function () {
+  sync.destroy()
+})
 
 it('sends error on wrong message format', function () {
   var wrongs = [
@@ -69,14 +76,14 @@ it('sends error on unknown message type', function () {
 })
 
 it('throws a error on error message by default', function () {
-  var sync = createSync()
+  sync = createSync()
   expect(function () {
     sync.onMessage(['error', 'wrong-format', '1'])
   }).toThrow(new SyncError(sync, 'wrong-format', '1', true))
 })
 
 it('disables throwing a error on listener', function () {
-  var sync = createSync()
+  sync = createSync()
 
   var errors = []
   sync.catch(function (error) {

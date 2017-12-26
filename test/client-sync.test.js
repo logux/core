@@ -4,9 +4,14 @@ var delay = require('nanodelay')
 var ClientSync = require('../client-sync')
 var TestPair = require('../test-pair')
 
+var sync
+afterEach(function () {
+  sync.destroy()
+})
+
 it('connects first', function () {
   var pair = new TestPair()
-  var sync = new ClientSync('client', TestTime.getLog(), pair.left)
+  sync = new ClientSync('client', TestTime.getLog(), pair.left)
   sync.sendConnect = jest.fn()
   return pair.left.connect().then(function () {
     expect(sync.sendConnect).toBeCalled()
@@ -16,7 +21,7 @@ it('connects first', function () {
 it('saves last added from ping', function () {
   var log = TestTime.getLog()
   var pair = new TestPair()
-  var sync = new ClientSync('client', log, pair.left, { fixTime: false })
+  sync = new ClientSync('client', log, pair.left, { fixTime: false })
   return pair.left.connect().then(function () {
     pair.right.send(['connected', sync.localProtocol, 'server', [0, 0]])
     return pair.wait()
@@ -45,7 +50,7 @@ it('does not connect before initializing', function () {
   }
 
   var pair = new TestPair()
-  var sync = new ClientSync('client', log, pair.left, { fixTime: false })
+  sync = new ClientSync('client', log, pair.left, { fixTime: false })
 
   return pair.left.connect().then(function () {
     return delay(10)

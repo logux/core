@@ -9,27 +9,37 @@ var ServerSync = require('../server-sync')
 
 var PROTOCOL = BaseSync.prototype.localProtocol
 
+var test
+
 function createTest () {
   var time = new TestTime()
-  var test = new TestPair()
-  test.leftSync = new ClientSync('client', time.nextLog(), test.left)
-  test.rightSync = new ServerSync('server', time.nextLog(), test.right)
+  var pair = new TestPair()
+
+  pair.leftSync = new ClientSync('client', time.nextLog(), pair.left)
+  pair.rightSync = new ServerSync('server', time.nextLog(), pair.right)
 
   var current = 0
-  test.leftSync.now = function () {
+  pair.leftSync.now = function () {
     current += 1
     return current
   }
-  test.rightSync.now = test.leftSync.now
+  pair.rightSync.now = pair.leftSync.now
 
-  test.leftSync.catch(function () { })
-  test.rightSync.catch(function () { })
+  pair.leftSync.catch(function () { })
+  pair.rightSync.catch(function () { })
 
-  return test
+  return pair
 }
+afterEach(function () {
+  if (test) {
+    test.leftSync.destroy()
+    test.rightSync.destroy()
+    test = undefined
+  }
+})
 
 it('sends protocol version and name in connect message', function () {
-  var test = createTest()
+  test = createTest()
   return test.left.connect().then(function () {
     return test.wait()
   }).then(function () {
@@ -40,7 +50,7 @@ it('sends protocol version and name in connect message', function () {
 })
 
 it('answers with protocol version and name in connected message', function () {
-  var test = createTest()
+  test = createTest()
   return test.left.connect().then(function () {
     return test.wait('left')
   }).then(function () {
@@ -51,7 +61,7 @@ it('answers with protocol version and name in connected message', function () {
 })
 
 it('checks client protocol version', function () {
-  var test = createTest()
+  test = createTest()
   test.leftSync.localProtocol = 1
   test.rightSync.minProtocol = 2
 
@@ -66,7 +76,7 @@ it('checks client protocol version', function () {
 })
 
 it('checks server protocol version', function () {
-  var test = createTest()
+  test = createTest()
   test.leftSync.minProtocol = 2
   test.rightSync.localProtocol = 1
 
@@ -107,7 +117,7 @@ it('checks types in connect message', function () {
 })
 
 it('saves other node name', function () {
-  var test = createTest()
+  test = createTest()
   test.left.connect()
   return test.leftSync.waitFor('synchronized').then(function () {
     expect(test.leftSync.remoteNodeId).toEqual('server')
@@ -116,7 +126,7 @@ it('saves other node name', function () {
 })
 
 it('saves other client protocol', function () {
-  var test = createTest()
+  test = createTest()
   test.leftSync.minProtocol = 1
   test.leftSync.localProtocol = 1
   test.rightSync.minProtocol = 1
@@ -130,7 +140,7 @@ it('saves other client protocol', function () {
 })
 
 it('saves other client subprotocol', function () {
-  var test = createTest()
+  test = createTest()
   test.leftSync.options.subprotocol = '1.0.0'
   test.rightSync.options.subprotocol = '1.1.0'
 
@@ -142,7 +152,7 @@ it('saves other client subprotocol', function () {
 })
 
 it('has default subprotocol', function () {
-  var test = createTest()
+  test = createTest()
   test.left.connect()
   return test.leftSync.waitFor('synchronized').then(function () {
     expect(test.rightSync.remoteSubprotocol).toEqual('0.0.0')
@@ -150,7 +160,7 @@ it('has default subprotocol', function () {
 })
 
 it('checks subprotocol version', function () {
-  var test = createTest()
+  test = createTest()
   test.leftSync.options.subprotocol = '1.0.0'
   test.rightSync.on('connect', function () {
     throw new SyncError(test.rightSync, 'wrong-subprotocol', {
@@ -170,7 +180,7 @@ it('checks subprotocol version', function () {
 })
 
 it('checks subprotocol version in client', function () {
-  var test = createTest()
+  test = createTest()
   test.rightSync.options.subprotocol = '1.0.0'
   test.leftSync.on('connect', function () {
     throw new SyncError(test.leftSync, 'wrong-subprotocol', {
@@ -193,7 +203,7 @@ it('checks subprotocol version in client', function () {
 })
 
 it('throws regular errors during connect event', function () {
-  var test = createTest()
+  test = createTest()
 
   var error = new Error('test')
   test.leftSync.on('connect', function () {
@@ -206,7 +216,7 @@ it('throws regular errors during connect event', function () {
 })
 
 it('sends credentials in connect', function () {
-  var test = createTest()
+  test = createTest()
   test.leftSync.options = { credentials: { a: 1 } }
 
   test.left.connect()
@@ -218,7 +228,7 @@ it('sends credentials in connect', function () {
 })
 
 it('sends credentials in connected', function () {
-  var test = createTest()
+  test = createTest()
   test.rightSync.options = { credentials: 1 }
 
   test.left.connect()
@@ -231,7 +241,7 @@ it('sends credentials in connected', function () {
 
 it('sends error on messages before auth', function () {
   var log = TestTime.getLog()
-  var test = new TestPair()
+  test = new TestPair()
   test.leftSync = new BaseSync('client', log, test.left)
   test.rightSync = new ServerSync('server', log, test.right)
   test.leftSync.catch(function () { })
@@ -247,7 +257,7 @@ it('sends error on messages before auth', function () {
 })
 
 it('denies access for wrong users', function () {
-  var test = createTest()
+  test = createTest()
   test.rightSync.options = {
     auth: function () {
       return Promise.resolve(false)
@@ -265,7 +275,7 @@ it('denies access for wrong users', function () {
 })
 
 it('denies access to wrong server', function () {
-  var test = createTest()
+  test = createTest()
   test.leftSync.options = {
     auth: function () {
       return Promise.resolve(false)
@@ -286,7 +296,7 @@ it('denies access to wrong server', function () {
 })
 
 it('allows access for right users', function () {
-  var test = createTest()
+  test = createTest()
   test.leftSync.options = { credentials: 'a' }
   test.rightSync.options = {
     auth: function (credentials, nodeId) {
@@ -305,7 +315,7 @@ it('allows access for right users', function () {
 })
 
 it('has default timeFix', function () {
-  var test = createTest()
+  test = createTest()
   test.left.connect()
   return test.leftSync.waitFor('synchronized').then(function () {
     expect(test.leftSync.timeFix).toEqual(0)
@@ -313,7 +323,7 @@ it('has default timeFix', function () {
 })
 
 it('calculates time difference', function () {
-  var test = createTest()
+  test = createTest()
   var clientTime = [10000, 10000 + 1000 + 100 + 1]
   test.leftSync.now = function () {
     return clientTime.shift()
