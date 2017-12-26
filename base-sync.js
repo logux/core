@@ -335,6 +335,8 @@ BaseSync.prototype = {
     for (var i = 0; i < this.unbind.length; i++) {
       this.unbind[i]()
     }
+    clearTimeout(this.pingTimeout)
+    this.endTimeout()
   },
 
   send: function send (msg) {
