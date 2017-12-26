@@ -5,12 +5,15 @@ var ServerSync = require('../server-sync')
 var ClientSync = require('../client-sync')
 var TestPair = require('../test-pair')
 
+var sync
+
 function createTest (opts) {
   var log = TestTime.getLog()
   var test = new TestPair()
   return log.add({ type: 'test' }, { reasons: ['test'] }).then(function () {
     log.store.lastSent = 1
-    test.leftSync = new ClientSync('client', log, test.left, opts)
+    sync = new ClientSync('client', log, test.left, opts)
+    test.leftSync = sync
     return test.left.connect()
   }).then(function () {
     return test.wait()
@@ -21,6 +24,13 @@ function createTest (opts) {
     return test
   })
 }
+
+afterEach(function () {
+  if (sync) {
+    sync.destroy()
+    sync = undefined
+  }
+})
 
 it('throws on ping and no timeout options', function () {
   expect(function () {

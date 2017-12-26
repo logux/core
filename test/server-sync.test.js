@@ -1,19 +1,25 @@
+var NanoEvents = require('nanoevents')
 var TestTime = require('logux-core').TestTime
 var delay = require('nanodelay')
 
 var ServerSync = require('../server-sync')
 var TestPair = require('../test-pair')
 
+var sync
+afterEach(function () {
+  sync.destroy()
+})
+
 it('has connecting state from the beginning', function () {
   var pair = new TestPair()
   pair.right.connect()
-  var sync = new ServerSync('server', TestTime.getLog(), pair.left)
+  sync = new ServerSync('server', TestTime.getLog(), pair.left)
   expect(sync.state).toEqual('connecting')
 })
 
 it('destroys on disconnect', function () {
   var pair = new TestPair()
-  var sync = new ServerSync('server', TestTime.getLog(), pair.left)
+  sync = new ServerSync('server', TestTime.getLog(), pair.left)
   sync.destroy = jest.fn()
   return pair.left.connect().then(function () {
     pair.left.disconnect()
@@ -24,7 +30,7 @@ it('destroys on disconnect', function () {
 it('destroys on connect timeout', function () {
   var log = TestTime.getLog()
   var pair = new TestPair()
-  var sync = new ServerSync('server', log, pair.left, { timeout: 200 })
+  sync = new ServerSync('server', log, pair.left, { timeout: 200 })
 
   var error
   sync.catch(function (err) {
@@ -51,8 +57,7 @@ it('throws on fixTime option', function () {
 
 it('loads only last added from store', function () {
   var log = TestTime.getLog()
-  var con = { on: function () { } }
-  var sync
+  var con = new NanoEvents()
   log.store.setLastSynced({ sent: 1, received: 2 })
   return log.add({ type: 'a' }, { reasons: ['test'] }).then(function () {
     sync = new ServerSync('server', log, con)
@@ -75,7 +80,7 @@ it('supports connection before initializing', function () {
   }
 
   var pair = new TestPair()
-  var sync = new ServerSync('server', log, pair.left, { timeout: 50, ping: 50 })
+  sync = new ServerSync('server', log, pair.left, { timeout: 50, ping: 50 })
 
   return pair.right.connect().then(function () {
     pair.right.send(['connect', sync.localProtocol, 'client', 0])
