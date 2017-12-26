@@ -7,10 +7,11 @@ var ServerConnection = require('../server-connection')
 var wss
 afterEach(function () {
   wss.close()
+  delete global.WebSocket
 })
 
 it('works in real protocol', function () {
-  window.WebSocket = WebSocket
+  global.WebSocket = WebSocket
   wss = new WebSocket.Server({ port: 8081 })
 
   var client = new BrowserConnection('ws://0.0.0.0:8081')

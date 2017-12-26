@@ -76,7 +76,7 @@ function Reconnect (connection, options) {
       if (navigator.onLine) self.connect()
     }
   }
-  if (typeof document !== 'undefined') {
+  if (typeof navigator !== 'undefined') {
     document.addEventListener('visibilitychange', visibility, false)
     window.addEventListener('online', network, false)
     this.unbind.push(function () {

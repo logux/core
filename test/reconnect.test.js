@@ -4,6 +4,12 @@ var delay = require('nanodelay')
 var TestPair = require('../test-pair')
 var Reconnect = require('../reconnect')
 
+afterEach(function () {
+  delete global.window
+  delete global.document
+  delete global.navigator
+})
+
 it('saves connection and options', function () {
   var con = { on: function () { } }
   var recon = new Reconnect(con, { a: 1 })
@@ -278,11 +284,19 @@ it('has dynamic delay', function () {
 
 it('reconnects when user open a tab', function () {
   var listener
-  document.addEventListener = function (name, callback) {
-    expect(name).toEqual('visibilitychange')
-    listener = callback
+  global.navigator = { }
+  global.window = {
+    addEventListener: function () { },
+    removeEventListener: function () { }
   }
-  document.removeEventListener = jest.fn()
+  global.document = {
+    hidden: true,
+    addEventListener: function (name, callback) {
+      expect(name).toEqual('visibilitychange')
+      listener = callback
+    },
+    removeEventListener: jest.fn()
+  }
 
   var pair = new TestPair()
   var recon = new Reconnect(pair.left)
@@ -292,11 +306,7 @@ it('reconnects when user open a tab', function () {
     return pair.wait()
   }).then(function () {
     expect(pair.right.connected).toBeFalsy()
-    Object.defineProperty(document, 'hidden', {
-      get: function () {
-        return false
-      }
-    })
+    document.hidden = false
     listener()
     return pair.wait()
   }).then(function () {
@@ -308,11 +318,18 @@ it('reconnects when user open a tab', function () {
 
 it('reconnects when user became online', function () {
   var listener
-  window.addEventListener = function (name, callback) {
-    expect(name).toEqual('online')
-    listener = callback
+  global.navigator = { }
+  global.window = {
+    addEventListener: function (name, callback) {
+      expect(name).toEqual('online')
+      listener = callback
+    },
+    removeEventListener: jest.fn()
   }
-  window.removeEventListener = jest.fn()
+  global.document = {
+    addEventListener: function () { },
+    removeEventListener: function () { }
+  }
 
   var pair = new TestPair()
   var recon = new Reconnect(pair.left)
@@ -322,16 +339,12 @@ it('reconnects when user became online', function () {
     return pair.wait()
   }).then(function () {
     expect(pair.right.connected).toBeFalsy()
-    Object.defineProperty(navigator, 'onLine', {
-      get: function () {
-        return true
-      }
-    })
+    navigator.onLine = true
     listener()
     return pair.wait()
   }).then(function () {
     expect(pair.right.connected).toBeTruthy()
     recon.destroy()
-    expect(document.removeEventListener).toBeCalled()
+    expect(window.removeEventListener).toBeCalled()
   })
 })
