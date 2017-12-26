@@ -100,6 +100,7 @@ it('checks sync types', function () {
   ]
   return Promise.all(wrongs.map(function (msg) {
     return createTest().then(function (test) {
+      test.leftSync.catch(function () { })
       test.leftSync.send(msg)
       return test.wait('left')
     }).then(function (test) {

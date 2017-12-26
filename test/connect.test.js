@@ -234,6 +234,7 @@ it('sends error on messages before auth', function () {
   var test = new TestPair()
   test.leftSync = new BaseSync('client', log, test.left)
   test.rightSync = new ServerSync('server', log, test.right)
+  test.leftSync.catch(function () { })
 
   return test.left.connect().then(function () {
     test.leftSync.sendDuilian()

@@ -86,6 +86,7 @@ it('does not ping before authentication', function () {
     timeout: 300,
     fixTime: false
   })
+  test.leftSync.catch(function () { })
   return test.left.connect().then(function () {
     return test.wait()
   }).then(function () {
