@@ -317,8 +317,8 @@ it('returns action by ID', function () {
       expect(result[1].reasons).toEqual(['test'])
       return log.byId([2])
     }).then(function (result) {
-      expect(result[0]).toBe(null)
-      expect(result[1]).toBe(null)
+      expect(result[0]).toBeNull()
+      expect(result[1]).toBeNull()
     })
   })
 })
