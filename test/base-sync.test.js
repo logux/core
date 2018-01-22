@@ -217,7 +217,7 @@ it('stops timeouts on disconnect', function () {
 
   return delay(50).then(function () {
     sync.startTimeout()
-    expect(error).not.toBeDefined()
+    expect(error).toBeUndefined()
   })
 })
 
