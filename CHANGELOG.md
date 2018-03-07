@@ -1,6 +1,9 @@
 # Change Log
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## 0.2.2
+* Allow to set `meta.keepLast` in `preadd` event listener.
+
 ## 0.2.1
 * Fix removing action with different `time` from memory store.
 
