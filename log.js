@@ -121,13 +121,13 @@ Log.prototype = {
       }
     })
 
+    var log = this
+    this.emitter.emit('preadd', action, meta)
+
     if (meta.keepLast) {
       this.removeReason(meta.keepLast, { olderThan: meta })
       meta.reasons.push(meta.keepLast)
     }
-
-    var log = this
-    this.emitter.emit('preadd', action, meta)
 
     if (meta.reasons.length === 0 && newId) {
       this.emitter.emit('add', action, meta)
