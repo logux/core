@@ -462,6 +462,20 @@ it('removes reasons when keepLast option is used', function () {
   })
 })
 
+it('allows to set keepLast in preadd', function () {
+  var log = createLog()
+  log.on('preadd', function (action, meta) {
+    meta.keepLast = 'a'
+  })
+  return Promise.all([
+    log.add({ type: '1' }),
+    log.add({ type: '2' }),
+    log.add({ type: '3' })
+  ]).then(function () {
+    return checkActions(log, [{ type: '3' }])
+  })
+})
+
 it('ensures `reasons` to be array of string values', function () {
   var log = createLog()
 
