@@ -1,8 +1,8 @@
 var TestTime = require('logux-core').TestTime
 
-var TestPair = require('../test-pair')
 var ClientSync = require('../client-sync')
 var ServerSync = require('../server-sync')
+var TestPair = require('../test-pair')
 
 function actions (log) {
   return log.store.created.map(function (entry) {
