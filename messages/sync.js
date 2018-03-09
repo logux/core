@@ -9,7 +9,9 @@ module.exports = {
 
       var meta = { }
       for (var key in originMeta) {
-        if (key !== 'added') {
+        if (key === 'id') {
+          meta.id = originMeta.id.slice(0)
+        } else if (key !== 'added') {
           meta[key] = originMeta[key]
         }
       }
@@ -50,6 +52,8 @@ module.exports = {
         meta.id = [meta.id, this.remoteNodeId, 0]
       } else if (meta.id.length === 2) {
         meta.id = [meta.id[0], this.remoteNodeId, meta.id[1]]
+      } else {
+        meta.id = meta.id.slice(0)
       }
 
       meta.id[0] = meta.id[0] + this.baseTime
