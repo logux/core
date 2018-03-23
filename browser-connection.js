@@ -32,6 +32,10 @@ BrowserConnection.prototype = {
     this.ws = new WebSocket(this.url)
     var self = this
 
+    this.ws.onerror = function (e) {
+      self.emitter.emit('error', e)
+    }
+
     this.ws.onclose = function () {
       self.connected = false
       self.emitter.emit('disconnect')

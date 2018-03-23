@@ -47,6 +47,20 @@ it('emits error on wrong format', function () {
   })
 })
 
+it('emits error on error', function () {
+  global.WebSocket = FakeWebSocket
+  var connection = new BrowserConnection('ws://locahost')
+  var error
+  connection.on('error', function (err) {
+    error = err
+  })
+
+  return connection.connect().then(function () {
+    connection.ws.onerror(new Error('test'))
+    expect(error.message).toEqual('test')
+  })
+})
+
 it('emits connection states', function () {
   global.WebSocket = FakeWebSocket
   var connection = new BrowserConnection('ws://locahost')
