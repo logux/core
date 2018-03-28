@@ -342,7 +342,12 @@ BaseSync.prototype = {
   send: function send (msg) {
     if (!this.connected) return
     this.delayPing()
-    this.connection.send(msg)
+    try {
+      this.connection.send(msg)
+    } catch (e) {
+      this.error(e)
+      this.connection.disconnect('error')
+    }
   },
 
   onConnecting: function onConnecting () {
