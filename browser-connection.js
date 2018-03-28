@@ -74,11 +74,7 @@ BrowserConnection.prototype = {
   },
 
   send: function send (message) {
-    if (this.ws) {
-      this.ws.send(JSON.stringify(message))
-    } else {
-      throw new Error('Start a connection before send a message')
-    }
+    this.ws.send(JSON.stringify(message))
   },
 
   error: function error (message) {
