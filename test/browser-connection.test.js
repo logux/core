@@ -25,13 +25,6 @@ it('throws a error on lack of WebSocket support', function () {
   }).toThrowError(/WebSocket/)
 })
 
-it('throws on message in disconnected state', function () {
-  var connection = new BrowserConnection('ws://locahost')
-  expect(function () {
-    connection.send(['test'])
-  }).toThrowError(/connection/)
-})
-
 it('emits error on wrong format', function () {
   global.WebSocket = FakeWebSocket
   var connection = new BrowserConnection('ws://locahost')
@@ -99,7 +92,9 @@ it('closes WebSocket', function () {
 
   return connection.connect().then(function () {
     var ws = connection.ws
-    ws.close = jest.fn()
+    ws.close = jest.fn(function () {
+      ws.onclose()
+    })
 
     connection.disconnect()
     expect(ws.close).toHaveBeenCalled()
