@@ -40,6 +40,9 @@ rename.addEventListener('click', () => {
 })
 ```
 
+Logux is in early beta, however we use it in production
+for our [SaaS social media scheduling platform, Amplifr](https://amplifr.com).
+
 [cult-img]: http://cultofmartians.com/assets/badges/badge.svg
 [cult]: http://cultofmartians.com/done.html
 
