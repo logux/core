@@ -7,3 +7,5 @@ node_js:
   - "4"
 install:
   - YARN_IGNORE_ENGINES=true yarn
+git:
+  depth: 5
