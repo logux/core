@@ -378,7 +378,7 @@ it('catches authentication errors', function () {
   return test.left.connect().then(function () {
     return test.wait('right')
   }).then(function () {
-    return Promise.resolve()
+    return delay(1)
   }).then(function () {
     expect(errors).toEqual([error])
     expect(test.rightSent).toEqual([])
