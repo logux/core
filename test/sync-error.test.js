@@ -54,6 +54,12 @@ it('stringifies local error', function () {
   expect(error.toString()).toContain('SyncError: test')
 })
 
+it('stringifies bruteforce error', function () {
+  var error = catchError({ remoteNodeId: 'server' }, 'bruteforce')
+  expect(error.toString()).toContain(
+    'SyncError: Too many wrong authentication attempts')
+})
+
 it('stringifies subprotocol error', function () {
   var error = catchError({ remoteNodeId: 'server' }, 'wrong-subprotocol', {
     supported: '2.x || 3.x',

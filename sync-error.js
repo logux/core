@@ -112,6 +112,8 @@ SyncError.describe = function describe (type, options) {
     return 'Wrong message format in ' + options
   } else if (type === 'unknown-message') {
     return 'Unknown message `' + options + '` type'
+  } else if (type === 'bruteforce') {
+    return 'Too many wrong authentication attempts'
   } else if (type === 'missed-auth') {
     return 'Start authentication before sending message ' + options
   } else if (type === 'wrong-protocol') {
