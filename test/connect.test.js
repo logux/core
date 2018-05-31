@@ -1,11 +1,11 @@
 var TestTime = require('logux-core').TestTime
 var delay = require('nanodelay')
 
+var ServerSync = require('../server-sync')
+var ClientSync = require('../client-sync')
+var SyncError = require('../sync-error')
 var TestPair = require('../test-pair')
 var BaseSync = require('../base-sync')
-var SyncError = require('../sync-error')
-var ClientSync = require('../client-sync')
-var ServerSync = require('../server-sync')
 
 var PROTOCOL = BaseSync.prototype.localProtocol
 
