@@ -360,3 +360,46 @@ it('uses timeout between connect and connected', function () {
     expect(error.message).toContain('timeout')
   })
 })
+
+it('catches authentication errors', function () {
+  test = createTest()
+  var errors = []
+  test.rightSync.catch(function (e) {
+    errors.push(e)
+  })
+
+  var error = new Error()
+  test.rightSync.options = {
+    auth: function () {
+      return Promise.reject(error)
+    }
+  }
+
+  return test.left.connect().then(function () {
+    return test.wait('right')
+  }).then(function () {
+    return Promise.resolve()
+  }).then(function () {
+    expect(errors).toEqual([error])
+    expect(test.rightSent).toEqual([])
+    expect(test.rightSync.connected).toBeFalsy()
+  })
+})
+
+it('sends authentication errors', function () {
+  test = createTest()
+  test.rightSync.options = {
+    auth: function () {
+      return Promise.reject(new SyncError(test.rightSync, 'bruteforce'))
+    }
+  }
+
+  return test.left.connect().then(function () {
+    return test.wait('right')
+  }).then(function () {
+    return test.wait('left')
+  }).then(function () {
+    expect(test.rightSent).toEqual([['error', 'bruteforce']])
+    expect(test.rightSync.connected).toBeFalsy()
+  })
+})

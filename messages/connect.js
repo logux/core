@@ -22,6 +22,13 @@ function auth (sync, nodeId, credentials, callback) {
       sync.sendError(new SyncError(sync, 'wrong-credentials'))
       sync.destroy()
     }
+  }).catch(function (e) {
+    if (e.name === 'SyncError') {
+      sync.sendError(e)
+    } else {
+      sync.error(e)
+    }
+    sync.destroy()
   })
 }
 
