@@ -1,8 +1,8 @@
-var TestTime = require('logux-core').TestTime
 var delay = require('nanodelay')
 
 var ServerSync = require('../server-sync')
 var ClientSync = require('../client-sync')
+var TestTime = require('../test-time')
 var TestPair = require('../test-pair')
 
 var sync

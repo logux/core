@@ -1,7 +1,6 @@
-var TestTime = require('logux-core').TestTime
-
 var ServerSync = require('../server-sync')
 var SyncError = require('../sync-error')
+var TestTime = require('../test-time')
 var TestPair = require('../test-pair')
 
 var sync

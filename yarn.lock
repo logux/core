@@ -2702,6 +2702,10 @@ nan@^2.9.2:
   version "2.10.0"
   resolved "https://registry.yarnpkg.com/nan/-/nan-2.10.0.tgz#96d0cd610ebd58d4b4de9cc0c6828cda99c7548f"
 
+nanodelay@^0.1.3:
+  version "0.1.3"
+  resolved "https://registry.yarnpkg.com/nanodelay/-/nanodelay-0.1.3.tgz#5e83131e4aa3674851ffef63a779fa7c856b9966"
+
 nanoevents@^1.0.2:
   version "1.0.2"
   resolved "https://registry.yarnpkg.com/nanoevents/-/nanoevents-1.0.2.tgz#5078a4f8d3e4318aa585c5f2c633cc57fc06ac0f"
@@ -4069,6 +4073,12 @@ ws@^4.0.0:
   dependencies:
     async-limiter "~1.0.0"
     safe-buffer "~5.1.0"
+
+ws@^5.2.0:
+  version "5.2.0"
+  resolved "https://registry.yarnpkg.com/ws/-/ws-5.2.0.tgz#9fd95e3ac7c76f6ae8bcc868a0e3f11f1290c33e"
+  dependencies:
+    async-limiter "~1.0.0"
 
 xml-name-validator@^3.0.0:
   version "3.0.0"

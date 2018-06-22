@@ -1,13 +1,16 @@
 {
   "name": "logux-core",
   "version": "0.2.2",
-  "description": "Log for Logux with test tools",
+  "description": "Logux log, synchronization tools, and common utilities",
   "keywords": [
     "logux"
   ],
   "author": "Andrey Sitnik <andrey@sitnik.ru>",
   "license": "MIT",
   "repository": "logux/logux-core",
+  "engines": {
+    "node": ">=4.0.0"
+  },
   "dependencies": {
     "nanoevents": "^1.0.2"
   },
@@ -27,15 +30,17 @@
     "jest": "^22.4.3",
     "jsdoc": "^3.5.5",
     "lint-staged": "^7.1.0",
+    "nanodelay": "^0.1.3",
     "pre-commit": "^1.2.2",
     "rimraf": "^2.6.2",
+    "ws": "^5.2.0",
     "yaspeller-ci": "^1.0.0"
   },
   "scripts": {
     "lint-staged": "lint-staged",
     "spellcheck": "yarn docs && yaspeller-ci *.md docs/*.html",
     "clean": "rimraf docs/ coverage/",
-    "lint": "eslint-ci *.js test/{**/,}*.js",
+    "lint": "eslint-ci *.js messages/*.js test/{**/,}*.js",
     "docs": "jsdoc --configure .jsdocrc *.js",
     "test": "jest --coverage && yarn lint && yarn spellcheck"
   },
@@ -46,9 +51,6 @@
         "statements": 100
       }
     }
-  },
-  "engines": {
-    "node": ">=4.0.0"
   },
   "eslintConfig": {
     "extends": "eslint-config-logux/browser"
