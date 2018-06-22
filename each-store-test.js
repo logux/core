@@ -37,13 +37,13 @@ function nope () { }
  * @returns {undefined}
  *
  * @example
- * const eachTest = require('logux-store-tests')
+ * const eachStoreTest = require('logux-core/each-store-test')
  *
- * eachTest((desc, creator) => {
+ * eachStoreTest((desc, creator) => {
  *   it(desc, creator(() => new CustomStore()))
  * })
  */
-function eachTest (test) {
+function eachStoreTest (test) {
   test('is empty in the beginning', storeFactory => () => {
     const store = storeFactory()
     return checkBoth(store, []).then(() => {
@@ -385,7 +385,7 @@ function eachTest (test) {
   })
 }
 
-module.exports = eachTest
+module.exports = eachStoreTest
 
 /**
  * @callback creator
