@@ -1,8 +1,8 @@
-var eachTest = require('logux-store-tests')
+var eachStoreCheck = require('../each-store-check')
 
 var MemoryStore = require('../memory-store')
 
-eachTest(function (desc, creator) {
+eachStoreCheck(function (desc, creator) {
   it(desc, creator(function () {
     return new MemoryStore()
   }))

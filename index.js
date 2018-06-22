@@ -1,9 +1,11 @@
+var eachStoreCheck = require('./each-store-check')
 var isFirstOlder = require('./is-first-older')
 var MemoryStore = require('./memory-store')
 var TestTime = require('./test-time')
 var Log = require('./log')
 
 module.exports = {
+  eachStoreCheck: eachStoreCheck,
   isFirstOlder: isFirstOlder,
   MemoryStore: MemoryStore,
   TestTime: TestTime,
