@@ -33,7 +33,7 @@ function nope () { }
  * @returns {undefined}
  *
  * @example
- * var eachStoreCheck = require('logux-core/each-store-check')
+ * import { eachStoreCheck } from 'logux-core'
  *
  * eachStoreCheck((desc, creator) => {
  *   it(desc, creator(() => new CustomStore()))
