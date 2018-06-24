@@ -65,3 +65,12 @@ it('creates test logs with same time', function () {
     ])
   })
 })
+
+it('creates log with test shortcuts', function () {
+  var log = TestTime.getLog()
+  log.add({ type: 'A' }, { reasons: ['t'] })
+  expect(log.actions()).toEqual([{ type: 'A' }])
+  expect(log.entries()).toEqual([
+    [{ type: 'A' }, { id: [1, 'test1', 0], time: 1, added: 1, reasons: ['t'] }]
+  ])
+})

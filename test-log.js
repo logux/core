@@ -47,6 +47,41 @@ for (var i in Log.prototype) {
   TestLog.prototype[i] = Log.prototype[i]
 }
 
+/**
+ * Return all entries (with metadata) inside log, sorted by created time.
+ *
+ * This shortcut works only with {@link MemoryStore}. To use it, do not change
+ * store type by `store` option in {@link TestTime.getLog}.
+ *
+ * @return {Entry[]} Log’s entries.
+ *
+ * @example
+ * expect(log.action).toEqual([
+ *   [{ type: 'A' }, { id: [1, 'test1', 0], time: 1, added: 1, reasons: ['t'] }]
+ * ])
+ */
+TestLog.prototype.entries = function entries () {
+  return this.store.created
+}
+/**
+ * Return all action (without metadata) inside log, sorted by created time.
+ *
+ * This shortcut works only with {@link MemoryStore}. To use it, do not change
+ * store type by `store` option in {@link TestTime.getLog}.
+ *
+ * @return {Action[]} Log’s action.
+ *
+ * @example
+ * expect(log.action).toEqual([
+ *   { type: 'A' }
+ * ])
+ */
+TestLog.prototype.actions = function actions () {
+  return this.entries().map(function (entry) {
+    return entry[0]
+  })
+}
+
 TestLog.prototype.generateId = function generateId () {
   this.time.lastTime += 1
   return [this.time.lastTime, this.nodeId, 0]
