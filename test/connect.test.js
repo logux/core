@@ -30,6 +30,7 @@ function createTest () {
 
   return pair
 }
+
 afterEach(function () {
   if (test) {
     test.leftSync.destroy()

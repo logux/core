@@ -3,18 +3,6 @@ var ServerSync = require('../server-sync')
 var TestTime = require('../test-time')
 var TestPair = require('../test-pair')
 
-function actions (log) {
-  return log.store.created.map(function (entry) {
-    return entry[0]
-  })
-}
-
-function entries (log) {
-  return log.store.created.map(function (entry) {
-    return [entry[0], entry[1]]
-  })
-}
-
 var destroyable
 
 function createTest (before) {
@@ -125,13 +113,13 @@ it('synchronizes actions', function () {
     test.leftSync.log.add({ type: 'a' })
     return test.wait('left')
   }).then(function (test) {
-    expect(actions(test.leftSync.log)).toEqual([{ type: 'a' }])
-    expect(actions(test.leftSync.log)).toEqual(actions(test.rightSync.log))
+    expect(test.leftSync.log.actions()).toEqual([{ type: 'a' }])
+    expect(test.leftSync.log.actions()).toEqual(test.rightSync.log.actions())
     test.rightSync.log.add({ type: 'b' })
     return test.wait('right')
   }).then(function (test) {
-    expect(actions(test.leftSync.log)).toEqual([{ type: 'b' }, { type: 'a' }])
-    expect(actions(test.leftSync.log)).toEqual(actions(test.rightSync.log))
+    expect(test.leftSync.log.actions()).toEqual([{ type: 'b' }, { type: 'a' }])
+    expect(test.leftSync.log.actions()).toEqual(test.rightSync.log.actions())
   })
 })
 
@@ -169,7 +157,7 @@ it('filters output actions', function () {
       test.leftSync.log.add({ type: 'b' })
     ])
   }).then(function () {
-    expect(actions(test.rightSync.log)).toEqual([{ type: 'b' }])
+    expect(test.rightSync.log.actions()).toEqual([{ type: 'b' }])
   }).then(function () {
     return Promise.all([
       test.leftSync.log.add({ type: 'a' }),
@@ -178,7 +166,7 @@ it('filters output actions', function () {
   }).then(function () {
     return test.leftSync.waitFor('synchronized')
   }).then(function () {
-    expect(actions(test.rightSync.log)).toEqual([{ type: 'b' }, { type: 'b' }])
+    expect(test.rightSync.log.actions()).toEqual([{ type: 'b' }, { type: 'b' }])
   })
 })
 
@@ -193,8 +181,8 @@ it('maps output actions', function () {
     test.leftSync.log.add({ type: 'a' })
     return test.wait('left')
   }).then(function (test) {
-    expect(actions(test.leftSync.log)).toEqual([{ type: 'a' }])
-    expect(actions(test.rightSync.log)).toEqual([{ type: 'a1' }])
+    expect(test.leftSync.log.actions()).toEqual([{ type: 'a' }])
+    expect(test.rightSync.log.actions()).toEqual([{ type: 'a1' }])
   })
 })
 
@@ -208,13 +196,13 @@ it('filters input actions', function () {
     test.leftSync.log.add({ type: 'a' })
     return test.wait('left')
   }).then(function (test) {
-    expect(actions(test.leftSync.log)).toEqual([{ type: 'a' }])
-    expect(actions(test.rightSync.log)).toEqual([])
+    expect(test.leftSync.log.actions()).toEqual([{ type: 'a' }])
+    expect(test.rightSync.log.actions()).toEqual([])
     test.leftSync.log.add({ type: 'b' })
     return test.wait('left')
   }).then(function (test) {
-    expect(actions(test.leftSync.log)).toEqual([{ type: 'b' }, { type: 'a' }])
-    expect(actions(test.rightSync.log)).toEqual([{ type: 'b' }])
+    expect(test.leftSync.log.actions()).toEqual([{ type: 'b' }, { type: 'a' }])
+    expect(test.rightSync.log.actions()).toEqual([{ type: 'b' }])
   })
 })
 
@@ -228,8 +216,8 @@ it('maps input actions', function () {
     test.leftSync.log.add({ type: 'a' })
     return test.wait('left')
   }).then(function (test) {
-    expect(actions(test.leftSync.log)).toEqual([{ type: 'a' }])
-    expect(actions(test.rightSync.log)).toEqual([{ type: 'a1' }])
+    expect(test.leftSync.log.actions()).toEqual([{ type: 'a' }])
+    expect(test.rightSync.log.actions()).toEqual([{ type: 'a1' }])
   })
 })
 
@@ -253,7 +241,7 @@ it('compresses time', function () {
         { id: [-99, 'test1', 0], time: -99, reasons: ['t'] }
       ]
     ])
-    expect(entries(test.rightSync.log)).toEqual([
+    expect(test.rightSync.log.entries()).toEqual([
       [
         { type: 'a' },
         { id: [1, 'test1', 0], time: 1, added: 1, reasons: ['t'] }
@@ -279,7 +267,7 @@ it('compresses IDs', function () {
       ['sync', 2, { type: 'a' }, { id: [1, 1], time: 1, reasons: ['t'] }],
       ['sync', 3, { type: 'a' }, { id: [1, 'o', 0], time: 1, reasons: ['t'] }]
     ])
-    expect(entries(test.rightSync.log)).toEqual([
+    expect(test.rightSync.log.entries()).toEqual([
       [
         { type: 'a' },
         { id: [1, 'o', 0], time: 1, added: 3, reasons: ['t'] }
@@ -308,7 +296,7 @@ it('synchronizes any meta fields', function () {
     expect(test.leftSent).toEqual([
       ['sync', 1, a, { id: [1, 'test1', 0], time: 1, one: 1, reasons: ['t'] }]
     ])
-    expect(entries(test.rightSync.log)).toEqual([
+    expect(test.rightSync.log.entries()).toEqual([
       [a, { id: [1, 'test1', 0], time: 1, added: 1, one: 1, reasons: ['t'] }]
     ])
   })
@@ -326,7 +314,7 @@ it('fixes created time', function () {
   }).then(function () {
     return test.leftSync.waitFor('synchronized')
   }).then(function () {
-    expect(entries(test.leftSync.log)).toEqual([
+    expect(test.leftSync.log.entries()).toEqual([
       [
         { type: 'b' },
         { id: [2, 'test2', 0], time: 12, added: 2, reasons: ['t'] }
@@ -336,7 +324,7 @@ it('fixes created time', function () {
         { id: [11, 'test1', 0], time: 11, added: 1, reasons: ['t'] }
       ]
     ])
-    expect(entries(test.rightSync.log)).toEqual([
+    expect(test.rightSync.log.entries()).toEqual([
       [
         { type: 'b' },
         { id: [2, 'test2', 0], time: 2, added: 1, reasons: ['t'] }
@@ -358,7 +346,7 @@ it('supports multiple actions in sync', function () {
     return test.wait('right')
   }).then(function (test) {
     expect(test.leftSync.lastReceived).toBe(2)
-    expect(entries(test.leftSync.log)).toEqual([
+    expect(test.leftSync.log.entries()).toEqual([
       [
         { type: 'b' },
         { id: [2, 'test2', 0], time: 2, added: 2, reasons: ['t'] }
@@ -402,7 +390,7 @@ it('changes multiple actions in map', function () {
     return test.leftSync.waitFor('synchronized')
   }).then(function () {
     expect(test.rightSync.lastReceived).toBe(2)
-    expect(actions(test.rightSync.log)).toEqual([{ type: 'B' }, { type: 'A' }])
+    expect(test.rightSync.log.actions()).toEqual([{ type: 'B' }, { type: 'A' }])
   })
 })
 
@@ -438,7 +426,7 @@ it('synchronizes actions on connect', function () {
     test.rightSync = new ServerSync('server2', test.rightSync.log, test.right)
     return test.leftSync.waitFor('synchronized')
   }).then(function () {
-    expect(actions(test.leftSync.log)).toEqual([
+    expect(test.leftSync.log.actions()).toEqual([
       { type: 'f' },
       { type: 'e' },
       { type: 'd' },
@@ -446,7 +434,7 @@ it('synchronizes actions on connect', function () {
       { type: 'b' },
       { type: 'a' }
     ])
-    expect(actions(test.leftSync.log)).toEqual(actions(test.rightSync.log))
+    expect(test.leftSync.log.actions()).toEqual(test.rightSync.log.actions())
     expect(added).toEqual(['a', 'b', 'c', 'd', 'e', 'f'])
   })
 })
