@@ -415,8 +415,10 @@ BaseSync.prototype = {
   syncError: function syncError (type, options, received) {
     var err = new SyncError(this, type, options, received)
     this.emitter.emit('error', err)
-    if (this.throwsError) {
-      throw err
+    if (type !== 'timeout' && type !== 'wrong-subprotocol') {
+      if (this.throwsError) {
+        throw err
+      }
     }
   },
 

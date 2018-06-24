@@ -81,6 +81,12 @@ it('throws a error on error message by default', function () {
   }).toThrow(new SyncError(sync, 'wrong-format', '1', true))
 })
 
+it('does not throw errors which are not relevant to code', function () {
+  sync = createSync()
+  sync.onMessage(['error', 'timeout', '1'])
+  sync.onMessage(['error', 'wrong-subprotocol', { }])
+})
+
 it('disables throwing a error on listener', function () {
   sync = createSync()
 
