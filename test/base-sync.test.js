@@ -273,6 +273,18 @@ it('receives format errors from connection', function () {
   })
 })
 
+it('throws error by default', function () {
+  var error = new Error('test')
+  return createTest().then(function (test) {
+    test.leftSync.connection.send = function () {
+      throw error
+    }
+    expect(function () {
+      test.leftSync.send(['ping', 0])
+    }).toThrow(error)
+  })
+})
+
 it('disconnect on the error during send', function () {
   var error = new Error('test')
   var errors = []

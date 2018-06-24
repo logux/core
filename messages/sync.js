@@ -63,11 +63,9 @@ module.exports = {
       if (this.options.inFilter) {
         process = process.then(function (data) {
           return sync.options.inFilter(data[0], data[1]).then(function (res) {
-            if (res) {
-              return data
-            } else {
-              return false
-            }
+            return res ? data : false
+          }).catch(function (e) {
+            sync.error(e)
           })
         })
       }
@@ -77,7 +75,9 @@ module.exports = {
 
         if (sync.timeFix) data[1].time = data[1].time + sync.timeFix
         if (sync.options.inMap) {
-          return sync.options.inMap(data[0], data[1])
+          return sync.options.inMap(data[0], data[1]).catch(function (e) {
+            sync.error(e)
+          })
         } else {
           return data
         }

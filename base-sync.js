@@ -23,6 +23,8 @@ function syncMappedEvent (sync, action, meta) {
   if (sync.options.outMap) {
     sync.options.outMap(action, meta).then(function (changed) {
       sync.sendSync(added, [changed])
+    }).catch(function (e) {
+      sync.error(e)
     })
   } else {
     sync.sendSync(added, [[action, meta]])
@@ -167,10 +169,10 @@ function BaseSync (nodeId, log, connection, options) {
   this.unbind.push(connection.on('error', function (error) {
     if (error.message === 'Wrong message format') {
       sync.sendError(new SyncError(sync, 'wrong-format', error.received))
+      sync.connection.disconnect('error')
     } else {
       sync.error(error)
     }
-    sync.connection.disconnect('error')
   }))
   this.unbind.push(connection.on('disconnect', function () {
     sync.onDisconnect()
@@ -346,7 +348,6 @@ BaseSync.prototype = {
       this.connection.send(msg)
     } catch (e) {
       this.error(e)
-      this.connection.disconnect('error')
     }
   },
 
@@ -403,6 +404,8 @@ BaseSync.prototype = {
       var sync = this
       this.options.outFilter(action, meta).then(function (result) {
         if (result) syncMappedEvent(sync, action, meta)
+      }).catch(function (e) {
+        sync.error(e)
       })
     } else {
       syncMappedEvent(this, action, meta)
@@ -411,11 +414,15 @@ BaseSync.prototype = {
 
   syncError: function syncError (type, options, received) {
     var err = new SyncError(this, type, options, received)
-    this.error(err)
+    this.emitter.emit('error', err)
+    if (this.throwsError) {
+      throw err
+    }
   },
 
   error: function error (err) {
     this.emitter.emit('error', err)
+    this.connection.disconnect('error')
     if (this.throwsError) {
       throw err
     }
@@ -469,6 +476,8 @@ BaseSync.prototype = {
           } else {
             return false
           }
+        }).catch(function (e) {
+          sync.error(e)
         }))
       } else {
         promises.push(Promise.resolve([action, meta]))
@@ -498,6 +507,8 @@ BaseSync.prototype = {
             return sync.options.outMap(i[0], i[1])
           })).then(function (changed) {
             sync.sendSync(data.added, changed)
+          }).catch(function (e) {
+            sync.error(e)
           })
         } else {
           sync.sendSync(data.added, data.entries)

@@ -25,10 +25,10 @@ function auth (sync, nodeId, credentials, callback) {
   }).catch(function (e) {
     if (e.name === 'SyncError') {
       sync.sendError(e)
+      sync.destroy()
     } else {
       sync.error(e)
     }
-    sync.destroy()
   })
 }
 

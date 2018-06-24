@@ -1,3 +1,5 @@
+var delay = require('nanodelay')
+
 var ClientSync = require('../client-sync')
 var ServerSync = require('../server-sync')
 var TestTime = require('../test-time')
@@ -5,7 +7,7 @@ var TestPair = require('../test-pair')
 
 var destroyable
 
-function createTest (before) {
+function createPair () {
   var time = new TestTime()
   var log1 = time.nextLog()
   var log2 = time.nextLog()
@@ -23,8 +25,12 @@ function createTest (before) {
   test.leftSync = new ClientSync('client', log1, test.left, { fixTime: false })
   test.rightSync = new ServerSync('server', log2, test.right)
 
-  if (before) before(test)
+  return test
+}
 
+function createTest (before) {
+  var test = createPair()
+  if (before) before(test)
   test.left.connect()
   return test.leftSync.waitFor('synchronized').then(function () {
     test.clear()
@@ -218,6 +224,110 @@ it('maps input actions', function () {
   }).then(function (test) {
     expect(test.leftSync.log.actions()).toEqual([{ type: 'a' }])
     expect(test.rightSync.log.actions()).toEqual([{ type: 'a1' }])
+  })
+})
+
+it('reports errors during initial output filter', function () {
+  var error = new Error('test')
+  var catched = []
+  var test = createPair()
+  test.rightSync.log.add({ type: 'a' })
+  test.rightSync.catch(function (e) {
+    catched.push(e)
+  })
+  test.rightSync.options.outFilter = function () {
+    return Promise.reject(error)
+  }
+  test.left.connect()
+  return delay(5).then(function () {
+    expect(catched).toEqual([error])
+  })
+})
+
+it('reports errors during output filter', function () {
+  var error = new Error('test')
+  var catched = []
+  return createTest(function (test) {
+    test.rightSync.catch(function (e) {
+      catched.push(e)
+    })
+    test.rightSync.options.outFilter = function () {
+      return Promise.reject(error)
+    }
+  }).then(function (test) {
+    test.rightSync.log.add({ type: 'a' })
+    return delay(5)
+  }).then(function () {
+    expect(catched).toEqual([error])
+  })
+})
+
+it('reports errors during initial output map', function () {
+  var error = new Error('test')
+  var catched = []
+  var test = createPair()
+  test.rightSync.log.add({ type: 'a' })
+  test.rightSync.catch(function (e) {
+    catched.push(e)
+  })
+  test.rightSync.options.outMap = function () {
+    return Promise.reject(error)
+  }
+  test.left.connect()
+  return delay(5).then(function () {
+    expect(catched).toEqual([error])
+  })
+})
+
+it('reports errors during output map', function () {
+  var error = new Error('test')
+  var catched = []
+  return createTest(function (test) {
+    test.rightSync.catch(function (e) {
+      catched.push(e)
+    })
+    test.rightSync.options.outMap = function () {
+      return Promise.reject(error)
+    }
+  }).then(function (test) {
+    test.rightSync.log.add({ type: 'a' })
+    return delay(5)
+  }).then(function () {
+    expect(catched).toEqual([error])
+  })
+})
+
+it('reports errors during input filter', function () {
+  var error = new Error('test')
+  var catched = []
+  return createTest().then(function (test) {
+    test.rightSync.catch(function (e) {
+      catched.push(e)
+    })
+    test.rightSync.options.inFilter = function () {
+      return Promise.reject(error)
+    }
+    test.leftSync.log.add({ type: 'a' })
+    return delay(5)
+  }).then(function () {
+    expect(catched).toEqual([error])
+  })
+})
+
+it('reports errors during input map', function () {
+  var error = new Error('test')
+  var catched = []
+  return createTest().then(function (test) {
+    test.rightSync.catch(function (e) {
+      catched.push(e)
+    })
+    test.rightSync.options.inMap = function () {
+      return Promise.reject(error)
+    }
+    test.leftSync.log.add({ type: 'a' })
+    return delay(5)
+  }).then(function () {
+    expect(catched).toEqual([error])
   })
 })
 
