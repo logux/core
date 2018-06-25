@@ -84,6 +84,7 @@ it('throws a error on error message by default', function () {
 it('does not throw errors which are not relevant to code', function () {
   sync = createSync()
   sync.onMessage(['error', 'timeout', '1'])
+  sync.onMessage(['error', 'wrong-protocol', { }])
   sync.onMessage(['error', 'wrong-subprotocol', { }])
 })
 

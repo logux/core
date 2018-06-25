@@ -15,6 +15,12 @@ var MIXINS = [
   debugMessages
 ]
 
+var NOT_TO_THROW = {
+  'wrong-subprotocol': true,
+  'wrong-protocol': true,
+  'timeout': true
+}
+
 var BEFORE_AUTH = ['connect', 'connected', 'error']
 
 function syncMappedEvent (sync, action, meta) {
@@ -415,10 +421,8 @@ BaseSync.prototype = {
   syncError: function syncError (type, options, received) {
     var err = new SyncError(this, type, options, received)
     this.emitter.emit('error', err)
-    if (type !== 'timeout' && type !== 'wrong-subprotocol') {
-      if (this.throwsError) {
-        throw err
-      }
+    if (!NOT_TO_THROW[type] && this.throwsError) {
+      throw err
     }
   },
 
