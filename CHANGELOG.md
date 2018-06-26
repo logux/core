@@ -7,7 +7,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ## 0.2.1
 * Fix removing action with different `time` from memory store.
 
-## 0.2
+## 0.2 Ѣ
 * Rename `meta.created` to `meta.id`.
 * Rename `event` event to `add`.
 * Use reasons of life API to clean log.
@@ -24,5 +24,5 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 * Move store tests to separated project (by Konstantin Mamaev).
 * Fix docs (by Grigoriy Beziuk, Andrew Romanov and Alexey Gaziev).
 
-## 0.1
+## 0.1 𐤀
 * Initial release.
