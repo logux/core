@@ -124,7 +124,7 @@ it('synchronizes actions', function () {
     test.rightSync.log.add({ type: 'b' })
     return test.wait('right')
   }).then(function (test) {
-    expect(test.leftSync.log.actions()).toEqual([{ type: 'b' }, { type: 'a' }])
+    expect(test.leftSync.log.actions()).toEqual([{ type: 'a' }, { type: 'b' }])
     expect(test.leftSync.log.actions()).toEqual(test.rightSync.log.actions())
   })
 })
@@ -207,7 +207,7 @@ it('filters input actions', function () {
     test.leftSync.log.add({ type: 'b' })
     return test.wait('left')
   }).then(function (test) {
-    expect(test.leftSync.log.actions()).toEqual([{ type: 'b' }, { type: 'a' }])
+    expect(test.leftSync.log.actions()).toEqual([{ type: 'a' }, { type: 'b' }])
     expect(test.rightSync.log.actions()).toEqual([{ type: 'b' }])
   })
 })
@@ -239,7 +239,7 @@ it('reports errors during initial output filter', function () {
     return Promise.reject(error)
   }
   test.left.connect()
-  return delay(5).then(function () {
+  return delay(10).then(function () {
     expect(catched).toEqual([error])
   })
 })
@@ -256,7 +256,7 @@ it('reports errors during output filter', function () {
     }
   }).then(function (test) {
     test.rightSync.log.add({ type: 'a' })
-    return delay(5)
+    return delay(10)
   }).then(function () {
     expect(catched).toEqual([error])
   })
@@ -274,7 +274,7 @@ it('reports errors during initial output map', function () {
     return Promise.reject(error)
   }
   test.left.connect()
-  return delay(5).then(function () {
+  return delay(10).then(function () {
     expect(catched).toEqual([error])
   })
 })
@@ -291,7 +291,7 @@ it('reports errors during output map', function () {
     }
   }).then(function (test) {
     test.rightSync.log.add({ type: 'a' })
-    return delay(5)
+    return delay(10)
   }).then(function () {
     expect(catched).toEqual([error])
   })
@@ -308,7 +308,7 @@ it('reports errors during input filter', function () {
       return Promise.reject(error)
     }
     test.leftSync.log.add({ type: 'a' })
-    return delay(5)
+    return delay(10)
   }).then(function () {
     expect(catched).toEqual([error])
   })
@@ -325,7 +325,7 @@ it('reports errors during input map', function () {
       return Promise.reject(error)
     }
     test.leftSync.log.add({ type: 'a' })
-    return delay(5)
+    return delay(10)
   }).then(function () {
     expect(catched).toEqual([error])
   })
@@ -380,7 +380,7 @@ it('compresses IDs', function () {
     expect(test.rightSync.log.entries()).toEqual([
       [
         { type: 'a' },
-        { id: [1, 'o', 0], time: 1, added: 3, reasons: ['t'] }
+        { id: [1, 'client', 0], time: 1, added: 1, reasons: ['t'] }
       ],
       [
         { type: 'a' },
@@ -388,7 +388,7 @@ it('compresses IDs', function () {
       ],
       [
         { type: 'a' },
-        { id: [1, 'client', 0], time: 1, added: 1, reasons: ['t'] }
+        { id: [1, 'o', 0], time: 1, added: 3, reasons: ['t'] }
       ]
     ])
   })
@@ -426,22 +426,22 @@ it('fixes created time', function () {
   }).then(function () {
     expect(test.leftSync.log.entries()).toEqual([
       [
-        { type: 'b' },
-        { id: [2, 'test2', 0], time: 12, added: 2, reasons: ['t'] }
-      ],
-      [
         { type: 'a' },
         { id: [11, 'test1', 0], time: 11, added: 1, reasons: ['t'] }
+      ],
+      [
+        { type: 'b' },
+        { id: [2, 'test2', 0], time: 12, added: 2, reasons: ['t'] }
       ]
     ])
     expect(test.rightSync.log.entries()).toEqual([
       [
-        { type: 'b' },
-        { id: [2, 'test2', 0], time: 2, added: 1, reasons: ['t'] }
-      ],
-      [
         { type: 'a' },
         { id: [11, 'test1', 0], time: 1, added: 2, reasons: ['t'] }
+      ],
+      [
+        { type: 'b' },
+        { id: [2, 'test2', 0], time: 2, added: 1, reasons: ['t'] }
       ]
     ])
   })
@@ -458,12 +458,12 @@ it('supports multiple actions in sync', function () {
     expect(test.leftSync.lastReceived).toBe(2)
     expect(test.leftSync.log.entries()).toEqual([
       [
-        { type: 'b' },
-        { id: [2, 'test2', 0], time: 2, added: 2, reasons: ['t'] }
-      ],
-      [
         { type: 'a' },
         { id: [1, 'test2', 0], time: 1, added: 1, reasons: ['t'] }
+      ],
+      [
+        { type: 'b' },
+        { id: [2, 'test2', 0], time: 2, added: 2, reasons: ['t'] }
       ]
     ])
   })
@@ -500,7 +500,7 @@ it('changes multiple actions in map', function () {
     return test.leftSync.waitFor('synchronized')
   }).then(function () {
     expect(test.rightSync.lastReceived).toBe(2)
-    expect(test.rightSync.log.actions()).toEqual([{ type: 'B' }, { type: 'A' }])
+    expect(test.rightSync.log.actions()).toEqual([{ type: 'A' }, { type: 'B' }])
   })
 })
 
@@ -537,12 +537,12 @@ it('synchronizes actions on connect', function () {
     return test.leftSync.waitFor('synchronized')
   }).then(function () {
     expect(test.leftSync.log.actions()).toEqual([
-      { type: 'f' },
-      { type: 'e' },
-      { type: 'd' },
-      { type: 'c' },
+      { type: 'a' },
       { type: 'b' },
-      { type: 'a' }
+      { type: 'c' },
+      { type: 'd' },
+      { type: 'e' },
+      { type: 'f' }
     ])
     expect(test.leftSync.log.actions()).toEqual(test.rightSync.log.actions())
     expect(added).toEqual(['a', 'b', 'c', 'd', 'e', 'f'])

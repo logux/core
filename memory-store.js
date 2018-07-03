@@ -3,12 +3,12 @@ var isFirstOlder = require('./is-first-older')
 function insert (store, entry) {
   store.lastAdded += 1
   entry[1].added = store.lastAdded
-  store.added.unshift(entry)
+  store.added.push(entry)
   return Promise.resolve(entry[1])
 }
 
 function find (list, id) {
-  for (var i = 0; i < list.length; i++) {
+  for (var i = list.length - 1; i >= 0; i--) {
     var oId = list[i][1].id
     if (id[0] === oId[0] && id[1] === oId[1] && id[2] === oId[2]) {
       return i
@@ -58,7 +58,7 @@ MemoryStore.prototype = {
       var oId = other[1].id
       if (id[0] === oId[0] && id[1] === oId[1] && id[2] === oId[2]) {
         return Promise.resolve(false)
-      } else if (isFirstOlder(other[1], meta) > 0) {
+      } else if (!isFirstOlder(other[1], meta)) {
         list.splice(i, 0, entry)
         return insert(this, entry)
       }
@@ -91,9 +91,9 @@ MemoryStore.prototype = {
     while (m <= n) {
       var i = (n + m) >> 1
       var otherAdded = this.added[i][1].added
-      if (otherAdded > added) {
+      if (otherAdded < added) {
         m = i + 1
-      } else if (otherAdded < added) {
+      } else if (otherAdded > added) {
         n = i - 1
       } else {
         this.added.splice(i, 1)

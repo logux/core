@@ -22,11 +22,12 @@ it('uses special ID generator in test log', function () {
   ]).then(function () {
     expect(log.entries()).toEqual([
       [
-        { type: 'b' },
-        { added: 2, time: 2, id: [2, 'test1', 0], reasons: ['test'] }
-      ], [
         { type: 'a' },
         { added: 1, time: 1, id: [1, 'test1', 0], reasons: ['test'] }
+      ],
+      [
+        { type: 'b' },
+        { added: 2, time: 2, id: [2, 'test1', 0], reasons: ['test'] }
       ]
     ])
   })

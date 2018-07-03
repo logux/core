@@ -258,12 +258,12 @@ it('changes meta', function () {
       expect(r).toBeTruthy()
       checkEntries(log, [
         [
-          { type: 'B' },
-          { id: [2, 'node', 0], time: 2, added: 2, reasons: ['t'], a: 2, b: 2 }
-        ],
-        [
           { type: 'A' },
           { id: [1, 'node', 0], time: 1, added: 1, reasons: ['t'] }
+        ],
+        [
+          { type: 'B' },
+          { id: [2, 'node', 0], time: 2, added: 2, reasons: ['t'], a: 2, b: 2 }
         ]
       ])
     })
@@ -334,7 +334,7 @@ it('cleans log by reason', function () {
       cleaned.push([action, meta.added, meta.reasons])
     })
     return log.removeReason('a').then(function () {
-      checkActions(log, [{ type: 'B' }, { type: 'AB' }])
+      checkActions(log, [{ type: 'AB' }, { type: 'B' }])
       expect(log.store.created[1][1].reasons).toEqual(['b'])
       expect(cleaned).toEqual([
         [{ type: 'A' }, 1, []]
@@ -351,7 +351,7 @@ it('removes reason with minimum and maximum added', function () {
   ]).then(function (log) {
     return log.removeReason('a', { maxAdded: 2, minAdded: 2 })
       .then(function () {
-        checkActions(log, [{ type: '3' }, { type: '1' }])
+        checkActions(log, [{ type: '1' }, { type: '3' }])
       })
   })
 })

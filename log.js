@@ -211,7 +211,7 @@ Log.prototype = {
       function nextPage (get) {
         get().then(function (page) {
           var result
-          for (var i = 0; i < page.entries.length; i++) {
+          for (var i = page.entries.length - 1; i >= 0; i--) {
             var entry = page.entries[i]
             result = callback(entry[0], entry[1])
             if (result === false) break

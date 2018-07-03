@@ -5,7 +5,7 @@ var assert = require('assert')
 function all (request, list) {
   if (!list) list = []
   return request.then(function (page) {
-    list = list.concat(page.entries)
+    list = page.entries.concat(list)
     return page.next ? all(page.next(), list) : list
   })
 }
@@ -92,17 +92,17 @@ function eachStoreCheck (test) {
         store.add({ type: '4' }, { id: [3, 'b', 0], time: 2 })
       ]).then(function () {
         return check(store, 'created', [
-          [{ type: '2' }, { added: 2, id: [1, 'c', 0], time: 2 }],
-          [{ type: '3' }, { added: 3, id: [1, 'b', 1], time: 2 }],
+          [{ type: '1' }, { added: 1, id: [1, 'a', 0], time: 1 }],
           [{ type: '4' }, { added: 4, id: [3, 'b', 0], time: 2 }],
-          [{ type: '1' }, { added: 1, id: [1, 'a', 0], time: 1 }]
+          [{ type: '3' }, { added: 3, id: [1, 'b', 1], time: 2 }],
+          [{ type: '2' }, { added: 2, id: [1, 'c', 0], time: 2 }]
         ])
       }).then(function () {
         return check(store, 'added', [
-          [{ type: '4' }, { added: 4, id: [3, 'b', 0], time: 2 }],
-          [{ type: '3' }, { added: 3, id: [1, 'b', 1], time: 2 }],
+          [{ type: '1' }, { added: 1, id: [1, 'a', 0], time: 1 }],
           [{ type: '2' }, { added: 2, id: [1, 'c', 0], time: 2 }],
-          [{ type: '1' }, { added: 1, id: [1, 'a', 0], time: 1 }]
+          [{ type: '3' }, { added: 3, id: [1, 'b', 1], time: 2 }],
+          [{ type: '4' }, { added: 4, id: [3, 'b', 0], time: 2 }]
         ])
       })
     }
@@ -159,17 +159,17 @@ function eachStoreCheck (test) {
         store.add({ type: '5' }, { id: [1, 'node2', 0], time: 2 }),
         store.add({ type: '6' }, { id: [4, 'node1', 0], time: 4 })
       ]).then(function () {
-        return store.remove([1, 'node1', 2])
+        return store.remove([1, 'node1', 1])
       }).then(function (result) {
         assert.deepEqual(result, [
-          { type: '3' }, { id: [1, 'node1', 2], time: 2, added: 3 }
+          { type: '2' }, { id: [1, 'node1', 1], time: 2, added: 2 }
         ])
         return checkBoth(store, [
-          [{ type: '6' }, { id: [4, 'node1', 0], time: 4, added: 6 }],
-          [{ type: '5' }, { id: [1, 'node2', 0], time: 2, added: 5 }],
+          [{ type: '1' }, { id: [1, 'node1', 0], time: 1, added: 1 }],
+          [{ type: '3' }, { id: [1, 'node1', 2], time: 2, added: 3 }],
           [{ type: '4' }, { id: [1, 'node1', 3], time: 2, added: 4 }],
-          [{ type: '2' }, { id: [1, 'node1', 1], time: 2, added: 2 }],
-          [{ type: '1' }, { id: [1, 'node1', 0], time: 1, added: 1 }]
+          [{ type: '5' }, { id: [1, 'node2', 0], time: 2, added: 5 }],
+          [{ type: '6' }, { id: [4, 'node1', 0], time: 4, added: 6 }]
         ])
       })
     }
@@ -186,8 +186,8 @@ function eachStoreCheck (test) {
         store.remove([3, 'node1', 0])
       }).then(function () {
         return checkBoth(store, [
-          [{ type: '2' }, { id: [2, 'node1', 0], time: 2, added: 2 }],
-          [{ type: '1' }, { id: [1, 'node1', 0], time: 1, added: 1 }]
+          [{ type: '1' }, { id: [1, 'node1', 0], time: 1, added: 1 }],
+          [{ type: '2' }, { id: [2, 'node1', 0], time: 2, added: 2 }]
         ])
       })
     }
@@ -222,8 +222,8 @@ function eachStoreCheck (test) {
         })
       }).then(function () {
         return checkBoth(store, [
-          [{ type: '4' }, { added: 4, id: [4], time: 4, reasons: ['b'] }],
-          [{ type: '3' }, { added: 3, id: [3], time: 3, reasons: ['b'] }]
+          [{ type: '3' }, { added: 3, id: [3], time: 3, reasons: ['b'] }],
+          [{ type: '4' }, { added: 4, id: [4], time: 4, reasons: ['b'] }]
         ])
       })
     }
@@ -242,8 +242,8 @@ function eachStoreCheck (test) {
         return store.removeReason('a', { olderThan: m3, youngerThan: m1 }, nope)
       }).then(function () {
         return checkBoth(store, [
-          [{ type: '3' }, { added: 3, id: [3], time: 3, reasons: ['a'] }],
-          [{ type: '1' }, { added: 1, id: [1], time: 1, reasons: ['a'] }]
+          [{ type: '1' }, { added: 1, id: [1], time: 1, reasons: ['a'] }],
+          [{ type: '3' }, { added: 3, id: [3], time: 3, reasons: ['a'] }]
         ])
       })
     }
@@ -261,8 +261,8 @@ function eachStoreCheck (test) {
         return store.removeReason('a', { olderThan: m2 }, nope)
       }).then(function () {
         return checkBoth(store, [
-          [{ type: '3' }, { added: 3, id: [3], time: 3, reasons: ['a'] }],
-          [{ type: '2' }, { added: 2, id: [2], time: 2, reasons: ['a'] }]
+          [{ type: '2' }, { added: 2, id: [2], time: 2, reasons: ['a'] }],
+          [{ type: '3' }, { added: 3, id: [3], time: 3, reasons: ['a'] }]
         ])
       })
     }
@@ -280,8 +280,8 @@ function eachStoreCheck (test) {
         return store.removeReason('a', { youngerThan: m2 }, nope)
       }).then(function () {
         return checkBoth(store, [
-          [{ type: '2' }, { added: 2, id: [2], time: 2, reasons: ['a'] }],
-          [{ type: '1' }, { added: 1, id: [1], time: 1, reasons: ['a'] }]
+          [{ type: '1' }, { added: 1, id: [1], time: 1, reasons: ['a'] }],
+          [{ type: '2' }, { added: 2, id: [2], time: 2, reasons: ['a'] }]
         ])
       })
     }
@@ -332,8 +332,8 @@ function eachStoreCheck (test) {
         return store.removeReason('a', { maxAdded: 2, minAdded: 2 }, nope)
       }).then(function () {
         return checkBoth(store, [
-          [{ type: '3' }, { added: 3, id: [3], time: 3, reasons: ['a'] }],
-          [{ type: '1' }, { added: 1, id: [1], time: 1, reasons: ['a'] }]
+          [{ type: '1' }, { added: 1, id: [1], time: 1, reasons: ['a'] }],
+          [{ type: '3' }, { added: 3, id: [3], time: 3, reasons: ['a'] }]
         ])
       })
     }
@@ -418,9 +418,9 @@ function eachStoreCheck (test) {
         store.add({ type: 'A' }, { id: [1, 'a', 0], time: 1 })
       ]).then(function () {
         return check(store, 'created', [
-          [{ type: 'C' }, { added: 2, id: [3, 'a', 0], time: 1 }],
+          [{ type: 'A' }, { added: 3, id: [1, 'a', 0], time: 1 }],
           [{ type: 'B' }, { added: 1, id: [2, 'a', 0], time: 1 }],
-          [{ type: 'A' }, { added: 3, id: [1, 'a', 0], time: 1 }]
+          [{ type: 'C' }, { added: 2, id: [3, 'a', 0], time: 1 }]
         ])
       })
     }
