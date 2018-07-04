@@ -13,7 +13,7 @@ function isObject (value) {
 }
 
 function isArray (value) {
-  return typeof value === 'object' && typeof value.length === 'number'
+  return Array.isArray(value)
 }
 
 function isTwoNumbers (value) {
