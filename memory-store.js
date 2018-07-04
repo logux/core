@@ -9,8 +9,7 @@ function insert (store, entry) {
 
 function find (list, id) {
   for (var i = list.length - 1; i >= 0; i--) {
-    var oId = list[i][1].id
-    if (id[0] === oId[0] && id[1] === oId[1] && id[2] === oId[2]) {
+    if (id === list[i][1].id) {
       return i
     }
   }
@@ -55,8 +54,7 @@ MemoryStore.prototype = {
     var list = this.created
     for (var i = 0; i < list.length; i++) {
       var other = list[i]
-      var oId = other[1].id
-      if (id[0] === oId[0] && id[1] === oId[1] && id[2] === oId[2]) {
+      if (id === other[1].id) {
         return Promise.resolve(false)
       } else if (!isFirstOlder(other[1], meta)) {
         list.splice(i, 0, entry)

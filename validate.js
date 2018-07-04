@@ -18,12 +18,12 @@ function isArray (value) {
 
 function isTwoNumbers (value) {
   return isArray(value) && value.length === 2 &&
-         isNumber(value[0]) && isNumber(value[0])
+         isNumber(value[0]) && isNumber(value[1])
 }
 
 function isID (value) {
-  return isArray(value) && isNumber(value[0]) &&
-         isString(value[1]) && isNumber(value[2])
+  return isArray(value) && value.length === 3 &&
+         isNumber(value[0]) && isString(value[1]) && isNumber(value[2])
 }
 
 function isMeta (value) {

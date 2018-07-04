@@ -1,3 +1,8 @@
+function split (id) {
+  var index = id.indexOf(' ')
+  return [id.slice(0, index), id.slice(index + 1)]
+}
+
 /**
  * Compare time, when log entries were created.
  *
@@ -28,17 +33,17 @@ function isFirstOlder (firstMeta, secondMeta) {
     return true
   }
 
-  var firstStr = firstMeta.id.slice(1).join('\t')
-  var secondStr = secondMeta.id.slice(1).join('\t')
-  if (firstStr > secondStr) {
+  var first = split(firstMeta.id)
+  var second = split(secondMeta.id)
+  if (first[1] > second[1]) {
     return false
-  } else if (firstStr < secondStr) {
+  } else if (first[1] < second[1]) {
     return true
   }
 
-  if (firstMeta.id[0] > secondMeta.id[0]) {
+  if (first[0] > second[0]) {
     return false
-  } else if (firstMeta.id[0] < secondMeta.id[0]) {
+  } else if (first[0] < second[0]) {
     return true
   }
 

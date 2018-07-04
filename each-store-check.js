@@ -86,23 +86,23 @@ function eachStoreCheck (test) {
     return function () {
       var store = factory()
       return Promise.all([
-        store.add({ type: '1' }, { id: [1, 'a', 0], time: 1 }),
-        store.add({ type: '2' }, { id: [1, 'c', 0], time: 2 }),
-        store.add({ type: '3' }, { id: [1, 'b', 1], time: 2 }),
-        store.add({ type: '4' }, { id: [3, 'b', 0], time: 2 })
+        store.add({ type: '1' }, { id: '1 a 0', time: 1 }),
+        store.add({ type: '2' }, { id: '1 c 0', time: 2 }),
+        store.add({ type: '3' }, { id: '1 b 1', time: 2 }),
+        store.add({ type: '4' }, { id: '3 b 0', time: 2 })
       ]).then(function () {
         return check(store, 'created', [
-          [{ type: '1' }, { added: 1, id: [1, 'a', 0], time: 1 }],
-          [{ type: '4' }, { added: 4, id: [3, 'b', 0], time: 2 }],
-          [{ type: '3' }, { added: 3, id: [1, 'b', 1], time: 2 }],
-          [{ type: '2' }, { added: 2, id: [1, 'c', 0], time: 2 }]
+          [{ type: '1' }, { added: 1, id: '1 a 0', time: 1 }],
+          [{ type: '4' }, { added: 4, id: '3 b 0', time: 2 }],
+          [{ type: '3' }, { added: 3, id: '1 b 1', time: 2 }],
+          [{ type: '2' }, { added: 2, id: '1 c 0', time: 2 }]
         ])
       }).then(function () {
         return check(store, 'added', [
-          [{ type: '1' }, { added: 1, id: [1, 'a', 0], time: 1 }],
-          [{ type: '2' }, { added: 2, id: [1, 'c', 0], time: 2 }],
-          [{ type: '3' }, { added: 3, id: [1, 'b', 1], time: 2 }],
-          [{ type: '4' }, { added: 4, id: [3, 'b', 0], time: 2 }]
+          [{ type: '1' }, { added: 1, id: '1 a 0', time: 1 }],
+          [{ type: '2' }, { added: 2, id: '1 c 0', time: 2 }],
+          [{ type: '3' }, { added: 3, id: '1 b 1', time: 2 }],
+          [{ type: '4' }, { added: 4, id: '3 b 0', time: 2 }]
         ])
       })
     }
@@ -111,10 +111,12 @@ function eachStoreCheck (test) {
   test('returns latest added', function (factory) {
     return function () {
       var store = factory()
-      return store.add({ type: 'A' }, { id: [1], time: 1 }).then(function () {
+      return store.add(
+        { type: 'A' }, { id: '1 n 0', time: 1 }
+      ).then(function () {
         return store.getLastAdded().then(function (added) {
           assert.ok(added)
-          return store.add({ type: 'A' }, { id: [1] })
+          return store.add({ type: 'A' }, { id: '1 n 0' })
         }).then(function () {
           return store.getLastAdded()
         }).then(function (added) {
@@ -127,12 +129,12 @@ function eachStoreCheck (test) {
   test('changes meta', function (factory) {
     return function () {
       var store = factory()
-      return store.add({ }, { id: [1], time: 1, a: 1 }).then(function () {
-        return store.changeMeta([1], { a: 2, b: 2 })
+      return store.add({ }, { id: '1 n 0', time: 1, a: 1 }).then(function () {
+        return store.changeMeta('1 n 0', { a: 2, b: 2 })
       }).then(function (result) {
         assert.equal(result, true)
         return checkBoth(store, [
-          [{ }, { id: [1], time: 1, added: 1, a: 2, b: 2 }]
+          [{ }, { id: '1 n 0', time: 1, added: 1, a: 2, b: 2 }]
         ])
       })
     }
@@ -141,7 +143,7 @@ function eachStoreCheck (test) {
   test('resolves to false on unknown ID in changeMeta', function (factory) {
     return function () {
       var store = factory()
-      return store.changeMeta([1], { a: 1 }).then(function (result) {
+      return store.changeMeta('1 n 0', { a: 1 }).then(function (result) {
         assert.equal(result, false)
       })
     }
@@ -151,25 +153,25 @@ function eachStoreCheck (test) {
     return function () {
       var store = factory()
       return Promise.all([
-        store.add({ type: '1' }, { id: [1, 'node1', 0], time: 1 }),
-        store.add({ type: '1' }, { id: [1, 'node1', 0], time: 1 }),
-        store.add({ type: '2' }, { id: [1, 'node1', 1], time: 2 }),
-        store.add({ type: '3' }, { id: [1, 'node1', 2], time: 2 }),
-        store.add({ type: '4' }, { id: [1, 'node1', 3], time: 2 }),
-        store.add({ type: '5' }, { id: [1, 'node2', 0], time: 2 }),
-        store.add({ type: '6' }, { id: [4, 'node1', 0], time: 4 })
+        store.add({ type: '1' }, { id: '1 node1 0', time: 1 }),
+        store.add({ type: '1' }, { id: '1 node1 0', time: 1 }),
+        store.add({ type: '2' }, { id: '1 node1 1', time: 2 }),
+        store.add({ type: '3' }, { id: '1 node1 2', time: 2 }),
+        store.add({ type: '4' }, { id: '1 node1 3', time: 2 }),
+        store.add({ type: '5' }, { id: '1 node2 0', time: 2 }),
+        store.add({ type: '6' }, { id: '4 node1 0', time: 4 })
       ]).then(function () {
-        return store.remove([1, 'node1', 1])
+        return store.remove('1 node1 1')
       }).then(function (result) {
         assert.deepEqual(result, [
-          { type: '2' }, { id: [1, 'node1', 1], time: 2, added: 2 }
+          { type: '2' }, { id: '1 node1 1', time: 2, added: 2 }
         ])
         return checkBoth(store, [
-          [{ type: '1' }, { id: [1, 'node1', 0], time: 1, added: 1 }],
-          [{ type: '3' }, { id: [1, 'node1', 2], time: 2, added: 3 }],
-          [{ type: '4' }, { id: [1, 'node1', 3], time: 2, added: 4 }],
-          [{ type: '5' }, { id: [1, 'node2', 0], time: 2, added: 5 }],
-          [{ type: '6' }, { id: [4, 'node1', 0], time: 4, added: 6 }]
+          [{ type: '1' }, { id: '1 node1 0', time: 1, added: 1 }],
+          [{ type: '3' }, { id: '1 node1 2', time: 2, added: 3 }],
+          [{ type: '4' }, { id: '1 node1 3', time: 2, added: 4 }],
+          [{ type: '5' }, { id: '1 node2 0', time: 2, added: 5 }],
+          [{ type: '6' }, { id: '4 node1 0', time: 4, added: 6 }]
         ])
       })
     }
@@ -179,15 +181,15 @@ function eachStoreCheck (test) {
     return function () {
       var store = factory()
       return Promise.all([
-        store.add({ type: '1' }, { id: [1, 'node1', 0], time: 1 }),
-        store.add({ type: '2' }, { id: [2, 'node1', 0], time: 2 }),
-        store.add({ type: '3' }, { id: [3, 'node1', 0], time: 0 })
+        store.add({ type: '1' }, { id: '1 node1 0', time: 1 }),
+        store.add({ type: '2' }, { id: '2 node1 0', time: 2 }),
+        store.add({ type: '3' }, { id: '3 node1 0', time: 0 })
       ]).then(function () {
-        store.remove([3, 'node1', 0])
+        store.remove('3 node1 0')
       }).then(function () {
         return checkBoth(store, [
-          [{ type: '1' }, { id: [1, 'node1', 0], time: 1, added: 1 }],
-          [{ type: '2' }, { id: [2, 'node1', 0], time: 2, added: 2 }]
+          [{ type: '1' }, { id: '1 node1 0', time: 1, added: 1 }],
+          [{ type: '2' }, { id: '2 node1 0', time: 2, added: 2 }]
         ])
       })
     }
@@ -196,12 +198,14 @@ function eachStoreCheck (test) {
   test('ignores removing unknown entry', function (factory) {
     return function () {
       var store = factory()
-      return store.add({ }, { id: [1], time: 1, added: 1 }).then(function () {
-        return store.remove([2])
+      return store.add(
+        { type: 'A' }, { id: '1 n 0', time: 1, added: 1 }
+      ).then(function () {
+        return store.remove('2 n 0')
       }).then(function (result) {
         assert.equal(result, false)
         return check(store, 'created', [
-          [{ }, { id: [1], time: 1, added: 1 }]
+          [{ type: 'A' }, { id: '1 n 0', time: 1, added: 1 }]
         ])
       })
     }
@@ -212,18 +216,18 @@ function eachStoreCheck (test) {
       var store = factory()
       var removed = []
       return Promise.all([
-        store.add({ type: '1' }, { id: [1], time: 1, reasons: ['a'] }),
-        store.add({ type: '2' }, { id: [2], time: 2, reasons: ['a'] }),
-        store.add({ type: '3' }, { id: [3], time: 3, reasons: ['a', 'b'] }),
-        store.add({ type: '4' }, { id: [4], time: 4, reasons: ['b'] })
+        store.add({ type: '1' }, { id: '1 n 0', time: 1, reasons: ['a'] }),
+        store.add({ type: '2' }, { id: '2 n 0', time: 2, reasons: ['a'] }),
+        store.add({ type: '3' }, { id: '3 n 0', time: 3, reasons: ['a', 'b'] }),
+        store.add({ type: '4' }, { id: '4 n 0', time: 4, reasons: ['b'] })
       ]).then(function () {
         return store.removeReason('a', { }, function (action, meta) {
           removed.push([action, meta])
         })
       }).then(function () {
         return checkBoth(store, [
-          [{ type: '3' }, { added: 3, id: [3], time: 3, reasons: ['b'] }],
-          [{ type: '4' }, { added: 4, id: [4], time: 4, reasons: ['b'] }]
+          [{ type: '3' }, { added: 3, id: '3 n 0', time: 3, reasons: ['b'] }],
+          [{ type: '4' }, { added: 4, id: '4 n 0', time: 4, reasons: ['b'] }]
         ])
       })
     }
@@ -233,17 +237,17 @@ function eachStoreCheck (test) {
     return function () {
       var store = factory()
       return Promise.all([
-        store.add({ type: '1' }, { id: [1], time: 1, reasons: ['a'] }),
-        store.add({ type: '2' }, { id: [2], time: 2, reasons: ['a'] }),
-        store.add({ type: '3' }, { id: [3], time: 3, reasons: ['a'] })
+        store.add({ type: '1' }, { id: '1 n 0', time: 1, reasons: ['a'] }),
+        store.add({ type: '2' }, { id: '2 n 0', time: 2, reasons: ['a'] }),
+        store.add({ type: '3' }, { id: '3 n 0', time: 3, reasons: ['a'] })
       ]).then(function () {
-        var m1 = { id: [1], time: 1 }
-        var m3 = { id: [3], time: 3 }
+        var m1 = { id: '1 n 0', time: 1 }
+        var m3 = { id: '3 n 0', time: 3 }
         return store.removeReason('a', { olderThan: m3, youngerThan: m1 }, nope)
       }).then(function () {
         return checkBoth(store, [
-          [{ type: '1' }, { added: 1, id: [1], time: 1, reasons: ['a'] }],
-          [{ type: '3' }, { added: 3, id: [3], time: 3, reasons: ['a'] }]
+          [{ type: '1' }, { added: 1, id: '1 n 0', time: 1, reasons: ['a'] }],
+          [{ type: '3' }, { added: 3, id: '3 n 0', time: 3, reasons: ['a'] }]
         ])
       })
     }
@@ -253,16 +257,16 @@ function eachStoreCheck (test) {
     return function () {
       var store = factory()
       return Promise.all([
-        store.add({ type: '1' }, { id: [1], time: 1, reasons: ['a'] }),
-        store.add({ type: '2' }, { id: [2], time: 2, reasons: ['a'] }),
-        store.add({ type: '3' }, { id: [3], time: 3, reasons: ['a'] })
+        store.add({ type: '1' }, { id: '1 n 0', time: 1, reasons: ['a'] }),
+        store.add({ type: '2' }, { id: '2 n 0', time: 2, reasons: ['a'] }),
+        store.add({ type: '3' }, { id: '3 n 0', time: 3, reasons: ['a'] })
       ]).then(function () {
-        var m2 = { id: [2], time: 2 }
+        var m2 = { id: '2 n 0', time: 2 }
         return store.removeReason('a', { olderThan: m2 }, nope)
       }).then(function () {
         return checkBoth(store, [
-          [{ type: '2' }, { added: 2, id: [2], time: 2, reasons: ['a'] }],
-          [{ type: '3' }, { added: 3, id: [3], time: 3, reasons: ['a'] }]
+          [{ type: '2' }, { added: 2, id: '2 n 0', time: 2, reasons: ['a'] }],
+          [{ type: '3' }, { added: 3, id: '3 n 0', time: 3, reasons: ['a'] }]
         ])
       })
     }
@@ -272,16 +276,16 @@ function eachStoreCheck (test) {
     return function () {
       var store = factory()
       return Promise.all([
-        store.add({ type: '1' }, { id: [1], time: 1, reasons: ['a'] }),
-        store.add({ type: '2' }, { id: [2], time: 2, reasons: ['a'] }),
-        store.add({ type: '3' }, { id: [3], time: 3, reasons: ['a'] })
+        store.add({ type: '1' }, { id: '1 n 0', time: 1, reasons: ['a'] }),
+        store.add({ type: '2' }, { id: '2 n 0', time: 2, reasons: ['a'] }),
+        store.add({ type: '3' }, { id: '3 n 0', time: 3, reasons: ['a'] })
       ]).then(function () {
-        var m2 = { id: [2], time: 2 }
+        var m2 = { id: '2 n 0', time: 2 }
         return store.removeReason('a', { youngerThan: m2 }, nope)
       }).then(function () {
         return checkBoth(store, [
-          [{ type: '1' }, { added: 1, id: [1], time: 1, reasons: ['a'] }],
-          [{ type: '2' }, { added: 2, id: [2], time: 2, reasons: ['a'] }]
+          [{ type: '1' }, { added: 1, id: '1 n 0', time: 1, reasons: ['a'] }],
+          [{ type: '2' }, { added: 2, id: '2 n 0', time: 2, reasons: ['a'] }]
         ])
       })
     }
@@ -291,14 +295,14 @@ function eachStoreCheck (test) {
     return function () {
       var store = factory()
       return Promise.all([
-        store.add({ type: '1' }, { id: [1], time: 1, reasons: ['a'] }),
-        store.add({ type: '2' }, { id: [2], time: 2, reasons: ['a'] }),
-        store.add({ type: '3' }, { id: [3], time: 3, reasons: ['a'] })
+        store.add({ type: '1' }, { id: '1 n 0', time: 1, reasons: ['a'] }),
+        store.add({ type: '2' }, { id: '2 n 0', time: 2, reasons: ['a'] }),
+        store.add({ type: '3' }, { id: '3 n 0', time: 3, reasons: ['a'] })
       ]).then(function () {
         return store.removeReason('a', { minAdded: 2 }, nope)
       }).then(function () {
         return checkBoth(store, [
-          [{ type: '1' }, { added: 1, id: [1], time: 1, reasons: ['a'] }]
+          [{ type: '1' }, { added: 1, id: '1 n 0', time: 1, reasons: ['a'] }]
         ])
       })
     }
@@ -308,14 +312,14 @@ function eachStoreCheck (test) {
     return function () {
       var store = factory()
       return Promise.all([
-        store.add({ type: '1' }, { id: [1], time: 1, reasons: ['a'] }),
-        store.add({ type: '2' }, { id: [2], time: 2, reasons: ['a'] }),
-        store.add({ type: '3' }, { id: [3], time: 3, reasons: ['a'] })
+        store.add({ type: '1' }, { id: '1 n 0', time: 1, reasons: ['a'] }),
+        store.add({ type: '2' }, { id: '2 n 0', time: 2, reasons: ['a'] }),
+        store.add({ type: '3' }, { id: '3 n 0', time: 3, reasons: ['a'] })
       ]).then(function () {
         return store.removeReason('a', { maxAdded: 2 }, nope)
       }).then(function () {
         return checkBoth(store, [
-          [{ type: '3' }, { added: 3, id: [3], time: 3, reasons: ['a'] }]
+          [{ type: '3' }, { added: 3, id: '3 n 0', time: 3, reasons: ['a'] }]
         ])
       })
     }
@@ -325,15 +329,15 @@ function eachStoreCheck (test) {
     return function () {
       var store = factory()
       return Promise.all([
-        store.add({ type: '1' }, { id: [1], time: 1, reasons: ['a'] }),
-        store.add({ type: '2' }, { id: [2], time: 2, reasons: ['a'] }),
-        store.add({ type: '3' }, { id: [3], time: 3, reasons: ['a'] })
+        store.add({ type: '1' }, { id: '1 n 0', time: 1, reasons: ['a'] }),
+        store.add({ type: '2' }, { id: '2 n 0', time: 2, reasons: ['a'] }),
+        store.add({ type: '3' }, { id: '3 n 0', time: 3, reasons: ['a'] })
       ]).then(function () {
         return store.removeReason('a', { maxAdded: 2, minAdded: 2 }, nope)
       }).then(function () {
         return checkBoth(store, [
-          [{ type: '1' }, { added: 1, id: [1], time: 1, reasons: ['a'] }],
-          [{ type: '3' }, { added: 3, id: [3], time: 3, reasons: ['a'] }]
+          [{ type: '1' }, { added: 1, id: '1 n 0', time: 1, reasons: ['a'] }],
+          [{ type: '3' }, { added: 3, id: '3 n 0', time: 3, reasons: ['a'] }]
         ])
       })
     }
@@ -342,13 +346,13 @@ function eachStoreCheck (test) {
   test('removes reason with zero at maximum added', function (factory) {
     return function () {
       var store = factory()
-      return store.add({ }, { id: [1], time: 1, reasons: ['a'] })
+      return store.add({ }, { id: '1 n 0', time: 1, reasons: ['a'] })
         .then(function () {
           return store.removeReason('a', { maxAdded: 0 }, nope)
         })
         .then(function () {
           return checkBoth(store, [
-            [{ }, { added: 1, id: [1], time: 1, reasons: ['a'] }]
+            [{ }, { added: 1, id: '1 n 0', time: 1, reasons: ['a'] }]
           ])
         })
     }
@@ -358,20 +362,20 @@ function eachStoreCheck (test) {
     return function () {
       var store = factory()
       return Promise.all([
-        store.add({ type: 'A' }, { id: [1, 'node', 0], time: 1 }),
-        store.add({ type: 'B' }, { id: [1, 'node', 1], time: 2 }),
-        store.add({ type: 'C' }, { id: [1, 'node', 2], time: 2 }),
-        store.add({ type: 'D' }, { id: [1, 'node', 3], time: 2 }),
-        store.add({ type: 'E' }, { id: [2, 'node', 0], time: 2 })
+        store.add({ type: 'A' }, { id: '1 node 0', time: 1 }),
+        store.add({ type: 'B' }, { id: '1 node 1', time: 2 }),
+        store.add({ type: 'C' }, { id: '1 node 2', time: 2 }),
+        store.add({ type: 'D' }, { id: '1 node 3', time: 2 }),
+        store.add({ type: 'E' }, { id: '2 node 0', time: 2 })
       ]).then(function () {
-        return store.byId([1, 'node', 0])
+        return store.byId('1 node 0')
       }).then(function (result) {
         assert.deepEqual(result[0], { type: 'A' })
         assert.deepEqual(result[1].time, 1)
-        return store.byId([1, 'node', 2])
+        return store.byId('1 node 2')
       }).then(function (result) {
         assert.deepEqual(result[0], { type: 'C' })
-        return store.byId([2, 'node', 1])
+        return store.byId('2 node 1')
       }).then(function (result) {
         assert.deepEqual(result[0], null)
         assert.deepEqual(result[1], null)
@@ -382,7 +386,7 @@ function eachStoreCheck (test) {
   test('ignores entries with same ID', function (factory) {
     return function () {
       var store = factory()
-      var id = [1, 'a', 1]
+      var id = '1 a 1'
       return store.add({ a: 1 }, { id: id, time: 1 }).then(function (meta) {
         assert.deepEqual(meta, { id: id, time: 1, added: 1 })
         return store.add({ a: 2 }, { id: id, time: 2 })
@@ -400,10 +404,10 @@ function eachStoreCheck (test) {
       var store = factory()
       return store.add(
         { type: 'A' },
-        { id: [1, 'a'], time: 1, test: 1 }
+        { id: '1 a 0', time: 1, test: 1 }
       ).then(function () {
         return checkBoth(store, [
-          [{ type: 'A' }, { added: 1, id: [1, 'a'], time: 1, test: 1 }]
+          [{ type: 'A' }, { added: 1, id: '1 a 0', time: 1, test: 1 }]
         ])
       })
     }
@@ -413,14 +417,14 @@ function eachStoreCheck (test) {
     return function () {
       var store = factory()
       return Promise.all([
-        store.add({ type: 'B' }, { id: [2, 'a', 0], time: 1 }),
-        store.add({ type: 'C' }, { id: [3, 'a', 0], time: 1 }),
-        store.add({ type: 'A' }, { id: [1, 'a', 0], time: 1 })
+        store.add({ type: 'B' }, { id: '2 a 0', time: 1 }),
+        store.add({ type: 'C' }, { id: '3 a 0', time: 1 }),
+        store.add({ type: 'A' }, { id: '1 a 0', time: 1 })
       ]).then(function () {
         return check(store, 'created', [
-          [{ type: 'A' }, { added: 3, id: [1, 'a', 0], time: 1 }],
-          [{ type: 'B' }, { added: 1, id: [2, 'a', 0], time: 1 }],
-          [{ type: 'C' }, { added: 2, id: [3, 'a', 0], time: 1 }]
+          [{ type: 'A' }, { added: 3, id: '1 a 0', time: 1 }],
+          [{ type: 'B' }, { added: 1, id: '2 a 0', time: 1 }],
+          [{ type: 'C' }, { added: 2, id: '3 a 0', time: 1 }]
         ])
       })
     }

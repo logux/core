@@ -23,11 +23,11 @@ it('uses special ID generator in test log', function () {
     expect(log.entries()).toEqual([
       [
         { type: 'a' },
-        { added: 1, time: 1, id: [1, 'test1', 0], reasons: ['test'] }
+        { added: 1, time: 1, id: '1 test1 0', reasons: ['test'] }
       ],
       [
         { type: 'b' },
-        { added: 2, time: 2, id: [2, 'test1', 0], reasons: ['test'] }
+        { added: 2, time: 2, id: '2 test1 0', reasons: ['test'] }
       ]
     ])
   })
@@ -48,13 +48,13 @@ it('creates test logs with same time', function () {
     expect(log1.entries()).toEqual([
       [
         { type: 'a' },
-        { added: 1, time: 1, id: [1, 'test1', 0], reasons: ['test'] }
+        { added: 1, time: 1, id: '1 test1 0', reasons: ['test'] }
       ]
     ])
     expect(log2.entries()).toEqual([
       [
         { type: 'b' },
-        { added: 1, time: 2, id: [2, 'test2', 0], reasons: ['test'] }
+        { added: 1, time: 2, id: '2 test2 0', reasons: ['test'] }
       ]
     ])
   })
@@ -65,6 +65,6 @@ it('creates log with test shortcuts', function () {
   log.add({ type: 'A' }, { reasons: ['t'] })
   expect(log.actions()).toEqual([{ type: 'A' }])
   expect(log.entries()).toEqual([
-    [{ type: 'A' }, { id: [1, 'test1', 0], time: 1, added: 1, reasons: ['t'] }]
+    [{ type: 'A' }, { id: '1 test1 0', time: 1, added: 1, reasons: ['t'] }]
   ])
 })

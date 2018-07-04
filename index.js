@@ -41,21 +41,10 @@ module.exports = {
 */
 
 /**
- * Unique action ID.
- * Array of comparable native types (like number or string).
- * Every next action ID should be bigger than previous.
- *
- * @typedef {array} ID
- *
- * @example
- * [1, 'server', 0]
- */
-
-/**
  * Action’s metadata.
  *
  * @typedef {object} Meta
- * @property {ID} id Action unique ID. {@link Log#add} set it automatically.
+ * @property {string} id Action unique ID. {@link Log#add} set it automatically.
  * @property {number} added Sequence number of action in current log.
  *                          {@link Log#add} will fill it.
  */
@@ -122,7 +111,7 @@ module.exports = {
 /**
  * Remove action from store.
  *
- * @param {ID} id Action ID.
+ * @param {string} id Action ID.
  *
  * @return {Promise} Promise with entry if action was in store.
  *
@@ -151,7 +140,7 @@ module.exports = {
 /**
  * Change action metadata.
  *
- * @param {ID} id Action ID.
+ * @param {string} id Action ID.
  * @param {object} diff Object with values to change in action metadata.
  *
  * @return {Promise} Promise with `true` if metadata was changed
@@ -164,7 +153,7 @@ module.exports = {
 /**
  * Return action by action ID.
  *
- * @param {ID} id Action ID.
+ * @param {string} id Action ID.
  *
  * @return {Promise} Promise with array of action and metadata.
  *

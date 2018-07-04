@@ -48,6 +48,12 @@ it('requires store', function () {
   }).toThrowError(/store/)
 })
 
+it('checks node ID', function () {
+  expect(function () {
+    new Log({ nodeId: 'a b', store: new MemoryStore() })
+  }).toThrowError(/Space/)
+})
+
 it('requires type for action', function () {
   var log = createLog()
   expect(function () {
@@ -106,7 +112,7 @@ it('ignore entry with existed ID', function () {
     added.push(action)
   })
 
-  var meta = { id: [0], reasons: ['test'] }
+  var meta = { id: '0 n 0', reasons: ['test'] }
   return log.add({ type: 'A' }, meta).then(function (result1) {
     expect(typeof result1).toEqual('object')
     return log.add({ type: 'B' }, meta)
@@ -119,18 +125,18 @@ it('ignore entry with existed ID', function () {
 
 it('iterates through added entries', function () {
   return logWith([
-    [{ type: 'A' }, { id: [3], reasons: ['test'] }],
-    [{ type: 'B' }, { id: [2], reasons: ['test'] }],
-    [{ type: 'C' }, { id: [1], reasons: ['test'] }]
+    [{ type: 'A' }, { id: '3 n 0', reasons: ['test'] }],
+    [{ type: 'B' }, { id: '2 n 0', reasons: ['test'] }],
+    [{ type: 'C' }, { id: '1 n 0', reasons: ['test'] }]
   ]).then(function (log) {
     var entries = []
     return log.each(function (action, meta) {
       entries.push([action, meta])
     }).then(function () {
       expect(entries).toEqual([
-        [{ type: 'A' }, { id: [3], time: 3, added: 1, reasons: ['test'] }],
-        [{ type: 'B' }, { id: [2], time: 2, added: 2, reasons: ['test'] }],
-        [{ type: 'C' }, { id: [1], time: 1, added: 3, reasons: ['test'] }]
+        [{ type: 'A' }, { id: '3 n 0', time: 3, added: 1, reasons: ['test'] }],
+        [{ type: 'B' }, { id: '2 n 0', time: 2, added: 2, reasons: ['test'] }],
+        [{ type: 'C' }, { id: '1 n 0', time: 1, added: 3, reasons: ['test'] }]
       ])
     })
   })
@@ -138,9 +144,9 @@ it('iterates through added entries', function () {
 
 it('iterates by added order', function () {
   return logWith([
-    [{ type: 'A' }, { id: [3], reasons: ['test'] }],
-    [{ type: 'B' }, { id: [2], reasons: ['test'] }],
-    [{ type: 'C' }, { id: [1], reasons: ['test'] }]
+    [{ type: 'A' }, { id: '3 n 0', reasons: ['test'] }],
+    [{ type: 'B' }, { id: '2 n 0', reasons: ['test'] }],
+    [{ type: 'C' }, { id: '1 n 0', reasons: ['test'] }]
   ]).then(function (log) {
     var actions = []
     return log.each({ order: 'added' }, function (action) {
@@ -193,12 +199,12 @@ it('supports multi-pages stores', function () {
 
 it('copies time from ID', function () {
   return logWith([
-    [{ type: 'TIMED' }, { id: [100], reasons: ['test'] }]
+    [{ type: 'TIMED' }, { id: '100 n 0', reasons: ['test'] }]
   ]).then(function (log) {
     checkEntries(log, [
       [
         { type: 'TIMED' },
-        { id: [100], time: 100, added: 1, reasons: ['test'] }
+        { id: '100 n 0', time: 100, added: 1, reasons: ['test'] }
       ]
     ])
   })
@@ -206,10 +212,10 @@ it('copies time from ID', function () {
 
 it('keeps existed ID, time and reasons', function () {
   return logWith([
-    [{ type: 'TIMED' }, { id: [100], time: 1, reasons: ['a'] }]
+    [{ type: 'TIMED' }, { id: '100 n 0', time: 1, reasons: ['a'] }]
   ]).then(function (log) {
     checkEntries(log, [
-      [{ type: 'TIMED' }, { id: [100], time: 1, added: 1, reasons: ['a'] }]
+      [{ type: 'TIMED' }, { id: '100 n 0', time: 1, added: 1, reasons: ['a'] }]
     ])
   })
 })
@@ -220,10 +226,7 @@ it('sets default ID and time and empty reasons for new entries', function () {
     expect(meta.added).toEqual(1)
     expect(meta.reasons).toEqual([])
     expect(typeof meta.time).toEqual('number')
-    expect(meta.id).toHaveLength(3)
-    expect(meta.id[0]).toEqual(meta.time)
-    expect(meta.id[1]).toEqual('test')
-    expect(meta.id[2]).toEqual(0)
+    expect(meta.id).toEqual(meta.time + ' test 0')
   })
 })
 
@@ -245,25 +248,25 @@ it('always generates biggest ID', function () {
     return times.shift()
   }
 
-  expect(log.generateId()).toEqual([10, 'test', 0])
-  expect(log.generateId()).toEqual([10, 'test', 1])
+  expect(log.generateId()).toEqual('10 test 0')
+  expect(log.generateId()).toEqual('10 test 1')
 })
 
 it('changes meta', function () {
   return logWith([
-    [{ type: 'A' }, { reasons: ['t'], id: [1, 'node', 0] }],
-    [{ type: 'B' }, { reasons: ['t'], id: [2, 'node', 0], a: 1 }]
+    [{ type: 'A' }, { reasons: ['t'], id: '1 node 0' }],
+    [{ type: 'B' }, { reasons: ['t'], id: '2 node 0', a: 1 }]
   ]).then(function (log) {
-    return log.changeMeta([2, 'node', 0], { a: 2, b: 2 }).then(function (r) {
+    return log.changeMeta('2 node 0', { a: 2, b: 2 }).then(function (r) {
       expect(r).toBeTruthy()
       checkEntries(log, [
         [
           { type: 'A' },
-          { id: [1, 'node', 0], time: 1, added: 1, reasons: ['t'] }
+          { id: '1 node 0', time: 1, added: 1, reasons: ['t'] }
         ],
         [
           { type: 'B' },
-          { id: [2, 'node', 0], time: 2, added: 2, reasons: ['t'], a: 2, b: 2 }
+          { id: '2 node 0', time: 2, added: 2, reasons: ['t'], a: 2, b: 2 }
         ]
       ])
     })
@@ -273,35 +276,35 @@ it('changes meta', function () {
 it('does not allow to change ID or added', function () {
   var log = createLog()
   expect(function () {
-    log.changeMeta([1], { id: [2] })
+    log.changeMeta('1 n 0', { id: '2 n 0' })
   }).toThrowError(/"id" is read-only/)
   expect(function () {
-    log.changeMeta([1], { added: 2 })
+    log.changeMeta('1 n 0', { added: 2 })
   }).toThrowError(/"added" is read-only/)
   expect(function () {
-    log.changeMeta([1], { time: 2 })
+    log.changeMeta('1 n 0', { time: 2 })
   }).toThrowError(/"time" is read-only/)
 })
 
 it('removes action on setting entry reasons', function () {
   return logWith([
-    [{ type: 'A' }, { reasons: ['test'], id: [1] }],
-    [{ type: 'B' }, { reasons: ['test'], id: [2] }]
+    [{ type: 'A' }, { reasons: ['test'], id: '1 n 0' }],
+    [{ type: 'B' }, { reasons: ['test'], id: '2 n 0' }]
   ]).then(function (log) {
     var cleaned = []
     log.on('clean', function (action, meta) {
       cleaned.push([action, meta])
     })
 
-    return log.changeMeta([2], { reasons: [], a: 1 }).then(function (r) {
+    return log.changeMeta('2 n 0', { reasons: [], a: 1 }).then(function (r) {
       expect(r).toBeTruthy()
       expect(cleaned).toEqual([
-        [{ type: 'B' }, { id: [2], time: 2, added: 2, reasons: [], a: 1 }]
+        [{ type: 'B' }, { id: '2 n 0', time: 2, added: 2, reasons: [], a: 1 }]
       ])
       checkEntries(log, [
-        [{ type: 'A' }, { id: [1], time: 1, added: 1, reasons: ['test'] }]
+        [{ type: 'A' }, { id: '1 n 0', time: 1, added: 1, reasons: ['test'] }]
       ])
-      return log.changeMeta([3], { reasons: [] })
+      return log.changeMeta('3 n 0', { reasons: [] })
     }).then(function (r) {
       expect(r).toBeFalsy()
     })
@@ -310,12 +313,12 @@ it('removes action on setting entry reasons', function () {
 
 it('returns action by ID', function () {
   return logWith([
-    [{ type: 'A' }, { reasons: ['test'], id: [1] }]
+    [{ type: 'A' }, { reasons: ['test'], id: '1 n 0' }]
   ]).then(function (log) {
-    return log.byId([1]).then(function (result) {
+    return log.byId('1 n 0').then(function (result) {
       expect(result[0]).toEqual({ type: 'A' })
       expect(result[1].reasons).toEqual(['test'])
-      return log.byId([2])
+      return log.byId('2 n 0')
     }).then(function (result) {
       expect(result[0]).toBeNull()
       expect(result[1]).toBeNull()
@@ -403,15 +406,17 @@ it('checks ID for actions without reasons', function () {
     cleaned.push([action, meta.added])
   })
 
-  return log.add({ type: 'A' }, { id: [1], reasons: ['t'] }).then(function () {
-    return log.add({ type: 'B' }, { id: [1] })
+  return log.add(
+    { type: 'A' }, { id: '1 n 0', reasons: ['t'] }
+  ).then(function () {
+    return log.add({ type: 'B' }, { id: '1 n 0' })
   }).then(function (meta) {
     expect(meta).toBeFalsy()
     expect(added).toEqual([
       [{ type: 'A' }, 1]
     ])
     expect(cleaned).toEqual([])
-    return log.add({ type: 'C' }, { id: [2] })
+    return log.add({ type: 'C' }, { id: '2 n 0' })
   }).then(function (meta) {
     expect(meta).not.toBeFalsy()
     expect(added).toEqual([
@@ -439,13 +444,13 @@ it('fires preadd event', function () {
     preadd.push(action.type)
   })
 
-  return log.add({ type: 'A' }, { id: [1] }).then(function () {
+  return log.add({ type: 'A' }, { id: '1 n 0' }).then(function () {
     checkEntries(log, [
-      [{ type: 'A' }, { id: [1], time: 1, added: 1, reasons: ['test'] }]
+      [{ type: 'A' }, { id: '1 n 0', time: 1, added: 1, reasons: ['test'] }]
     ])
     expect(preadd).toEqual(['A'])
     expect(add).toEqual(['A'])
-    return log.add({ type: 'B' }, { id: [1] })
+    return log.add({ type: 'B' }, { id: '1 n 0' })
   }).then(function () {
     expect(preadd).toEqual(['A', 'B'])
     expect(add).toEqual(['A'])

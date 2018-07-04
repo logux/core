@@ -10,14 +10,15 @@ module.exports = {
       var meta = { }
       for (var key in originMeta) {
         if (key === 'id') {
-          meta.id = originMeta.id.slice(0)
+          meta.id = originMeta.id.split(' ')
         } else if (key !== 'added') {
           meta[key] = originMeta[key]
         }
       }
 
       if (this.timeFix) meta.time -= this.timeFix
-      meta.id[0] -= this.baseTime
+      meta.id[0] = parseInt(meta.id[0]) - this.baseTime
+      meta.id[2] = parseInt(meta.id[2])
       meta.time -= this.baseTime
 
       if (meta.id[1] === this.localNodeId) {
@@ -49,14 +50,16 @@ module.exports = {
       var meta = arguments[i + 1]
 
       if (typeof meta.id === 'number') {
-        meta.id = [meta.id, this.remoteNodeId, 0]
-      } else if (meta.id.length === 2) {
-        meta.id = [meta.id[0], this.remoteNodeId, meta.id[1]]
+        meta.id = (meta.id + this.baseTime) + ' ' + this.remoteNodeId + ' ' + 0
       } else {
-        meta.id = meta.id.slice(0)
+        meta.id[0] = meta.id[0] + this.baseTime
+        if (meta.id.length === 2) {
+          meta.id = meta.id[0] + ' ' + this.remoteNodeId + ' ' + meta.id[1]
+        } else {
+          meta.id = meta.id.join(' ')
+        }
       }
 
-      meta.id[0] = meta.id[0] + this.baseTime
       meta.time = meta.time + this.baseTime
 
       var process = Promise.resolve([action, meta])
@@ -83,7 +86,7 @@ module.exports = {
         }
       }).then(function (changed) {
         if (!changed) return false
-        sync.received[changed[1].id.join('\t')] = true
+        sync.received[changed[1].id] = true
         return sync.log.add(changed[0], changed[1])
       })
 

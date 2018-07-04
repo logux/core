@@ -82,7 +82,12 @@ it('uses last added on non-added action', function () {
     return test.wait('left')
   }).then(function (test) {
     expect(test.leftSent).toEqual([
-      ['sync', 0, { type: 'a' }, { id: [1, 'test1', 0], time: 1, reasons: [] }]
+      [
+        'sync',
+        0,
+        { type: 'a' },
+        { id: [1, 'test1', 0], time: 1, reasons: [] }
+      ]
     ])
   })
 })
@@ -92,11 +97,15 @@ it('checks sync types', function () {
     ['sync'],
     ['sync', 0, { type: 'a' }],
     ['sync', 0, { type: 'a' }, []],
-    ['sync', 0, { }, { }],
-    ['sync', 0, { }, { id: 0 }],
-    ['sync', 0, { }, { time: 0 }],
-    ['sync', 0, { }, { id: 0, time: '0' }],
-    ['sync', 0, { }, { id: [1, 'node'], time: 0 }],
+    ['sync', 0, { type: 'a' }, { }],
+    ['sync', 0, { type: 'a' }, { id: 0 }],
+    ['sync', 0, { type: 'a' }, { time: 0 }],
+    ['sync', 0, { type: 'a' }, { id: 0, time: '0' }],
+    ['sync', 0, { type: 'a' }, { id: [0], time: 0 }],
+    // ['sync', 0, { type: 'a' }, { id: [0, 'node'], time: 0 }],
+    ['sync', 0, { type: 'a' }, { id: '1 node 0', time: 0 }],
+    ['sync', 0, { type: 'a' }, { id: [1, 'node', 1, '0'], time: 0 }],
+    ['sync', 0, { }, { id: 0, time: 0 }],
     ['synced'],
     ['synced', 'abc']
   ]
@@ -338,7 +347,7 @@ it('compresses time', function () {
     test.leftSync.baseTime = 100
     test.rightSync.baseTime = 100
     return Promise.all([
-      test.leftSync.log.add({ type: 'a' }, { id: [1, 'test1', 0], time: 1 })
+      test.leftSync.log.add({ type: 'a' }, { id: '1 test1 0', time: 1 })
     ])
   }).then(function () {
     return test.leftSync.waitFor('synchronized')
@@ -354,7 +363,7 @@ it('compresses time', function () {
     expect(test.rightSync.log.entries()).toEqual([
       [
         { type: 'a' },
-        { id: [1, 'test1', 0], time: 1, added: 1, reasons: ['t'] }
+        { id: '1 test1 0', time: 1, added: 1, reasons: ['t'] }
       ]
     ])
   })
@@ -365,9 +374,9 @@ it('compresses IDs', function () {
   return createTest().then(function (created) {
     test = created
     return Promise.all([
-      test.leftSync.log.add({ type: 'a' }, { id: [1, 'client', 0], time: 1 }),
-      test.leftSync.log.add({ type: 'a' }, { id: [1, 'client', 1], time: 1 }),
-      test.leftSync.log.add({ type: 'a' }, { id: [1, 'o', 0], time: 1 })
+      test.leftSync.log.add({ type: 'a' }, { id: '1 client 0', time: 1 }),
+      test.leftSync.log.add({ type: 'a' }, { id: '1 client 1', time: 1 }),
+      test.leftSync.log.add({ type: 'a' }, { id: '1 o 0', time: 1 })
     ])
   }).then(function () {
     return test.leftSync.waitFor('synchronized')
@@ -380,15 +389,15 @@ it('compresses IDs', function () {
     expect(test.rightSync.log.entries()).toEqual([
       [
         { type: 'a' },
-        { id: [1, 'client', 0], time: 1, added: 1, reasons: ['t'] }
+        { id: '1 client 0', time: 1, added: 1, reasons: ['t'] }
       ],
       [
         { type: 'a' },
-        { id: [1, 'client', 1], time: 1, added: 2, reasons: ['t'] }
+        { id: '1 client 1', time: 1, added: 2, reasons: ['t'] }
       ],
       [
         { type: 'a' },
-        { id: [1, 'o', 0], time: 1, added: 3, reasons: ['t'] }
+        { id: '1 o 0', time: 1, added: 3, reasons: ['t'] }
       ]
     ])
   })
@@ -399,7 +408,7 @@ it('synchronizes any meta fields', function () {
   var test
   return createTest().then(function (created) {
     test = created
-    return test.leftSync.log.add(a, { id: [1, 'test1', 0], time: 1, one: 1 })
+    return test.leftSync.log.add(a, { id: '1 test1 0', time: 1, one: 1 })
   }).then(function () {
     return test.leftSync.waitFor('synchronized')
   }).then(function () {
@@ -407,7 +416,7 @@ it('synchronizes any meta fields', function () {
       ['sync', 1, a, { id: [1, 'test1', 0], time: 1, one: 1, reasons: ['t'] }]
     ])
     expect(test.rightSync.log.entries()).toEqual([
-      [a, { id: [1, 'test1', 0], time: 1, added: 1, one: 1, reasons: ['t'] }]
+      [a, { id: '1 test1 0', time: 1, added: 1, one: 1, reasons: ['t'] }]
     ])
   })
 })
@@ -418,8 +427,8 @@ it('fixes created time', function () {
     test = created
     test.leftSync.timeFix = 10
     return Promise.all([
-      test.leftSync.log.add({ type: 'a' }, { id: [11, 'test1', 0], time: 11 }),
-      test.rightSync.log.add({ type: 'b' }, { id: [2, 'test2', 0], time: 2 })
+      test.leftSync.log.add({ type: 'a' }, { id: '11 test1 0', time: 11 }),
+      test.rightSync.log.add({ type: 'b' }, { id: '2 test2 0', time: 2 })
     ])
   }).then(function () {
     return test.leftSync.waitFor('synchronized')
@@ -427,21 +436,21 @@ it('fixes created time', function () {
     expect(test.leftSync.log.entries()).toEqual([
       [
         { type: 'a' },
-        { id: [11, 'test1', 0], time: 11, added: 1, reasons: ['t'] }
+        { id: '11 test1 0', time: 11, added: 1, reasons: ['t'] }
       ],
       [
         { type: 'b' },
-        { id: [2, 'test2', 0], time: 12, added: 2, reasons: ['t'] }
+        { id: '2 test2 0', time: 12, added: 2, reasons: ['t'] }
       ]
     ])
     expect(test.rightSync.log.entries()).toEqual([
       [
         { type: 'a' },
-        { id: [11, 'test1', 0], time: 1, added: 2, reasons: ['t'] }
+        { id: '11 test1 0', time: 1, added: 2, reasons: ['t'] }
       ],
       [
         { type: 'b' },
-        { id: [2, 'test2', 0], time: 2, added: 1, reasons: ['t'] }
+        { id: '2 test2 0', time: 2, added: 1, reasons: ['t'] }
       ]
     ])
   })
@@ -450,8 +459,8 @@ it('fixes created time', function () {
 it('supports multiple actions in sync', function () {
   return createTest().then(function (test) {
     test.rightSync.sendSync(2, [
-      [{ type: 'b' }, { id: [2, 'test2', 0], time: 2, added: 2 }],
-      [{ type: 'a' }, { id: [1, 'test2', 0], time: 1, added: 1 }]
+      [{ type: 'b' }, { id: '2 test2 0', time: 2, added: 2 }],
+      [{ type: 'a' }, { id: '1 test2 0', time: 1, added: 1 }]
     ])
     return test.wait('right')
   }).then(function (test) {
@@ -459,11 +468,11 @@ it('supports multiple actions in sync', function () {
     expect(test.leftSync.log.entries()).toEqual([
       [
         { type: 'a' },
-        { id: [1, 'test2', 0], time: 1, added: 1, reasons: ['t'] }
+        { id: '1 test2 0', time: 1, added: 1, reasons: ['t'] }
       ],
       [
         { type: 'b' },
-        { id: [2, 'test2', 0], time: 2, added: 2, reasons: ['t'] }
+        { id: '2 test2 0', time: 2, added: 2, reasons: ['t'] }
       ]
     ])
   })
@@ -472,10 +481,10 @@ it('supports multiple actions in sync', function () {
 it('starts and ends timeout', function () {
   return createTest().then(function (test) {
     test.leftSync.sendSync(1, [
-      [{ type: 'a' }, { id: [1, 'test2', 0], time: 1, added: 1 }]
+      [{ type: 'a' }, { id: '1 test2 0', time: 1, added: 1 }]
     ])
     test.leftSync.sendSync(2, [
-      [{ type: 'a' }, { id: [2, 'test2', 0], time: 2, added: 1 }]
+      [{ type: 'a' }, { id: '2 test2 0', time: 2, added: 1 }]
     ])
     expect(test.leftSync.timeouts).toHaveLength(2)
 

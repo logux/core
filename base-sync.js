@@ -401,8 +401,8 @@ BaseSync.prototype = {
       this.lastAddedCache = meta.added
     }
 
-    if (this.received[meta.id.join('\t')]) {
-      delete this.received[meta.id.join('\t')]
+    if (this.received[meta.id]) {
+      delete this.received[meta.id]
       return
     }
 

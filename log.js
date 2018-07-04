@@ -29,6 +29,9 @@ function Log (opts) {
   if (typeof opts.store !== 'object') {
     throw new Error('Expected store')
   }
+  if (opts.nodeId.indexOf(' ') !== -1) {
+    throw new Error('Space is prohibited in node ID')
+  }
 
   /**
    * Unique node ID. It is used in action IDs.
@@ -79,7 +82,7 @@ Log.prototype = {
    *
    * @param {Action} action The new action.
    * @param {Meta} [meta] Open structure for action metadata.
-   * @param {ID} [meta.id] Unique action ID.
+   * @param {string} [meta.id] Unique action ID.
    * @param {number} [meta.time] Action created time.
    *                             Milliseconds since UNIX epoch.
    * @param {string[]} [meta.reasons] Why action should be kept in log.
@@ -107,7 +110,9 @@ Log.prototype = {
       meta.id = this.generateId()
     }
 
-    if (typeof meta.time === 'undefined') meta.time = meta.id[0]
+    if (typeof meta.time === 'undefined') {
+      meta.time = parseInt(meta.id)
+    }
 
     if (typeof meta.reasons === 'undefined') {
       meta.reasons = []
@@ -158,7 +163,7 @@ Log.prototype = {
   /**
    * Generate next unique action ID.
    *
-   * @return {ID} Unique action ID.
+   * @return {string} Unique action ID.
    *
    * @example
    * const id = log.generateId()
@@ -172,7 +177,7 @@ Log.prototype = {
       this.lastTime = now
       this.sequence = 0
     }
-    return [now, this.nodeId, this.sequence]
+    return now + ' ' + this.nodeId + ' ' + this.sequence
   },
 
   /**
@@ -232,14 +237,14 @@ Log.prototype = {
   /**
    * Change action metadata. You will remove action by setting `reasons: []`.
    *
-   * @param {ID} id Action ID.
+   * @param {string} id Action ID.
    * @param {object} diff Object with values to change in action metadata.
    *
    * @return {Promise} Promise with `true` if metadata was changed
    *                   or `false` on unknown ID.
    *
    * @example
-   * process.then(action.id, function () {
+   * process.then(action, function () {
    *   log.changeMeta(action, { status: 'processed' })
    * })
    */
@@ -294,7 +299,7 @@ Log.prototype = {
   /**
    * Does log already has action with this ID.
    *
-   * @param {ID} id Action ID.
+   * @param {string} id Action ID.
    *
    * @return {Promise} Promise with boolean.
    *

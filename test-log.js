@@ -57,7 +57,7 @@ for (var i in Log.prototype) {
  *
  * @example
  * expect(log.action).toEqual([
- *   [{ type: 'A' }, { id: [1, 'test1', 0], time: 1, added: 1, reasons: ['t'] }]
+ *   [{ type: 'A' }, { id: '1 test1 0', time: 1, added: 1, reasons: ['t'] }]
  * ])
  */
 TestLog.prototype.entries = function entries () {
@@ -84,7 +84,7 @@ TestLog.prototype.actions = function actions () {
 
 TestLog.prototype.generateId = function generateId () {
   this.time.lastTime += 1
-  return [this.time.lastTime, this.nodeId, 0]
+  return this.time.lastTime + ' ' + this.nodeId + ' 0'
 }
 
 module.exports = TestLog
