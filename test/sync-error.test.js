@@ -1,9 +1,9 @@
 var SyncError = require('../sync-error')
 
-function catchError (sync, desc, type, received) {
+function catchError (node, desc, type, received) {
   var error
   try {
-    throw new SyncError(sync, desc, type, received)
+    throw new SyncError(node, desc, type, received)
   } catch (e) {
     error = e
   }
@@ -25,17 +25,17 @@ it('has error description', function () {
   expect(error.description).toEqual('test')
 })
 
-it('has sync', function () {
-  var sync = { a: 1 }
-  var error = catchError(sync, 'test')
-  expect(error.sync).toBe(sync)
+it('has node', function () {
+  var node = { a: 1 }
+  var error = catchError(node, 'test')
+  expect(error.node).toBe(node)
 })
 
 it('has received', function () {
-  var sync = { a: 1 }
-  var own = catchError(sync, 'test', 'custom')
+  var node = { a: 1 }
+  var own = catchError(node, 'test', 'custom')
   expect(own.received).toBeFalsy()
-  var received = catchError(sync, 'test', 'custom', true)
+  var received = catchError(node, 'test', 'custom', true)
   expect(received.received).toBeTruthy()
 })
 

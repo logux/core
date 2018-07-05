@@ -18,7 +18,7 @@ var FATAL_ERRORS = ['wrong-protocol', 'wrong-subprotocol', 'wrong-credentials']
  * @param {number} [options.attempts=Infinity] Maximum reconnecting attempts.
  *
  * @example
- * import { Reconnect } from 'logux-sync'
+ * import { Reconnect } from 'logux-core'
  * const recon = new Reconnect(connection)
  * ClientHost(nodeId, log, recon, options)
  *
@@ -103,7 +103,7 @@ Reconnect.prototype = {
    * Unbind all listeners and disconnect. Use it if you will not need
    * this class anymore.
    *
-   * {@link BaseSync#destroy} will call this method instead
+   * {@link BaseNode#destroy} will call this method instead
    * of {@link Reconnect#disconnect}.
    *
    * @return {undefined}

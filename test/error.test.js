@@ -1,26 +1,26 @@
-var ServerSync = require('../server-sync')
+var ServerNode = require('../server-node')
 var SyncError = require('../sync-error')
 var TestTime = require('../test-time')
 var TestPair = require('../test-pair')
 
-var sync
+var node
 
-function createSync () {
+function createNode () {
   var pair = new TestPair()
-  return new ServerSync('server', TestTime.getLog(), pair.left)
+  return new ServerNode('server', TestTime.getLog(), pair.left)
 }
 
 function createTest () {
   var test = new TestPair()
-  sync = new ServerSync('server', TestTime.getLog(), test.left)
-  test.leftSync = sync
+  node = new ServerNode('server', TestTime.getLog(), test.left)
+  test.leftNode = node
   return test.left.connect().then(function () {
     return test
   })
 }
 
 afterEach(function () {
-  sync.destroy()
+  node.destroy()
 })
 
 it('sends error on wrong message format', function () {
@@ -75,40 +75,40 @@ it('sends error on unknown message type', function () {
 })
 
 it('throws a error on error message by default', function () {
-  sync = createSync()
+  node = createNode()
   expect(function () {
-    sync.onMessage(['error', 'wrong-format', '1'])
-  }).toThrow(new SyncError(sync, 'wrong-format', '1', true))
+    node.onMessage(['error', 'wrong-format', '1'])
+  }).toThrow(new SyncError(node, 'wrong-format', '1', true))
 })
 
 it('does not throw errors which are not relevant to code', function () {
-  sync = createSync()
-  sync.onMessage(['error', 'timeout', '1'])
-  sync.onMessage(['error', 'wrong-protocol', { }])
-  sync.onMessage(['error', 'wrong-subprotocol', { }])
+  node = createNode()
+  node.onMessage(['error', 'timeout', '1'])
+  node.onMessage(['error', 'wrong-protocol', { }])
+  node.onMessage(['error', 'wrong-subprotocol', { }])
 })
 
 it('disables throwing a error on listener', function () {
-  sync = createSync()
+  node = createNode()
 
   var errors = []
-  sync.catch(function (error) {
+  node.catch(function (error) {
     errors.push(error)
   })
 
-  sync.onMessage(['error', 'wrong-format', '2'])
-  expect(errors).toEqual([new SyncError(sync, 'wrong-format', '2', true)])
+  node.onMessage(['error', 'wrong-format', '2'])
+  expect(errors).toEqual([new SyncError(node, 'wrong-format', '2', true)])
 })
 
 it('emits a event on error sending', function () {
   return createTest().then(function (test) {
     var errors = []
-    test.leftSync.on('clientError', function (err) {
+    test.leftNode.on('clientError', function (err) {
       errors.push(err)
     })
 
-    var error = new SyncError(test.leftSync, 'test', 'type')
-    test.leftSync.sendError(error)
+    var error = new SyncError(test.leftNode, 'test', 'type')
+    test.leftNode.sendError(error)
     expect(errors).toEqual([error])
   })
 })

@@ -1,7 +1,7 @@
 /**
  * Logux error in logs synchronization.
  *
- * @param {BaseSync} sync The sync instance.
+ * @param {BaseNode} node The node instance.
  * @param {string} type The error code.
  * @param {any} options The error option.
  * @param {boolean} received Was error received from remote node.
@@ -14,7 +14,7 @@
  * @extends Error
  * @class
  */
-function SyncError (sync, type, options, received) {
+function SyncError (node, type, options, received) {
   Error.call(this, type)
 
   /**
@@ -58,13 +58,13 @@ function SyncError (sync, type, options, received) {
   this.description = SyncError.describe(type, options)
 
   /**
-   * Current sync instance.
-   * @type {BaseSync}
+   * Current node instance.
+   * @type {BaseNode}
    *
    * @example
-   * error.sync.connection.connected
+   * error.node.connection.connected
    */
-  this.sync = sync
+  this.node = node
 
   /**
    * Was error received from remote client.
@@ -74,8 +74,8 @@ function SyncError (sync, type, options, received) {
 
   this.message = ''
   if (received) {
-    if (this.sync.remoteNodeId) {
-      this.message += this.sync.remoteNodeId + ' sent '
+    if (this.node.remoteNodeId) {
+      this.message += this.node.remoteNodeId + ' sent '
     } else {
       this.message += 'Logux received '
     }

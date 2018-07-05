@@ -1,7 +1,7 @@
 var delay = require('nanodelay')
 
-var ClientSync = require('../client-sync')
-var ServerSync = require('../server-sync')
+var ClientNode = require('../client-node')
+var ServerNode = require('../server-node')
 var TestTime = require('../test-time')
 var TestPair = require('../test-pair')
 
@@ -22,8 +22,8 @@ function createPair () {
     meta.reasons = ['t']
   })
 
-  test.leftSync = new ClientSync('client', log1, test.left, { fixTime: false })
-  test.rightSync = new ServerSync('server', log2, test.right)
+  test.leftNode = new ClientNode('client', log1, test.left, { fixTime: false })
+  test.rightNode = new ServerNode('server', log2, test.right)
 
   return test
 }
@@ -32,24 +32,24 @@ function createTest (before) {
   var test = createPair()
   if (before) before(test)
   test.left.connect()
-  return test.leftSync.waitFor('synchronized').then(function () {
+  return test.leftNode.waitFor('synchronized').then(function () {
     test.clear()
-    test.leftSync.baseTime = 0
-    test.rightSync.baseTime = 0
+    test.leftNode.baseTime = 0
+    test.rightNode.baseTime = 0
     return test
   })
 }
 
 afterEach(function () {
-  destroyable.leftSync.destroy()
-  destroyable.rightSync.destroy()
+  destroyable.leftNode.destroy()
+  destroyable.rightNode.destroy()
 })
 
 it('sends sync messages', function () {
   var actionA = { type: 'a' }
   var actionB = { type: 'b' }
   return createTest().then(function (test) {
-    test.leftSync.log.add(actionA)
+    test.leftNode.log.add(actionA)
     return test.wait('left')
   }).then(function (test) {
     expect(test.leftSent).toEqual([
@@ -59,7 +59,7 @@ it('sends sync messages', function () {
       ['synced', 1]
     ])
 
-    test.rightSync.log.add(actionB)
+    test.rightNode.log.add(actionB)
     return test.wait('right')
   }).then(function (test) {
     expect(test.leftSent).toEqual([
@@ -75,10 +75,10 @@ it('sends sync messages', function () {
 
 it('uses last added on non-added action', function () {
   return createTest().then(function (test) {
-    test.leftSync.log.on('preadd', function (action, meta) {
+    test.leftNode.log.on('preadd', function (action, meta) {
       meta.reasons = []
     })
-    test.leftSync.log.add({ type: 'a' })
+    test.leftNode.log.add({ type: 'a' })
     return test.wait('left')
   }).then(function (test) {
     expect(test.leftSent).toEqual([
@@ -102,7 +102,7 @@ it('checks sync types', function () {
     ['sync', 0, { type: 'a' }, { time: 0 }],
     ['sync', 0, { type: 'a' }, { id: 0, time: '0' }],
     ['sync', 0, { type: 'a' }, { id: [0], time: 0 }],
-    // ['sync', 0, { type: 'a' }, { id: [0, 'node'], time: 0 }],
+    ['sync', 0, { type: 'a' }, { id: [0, 'node'], time: 0 }],
     ['sync', 0, { type: 'a' }, { id: '1 node 0', time: 0 }],
     ['sync', 0, { type: 'a' }, { id: [1, 'node', 1, '0'], time: 0 }],
     ['sync', 0, { }, { id: 0, time: 0 }],
@@ -111,11 +111,11 @@ it('checks sync types', function () {
   ]
   return Promise.all(wrongs.map(function (msg) {
     return createTest().then(function (test) {
-      test.leftSync.catch(function () { })
-      test.leftSync.send(msg)
+      test.leftNode.catch(function () { })
+      test.leftNode.send(msg)
       return test.wait('left')
     }).then(function (test) {
-      expect(test.rightSync.connected).toBeFalsy()
+      expect(test.rightNode.connected).toBeFalsy()
       expect(test.rightSent).toEqual([
         ['error', 'wrong-format', JSON.stringify(msg)]
       ])
@@ -125,35 +125,35 @@ it('checks sync types', function () {
 
 it('synchronizes actions', function () {
   return createTest().then(function (test) {
-    test.leftSync.log.add({ type: 'a' })
+    test.leftNode.log.add({ type: 'a' })
     return test.wait('left')
   }).then(function (test) {
-    expect(test.leftSync.log.actions()).toEqual([{ type: 'a' }])
-    expect(test.leftSync.log.actions()).toEqual(test.rightSync.log.actions())
-    test.rightSync.log.add({ type: 'b' })
+    expect(test.leftNode.log.actions()).toEqual([{ type: 'a' }])
+    expect(test.leftNode.log.actions()).toEqual(test.rightNode.log.actions())
+    test.rightNode.log.add({ type: 'b' })
     return test.wait('right')
   }).then(function (test) {
-    expect(test.leftSync.log.actions()).toEqual([{ type: 'a' }, { type: 'b' }])
-    expect(test.leftSync.log.actions()).toEqual(test.rightSync.log.actions())
+    expect(test.leftNode.log.actions()).toEqual([{ type: 'a' }, { type: 'b' }])
+    expect(test.leftNode.log.actions()).toEqual(test.rightNode.log.actions())
   })
 })
 
 it('remembers synced added', function () {
   return createTest().then(function (test) {
-    expect(test.leftSync.lastSent).toBe(0)
-    expect(test.leftSync.lastReceived).toBe(0)
-    test.leftSync.log.add({ type: 'a' })
+    expect(test.leftNode.lastSent).toBe(0)
+    expect(test.leftNode.lastReceived).toBe(0)
+    test.leftNode.log.add({ type: 'a' })
     return test.wait('left')
   }).then(function (test) {
-    expect(test.leftSync.lastSent).toBe(1)
-    expect(test.leftSync.lastReceived).toBe(0)
-    test.rightSync.log.add({ type: 'b' })
+    expect(test.leftNode.lastSent).toBe(1)
+    expect(test.leftNode.lastReceived).toBe(0)
+    test.rightNode.log.add({ type: 'b' })
     return test.wait('right')
   }).then(function (test) {
-    expect(test.leftSync.lastSent).toBe(1)
-    expect(test.leftSync.lastReceived).toBe(2)
-    expect(test.leftSync.log.store.lastSent).toBe(1)
-    expect(test.leftSync.log.store.lastReceived).toBe(2)
+    expect(test.leftNode.lastSent).toBe(1)
+    expect(test.leftNode.lastReceived).toBe(2)
+    expect(test.leftNode.log.store.lastSent).toBe(1)
+    expect(test.leftNode.log.store.lastReceived).toBe(2)
   })
 })
 
@@ -161,78 +161,78 @@ it('filters output actions', function () {
   var test
   return createTest(function (created) {
     test = created
-    test.leftSync.options.outFilter = function (action, meta) {
+    test.leftNode.options.outFilter = function (action, meta) {
       expect(meta.id).toBeDefined()
       expect(meta.time).toBeDefined()
       expect(meta.added).toBeDefined()
       return Promise.resolve(action.type === 'b')
     }
     return Promise.all([
-      test.leftSync.log.add({ type: 'a' }),
-      test.leftSync.log.add({ type: 'b' })
+      test.leftNode.log.add({ type: 'a' }),
+      test.leftNode.log.add({ type: 'b' })
     ])
   }).then(function () {
-    expect(test.rightSync.log.actions()).toEqual([{ type: 'b' }])
+    expect(test.rightNode.log.actions()).toEqual([{ type: 'b' }])
   }).then(function () {
     return Promise.all([
-      test.leftSync.log.add({ type: 'a' }),
-      test.leftSync.log.add({ type: 'b' })
+      test.leftNode.log.add({ type: 'a' }),
+      test.leftNode.log.add({ type: 'b' })
     ])
   }).then(function () {
-    return test.leftSync.waitFor('synchronized')
+    return test.leftNode.waitFor('synchronized')
   }).then(function () {
-    expect(test.rightSync.log.actions()).toEqual([{ type: 'b' }, { type: 'b' }])
+    expect(test.rightNode.log.actions()).toEqual([{ type: 'b' }, { type: 'b' }])
   })
 })
 
 it('maps output actions', function () {
   return createTest().then(function (test) {
-    test.leftSync.options.outMap = function (action, meta) {
+    test.leftNode.options.outMap = function (action, meta) {
       expect(meta.id).toBeDefined()
       expect(meta.time).toBeDefined()
       expect(meta.added).toBeDefined()
       return Promise.resolve([{ type: action.type + '1' }, meta])
     }
-    test.leftSync.log.add({ type: 'a' })
+    test.leftNode.log.add({ type: 'a' })
     return test.wait('left')
   }).then(function (test) {
-    expect(test.leftSync.log.actions()).toEqual([{ type: 'a' }])
-    expect(test.rightSync.log.actions()).toEqual([{ type: 'a1' }])
+    expect(test.leftNode.log.actions()).toEqual([{ type: 'a' }])
+    expect(test.rightNode.log.actions()).toEqual([{ type: 'a1' }])
   })
 })
 
 it('filters input actions', function () {
   return createTest().then(function (test) {
-    test.rightSync.options.inFilter = function (action, meta) {
+    test.rightNode.options.inFilter = function (action, meta) {
       expect(meta.id).toBeDefined()
       expect(meta.time).toBeDefined()
       return Promise.resolve(action.type === 'b')
     }
-    test.leftSync.log.add({ type: 'a' })
+    test.leftNode.log.add({ type: 'a' })
     return test.wait('left')
   }).then(function (test) {
-    expect(test.leftSync.log.actions()).toEqual([{ type: 'a' }])
-    expect(test.rightSync.log.actions()).toEqual([])
-    test.leftSync.log.add({ type: 'b' })
+    expect(test.leftNode.log.actions()).toEqual([{ type: 'a' }])
+    expect(test.rightNode.log.actions()).toEqual([])
+    test.leftNode.log.add({ type: 'b' })
     return test.wait('left')
   }).then(function (test) {
-    expect(test.leftSync.log.actions()).toEqual([{ type: 'a' }, { type: 'b' }])
-    expect(test.rightSync.log.actions()).toEqual([{ type: 'b' }])
+    expect(test.leftNode.log.actions()).toEqual([{ type: 'a' }, { type: 'b' }])
+    expect(test.rightNode.log.actions()).toEqual([{ type: 'b' }])
   })
 })
 
 it('maps input actions', function () {
   return createTest().then(function (test) {
-    test.rightSync.options.inMap = function (action, meta) {
+    test.rightNode.options.inMap = function (action, meta) {
       expect(meta.id).toBeDefined()
       expect(meta.time).toBeDefined()
       return Promise.resolve([{ type: action.type + '1' }, meta])
     }
-    test.leftSync.log.add({ type: 'a' })
+    test.leftNode.log.add({ type: 'a' })
     return test.wait('left')
   }).then(function (test) {
-    expect(test.leftSync.log.actions()).toEqual([{ type: 'a' }])
-    expect(test.rightSync.log.actions()).toEqual([{ type: 'a1' }])
+    expect(test.leftNode.log.actions()).toEqual([{ type: 'a' }])
+    expect(test.rightNode.log.actions()).toEqual([{ type: 'a1' }])
   })
 })
 
@@ -240,11 +240,11 @@ it('reports errors during initial output filter', function () {
   var error = new Error('test')
   var catched = []
   var test = createPair()
-  test.rightSync.log.add({ type: 'a' })
-  test.rightSync.catch(function (e) {
+  test.rightNode.log.add({ type: 'a' })
+  test.rightNode.catch(function (e) {
     catched.push(e)
   })
-  test.rightSync.options.outFilter = function () {
+  test.rightNode.options.outFilter = function () {
     return Promise.reject(error)
   }
   test.left.connect()
@@ -257,14 +257,14 @@ it('reports errors during output filter', function () {
   var error = new Error('test')
   var catched = []
   return createTest(function (test) {
-    test.rightSync.catch(function (e) {
+    test.rightNode.catch(function (e) {
       catched.push(e)
     })
-    test.rightSync.options.outFilter = function () {
+    test.rightNode.options.outFilter = function () {
       return Promise.reject(error)
     }
   }).then(function (test) {
-    test.rightSync.log.add({ type: 'a' })
+    test.rightNode.log.add({ type: 'a' })
     return delay(10)
   }).then(function () {
     expect(catched).toEqual([error])
@@ -275,11 +275,11 @@ it('reports errors during initial output map', function () {
   var error = new Error('test')
   var catched = []
   var test = createPair()
-  test.rightSync.log.add({ type: 'a' })
-  test.rightSync.catch(function (e) {
+  test.rightNode.log.add({ type: 'a' })
+  test.rightNode.catch(function (e) {
     catched.push(e)
   })
-  test.rightSync.options.outMap = function () {
+  test.rightNode.options.outMap = function () {
     return Promise.reject(error)
   }
   test.left.connect()
@@ -292,14 +292,14 @@ it('reports errors during output map', function () {
   var error = new Error('test')
   var catched = []
   return createTest(function (test) {
-    test.rightSync.catch(function (e) {
+    test.rightNode.catch(function (e) {
       catched.push(e)
     })
-    test.rightSync.options.outMap = function () {
+    test.rightNode.options.outMap = function () {
       return Promise.reject(error)
     }
   }).then(function (test) {
-    test.rightSync.log.add({ type: 'a' })
+    test.rightNode.log.add({ type: 'a' })
     return delay(10)
   }).then(function () {
     expect(catched).toEqual([error])
@@ -310,13 +310,13 @@ it('reports errors during input filter', function () {
   var error = new Error('test')
   var catched = []
   return createTest().then(function (test) {
-    test.rightSync.catch(function (e) {
+    test.rightNode.catch(function (e) {
       catched.push(e)
     })
-    test.rightSync.options.inFilter = function () {
+    test.rightNode.options.inFilter = function () {
       return Promise.reject(error)
     }
-    test.leftSync.log.add({ type: 'a' })
+    test.leftNode.log.add({ type: 'a' })
     return delay(10)
   }).then(function () {
     expect(catched).toEqual([error])
@@ -327,13 +327,13 @@ it('reports errors during input map', function () {
   var error = new Error('test')
   var catched = []
   return createTest().then(function (test) {
-    test.rightSync.catch(function (e) {
+    test.rightNode.catch(function (e) {
       catched.push(e)
     })
-    test.rightSync.options.inMap = function () {
+    test.rightNode.options.inMap = function () {
       return Promise.reject(error)
     }
-    test.leftSync.log.add({ type: 'a' })
+    test.leftNode.log.add({ type: 'a' })
     return delay(10)
   }).then(function () {
     expect(catched).toEqual([error])
@@ -344,13 +344,13 @@ it('compresses time', function () {
   var test
   return createTest().then(function (created) {
     test = created
-    test.leftSync.baseTime = 100
-    test.rightSync.baseTime = 100
+    test.leftNode.baseTime = 100
+    test.rightNode.baseTime = 100
     return Promise.all([
-      test.leftSync.log.add({ type: 'a' }, { id: '1 test1 0', time: 1 })
+      test.leftNode.log.add({ type: 'a' }, { id: '1 test1 0', time: 1 })
     ])
   }).then(function () {
-    return test.leftSync.waitFor('synchronized')
+    return test.leftNode.waitFor('synchronized')
   }).then(function () {
     expect(test.leftSent).toEqual([
       [
@@ -360,7 +360,7 @@ it('compresses time', function () {
         { id: [-99, 'test1', 0], time: -99, reasons: ['t'] }
       ]
     ])
-    expect(test.rightSync.log.entries()).toEqual([
+    expect(test.rightNode.log.entries()).toEqual([
       [
         { type: 'a' },
         { id: '1 test1 0', time: 1, added: 1, reasons: ['t'] }
@@ -374,19 +374,19 @@ it('compresses IDs', function () {
   return createTest().then(function (created) {
     test = created
     return Promise.all([
-      test.leftSync.log.add({ type: 'a' }, { id: '1 client 0', time: 1 }),
-      test.leftSync.log.add({ type: 'a' }, { id: '1 client 1', time: 1 }),
-      test.leftSync.log.add({ type: 'a' }, { id: '1 o 0', time: 1 })
+      test.leftNode.log.add({ type: 'a' }, { id: '1 client 0', time: 1 }),
+      test.leftNode.log.add({ type: 'a' }, { id: '1 client 1', time: 1 }),
+      test.leftNode.log.add({ type: 'a' }, { id: '1 o 0', time: 1 })
     ])
   }).then(function () {
-    return test.leftSync.waitFor('synchronized')
+    return test.leftNode.waitFor('synchronized')
   }).then(function () {
     expect(test.leftSent).toEqual([
       ['sync', 1, { type: 'a' }, { id: 1, time: 1, reasons: ['t'] }],
       ['sync', 2, { type: 'a' }, { id: [1, 1], time: 1, reasons: ['t'] }],
       ['sync', 3, { type: 'a' }, { id: [1, 'o', 0], time: 1, reasons: ['t'] }]
     ])
-    expect(test.rightSync.log.entries()).toEqual([
+    expect(test.rightNode.log.entries()).toEqual([
       [
         { type: 'a' },
         { id: '1 client 0', time: 1, added: 1, reasons: ['t'] }
@@ -408,14 +408,14 @@ it('synchronizes any meta fields', function () {
   var test
   return createTest().then(function (created) {
     test = created
-    return test.leftSync.log.add(a, { id: '1 test1 0', time: 1, one: 1 })
+    return test.leftNode.log.add(a, { id: '1 test1 0', time: 1, one: 1 })
   }).then(function () {
-    return test.leftSync.waitFor('synchronized')
+    return test.leftNode.waitFor('synchronized')
   }).then(function () {
     expect(test.leftSent).toEqual([
       ['sync', 1, a, { id: [1, 'test1', 0], time: 1, one: 1, reasons: ['t'] }]
     ])
-    expect(test.rightSync.log.entries()).toEqual([
+    expect(test.rightNode.log.entries()).toEqual([
       [a, { id: '1 test1 0', time: 1, added: 1, one: 1, reasons: ['t'] }]
     ])
   })
@@ -425,15 +425,15 @@ it('fixes created time', function () {
   var test
   return createTest().then(function (created) {
     test = created
-    test.leftSync.timeFix = 10
+    test.leftNode.timeFix = 10
     return Promise.all([
-      test.leftSync.log.add({ type: 'a' }, { id: '11 test1 0', time: 11 }),
-      test.rightSync.log.add({ type: 'b' }, { id: '2 test2 0', time: 2 })
+      test.leftNode.log.add({ type: 'a' }, { id: '11 test1 0', time: 11 }),
+      test.rightNode.log.add({ type: 'b' }, { id: '2 test2 0', time: 2 })
     ])
   }).then(function () {
-    return test.leftSync.waitFor('synchronized')
+    return test.leftNode.waitFor('synchronized')
   }).then(function () {
-    expect(test.leftSync.log.entries()).toEqual([
+    expect(test.leftNode.log.entries()).toEqual([
       [
         { type: 'a' },
         { id: '11 test1 0', time: 11, added: 1, reasons: ['t'] }
@@ -443,7 +443,7 @@ it('fixes created time', function () {
         { id: '2 test2 0', time: 12, added: 2, reasons: ['t'] }
       ]
     ])
-    expect(test.rightSync.log.entries()).toEqual([
+    expect(test.rightNode.log.entries()).toEqual([
       [
         { type: 'a' },
         { id: '11 test1 0', time: 1, added: 2, reasons: ['t'] }
@@ -458,14 +458,14 @@ it('fixes created time', function () {
 
 it('supports multiple actions in sync', function () {
   return createTest().then(function (test) {
-    test.rightSync.sendSync(2, [
+    test.rightNode.sendSync(2, [
       [{ type: 'b' }, { id: '2 test2 0', time: 2, added: 2 }],
       [{ type: 'a' }, { id: '1 test2 0', time: 1, added: 1 }]
     ])
     return test.wait('right')
   }).then(function (test) {
-    expect(test.leftSync.lastReceived).toBe(2)
-    expect(test.leftSync.log.entries()).toEqual([
+    expect(test.leftNode.lastReceived).toBe(2)
+    expect(test.leftNode.log.entries()).toEqual([
       [
         { type: 'a' },
         { id: '1 test2 0', time: 1, added: 1, reasons: ['t'] }
@@ -480,19 +480,19 @@ it('supports multiple actions in sync', function () {
 
 it('starts and ends timeout', function () {
   return createTest().then(function (test) {
-    test.leftSync.sendSync(1, [
+    test.leftNode.sendSync(1, [
       [{ type: 'a' }, { id: '1 test2 0', time: 1, added: 1 }]
     ])
-    test.leftSync.sendSync(2, [
+    test.leftNode.sendSync(2, [
       [{ type: 'a' }, { id: '2 test2 0', time: 2, added: 1 }]
     ])
-    expect(test.leftSync.timeouts).toHaveLength(2)
+    expect(test.leftNode.timeouts).toHaveLength(2)
 
-    test.leftSync.syncedMessage(1)
-    expect(test.leftSync.timeouts).toHaveLength(1)
+    test.leftNode.syncedMessage(1)
+    expect(test.leftNode.timeouts).toHaveLength(1)
 
-    test.leftSync.syncedMessage(2)
-    expect(test.leftSync.timeouts).toHaveLength(0)
+    test.leftNode.syncedMessage(2)
+    expect(test.leftNode.timeouts).toHaveLength(0)
   })
 })
 
@@ -500,16 +500,16 @@ it('changes multiple actions in map', function () {
   var test
   return createTest(function (created) {
     test = created
-    test.leftSync.options.outMap = function (action, meta) {
+    test.leftNode.options.outMap = function (action, meta) {
       return Promise.resolve([{ type: action.type.toUpperCase() }, meta])
     }
-    test.leftSync.log.add({ type: 'a' })
-    test.leftSync.log.add({ type: 'b' })
+    test.leftNode.log.add({ type: 'a' })
+    test.leftNode.log.add({ type: 'b' })
   }).then(function () {
-    return test.leftSync.waitFor('synchronized')
+    return test.leftNode.waitFor('synchronized')
   }).then(function () {
-    expect(test.rightSync.lastReceived).toBe(2)
-    expect(test.rightSync.log.actions()).toEqual([{ type: 'A' }, { type: 'B' }])
+    expect(test.rightNode.lastReceived).toBe(2)
+    expect(test.rightNode.log.actions()).toEqual([{ type: 'A' }, { type: 'B' }])
   })
 })
 
@@ -518,34 +518,34 @@ it('synchronizes actions on connect', function () {
   var added = []
   return createTest().then(function (created) {
     test = created
-    test.leftSync.log.on('add', function (action) {
+    test.leftNode.log.on('add', function (action) {
       added.push(action.type)
     })
     return Promise.all([
-      test.leftSync.log.add({ type: 'a' }),
-      test.rightSync.log.add({ type: 'b' })
+      test.leftNode.log.add({ type: 'a' }),
+      test.rightNode.log.add({ type: 'b' })
     ])
   }).then(function () {
-    return test.leftSync.waitFor('synchronized')
+    return test.leftNode.waitFor('synchronized')
   }).then(function () {
     test.left.disconnect()
     return test.wait('right')
   }).then(function () {
-    expect(test.leftSync.lastSent).toBe(1)
-    expect(test.leftSync.lastReceived).toBe(1)
+    expect(test.leftNode.lastSent).toBe(1)
+    expect(test.leftNode.lastReceived).toBe(1)
     return Promise.all([
-      test.leftSync.log.add({ type: 'c' }),
-      test.leftSync.log.add({ type: 'd' }),
-      test.rightSync.log.add({ type: 'e' }),
-      test.rightSync.log.add({ type: 'f' })
+      test.leftNode.log.add({ type: 'c' }),
+      test.leftNode.log.add({ type: 'd' }),
+      test.rightNode.log.add({ type: 'e' }),
+      test.rightNode.log.add({ type: 'f' })
     ])
   }).then(function () {
     return test.left.connect()
   }).then(function () {
-    test.rightSync = new ServerSync('server2', test.rightSync.log, test.right)
-    return test.leftSync.waitFor('synchronized')
+    test.rightNode = new ServerNode('server2', test.rightNode.log, test.right)
+    return test.leftNode.waitFor('synchronized')
   }).then(function () {
-    expect(test.leftSync.log.actions()).toEqual([
+    expect(test.leftNode.log.actions()).toEqual([
       { type: 'a' },
       { type: 'b' },
       { type: 'c' },
@@ -553,7 +553,7 @@ it('synchronizes actions on connect', function () {
       { type: 'e' },
       { type: 'f' }
     ])
-    expect(test.leftSync.log.actions()).toEqual(test.rightSync.log.actions())
+    expect(test.leftNode.log.actions()).toEqual(test.rightNode.log.actions())
     expect(added).toEqual(['a', 'b', 'c', 'd', 'e', 'f'])
   })
 })

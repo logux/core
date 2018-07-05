@@ -42,7 +42,7 @@ module.exports = {
   },
 
   syncMessage: function syncMessage (added) {
-    var sync = this
+    var node = this
     var promises = []
 
     for (var i = 1; i < arguments.length - 1; i += 2) {
@@ -65,10 +65,10 @@ module.exports = {
       var process = Promise.resolve([action, meta])
       if (this.options.inFilter) {
         process = process.then(function (data) {
-          return sync.options.inFilter(data[0], data[1]).then(function (res) {
+          return node.options.inFilter(data[0], data[1]).then(function (res) {
             return res ? data : false
           }).catch(function (e) {
-            sync.error(e)
+            node.error(e)
           })
         })
       }
@@ -76,26 +76,26 @@ module.exports = {
       process.then(function (data) {
         if (!data) return false
 
-        if (sync.timeFix) data[1].time = data[1].time + sync.timeFix
-        if (sync.options.inMap) {
-          return sync.options.inMap(data[0], data[1]).catch(function (e) {
-            sync.error(e)
+        if (node.timeFix) data[1].time = data[1].time + node.timeFix
+        if (node.options.inMap) {
+          return node.options.inMap(data[0], data[1]).catch(function (e) {
+            node.error(e)
           })
         } else {
           return data
         }
       }).then(function (changed) {
         if (!changed) return false
-        sync.received[changed[1].id] = true
-        return sync.log.add(changed[0], changed[1])
+        node.received[changed[1].id] = true
+        return node.log.add(changed[0], changed[1])
       })
 
       promises.push(process)
     }
 
     Promise.all(promises).then(function () {
-      sync.setLastReceived(added)
-      sync.sendSynced(added)
+      node.setLastReceived(added)
+      node.sendSynced(added)
     })
   },
 

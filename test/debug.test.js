@@ -1,25 +1,25 @@
-var ServerSync = require('../server-sync')
+var ServerNode = require('../server-node')
 var TestTime = require('../test-time')
 var TestPair = require('../test-pair')
 
-var sync
+var node
 
 function createTest () {
   var test = new TestPair()
-  sync = new ServerSync('server', TestTime.getLog(), test.left)
-  test.leftSync = sync
+  node = new ServerNode('server', TestTime.getLog(), test.left)
+  test.leftNode = node
   return test.left.connect().then(function () {
     return test
   })
 }
 
 afterEach(function () {
-  sync.destroy()
+  node.destroy()
 })
 
 it('sends debug messages', function () {
   return createTest().then(function (test) {
-    test.leftSync.sendDebug('testType', 'testData')
+    test.leftNode.sendDebug('testType', 'testData')
     return test.wait('right')
   }).then(function (test) {
     expect(test.leftSent).toEqual([['debug', 'testType', 'testData']])
@@ -28,15 +28,15 @@ it('sends debug messages', function () {
 
 it('emits a debug on debug error messages', function () {
   var pair = new TestPair()
-  sync = new ServerSync('server', TestTime.getLog(), pair.left)
-  sync.authenticated = true
+  node = new ServerNode('server', TestTime.getLog(), pair.left)
+  node.authenticated = true
 
   var debugs = []
-  sync.on('debug', function (type, data) {
+  node.on('debug', function (type, data) {
     debugs.push(type, data)
   })
 
-  sync.onMessage(['debug', 'error', 'testData'])
+  node.onMessage(['debug', 'error', 'testData'])
 
   expect(debugs).toEqual(['error', 'testData'])
 })
@@ -56,7 +56,7 @@ it('checks types', function () {
       test.right.send(command)
       return test.wait('right')
     }).then(function (test) {
-      expect(test.leftSync.connected).toBeFalsy()
+      expect(test.leftNode.connected).toBeFalsy()
       expect(test.leftSent).toEqual([
         ['error', 'wrong-format', JSON.stringify(command)]
       ])

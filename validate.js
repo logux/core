@@ -85,27 +85,27 @@ var validators = {
 
 }
 
-function wrongFormat (sync, msg) {
-  sync.sendError(new SyncError(sync, 'wrong-format', JSON.stringify(msg)))
-  sync.connection.disconnect('error')
+function wrongFormat (node, msg) {
+  node.sendError(new SyncError(node, 'wrong-format', JSON.stringify(msg)))
+  node.connection.disconnect('error')
   return false
 }
 
-function validate (sync, msg) {
-  if (!isArray(msg)) return wrongFormat(sync, msg)
+function validate (node, msg) {
+  if (!isArray(msg)) return wrongFormat(node, msg)
 
   var name = msg[0]
-  if (!isString(name)) return wrongFormat(sync, msg)
+  if (!isString(name)) return wrongFormat(node, msg)
 
   var validator = validators[name]
-  if (!validator || !sync[name + 'Message']) {
-    sync.sendError(new SyncError(sync, 'unknown-message', name))
-    sync.connection.disconnect('error')
+  if (!validator || !node[name + 'Message']) {
+    node.sendError(new SyncError(node, 'unknown-message', name))
+    node.connection.disconnect('error')
     return false
   }
 
   if (!validator(msg)) {
-    return wrongFormat(sync, msg)
+    return wrongFormat(node, msg)
   } else {
     return true
   }

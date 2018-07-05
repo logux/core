@@ -1,24 +1,24 @@
 var delay = require('nanodelay')
 
-var ServerSync = require('../server-sync')
-var ClientSync = require('../client-sync')
+var ServerNode = require('../server-node')
+var ClientNode = require('../client-node')
 var TestTime = require('../test-time')
 var TestPair = require('../test-pair')
 
-var sync
+var node
 
 function createTest (opts) {
   var log = TestTime.getLog()
   var test = new TestPair()
   return log.add({ type: 'test' }, { reasons: ['test'] }).then(function () {
     log.store.lastSent = 1
-    sync = new ClientSync('client', log, test.left, opts)
-    test.leftSync = sync
+    node = new ClientNode('client', log, test.left, opts)
+    test.leftNode = node
     return test.left.connect()
   }).then(function () {
     return test.wait()
   }).then(function () {
-    var protocol = test.leftSync.localProtocol
+    var protocol = test.leftNode.localProtocol
     test.right.send(['connected', protocol, 'server', [0, 0]])
     test.clear()
     return test
@@ -26,15 +26,15 @@ function createTest (opts) {
 }
 
 afterEach(function () {
-  if (sync) {
-    sync.destroy()
-    sync = undefined
+  if (node) {
+    node.destroy()
+    node = undefined
   }
 })
 
 it('throws on ping and no timeout options', function () {
   expect(function () {
-    new ClientSync('client', null, null, { ping: 1000, timeout: 0 })
+    new ClientNode('client', null, null, { ping: 1000, timeout: 0 })
   }).toThrowError(/set timeout option/)
 })
 
@@ -54,7 +54,7 @@ it('sends ping on idle connection', function () {
     timeout: 100,
     fixTime: false
   }).then(function (test) {
-    test.leftSync.catch(function (err) {
+    test.leftNode.catch(function (err) {
       error = err
     })
     return delay(250, test)
@@ -62,7 +62,7 @@ it('sends ping on idle connection', function () {
     test.right.send(['duilian', ''])
     return delay(250, test)
   }).then(function (test) {
-    test.leftSync.send(['duilian', ''])
+    test.leftNode.send(['duilian', ''])
     return delay(250, test)
   }).then(function (test) {
     expect(error).toBeUndefined()
@@ -91,12 +91,12 @@ it('sends ping on idle connection', function () {
 it('does not ping before authentication', function () {
   var log = TestTime.getLog()
   var test = new TestPair()
-  test.leftSync = new ClientSync('client', log, test.left, {
+  test.leftNode = new ClientNode('client', log, test.left, {
     ping: 100,
     timeout: 300,
     fixTime: false
   })
-  test.leftSync.catch(function () { })
+  test.leftNode.catch(function () { })
   return test.left.connect().then(function () {
     return test.wait()
   }).then(function () {
@@ -131,12 +131,12 @@ it('checks types', function () {
   return Promise.all(wrongs.map(function (command) {
     var test = new TestPair()
     var log = TestTime.getLog()
-    test.leftSync = new ServerSync('server', log, test.left)
+    test.leftNode = new ServerNode('server', log, test.left)
     return test.left.connect().then(function () {
       test.right.send(command)
       return test.wait('right')
     }).then(function () {
-      expect(test.leftSync.connected).toBeFalsy()
+      expect(test.leftNode.connected).toBeFalsy()
       expect(test.leftSent).toEqual([
         ['error', 'wrong-format', JSON.stringify(command)]
       ])

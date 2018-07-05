@@ -23,17 +23,17 @@ var NOT_TO_THROW = {
 
 var BEFORE_AUTH = ['connect', 'connected', 'error']
 
-function syncMappedEvent (sync, action, meta) {
+function syncMappedEvent (node, action, meta) {
   var added = meta.added
-  if (typeof added === 'undefined') added = sync.lastSent
-  if (sync.options.outMap) {
-    sync.options.outMap(action, meta).then(function (changed) {
-      sync.sendSync(added, [changed])
+  if (typeof added === 'undefined') added = node.lastSent
+  if (node.options.outMap) {
+    node.options.outMap(action, meta).then(function (changed) {
+      node.sendSync(added, [changed])
     }).catch(function (e) {
-      sync.error(e)
+      node.error(e)
     })
   } else {
-    sync.sendSync(added, [[action, meta]])
+    node.sendSync(added, [[action, meta]])
   }
 }
 
@@ -70,13 +70,13 @@ function syncMappedEvent (sync, action, meta) {
  * @abstract
  * @class
  */
-function BaseSync (nodeId, log, connection, options) {
+function BaseNode (nodeId, log, connection, options) {
   /**
    * Unique current machine name.
    * @type {string}
    *
    * @example
-   * console.log(sync.localNodeId + ' is started')
+   * console.log(node.localNodeId + ' is started')
    */
   this.localNodeId = nodeId
   /**
@@ -104,8 +104,8 @@ function BaseSync (nodeId, log, connection, options) {
    * @type {boolean}
    *
    * @example
-   * sync.on('disconnect', () => {
-   *   sync.connected //=> false
+   * node.on('disconnect', () => {
+   *   node.connected //=> false
    * })
    */
   this.connected = false
@@ -146,8 +146,8 @@ function BaseSync (nodeId, log, connection, options) {
    * @type {"disconnected"|"connecting"|"sending"|"synchronized"}
    *
    * @example
-   * sync.on('state', () => {
-   *   if (sync.state === 'sending') {
+   * node.on('state', () => {
+   *   if (node.state === 'sending') {
    *     console.log('Do not close browser')
    *   }
    * })
@@ -159,29 +159,29 @@ function BaseSync (nodeId, log, connection, options) {
   this.throwsError = true
 
   this.unbind = []
-  var sync = this
+  var node = this
   this.unbind.push(log.on('add', function (action, meta) {
-    sync.onAdd(action, meta)
+    node.onAdd(action, meta)
   }))
   this.unbind.push(connection.on('connecting', function () {
-    sync.onConnecting()
+    node.onConnecting()
   }))
   this.unbind.push(connection.on('connect', function () {
-    sync.onConnect()
+    node.onConnect()
   }))
   this.unbind.push(connection.on('message', function (message) {
-    sync.onMessage(message)
+    node.onMessage(message)
   }))
   this.unbind.push(connection.on('error', function (error) {
     if (error.message === 'Wrong message format') {
-      sync.sendError(new SyncError(sync, 'wrong-format', error.received))
-      sync.connection.disconnect('error')
+      node.sendError(new SyncError(node, 'wrong-format', error.received))
+      node.connection.disconnect('error')
     } else {
-      sync.error(error)
+      node.error(error)
     }
   }))
   this.unbind.push(connection.on('disconnect', function () {
-    sync.onDisconnect()
+    node.onDisconnect()
   }))
 
   this.initialized = false
@@ -189,7 +189,7 @@ function BaseSync (nodeId, log, connection, options) {
   this.initializing = this.initialize()
 }
 
-BaseSync.prototype = {
+BaseNode.prototype = {
 
   /**
    * Unique name of remote machine.
@@ -198,7 +198,7 @@ BaseSync.prototype = {
    * @type {string|undefined}
    *
    * @example
-   * console.log('Connected to ' + sync.remoteNodeId)
+   * console.log('Connected to ' + node.remoteNodeId)
    */
   remoteNodeId: undefined,
 
@@ -207,7 +207,7 @@ BaseSync.prototype = {
    * @type {number}
    *
    * @example
-   * if (tool.sync.localProtocol !== 1) {
+   * if (tool.node.localProtocol !== 1) {
    *   throw new Error('Unsupported Logux protocol')
    * }
    */
@@ -218,7 +218,7 @@ BaseSync.prototype = {
    * @type {number}
    *
    * @example
-   * console.log(`You need Logux protocol ${sync.minProtocol} or higher`)
+   * console.log(`You need Logux protocol ${node.minProtocol} or higher`)
    */
   minProtocol: 2,
 
@@ -227,7 +227,7 @@ BaseSync.prototype = {
    * @type {number|undefined}
    *
    * @example
-   * if (sync.remoteProtocol >= 5) {
+   * if (node.remoteProtocol >= 5) {
    *   useNewAPI()
    * } else {
    *   useOldAPI()
@@ -244,7 +244,7 @@ BaseSync.prototype = {
    * @type {string|undefined}
    *
    * @example
-   * if (semver.satisfies(sync.remoteSubprotocol, '>= 5.0.0') {
+   * if (semver.satisfies(node.remoteSubprotocol, '>= 5.0.0') {
    *   useNewAPI()
    * } else {
    *   useOldAPI()
@@ -269,7 +269,7 @@ BaseSync.prototype = {
    * @return {function} Unbind listener from event.
    *
    * @example
-   * sync.on('clientError', error => {
+   * node.on('clientError', error => {
    *   logError(error)
    * })
    */
@@ -285,7 +285,7 @@ BaseSync.prototype = {
    * @return {undefined}
    *
    * @example
-   * sync.catch(error => {
+   * node.catch(error => {
    *   console.error(error)
    * })
    */
@@ -295,7 +295,7 @@ BaseSync.prototype = {
   },
 
   /**
-   * Return Promise until {@link BaseSync#state} sync will have specific state.
+   * Return Promise until {@link BaseNode#state} sync will have specific state.
    *
    * If current state is correct, method will return resolved Promise.
    *
@@ -304,7 +304,7 @@ BaseSync.prototype = {
    * @return {Promise} Promise until specific state.
    *
    * @example
-   * sync.waitFor('synchronized').then(() => {
+   * node.waitFor('synchronized').then(() => {
    *   console.log('Everything is synchronized')
    * })
    */
@@ -313,10 +313,10 @@ BaseSync.prototype = {
       return Promise.resolve()
     }
 
-    var sync = this
+    var node = this
     return new Promise(function (resolve) {
-      var unbind = sync.on('state', function () {
-        if (sync.state === state) {
+      var unbind = node.on('state', function () {
+        if (node.state === state) {
           unbind()
           resolve()
         }
@@ -407,11 +407,11 @@ BaseSync.prototype = {
     }
 
     if (this.options.outFilter) {
-      var sync = this
+      var node = this
       this.options.outFilter(action, meta).then(function (result) {
-        if (result) syncMappedEvent(sync, action, meta)
+        if (result) syncMappedEvent(node, action, meta)
       }).catch(function (e) {
-        sync.error(e)
+        node.error(e)
       })
     } else {
       syncMappedEvent(this, action, meta)
@@ -445,10 +445,10 @@ BaseSync.prototype = {
     if (!this.options.timeout) return
 
     var ms = this.options.timeout
-    var sync = this
+    var node = this
     var timeout = setTimeout(function () {
-      if (sync.connected) sync.connection.disconnect('timeout')
-      sync.syncError('timeout', ms)
+      if (node.connected) node.connection.disconnect('timeout')
+      node.syncError('timeout', ms)
     }, ms)
 
     this.timeouts.push(timeout)
@@ -464,26 +464,26 @@ BaseSync.prototype = {
     if (!this.options.ping) return
     if (this.pingTimeout) clearTimeout(this.pingTimeout)
 
-    var sync = this
+    var node = this
     this.pingTimeout = setTimeout(function () {
-      if (sync.connected && sync.authenticated) sync.sendPing()
+      if (node.connected && node.authenticated) node.sendPing()
     }, this.options.ping)
   },
 
   syncSinceQuery: function syncSinceQuery (lastSynced) {
-    var sync = this
+    var node = this
     var promises = []
     return this.log.each({ order: 'added' }, function (action, meta) {
       if (meta.added <= lastSynced) return false
-      if (sync.options.outFilter) {
-        promises.push(sync.options.outFilter(action, meta).then(function (r) {
+      if (node.options.outFilter) {
+        promises.push(node.options.outFilter(action, meta).then(function (r) {
           if (r) {
             return [action, meta]
           } else {
             return false
           }
         }).catch(function (e) {
-          sync.error(e)
+          node.error(e)
         }))
       } else {
         promises.push(Promise.resolve([action, meta]))
@@ -504,23 +504,23 @@ BaseSync.prototype = {
   },
 
   syncSince: function syncSince (lastSynced) {
-    var sync = this
+    var node = this
     this.syncSinceQuery(lastSynced).then(function (data) {
-      if (!sync.connected) return
+      if (!node.connected) return
       if (data.entries.length > 0) {
-        if (sync.options.outMap) {
+        if (node.options.outMap) {
           Promise.all(data.entries.map(function (i) {
-            return sync.options.outMap(i[0], i[1])
+            return node.options.outMap(i[0], i[1])
           })).then(function (changed) {
-            sync.sendSync(data.added, changed)
+            node.sendSync(data.added, changed)
           }).catch(function (e) {
-            sync.error(e)
+            node.error(e)
           })
         } else {
-          sync.sendSync(data.added, data.entries)
+          node.sendSync(data.added, data.entries)
         }
       } else {
-        sync.setState('synchronized')
+        node.setState('synchronized')
       }
     })
   },
@@ -540,16 +540,16 @@ BaseSync.prototype = {
   },
 
   initialize: function initialize () {
-    var sync = this
+    var node = this
     return Promise.all([
       this.log.store.getLastSynced(),
       this.log.store.getLastAdded()
     ]).then(function (result) {
-      sync.initialized = true
-      sync.lastSent = result[0].sent
-      sync.lastReceived = result[0].received
-      sync.lastAddedCache = result[1]
-      if (sync.connection.connected) sync.onConnect()
+      node.initialized = true
+      node.lastSent = result[0].sent
+      node.lastReceived = result[0].received
+      node.lastAddedCache = result[1]
+      if (node.connection.connected) node.onConnect()
     })
   },
 
@@ -568,7 +568,7 @@ BaseSync.prototype = {
 for (var i = 0; i <= MIXINS.length; i++) {
   var mixin = MIXINS[i]
   for (var name in mixin) {
-    BaseSync.prototype[name] = mixin[name]
+    BaseNode.prototype[name] = mixin[name]
   }
 }
 
@@ -576,7 +576,7 @@ var DUILIANS = {
   '金木水火土': '板城烧锅酒'
 }
 
-module.exports = BaseSync
+module.exports = BaseNode
 
 /**
  * @callback errorListener
@@ -586,7 +586,7 @@ module.exports = BaseSync
 /**
  * @callback authCallback
  * @param {object} credentials Remote node credentials.
- * @param {string} nodeId Unique ID of remote sync instance.
+ * @param {string} nodeId Unique ID of remote node instance.
  * @return {Promise} Promise with boolean value.
  */
 

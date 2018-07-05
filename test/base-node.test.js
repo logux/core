@@ -3,21 +3,21 @@ var delay = require('nanodelay')
 
 var TestTime = require('../test-time')
 var TestPair = require('../test-pair')
-var BaseSync = require('../base-sync')
+var BaseNode = require('../base-node')
 
-function createSync (opts) {
+function createNode (opts) {
   var pair = new TestPair()
   var log = TestTime.getLog()
   log.on('preadd', function (action, meta) {
     meta.reasons = ['test']
   })
-  return new BaseSync('client', log, pair.left, opts)
+  return new BaseNode('client', log, pair.left, opts)
 }
 
 function createTest () {
-  var sync = createSync()
-  var test = sync.connection.pair
-  test.leftSync = sync
+  var node = createNode()
+  var test = node.connection.pair
+  test.leftNode = node
   return test.left.connect().then(function () {
     return test
   })
@@ -34,63 +34,63 @@ function listeners (emitter) {
 it('saves all arguments', function () {
   var log = TestTime.getLog()
   var connection = new NanoEvents()
-  var sync = new BaseSync('client', log, connection, { a: 1 })
+  var node = new BaseNode('client', log, connection, { a: 1 })
 
-  expect(sync.localNodeId).toEqual('client')
-  expect(sync.log).toBe(log)
-  expect(sync.connection).toBe(connection)
-  expect(sync.options).toEqual({ a: 1 })
+  expect(node.localNodeId).toEqual('client')
+  expect(node.log).toBe(log)
+  expect(node.connection).toBe(connection)
+  expect(node.options).toEqual({ a: 1 })
 })
 
 it('allows to miss options', function () {
-  var sync = createSync()
-  expect(sync.options).toEqual({ })
+  var node = createNode()
+  expect(node.options).toEqual({ })
 })
 
 it('has protocol version', function () {
-  var sync = createSync()
-  expect(typeof sync.localProtocol).toEqual('number')
-  expect(typeof sync.minProtocol).toEqual('number')
-  expect(sync.localProtocol).toBeGreaterThanOrEqual(sync.minProtocol)
+  var node = createNode()
+  expect(typeof node.localProtocol).toEqual('number')
+  expect(typeof node.minProtocol).toEqual('number')
+  expect(node.localProtocol).toBeGreaterThanOrEqual(node.minProtocol)
 })
 
 it('unbind all listeners on destroy', function () {
-  var sync = new BaseSync('client', TestTime.getLog(), new NanoEvents())
+  var node = new BaseNode('client', TestTime.getLog(), new NanoEvents())
 
-  expect(listeners(sync.log.emitter)).toBeGreaterThan(0)
-  expect(listeners(sync.connection)).toBeGreaterThan(0)
+  expect(listeners(node.log.emitter)).toBeGreaterThan(0)
+  expect(listeners(node.connection)).toBeGreaterThan(0)
 
-  sync.destroy()
-  expect(listeners(sync.log.emitter)).toEqual(0)
-  expect(listeners(sync.connection)).toEqual(0)
+  node.destroy()
+  expect(listeners(node.log.emitter)).toEqual(0)
+  expect(listeners(node.connection)).toEqual(0)
 })
 
 it('destroys connection on destroy', function () {
-  var sync = createSync()
-  sync.connection.disconnect = jest.fn()
-  sync.connection.destroy = jest.fn()
+  var node = createNode()
+  node.connection.disconnect = jest.fn()
+  node.connection.destroy = jest.fn()
 
-  sync.destroy()
-  expect(sync.connection.disconnect).not.toBeCalledWith('destroy')
-  expect(sync.connection.destroy).toBeCalled()
+  node.destroy()
+  expect(node.connection.disconnect).not.toBeCalledWith('destroy')
+  expect(node.connection.destroy).toBeCalled()
 })
 
 it('disconnects on destroy', function () {
-  var sync = createSync()
-  return sync.connection.connect().then(function () {
-    sync.destroy()
-    expect(sync.connection.connected).toBeFalsy()
+  var node = createNode()
+  return node.connection.connect().then(function () {
+    node.destroy()
+    expect(node.connection.connected).toBeFalsy()
   })
 })
 
 it('does not throw error on send to disconnected connection', function () {
-  var sync = createSync()
-  sync.sendDuilian()
+  var node = createNode()
+  node.sendDuilian()
 })
 
 it('sends messages to connection', function () {
   return createTest().then(function (test) {
-    test.leftSync.send(['test'])
+    test.leftNode.send(['test'])
     return test.wait()
   }).then(function (test) {
     expect(test.leftSent).toEqual([['test']])
@@ -98,59 +98,59 @@ it('sends messages to connection', function () {
 })
 
 it('has connection state', function () {
-  var sync = createSync()
-  expect(sync.connected).toBeFalsy()
-  return sync.connection.connect().then(function () {
-    expect(sync.connected).toBeTruthy()
-    sync.connection.disconnect()
-    expect(sync.connected).toBeFalsy()
+  var node = createNode()
+  expect(node.connected).toBeFalsy()
+  return node.connection.connect().then(function () {
+    expect(node.connected).toBeTruthy()
+    node.connection.disconnect()
+    expect(node.connected).toBeFalsy()
   })
 })
 
 it('has state', function () {
-  var sync = createSync()
-  var pair = sync.connection.pair
+  var node = createNode()
+  var pair = node.connection.pair
 
   var states = []
-  sync.on('state', function () {
-    states.push(sync.state)
+  node.on('state', function () {
+    states.push(node.state)
   })
 
-  expect(sync.state).toEqual('disconnected')
-  return sync.connection.connect().then(function () {
-    sync.sendConnect()
-    pair.right.send(['connected', sync.localProtocol, 'server', [0, 0]])
-    return sync.waitFor('synchronized')
+  expect(node.state).toEqual('disconnected')
+  return node.connection.connect().then(function () {
+    node.sendConnect()
+    pair.right.send(['connected', node.localProtocol, 'server', [0, 0]])
+    return node.waitFor('synchronized')
   }).then(function () {
-    expect(sync.state).toEqual('synchronized')
-    return sync.log.add({ type: 'a' })
+    expect(node.state).toEqual('synchronized')
+    return node.log.add({ type: 'a' })
   }).then(function () {
-    expect(sync.state).toEqual('sending')
+    expect(node.state).toEqual('sending')
     pair.right.send(['synced', 1])
-    return sync.waitFor('synchronized')
+    return node.waitFor('synchronized')
   }).then(function () {
-    expect(sync.state).toEqual('synchronized')
-    sync.connection.disconnect()
-    expect(sync.state).toEqual('disconnected')
-    return sync.log.add({ type: 'b' })
+    expect(node.state).toEqual('synchronized')
+    node.connection.disconnect()
+    expect(node.state).toEqual('disconnected')
+    return node.log.add({ type: 'b' })
   }).then(function () {
-    expect(sync.state).toEqual('disconnected')
-    sync.connection.emitter.emit('connecting')
-    expect(sync.state).toEqual('connecting')
-    return sync.connection.connect()
+    expect(node.state).toEqual('disconnected')
+    node.connection.emitter.emit('connecting')
+    expect(node.state).toEqual('connecting')
+    return node.connection.connect()
   }).then(function () {
-    sync.sendConnect()
-    pair.right.send(['connected', sync.localProtocol, 'server', [0, 0]])
-    return sync.waitFor('sending')
+    node.sendConnect()
+    pair.right.send(['connected', node.localProtocol, 'server', [0, 0]])
+    return node.waitFor('sending')
   }).then(function () {
-    expect(sync.state).toEqual('sending')
+    expect(node.state).toEqual('sending')
     pair.right.send(['synced', 2])
-    return sync.waitFor('synchronized')
+    return node.waitFor('synchronized')
   }).then(function () {
-    expect(sync.state).toEqual('synchronized')
-    return sync.log.add({ type: 'c' })
+    expect(node.state).toEqual('synchronized')
+    return node.log.add({ type: 'c' })
   }).then(function () {
-    sync.connection.disconnect()
+    node.connection.disconnect()
     expect(states).toEqual([
       'connecting',
       'synchronized',
@@ -167,36 +167,36 @@ it('has state', function () {
 })
 
 it('does not wait for state change is current state is correct', function () {
-  return createSync().waitFor('disconnected')
+  return createNode().waitFor('disconnected')
 })
 
 it('loads lastSent, lastReceived and lastAdded from store', function () {
   var log = TestTime.getLog()
   var con = new NanoEvents()
-  var sync
+  var node
 
   log.store.setLastSynced({ sent: 1, received: 2 })
   return log.add({ type: 'a' }, { reasons: ['test'] }).then(function () {
-    sync = new BaseSync('client', log, con)
-    return sync.initializing
+    node = new BaseNode('client', log, con)
+    return node.initializing
   }).then(function () {
-    expect(sync.lastAddedCache).toBe(1)
-    expect(sync.lastSent).toBe(1)
-    expect(sync.lastReceived).toBe(2)
+    expect(node.lastAddedCache).toBe(1)
+    expect(node.lastSent).toBe(1)
+    expect(node.lastReceived).toBe(2)
   })
 })
 
 it('has separated timeouts', function () {
-  var sync = createSync({ timeout: 100 })
+  var node = createNode({ timeout: 100 })
 
   var error
-  sync.catch(function (e) {
+  node.catch(function (e) {
     error = e
   })
 
-  sync.startTimeout()
+  node.startTimeout()
   return delay(60).then(function () {
-    sync.startTimeout()
+    node.startTimeout()
     return delay(60)
   }).then(function () {
     expect(error.message).toContain('timeout')
@@ -204,45 +204,45 @@ it('has separated timeouts', function () {
 })
 
 it('stops timeouts on disconnect', function () {
-  var sync = createSync({ timeout: 10 })
+  var node = createNode({ timeout: 10 })
 
   var error
-  sync.catch(function (e) {
+  node.catch(function (e) {
     error = e
   })
 
-  sync.startTimeout()
-  sync.startTimeout()
-  sync.onDisconnect()
+  node.startTimeout()
+  node.startTimeout()
+  node.onDisconnect()
 
   return delay(50).then(function () {
-    sync.startTimeout()
+    node.startTimeout()
     expect(error).toBeUndefined()
   })
 })
 
 it('accepts already connected connection', function () {
   var pair = new TestPair()
-  var sync
+  var node
   return pair.left.connect().then(function () {
-    sync = new BaseSync('client', TestTime.getLog(), pair.left)
-    return sync.initializing
+    node = new BaseNode('client', TestTime.getLog(), pair.left)
+    return node.initializing
   }).then(function () {
-    expect(sync.connected).toBeTruthy()
+    expect(node.connected).toBeTruthy()
   })
 })
 
 it('receives errors from connection', function () {
   return createTest().then(function (test) {
     var emitted
-    test.leftSync.catch(function (e) {
+    test.leftNode.catch(function (e) {
       emitted = e
     })
 
     var error = new Error('test')
     test.left.emitter.emit('error', error)
 
-    expect(test.leftSync.connected).toBeFalsy()
+    expect(test.leftNode.connected).toBeFalsy()
     expect(test.leftEvents).toEqual([
       ['connect'],
       ['disconnect', 'error']
@@ -252,7 +252,7 @@ it('receives errors from connection', function () {
 })
 
 it('does not fall on sync without connection', function () {
-  return createSync().syncSince(0)
+  return createNode().syncSince(0)
 })
 
 it('receives format errors from connection', function () {
@@ -262,7 +262,7 @@ it('receives format errors from connection', function () {
     test.left.emitter.emit('error', error)
     return test.wait()
   }).then(function (test) {
-    expect(test.leftSync.connected).toBeFalsy()
+    expect(test.leftNode.connected).toBeFalsy()
     expect(test.leftEvents).toEqual([
       ['connect'],
       ['disconnect', 'error']
@@ -276,11 +276,11 @@ it('receives format errors from connection', function () {
 it('throws error by default', function () {
   var error = new Error('test')
   return createTest().then(function (test) {
-    test.leftSync.connection.send = function () {
+    test.leftNode.connection.send = function () {
       throw error
     }
     expect(function () {
-      test.leftSync.send(['ping', 0])
+      test.leftNode.send(['ping', 0])
     }).toThrow(error)
   })
 })
@@ -289,16 +289,16 @@ it('disconnect on the error during send', function () {
   var error = new Error('test')
   var errors = []
   return createTest().then(function (test) {
-    test.leftSync.catch(function (e) {
+    test.leftNode.catch(function (e) {
       errors.push(e)
     })
-    test.leftSync.connection.send = function () {
+    test.leftNode.connection.send = function () {
       throw error
     }
-    test.leftSync.send(['ping', 0])
+    test.leftNode.send(['ping', 0])
     return delay(1, test)
   }).then(function (test) {
-    expect(test.leftSync.connected).toBeFalsy()
+    expect(test.leftNode.connected).toBeFalsy()
     expect(errors).toEqual([error])
   })
 })

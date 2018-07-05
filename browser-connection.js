@@ -9,7 +9,7 @@ var NanoEvents = require('nanoevents')
  * import { BrowserConnection } from 'logux-websocket'
  *
  * const connection = new BrowserConnection('wss://logux.example.com/')
- * const sync = new ClientSync(nodeId, log, connection, opts)
+ * const node = new ClientNode(nodeId, log, connection, opts)
  *
  * @class
  * @extends Connection

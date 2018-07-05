@@ -1,57 +1,57 @@
 var SyncError = require('../sync-error')
 
-function auth (sync, nodeId, credentials, callback) {
-  if (!sync.options.auth) {
-    sync.authenticated = true
+function auth (node, nodeId, credentials, callback) {
+  if (!node.options.auth) {
+    node.authenticated = true
     callback()
     return
   }
 
-  sync.authenticating = true
-  sync.options.auth(credentials, nodeId).then(function (access) {
+  node.authenticating = true
+  node.options.auth(credentials, nodeId).then(function (access) {
     if (access) {
-      sync.authenticated = true
-      sync.authenticating = false
+      node.authenticated = true
+      node.authenticating = false
 
       callback()
-      for (var i = 0; i < sync.unauthenticated.length; i++) {
-        sync.onMessage(sync.unauthenticated[i])
+      for (var i = 0; i < node.unauthenticated.length; i++) {
+        node.onMessage(node.unauthenticated[i])
       }
-      sync.unauthenticated = []
+      node.unauthenticated = []
     } else {
-      sync.sendError(new SyncError(sync, 'wrong-credentials'))
-      sync.destroy()
+      node.sendError(new SyncError(node, 'wrong-credentials'))
+      node.destroy()
     }
   }).catch(function (e) {
     if (e.name === 'SyncError') {
-      sync.sendError(e)
-      sync.destroy()
+      node.sendError(e)
+      node.destroy()
     } else {
-      sync.error(e)
+      node.error(e)
     }
   })
 }
 
-function checkProtocol (sync, ver) {
-  sync.remoteProtocol = ver
+function checkProtocol (node, ver) {
+  node.remoteProtocol = ver
 
-  if (ver >= sync.minProtocol) {
+  if (ver >= node.minProtocol) {
     return true
   } else {
-    sync.sendError(new SyncError(sync, 'wrong-protocol', {
-      supported: sync.minProtocol, used: ver
+    node.sendError(new SyncError(node, 'wrong-protocol', {
+      supported: node.minProtocol, used: ver
     }))
-    sync.destroy()
+    node.destroy()
     return false
   }
 }
 
-function emitEvent (sync) {
+function emitEvent (node) {
   try {
-    sync.emitter.emit('connect')
+    node.emitter.emit('connect')
   } catch (e) {
     if (e.name === 'SyncError') {
-      sync.sendError(e)
+      node.sendError(e)
       return false
     } else {
       throw e
@@ -120,10 +120,10 @@ module.exports = {
       return
     }
 
-    var sync = this
+    var node = this
     auth(this, nodeId, options.credentials, function () {
-      sync.sendConnected(start, sync.now())
-      sync.syncSince(synced)
+      node.sendConnected(start, node.now())
+      node.syncSince(synced)
     })
   },
 
@@ -150,9 +150,9 @@ module.exports = {
       return
     }
 
-    var sync = this
+    var node = this
     auth(this, nodeId, options.credentials, function () {
-      sync.syncSince(sync.lastSent)
+      node.syncSince(node.lastSent)
     })
   }
 

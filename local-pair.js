@@ -75,10 +75,10 @@ LocalConnection.prototype = {
  * @param {number} [delay=1] Delay for connection and send events.
  *
  * @example
- * import { LocalPair } from 'logux-sync'
+ * import { LocalPair } from 'logux-core''
  * const pair = new LocalPair()
- * const client = new ClientSync(pair.left)
- * const server = new ServerSync(pair.right)
+ * const client = new ClientNode(pair.left)
+ * const server = new ServerNode(pair.right)
  *
  * @class
  */
@@ -94,7 +94,7 @@ function LocalPair (delay) {
    * @type {Connection}
    *
    * @example
-   * new ClientSync(pair.left)
+   * new ClientNode(pair.left)
    */
   this.left = new LocalConnection(this, 'left')
   /**
@@ -103,7 +103,7 @@ function LocalPair (delay) {
    * @type {Connection}
    *
    * @example
-   * new ServerSync(pair.right)
+   * new ServerNode(pair.right)
    */
   this.right = new LocalConnection(this, 'right')
 }

@@ -3,13 +3,13 @@ var ServerConnection = require('./server-connection')
 var eachStoreCheck = require('./each-store-check')
 var isFirstOlder = require('./is-first-older')
 var MemoryStore = require('./memory-store')
-var ClientSync = require('./client-sync')
-var ServerSync = require('./server-sync')
+var ClientNode = require('./client-node')
+var ServerNode = require('./server-node')
 var LocalPair = require('./local-pair')
 var SyncError = require('./sync-error')
 var Reconnect = require('./reconnect')
 var TestTime = require('./test-time')
-var BaseSync = require('./base-sync')
+var BaseNode = require('./base-node')
 var TestPair = require('./test-pair')
 var Log = require('./log')
 
@@ -19,13 +19,13 @@ module.exports = {
   eachStoreCheck: eachStoreCheck,
   isFirstOlder: isFirstOlder,
   MemoryStore: MemoryStore,
-  ClientSync: ClientSync,
-  ServerSync: ServerSync,
+  ClientNode: ClientNode,
+  ServerNode: ServerNode,
   LocalPair: LocalPair,
   SyncError: SyncError,
   Reconnect: Reconnect,
   TestTime: TestTime,
-  BaseSync: BaseSync,
+  BaseNode: BaseNode,
   TestPair: TestPair,
   Log: Log
 }

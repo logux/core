@@ -1,4 +1,4 @@
-var BaseSync = require('./base-sync')
+var BaseNode = require('./base-node')
 var validate = require('./validate')
 var merge = require('./merge')
 
@@ -36,18 +36,18 @@ var DEFAULT_OPTIONS = {
  *                                       in SemVer format.
  *
  * @example
- * import { ServerSync } from 'logux-sync'
+ * import { ServerNode } from 'logux-core'
  * startServer(ws => {
  *   const connection = new ServerConnection(ws)
- *   const sync = new ServerSync('server' + id, log, connection)
+ *   const node = new ServerNode('server' + id, log, connection)
  * })
  *
- * @extends BaseSync
+ * @extends BaseNode
  * @class
  */
-function ServerSync (nodeId, log, connection, options) {
+function ServerNode (nodeId, log, connection, options) {
   options = merge(options, DEFAULT_OPTIONS)
-  BaseSync.call(this, nodeId, log, connection, options)
+  BaseNode.call(this, nodeId, log, connection, options)
 
   if (this.options.fixTime) {
     throw new Error(
@@ -57,47 +57,47 @@ function ServerSync (nodeId, log, connection, options) {
   this.state = 'connecting'
 }
 
-ServerSync.prototype = {
+ServerNode.prototype = {
 
   onConnect: function onConnect () {
     if (this.initialized) {
-      BaseSync.prototype.onConnect.call(this)
+      BaseNode.prototype.onConnect.call(this)
       this.startTimeout()
     }
   },
 
   onDisconnect: function onDisconnect () {
-    BaseSync.prototype.onDisconnect.call(this)
+    BaseNode.prototype.onDisconnect.call(this)
     this.destroy()
   },
 
   onMessage: function onMessage (msg) {
     if (validate(this, msg)) {
-      BaseSync.prototype.onMessage.call(this, msg)
+      BaseNode.prototype.onMessage.call(this, msg)
     }
   },
 
   connectMessage: function connectMessage () {
     this.authenticating = true
-    var sync = this
+    var node = this
     var args = arguments
     this.initializing.then(function () {
-      BaseSync.prototype.connectMessage.apply(sync, args)
-      sync.endTimeout()
+      BaseNode.prototype.connectMessage.apply(node, args)
+      node.endTimeout()
     })
   },
 
   initialize: function initialize () {
-    var sync = this
+    var node = this
     return this.log.store.getLastAdded().then(function (added) {
-      sync.initialized = true
-      sync.lastAddedCache = added
-      if (sync.connection.connected) sync.onConnect()
+      node.initialized = true
+      node.lastAddedCache = added
+      if (node.connection.connected) node.onConnect()
     })
   }
 
 }
 
-ServerSync.prototype = merge(ServerSync.prototype, BaseSync.prototype)
+ServerNode.prototype = merge(ServerNode.prototype, BaseNode.prototype)
 
-module.exports = ServerSync
+module.exports = ServerNode

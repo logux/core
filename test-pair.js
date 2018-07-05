@@ -23,10 +23,10 @@ function clone (obj) {
  * @param {number} [delay=1] Delay for connection and send events.
  *
  * @example
- * import { testPair } from 'logux-sync'
+ * import { testPair } from 'logux-core'
  * it('tracks events', () => {
  *   const pair = new testPair()
- *   const client = new ClientSync(pair.right)
+ *   const client = new ClientNode(pair.right)
  *   return pair.left.connect().then(() => {
  *     expect(pair.leftEvents).toEqual('connect')
  *     return pair.left.send(msg)
@@ -79,30 +79,30 @@ function TestPair (delay) {
 TestPair.prototype = {
 
   /**
-   * Sync instance used in this test, connected with {@link TestPair#left}.
-   * @type {Sync}
+   * Node instance used in this test, connected with {@link TestPair#left}.
+   * @type {BaseNode}
    *
    * @example
    * function createTest () {
    *   test = new TestPair()
-   *   test.leftSync = ClientSync('client', log, test.left)
+   *   test.leftNode = ClientNode('client', log, test.left)
    *   return test
    * }
    */
-  leftSync: undefined,
+  leftNode: undefined,
 
   /**
-   * Sync instance used in this test, connected with {@link TestPair#right}.
-   * @type {Sync}
+   * Node instance used in this test, connected with {@link TestPair#right}.
+   * @type {BaseNode}
    *
    * @example
    * function createTest () {
    *   test = new TestPair()
-   *   test.rightSync = ServerSync('client', log, test.right)
+   *   test.rightNode = ServerNode('client', log, test.right)
    *   return test
    * }
    */
-  rightSync: undefined,
+  rightNode: undefined,
 
   /**
    * Clear all connections events and messages to test only last events.

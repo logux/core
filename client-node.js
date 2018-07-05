@@ -1,4 +1,4 @@
-var BaseSync = require('./base-sync')
+var BaseNode = require('./base-node')
 var merge = require('./merge')
 
 var DEFAULT_OPTIONS = {
@@ -39,32 +39,32 @@ var DEFAULT_OPTIONS = {
  *                                       in SemVer format.
  *
  * @example
- * import { ClientSync } from 'logux-sync'
+ * import { ClientNode } from 'logux-core'
  * const connection = new BrowserConnection(url)
- * const sync = new ClientSync(nodeId, log, connection)
+ * const node = new ClientNode(nodeId, log, connection)
  *
- * @extends BaseSync
+ * @extends BaseNode
  * @class
  */
-function ClientSync (nodeId, log, connection, options) {
+function ClientNode (nodeId, log, connection, options) {
   options = merge(options, DEFAULT_OPTIONS)
-  BaseSync.call(this, nodeId, log, connection, options)
+  BaseNode.call(this, nodeId, log, connection, options)
 }
 
-ClientSync.prototype = {
+ClientNode.prototype = {
 
   onConnect: function onConnect () {
     if (!this.connected) {
       this.connected = true
-      var sync = this
+      var node = this
       this.initializing = this.initializing.then(function () {
-        if (sync.connected) sync.sendConnect()
+        if (node.connected) node.sendConnect()
       })
     }
   }
 
 }
 
-ClientSync.prototype = merge(ClientSync.prototype, BaseSync.prototype)
+ClientNode.prototype = merge(ClientNode.prototype, BaseNode.prototype)
 
-module.exports = ClientSync
+module.exports = ClientNode

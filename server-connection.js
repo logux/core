@@ -11,7 +11,7 @@ var NanoEvents = require('nanoevents')
  *
  * wss.on('connection', function connection(ws) {
  *   const connection = new ServerConnection(ws)
- *   const sync = new ServerSync('server', log, connection, opts)
+ *   const node = new ServerNode('server', log, connection, opts)
  * })
  *
  * @class
