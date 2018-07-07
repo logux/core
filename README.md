@@ -537,7 +537,7 @@ Think about this store as a basic store realization.
 
 ### Custom Store
 
-Any object implementing this 5 methods can be considered a Store:
+Any object implementing this methods can be considered a Store:
 
 * `add(entry)` puts new log entry in the store. Returns a Promise with new
   action meta or `false` if action with same `id` was already in log.
@@ -555,3 +555,4 @@ Any object implementing this 5 methods can be considered a Store:
   received/sent actions.
 * `setLastSynced(values)` saves `added` values for latest synchronized
   received/sent actions and return Promise when they will be saved to store.
+* `clean()` (optional) returns Promise when store is cleaned from all the data.

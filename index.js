@@ -184,6 +184,15 @@ module.exports = {
  * @memberof Store#
  */
 /**
+ * Cleans the store from all the data.
+ *
+ * @return {Promise} Promise when cleaning will be finished.
+ *
+ * @name clean
+ * @function
+ * @memberof Store#
+ */
+/**
  * Return biggest `added` number in store.
  * All actions in this log have less or same `added` time.
  *

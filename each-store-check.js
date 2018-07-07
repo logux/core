@@ -23,6 +23,21 @@ function checkBoth (store, entries) {
   ])
 }
 
+function checkLastAdded (store, expected) {
+  return store.getLastAdded().then(function (lastAdded) {
+    assert.equal(lastAdded, expected)
+  })
+}
+
+function checkLastSynced (store, expectedSent, expectedRecieved) {
+  return store.getLastSynced().then(function (lastSynced) {
+    assert.deepEqual(lastSynced, {
+      sent: expectedSent,
+      received: expectedRecieved
+    })
+  })
+}
+
 function nope () { }
 
 /**
@@ -43,14 +58,10 @@ function eachStoreCheck (test) {
   test('is empty in the beginning', function (factory) {
     return function () {
       var store = factory()
-      return checkBoth(store, []).then(function () {
-        return store.getLastAdded()
-      }).then(function (added) {
-        assert.equal(added, 0)
-        return store.getLastSynced()
-      }).then(function (synced) {
-        assert.deepEqual(synced, { sent: 0, received: 0 })
-      })
+      return Promise.all([
+        checkLastAdded(store, 0),
+        checkLastSynced(store, 0, 0)
+      ])
     }
   })
 
@@ -58,15 +69,11 @@ function eachStoreCheck (test) {
     return function () {
       var store = factory()
       return store.setLastSynced({ sent: 1 }).then(function () {
-        return store.getLastSynced()
-      }).then(function (synced) {
-        return assert.deepEqual(synced, { sent: 1, received: 0 })
+        return checkLastSynced(store, 1, 0)
       }).then(function () {
         return store.setLastSynced({ received: 1 })
       }).then(function () {
-        return store.getLastSynced()
-      }).then(function (synced) {
-        return assert.deepEqual(synced, { sent: 1, received: 1 })
+        return checkLastSynced(store, 1, 1)
       })
     }
   })
@@ -75,9 +82,7 @@ function eachStoreCheck (test) {
     return function () {
       var store = factory()
       return store.setLastSynced({ sent: 2, received: 1 }).then(function () {
-        return store.getLastSynced()
-      }).then(function (synced) {
-        return assert.deepEqual(synced, { sent: 2, received: 1 })
+        return checkLastSynced(store, 2, 1)
       })
     }
   })
@@ -118,9 +123,7 @@ function eachStoreCheck (test) {
           assert.ok(added)
           return store.add({ type: 'A' }, { id: '1 n 0' })
         }).then(function () {
-          return store.getLastAdded()
-        }).then(function (added) {
-          assert.equal(added, 1)
+          return checkLastAdded(store, 1)
         })
       })
     }
@@ -455,6 +458,32 @@ function eachStoreCheck (test) {
           [{ type: 'C' }, { added: 2, id: '3 a 0', time: 1 }]
         ])
       })
+    }
+  })
+
+  test('cleans whole store if implemented', function (factory) {
+    return function () {
+      var store = factory()
+      var result = Promise.resolve()
+      if (typeof store.clean === 'function') {
+        result = Promise.all([
+          store.add({ type: 'A' }, { id: '1', time: 1 }),
+          store.add({ type: 'B' }, { id: '2', time: 2 }),
+          store.add({ type: 'C' }, { id: '3', time: 3 }),
+          store.add({ type: 'D' }, { id: '4', time: 4 }),
+          store.add({ type: 'E' }, { id: '5', time: 5 })
+        ]).then(function () {
+          return store.clean()
+        }).then(function () {
+          return Promise.all([
+            checkBoth(store, []),
+            checkLastAdded(store, 0),
+            checkLastSynced(store, 0, 0)
+          ])
+        })
+      }
+
+      return result
     }
   })
 }

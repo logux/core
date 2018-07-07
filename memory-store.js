@@ -180,6 +180,15 @@ MemoryStore.prototype = {
     return Promise.resolve()
   },
 
+  clean: function clean () {
+    this.created = []
+    this.added = []
+    this.lastReceived = 0
+    this.lastAdded = 0
+    this.lastSent = 0
+    return Promise.resolve()
+  },
+
   getLastAdded: function getLastAdded () {
     return Promise.resolve(this.lastAdded)
   },
