@@ -284,6 +284,7 @@ Log.prototype = {
    *                                     with bigger `id`.
    * @param {string} [criteria.youngerThan] Remove reason only for actions
    *                                       with lower `id`.
+   * @param {string} [criteria.id] Remove reason only for action with `id`.
    *
    * @return {Promise} Promise when cleaning will be finished.
    *

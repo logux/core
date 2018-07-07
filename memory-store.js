@@ -76,9 +76,11 @@ MemoryStore.prototype = {
     }
   },
 
-  remove: function remove (id) {
-    var created = find(this.created, id)
-    if (created === -1) return Promise.resolve(false)
+  remove: function remove (id, created) {
+    if (typeof created === 'undefined') {
+      created = find(this.created, id)
+      if (created === -1) return Promise.resolve(false)
+    }
 
     var entry = [this.created[created][0], this.created[created][1]]
     this.created.splice(created, 1)
@@ -125,39 +127,54 @@ MemoryStore.prototype = {
 
   removeReason: function removeReason (reason, criteria, callback) {
     var removed = []
-    this.created = this.created.filter(function (entry) {
-      var meta = entry[1]
-      var c = criteria
+    var meta, reasonPos
 
-      if (meta.reasons.indexOf(reason) === -1) {
-        return true
+    if (criteria.id) {
+      var index = find(this.created, criteria.id)
+      meta = this.created[index][1]
+      reasonPos = meta.reasons.indexOf(reason)
+      if (reasonPos !== -1) {
+        meta.reasons.splice(reasonPos, 1)
       }
-      if (isDefined(c.olderThan) && !isFirstOlder(meta, c.olderThan)) {
-        return true
-      }
-      if (isDefined(c.youngerThan) && !isFirstOlder(c.youngerThan, meta)) {
-        return true
-      }
-      if (isDefined(c.minAdded) && meta.added < c.minAdded) {
-        return true
-      }
-      if (isDefined(c.maxAdded) && meta.added > c.maxAdded) {
-        return true
-      }
-
-      var reasons = meta.reasons
-      reasons.splice(reasons.indexOf(reason), 1)
       if (meta.reasons.length === 0) {
-        callback(entry[0], meta)
-        removed.push(meta.added)
-        return false
-      } else {
-        return true
+        callback(this.created[index][0], meta)
+        this.remove(criteria.id)
       }
-    })
-    this.added = this.added.filter(function (entry) {
-      return removed.indexOf(entry[1].added) === -1
-    })
+    } else {
+      this.created = this.created.filter(function (entry) {
+        meta = entry[1]
+        var c = criteria
+
+        reasonPos = meta.reasons.indexOf(reason)
+        if (reasonPos === -1) {
+          return true
+        }
+        if (isDefined(c.olderThan) && !isFirstOlder(meta, c.olderThan)) {
+          return true
+        }
+        if (isDefined(c.youngerThan) && !isFirstOlder(c.youngerThan, meta)) {
+          return true
+        }
+        if (isDefined(c.minAdded) && meta.added < c.minAdded) {
+          return true
+        }
+        if (isDefined(c.maxAdded) && meta.added > c.maxAdded) {
+          return true
+        }
+
+        meta.reasons.splice(reasonPos, 1)
+        if (meta.reasons.length === 0) {
+          callback(entry[0], meta)
+          removed.push(meta.added)
+          return false
+        } else {
+          return true
+        }
+      })
+      this.added = this.added.filter(function (entry) {
+        return removed.indexOf(entry[1].added) === -1
+      })
+    }
     return Promise.resolve()
   },
 

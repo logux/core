@@ -174,6 +174,7 @@ module.exports = {
  *                                    than specific action.
  * @param {Meta} [criteria.youngerThan] Remove reason only younger
  *                                      than specific action.
+ * @param {string} [criteria.id] Remove reason only for action with `id`.
  * @param {listener} callback Callback for every removed action.
  *
  * @return {Promise} Promise when cleaning will be finished.

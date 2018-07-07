@@ -358,6 +358,30 @@ function eachStoreCheck (test) {
     }
   })
 
+  test('removes reasons and actions by id', function (factory) {
+    return function () {
+      var store = factory()
+      var removed = []
+      function push (action) {
+        removed.push(action.type)
+      }
+      return Promise.all([
+        store.add({ type: '1' }, { id: '1 n 0', time: 1, reasons: ['a'] }),
+        store.add({ type: '2' }, { id: '2 n 0', time: 2, reasons: ['a', 'b'] })
+      ]).then(function () {
+        return Promise.all([
+          store.removeReason('a', { id: '1 n 0' }, push),
+          store.removeReason('b', { id: '2 n 0' }, push)
+        ])
+      }).then(function () {
+        assert.deepEqual(removed, ['1'])
+        return checkBoth(store, [
+          [{ type: '2' }, { added: 2, id: '2 n 0', time: 2, reasons: ['a'] }]
+        ])
+      })
+    }
+  })
+
   test('returns action by ID', function (factory) {
     return function () {
       var store = factory()
