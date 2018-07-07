@@ -131,14 +131,16 @@ MemoryStore.prototype = {
 
     if (criteria.id) {
       var index = find(this.created, criteria.id)
-      meta = this.created[index][1]
-      reasonPos = meta.reasons.indexOf(reason)
-      if (reasonPos !== -1) {
-        meta.reasons.splice(reasonPos, 1)
-      }
-      if (meta.reasons.length === 0) {
-        callback(this.created[index][0], meta)
-        this.remove(criteria.id)
+      if (index !== -1) {
+        meta = this.created[index][1]
+        reasonPos = meta.reasons.indexOf(reason)
+        if (reasonPos !== -1) {
+          meta.reasons.splice(reasonPos, 1)
+          if (meta.reasons.length === 0) {
+            callback(this.created[index][0], meta)
+            this.remove(criteria.id)
+          }
+        }
       }
     } else {
       this.created = this.created.filter(function (entry) {

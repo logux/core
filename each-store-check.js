@@ -371,7 +371,8 @@ function eachStoreCheck (test) {
       ]).then(function () {
         return Promise.all([
           store.removeReason('a', { id: '1 n 0' }, push),
-          store.removeReason('b', { id: '2 n 0' }, push)
+          store.removeReason('b', { id: '2 n 0' }, push),
+          store.removeReason('c', { id: '3 n 0' }, push)
         ])
       }).then(function () {
         assert.deepEqual(removed, ['1'])
