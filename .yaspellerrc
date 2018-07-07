@@ -79,6 +79,7 @@
     "remoteProtocol",
     "WebSocket",
     "ws",
-    "reconnectable"
+    "reconnectable",
+    "lastId"
   ]
 }
