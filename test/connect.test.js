@@ -309,7 +309,7 @@ it('allows access for right users', function () {
 
   return test.left.connect().then(function () {
     test.leftNode.sendDuilian(0)
-    return delay(20)
+    return delay(50)
   }).then(function () {
     expect(test.rightSent[0]).toEqual(['connected', PROTOCOL, 'server', [1, 2]])
   })
