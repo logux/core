@@ -184,7 +184,7 @@ module.exports = {
  * @memberof Store#
  */
 /**
- * Cleans the store from all the data.
+ * Remove all data from the store.
  *
  * @return {Promise} Promise when cleaning will be finished.
  *
