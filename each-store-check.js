@@ -457,6 +457,28 @@ function eachStoreCheck (test) {
       })
     }
   })
+
+  test('cleans whole store if implemented', function (factory) {
+    return function () {
+      var store = factory()
+      var result = Promise.resolve()
+      if (typeof store.clean === 'function') {
+        result = Promise.all([
+          store.add({ type: 'A' }, { id: '1', time: 1 }),
+          store.add({ type: 'B' }, { id: '2', time: 2 }),
+          store.add({ type: 'C' }, { id: '3', time: 3 }),
+          store.add({ type: 'D' }, { id: '4', time: 4 }),
+          store.add({ type: 'E' }, { id: '5', time: 5 })
+        ]).then(function () {
+          return store.clean()
+        }).then(function () {
+          return checkBoth(store, [])
+        })
+      }
+
+      return result
+    }
+  })
 }
 
 module.exports = eachStoreCheck

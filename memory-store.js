@@ -180,7 +180,7 @@ MemoryStore.prototype = {
     return Promise.resolve()
   },
 
-  purge: function purge() {
+  clean: function clean () {
     this.created = []
     this.added = []
     this.lastReceived = 0
