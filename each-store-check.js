@@ -367,7 +367,8 @@ function eachStoreCheck (test) {
       }
       return Promise.all([
         store.add({ type: '1' }, { id: '1 n 0', time: 1, reasons: ['a'] }),
-        store.add({ type: '2' }, { id: '2 n 0', time: 2, reasons: ['a', 'b'] })
+        store.add({ type: '2' }, { id: '2 n 0', time: 2, reasons: ['a', 'b'] }),
+        store.add({ type: '3' }, { id: '3 n 0', time: 3, reasons: ['a'] })
       ]).then(function () {
         return Promise.all([
           store.removeReason('a', { id: '1 n 0' }, push),
@@ -377,7 +378,8 @@ function eachStoreCheck (test) {
       }).then(function () {
         assert.deepEqual(removed, ['1'])
         return checkBoth(store, [
-          [{ type: '2' }, { added: 2, id: '2 n 0', time: 2, reasons: ['a'] }]
+          [{ type: '2' }, { added: 2, id: '2 n 0', time: 2, reasons: ['a'] }],
+          [{ type: '3' }, { added: 3, id: '3 n 0', time: 3, reasons: ['a'] }]
         ])
       })
     }
