@@ -248,7 +248,7 @@ it('reports errors during initial output filter', function () {
     return Promise.reject(error)
   }
   test.left.connect()
-  return delay(10).then(function () {
+  return delay(50).then(function () {
     expect(catched).toEqual([error])
   })
 })
@@ -265,7 +265,7 @@ it('reports errors during output filter', function () {
     }
   }).then(function (test) {
     test.rightNode.log.add({ type: 'a' })
-    return delay(10)
+    return delay(50)
   }).then(function () {
     expect(catched).toEqual([error])
   })
@@ -283,7 +283,7 @@ it('reports errors during initial output map', function () {
     return Promise.reject(error)
   }
   test.left.connect()
-  return delay(10).then(function () {
+  return delay(50).then(function () {
     expect(catched).toEqual([error])
   })
 })
@@ -300,7 +300,7 @@ it('reports errors during output map', function () {
     }
   }).then(function (test) {
     test.rightNode.log.add({ type: 'a' })
-    return delay(10)
+    return delay(50)
   }).then(function () {
     expect(catched).toEqual([error])
   })
@@ -317,7 +317,7 @@ it('reports errors during input filter', function () {
       return Promise.reject(error)
     }
     test.leftNode.log.add({ type: 'a' })
-    return delay(10)
+    return delay(50)
   }).then(function () {
     expect(catched).toEqual([error])
   })
@@ -334,7 +334,7 @@ it('reports errors during input map', function () {
       return Promise.reject(error)
     }
     test.leftNode.log.add({ type: 'a' })
-    return delay(10)
+    return delay(50)
   }).then(function () {
     expect(catched).toEqual([error])
   })
