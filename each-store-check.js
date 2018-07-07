@@ -29,11 +29,11 @@ function checkLastAdded (store, expected) {
   })
 }
 
-function checkLastSynced (store, expectedRecieved, expectedSent) {
+function checkLastSynced (store, expectedSent, expectedRecieved) {
   return store.getLastSynced().then(function (lastSynced) {
     assert.deepEqual(lastSynced, {
-      received: expectedRecieved,
-      sent: expectedSent
+      sent: expectedSent,
+      received: expectedRecieved
     })
   })
 }
@@ -58,14 +58,10 @@ function eachStoreCheck (test) {
   test('is empty in the beginning', function (factory) {
     return function () {
       var store = factory()
-      return checkBoth(store, []).then(function () {
-        return store.getLastAdded()
-      }).then(function (added) {
-        assert.equal(added, 0)
-        return store.getLastSynced()
-      }).then(function (synced) {
-        assert.deepEqual(synced, { sent: 0, received: 0 })
-      })
+      return Promise.all([
+        checkLastAdded(store, 0),
+        checkLastSynced(store, 0, 0)
+      ])
     }
   })
 
@@ -73,15 +69,11 @@ function eachStoreCheck (test) {
     return function () {
       var store = factory()
       return store.setLastSynced({ sent: 1 }).then(function () {
-        return store.getLastSynced()
-      }).then(function (synced) {
-        return assert.deepEqual(synced, { sent: 1, received: 0 })
+        return checkLastSynced(store, 1, 0)
       }).then(function () {
         return store.setLastSynced({ received: 1 })
       }).then(function () {
-        return store.getLastSynced()
-      }).then(function (synced) {
-        return assert.deepEqual(synced, { sent: 1, received: 1 })
+        return checkLastSynced(store, 1, 1)
       })
     }
   })
@@ -90,9 +82,7 @@ function eachStoreCheck (test) {
     return function () {
       var store = factory()
       return store.setLastSynced({ sent: 2, received: 1 }).then(function () {
-        return store.getLastSynced()
-      }).then(function (synced) {
-        return assert.deepEqual(synced, { sent: 2, received: 1 })
+        return checkLastSynced(store, 2, 1)
       })
     }
   })
@@ -133,9 +123,7 @@ function eachStoreCheck (test) {
           assert.ok(added)
           return store.add({ type: 'A' }, { id: '1 n 0' })
         }).then(function () {
-          return store.getLastAdded()
-        }).then(function (added) {
-          assert.equal(added, 1)
+          return checkLastAdded(store, 1)
         })
       })
     }
