@@ -32,20 +32,20 @@ it('works in real protocol', function () {
     })
     client.connect()
   }).then(function () {
-    return delay(50)
+    return delay(100)
   }).then(function () {
     expect(server.connected).toBeTruthy()
     expect(client.connected).toBeTruthy()
     client.send(['test'])
-    return delay(50)
+    return delay(100)
   }).then(function () {
     expect(serverReceived).toEqual([['test']])
     server.send(['test'])
-    return delay(50)
+    return delay(100)
   }).then(function () {
     expect(clientReceived).toEqual([['test']])
     server.disconnect()
-    return delay(50)
+    return delay(100)
   }).then(function () {
     expect(server.connected).toBeFalsy()
     expect(client.connected).toBeFalsy()
