@@ -26,6 +26,10 @@ var TestLog = require('./test-log')
  * @class
  */
 function TestTime () {
+  /**
+   * Last used number in log’s `nodeId`.
+   * @type {number}
+   */
   this.lastId = 0
   this.lastTime = 0
 }
