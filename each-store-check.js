@@ -23,6 +23,21 @@ function checkBoth (store, entries) {
   ])
 }
 
+function checkLastAdded (store, expected) {
+  return store.getLastAdded().then(function (lastAdded) {
+    assert.equal(lastAdded, expected)
+  })
+}
+
+function checkLastSynced (store, expectedRecieved, expectedSent) {
+  return store.getLastSynced().then(function (lastSynced) {
+    assert.deepEqual(lastSynced, {
+      received: expectedRecieved,
+      sent: expectedSent
+    })
+  })
+}
+
 function nope () { }
 
 /**
@@ -472,7 +487,11 @@ function eachStoreCheck (test) {
         ]).then(function () {
           return store.clean()
         }).then(function () {
-          return checkBoth(store, [])
+          return Promise.all([
+            checkBoth(store, []),
+            checkLastAdded(store, 0),
+            checkLastSynced(store, 0, 0)
+          ])
         })
       }
 
