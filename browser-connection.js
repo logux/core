@@ -37,8 +37,10 @@ BrowserConnection.prototype = {
     }
 
     this.ws.onclose = function () {
-      self.connected = false
-      self.emitter.emit('disconnect')
+      if (self.connected) {
+        self.connected = false
+        self.emitter.emit('disconnect')
+      }
     }
 
     this.ws.onmessage = function (event) {
@@ -63,6 +65,7 @@ BrowserConnection.prototype = {
 
   disconnect: function disconnect () {
     if (this.ws) {
+      this.ws.onclose()
       this.ws.close()
       this.ws = undefined
     }
