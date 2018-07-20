@@ -464,9 +464,10 @@ function eachStoreCheck (test) {
   test('cleans whole store if implemented', function (factory) {
     return function () {
       var store = factory()
-      var result = Promise.resolve()
-      if (typeof store.clean === 'function') {
-        result = Promise.all([
+      if (typeof store.clean === 'undefined') {
+        return Promise.resolve()
+      } else {
+        return Promise.all([
           store.add({ type: 'A' }, { id: '1', time: 1 }),
           store.add({ type: 'B' }, { id: '2', time: 2 }),
           store.add({ type: 'C' }, { id: '3', time: 3 }),
@@ -475,15 +476,14 @@ function eachStoreCheck (test) {
         ]).then(function () {
           return store.clean()
         }).then(function () {
+          var another = factory()
           return Promise.all([
-            checkBoth(store, []),
-            checkLastAdded(store, 0),
-            checkLastSynced(store, 0, 0)
+            checkBoth(another, []),
+            checkLastAdded(another, 0),
+            checkLastSynced(another, 0, 0)
           ])
         })
       }
-
-      return result
     }
   })
 }
