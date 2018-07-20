@@ -15,6 +15,7 @@
     "nanoevents": "^1.0.4"
   },
   "devDependencies": {
+    "clean-publish": "^1.0.7",
     "docdash": "^0.4.0",
     "eslint": "^5.1.0",
     "eslint-ci": "^0.1.1",
