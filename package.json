@@ -42,10 +42,115 @@
     "spellcheck": "yarn docs && yaspeller-ci *.md docs/*.html",
     "clean": "rimraf docs/ coverage/",
     "lint": "eslint-ci *.js messages/*.js test/{**/,}*.js",
-    "docs": "jsdoc --configure .jsdocrc *.js",
+    "docs": "jsdoc -d docs/ *.js",
     "test": "jest --coverage && yarn lint && yarn spellcheck"
   },
   "pre-commit": [
     "lint-staged"
-  ]
+  ],
+  "lint-staged": {
+    "*.md": "yaspeller-ci",
+    "*.js": "eslint"
+  },
+  "jest": {
+    "testEnvironment": "node",
+    "coverageThreshold": {
+      "global": {
+        "statements": 100
+      }
+    }
+  },
+  "eslintConfig": {
+    "extends": "eslint-config-logux/browser"
+  },
+  "yaspeller": {
+    "lang": "en",
+    "ignoreCapitalization": true,
+    "excludeFiles": [
+      "docs/*.js.html"
+    ],
+    "dictionary": [
+      "CRDT",
+      "Logux",
+      "MemoryStore",
+      "Redux",
+      "js",
+      "JS",
+      "localStorage",
+      "docdash",
+      "generateId",
+      "JSDoc",
+      "nanoevents",
+      "DevTools",
+      "lastAdded",
+      "nodeId",
+      "Versioning",
+      "timestamp",
+      "timestamps",
+      "getTime",
+      "isFirstOlder",
+      "firstMeta",
+      "secondMeta",
+      "lastSent",
+      "lastReceived",
+      "getLastSynced",
+      "setLastSynced",
+      "LastSynced",
+      "getLastAdded",
+      "getLog",
+      "nextLog",
+      "TestLog",
+      "TestTime",
+      "changeMeta",
+      "diff",
+      "removeReason",
+      "preadd",
+      "byId",
+      "Deryabin",
+      "Konstantin",
+      "Mamaev",
+      "Grigoriy",
+      "Beziuk",
+      "Alexey",
+      "Gaziev",
+      "SaaS",
+      "Amplifr",
+      "eachStoreCheck",
+      "waitFor",
+      "TestPair",
+      "SyncError",
+      "ServerNode",
+      "ServerConnection",
+      "rightNode",
+      "rightSent",
+      "rightEvents",
+      "leftNode",
+      "leftSent",
+      "leftEvents",
+      "LocalPair",
+      "ClientNode",
+      "BrowserConnection",
+      "BaseNode",
+      "loopback",
+      "SemVer",
+      "subprotocol",
+      "remoteSubprotocol",
+      "minProtocol",
+      "localProtocol",
+      "errorListener",
+      "clientError",
+      "authCallback",
+      "unsubscribe",
+      "remoteProtocol",
+      "WebSocket",
+      "ws",
+      "reconnectable",
+      "lastId",
+      "GMT",
+      "Mon",
+      "Tue",
+      "Thu",
+      "Fri"
+    ]
+  }
 }
