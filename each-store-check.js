@@ -12,7 +12,7 @@ function all (request, list) {
 
 function check (store, order, list) {
   return all(store.get({ order: order })).then(function (entries) {
-    assert.deepEqual(entries, list)
+    assert.deepStrictEqual(entries, list)
   })
 }
 
@@ -25,13 +25,13 @@ function checkBoth (store, entries) {
 
 function checkLastAdded (store, expected) {
   return store.getLastAdded().then(function (lastAdded) {
-    assert.equal(lastAdded, expected)
+    assert.strictEqual(lastAdded, expected)
   })
 }
 
 function checkLastSynced (store, expectedSent, expectedRecieved) {
   return store.getLastSynced().then(function (lastSynced) {
-    assert.deepEqual(lastSynced, {
+    assert.deepStrictEqual(lastSynced, {
       sent: expectedSent,
       received: expectedRecieved
     })
@@ -135,7 +135,7 @@ function eachStoreCheck (test) {
       return store.add({ }, { id: '1 n 0', time: 1, a: 1 }).then(function () {
         return store.changeMeta('1 n 0', { a: 2, b: 2 })
       }).then(function (result) {
-        assert.equal(result, true)
+        assert.strictEqual(result, true)
         return checkBoth(store, [
           [{ }, { id: '1 n 0', time: 1, added: 1, a: 2, b: 2 }]
         ])
@@ -147,7 +147,7 @@ function eachStoreCheck (test) {
     return function () {
       var store = factory()
       return store.changeMeta('1 n 0', { a: 1 }).then(function (result) {
-        assert.equal(result, false)
+        assert.strictEqual(result, false)
       })
     }
   })
@@ -166,7 +166,7 @@ function eachStoreCheck (test) {
       ]).then(function () {
         return store.remove('1 node1 1')
       }).then(function (result) {
-        assert.deepEqual(result, [
+        assert.deepStrictEqual(result, [
           { type: '2' }, { id: '1 node1 1', time: 2, added: 2 }
         ])
         return checkBoth(store, [
@@ -206,7 +206,7 @@ function eachStoreCheck (test) {
       ).then(function () {
         return store.remove('2 n 0')
       }).then(function (result) {
-        assert.equal(result, false)
+        assert.strictEqual(result, false)
         return check(store, 'created', [
           [{ type: 'A' }, { id: '1 n 0', time: 1, added: 1 }]
         ])
@@ -380,7 +380,7 @@ function eachStoreCheck (test) {
           store.removeReason('a', { id: '4 n 0' }, push)
         ])
       }).then(function () {
-        assert.deepEqual(removed, ['1'])
+        assert.deepStrictEqual(removed, ['1'])
         return checkBoth(store, [
           [{ type: '2' }, { added: 2, id: '2 n 0', time: 2, reasons: ['a'] }],
           [{ type: '3' }, { added: 3, id: '3 n 0', time: 3, reasons: ['a'] }]
@@ -401,15 +401,15 @@ function eachStoreCheck (test) {
       ]).then(function () {
         return store.byId('1 node 0')
       }).then(function (result) {
-        assert.deepEqual(result[0], { type: 'A' })
-        assert.deepEqual(result[1].time, 1)
+        assert.deepStrictEqual(result[0], { type: 'A' })
+        assert.deepStrictEqual(result[1].time, 1)
         return store.byId('1 node 2')
       }).then(function (result) {
-        assert.deepEqual(result[0], { type: 'C' })
+        assert.deepStrictEqual(result[0], { type: 'C' })
         return store.byId('2 node 1')
       }).then(function (result) {
-        assert.deepEqual(result[0], null)
-        assert.deepEqual(result[1], null)
+        assert.deepStrictEqual(result[0], null)
+        assert.deepStrictEqual(result[1], null)
       })
     }
   })
@@ -419,7 +419,7 @@ function eachStoreCheck (test) {
       var store = factory()
       var id = '1 a 1'
       return store.add({ a: 1 }, { id: id, time: 1 }).then(function (meta) {
-        assert.deepEqual(meta, { id: id, time: 1, added: 1 })
+        assert.deepStrictEqual(meta, { id: id, time: 1, added: 1 })
         return store.add({ a: 2 }, { id: id, time: 2 })
       }).then(function (meta) {
         assert.ok(!meta)
