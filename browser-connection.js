@@ -76,7 +76,11 @@ BrowserConnection.prototype = {
   },
 
   send: function send (message) {
-    this.ws.send(JSON.stringify(message))
+    if (this.ws && this.ws.readyState === WebSocket.OPEN) {
+      this.ws.send(JSON.stringify(message))
+    } else {
+      this.disconnect()
+    }
   },
 
   error: function error (message) {

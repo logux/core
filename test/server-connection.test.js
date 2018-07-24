@@ -73,6 +73,23 @@ it('sends messages', function () {
   expect(sent).toEqual(['["test"]'])
 })
 
+it('does not send to closed socket', function () {
+  var ws = new NanoEvents()
+  var sent = []
+  ws.send = function (msg) {
+    sent.push(msg)
+  }
+  ws.close = function () { }
+
+  var connection = new ServerConnection(ws)
+
+  connection.ws.readyState = 2
+
+  connection.send(['test'])
+  expect(sent).toEqual([])
+  expect(connection.connected).toBeFalsy()
+})
+
 it('emits errors', function () {
   var connection = new ServerConnection(new NanoEvents())
 

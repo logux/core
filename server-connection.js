@@ -53,8 +53,8 @@ ServerConnection.prototype = {
     if (this.connected) {
       this.connected = false
       this.emitter.emit('disconnect')
+      this.ws.close()
     }
-    this.ws.close()
   },
 
   on: function on (event, listener) {
@@ -62,6 +62,10 @@ ServerConnection.prototype = {
   },
 
   send: function send (message) {
+    if (this.ws.readyState !== this.ws.OPEN) {
+      this.disconnect()
+      return
+    }
     var json = JSON.stringify(message)
     try {
       this.ws.send(json)

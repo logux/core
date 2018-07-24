@@ -126,3 +126,14 @@ it('sends messages', function () {
     expect(connection.ws.sent).toEqual(['["test"]'])
   })
 })
+
+it('does not send to closed socket', function () {
+  global.WebSocket = FakeWebSocket
+  var connection = new BrowserConnection('ws://locahost')
+
+  return connection.connect().then(function () {
+    connection.ws.readyState = 2
+    connection.send(['test'])
+    expect(connection.connected).toBeFalsy()
+  })
+})
