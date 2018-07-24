@@ -35,8 +35,10 @@ function ServerConnection (ws) {
   })
 
   this.ws.on('close', function () {
-    self.connected = false
-    self.emitter.emit('disconnect')
+    if (self.connected) {
+      self.connected = false
+      self.emitter.emit('disconnect')
+    }
   })
 }
 
@@ -48,6 +50,10 @@ ServerConnection.prototype = {
   },
 
   disconnect: function disconnect () {
+    if (this.connected) {
+      this.connected = false
+      this.emitter.emit('disconnect')
+    }
     this.ws.close()
   },
 
