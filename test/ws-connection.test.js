@@ -48,7 +48,7 @@ it('emits error on error', function () {
   })
 
   return connection.connect().then(function () {
-    connection.ws.onerror(new Error('test'))
+    connection.ws.onerror({ error: new Error('test') })
     expect(error.message).toEqual('test')
   })
 })

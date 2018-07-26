@@ -32,8 +32,8 @@ WsConnection.prototype = {
   init: function init (ws) {
     var self = this
 
-    ws.onerror = function (e) {
-      self.emitter.emit('error', e)
+    ws.onerror = function (event) {
+      self.emitter.emit('error', event.error)
     }
 
     ws.onclose = function () {
