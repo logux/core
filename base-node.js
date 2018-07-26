@@ -21,7 +21,7 @@ var NOT_TO_THROW = {
   'timeout': true
 }
 
-var BEFORE_AUTH = ['connect', 'connected', 'error']
+var BEFORE_AUTH = ['connect', 'connected', 'error', 'debug']
 
 function syncMappedEvent (node, action, meta) {
   var added = meta.added

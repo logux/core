@@ -29,7 +29,6 @@ it('sends debug messages', function () {
 it('emits a debug on debug error messages', function () {
   var pair = new TestPair()
   node = new ServerNode('server', TestTime.getLog(), pair.left)
-  node.authenticated = true
 
   var debugs = []
   node.on('debug', function (type, data) {
