@@ -5,6 +5,7 @@ var NanoEvents = require('nanoevents')
  *
  * @param {string} url WebSocket server URL.
  * @param {function} [WS] WebSocket class if you want change implementation.
+ * @param {object} opts Extra option for WebSocket constructor.
  *
  * @example
  * import { WsConnection } from 'logux-core'
@@ -15,7 +16,7 @@ var NanoEvents = require('nanoevents')
  * @class
  * @extends Connection
  */
-function WsConnection (url, WS) {
+function WsConnection (url, WS, opts) {
   this.connected = false
   this.emitter = new NanoEvents()
   if (WS) {
@@ -26,6 +27,7 @@ function WsConnection (url, WS) {
     throw new Error('System has no WebSocket support')
   }
   this.url = url
+  this.opts = opts
 }
 
 WsConnection.prototype = {
@@ -59,7 +61,7 @@ WsConnection.prototype = {
 
   connect: function connect () {
     this.emitter.emit('connecting')
-    this.init(new this.WS(this.url))
+    this.init(new this.WS(this.url, undefined, this.opts))
 
     var self = this
     return new Promise(function (resolve) {

@@ -1,6 +1,7 @@
 var WsConnection = require('../ws-connection')
 
-function FakeWebSocket () {
+function FakeWebSocket (url, protocols, opts) {
+  this.opts = opts
   this.sent = []
   var self = this
   setTimeout(function () {
@@ -132,6 +133,13 @@ it('uses custom WebSocket implementation', function () {
   return connection.connect().then(function () {
     connection.send(['test'])
     expect(connection.ws.sent).toEqual(['["test"]'])
+  })
+})
+
+it('passes extra option for WebSocket', function () {
+  var connection = new WsConnection('ws://locahost', FakeWebSocket, { a: 1 })
+  return connection.connect().then(function () {
+    expect(connection.ws.opts).toEqual({ a: 1 })
   })
 })
 
