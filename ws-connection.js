@@ -39,7 +39,7 @@ WsConnection.prototype = {
     }
 
     ws.onclose = function () {
-      if (self.connected) {
+      if (self.ws) {
         self.connected = false
         self.emitter.emit('disconnect')
       }

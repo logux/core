@@ -85,6 +85,13 @@ it('emits connection states', function () {
     connection.ws.onclose()
     expect(states).toEqual(['connecting', 'connect', 'disconnect'])
     expect(connection.connected).toBeFalsy()
+
+    connection.connect()
+    connection.ws.onclose()
+    expect(states).toEqual([
+      'connecting', 'connect', 'disconnect', 'connecting', 'disconnect'
+    ])
+    expect(connection.connected).toBeFalsy()
   })
 })
 
