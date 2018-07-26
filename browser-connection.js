@@ -6,7 +6,7 @@ var NanoEvents = require('nanoevents')
  * @param {string} url WebSocket server URL.
  *
  * @example
- * import { BrowserConnection } from 'logux-websocket'
+ * import { BrowserConnection } from 'logux-core'
  *
  * const connection = new BrowserConnection('wss://logux.example.com/')
  * const node = new ClientNode(nodeId, log, connection, opts)

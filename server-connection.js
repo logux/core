@@ -6,7 +6,7 @@ var NanoEvents = require('nanoevents')
  * @param {WebSocket} ws WebSocket instance
  *
  * @example
- * import { ServerConnection } from 'logux-websocket'
+ * import { ServerConnection } from 'logux-core'
  * import { Server } from 'ws'
  *
  * wss.on('connection', function connection(ws) {
