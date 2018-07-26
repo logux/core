@@ -371,6 +371,7 @@ BaseNode.prototype = {
       this.endTimeout()
     }
     if (this.pingTimeout) clearTimeout(this.pingTimeout)
+    this.authenticated = false
     this.connected = false
     this.setState('disconnected')
   },
@@ -396,7 +397,7 @@ BaseNode.prototype = {
   },
 
   onAdd: function onAdd (action, meta) {
-    if (!this.connected) return
+    if (!this.authenticated) return
     if (this.lastAddedCache < meta.added) {
       this.lastAddedCache = meta.added
     }

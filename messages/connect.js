@@ -85,8 +85,6 @@ module.exports = {
   },
 
   sendConnected: function sendConnected (start, end) {
-    this.baseTime = end
-
     var message = [
       'connected',
       this.localProtocol,
@@ -122,7 +120,8 @@ module.exports = {
 
     var node = this
     auth(this, nodeId, options.credentials, function () {
-      node.sendConnected(start, node.now())
+      node.baseTime = node.now()
+      node.sendConnected(start, node.baseTime)
       node.syncSince(synced)
     })
   },
