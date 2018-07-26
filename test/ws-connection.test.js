@@ -1,4 +1,4 @@
-var BrowserConnection = require('../browser-connection')
+var WsConnection = require('../ws-connection')
 
 function FakeWebSocket () {
   this.sent = []
@@ -19,15 +19,14 @@ afterEach(function () {
 })
 
 it('throws a error on lack of WebSocket support', function () {
-  var connection = new BrowserConnection('ws://locahost')
   expect(function () {
-    connection.connect()
+    new WsConnection('ws://locahost')
   }).toThrowError(/WebSocket/)
 })
 
 it('emits error on wrong format', function () {
   global.WebSocket = FakeWebSocket
-  var connection = new BrowserConnection('ws://locahost')
+  var connection = new WsConnection('ws://locahost')
   var error
   connection.on('error', function (err) {
     error = err
@@ -42,7 +41,7 @@ it('emits error on wrong format', function () {
 
 it('emits error on error', function () {
   global.WebSocket = FakeWebSocket
-  var connection = new BrowserConnection('ws://locahost')
+  var connection = new WsConnection('ws://locahost')
   var error
   connection.on('error', function (err) {
     error = err
@@ -56,7 +55,7 @@ it('emits error on error', function () {
 
 it('emits connection states', function () {
   global.WebSocket = FakeWebSocket
-  var connection = new BrowserConnection('ws://locahost')
+  var connection = new WsConnection('ws://locahost')
 
   var states = []
   connection.on('connecting', function () {
@@ -88,7 +87,7 @@ it('emits connection states', function () {
 
 it('closes WebSocket', function () {
   global.WebSocket = FakeWebSocket
-  var connection = new BrowserConnection('ws://locahost')
+  var connection = new WsConnection('ws://locahost')
 
   return connection.connect().then(function () {
     var ws = connection.ws
@@ -104,7 +103,7 @@ it('closes WebSocket', function () {
 
 it('receives messages', function () {
   global.WebSocket = FakeWebSocket
-  var connection = new BrowserConnection('ws://locahost')
+  var connection = new WsConnection('ws://locahost')
 
   var received = []
   connection.on('message', function (msg) {
@@ -119,7 +118,16 @@ it('receives messages', function () {
 
 it('sends messages', function () {
   global.WebSocket = FakeWebSocket
-  var connection = new BrowserConnection('ws://locahost')
+  var connection = new WsConnection('ws://locahost')
+
+  return connection.connect().then(function () {
+    connection.send(['test'])
+    expect(connection.ws.sent).toEqual(['["test"]'])
+  })
+})
+
+it('uses custom WebSocket implementation', function () {
+  var connection = new WsConnection('ws://locahost', FakeWebSocket)
 
   return connection.connect().then(function () {
     connection.send(['test'])
@@ -129,7 +137,7 @@ it('sends messages', function () {
 
 it('does not send to closed socket', function () {
   global.WebSocket = FakeWebSocket
-  var connection = new BrowserConnection('ws://locahost')
+  var connection = new WsConnection('ws://locahost')
 
   return connection.connect().then(function () {
     connection.ws.readyState = 2

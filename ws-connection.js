@@ -4,46 +4,46 @@ var NanoEvents = require('nanoevents')
  * Logux connection for browser WebSocket.
  *
  * @param {string} url WebSocket server URL.
+ * @param {function} [WS] WebSocket class if you want change implementation.
  *
  * @example
- * import { BrowserConnection } from 'logux-core'
+ * import { WsConnection } from 'logux-core'
  *
- * const connection = new BrowserConnection('wss://logux.example.com/')
+ * const connection = new WsConnection('wss://logux.example.com/')
  * const node = new ClientNode(nodeId, log, connection, opts)
  *
  * @class
  * @extends Connection
  */
-function BrowserConnection (url) {
+function WsConnection (url, WS) {
   this.connected = false
   this.emitter = new NanoEvents()
-
+  if (WS) {
+    this.WS = WS
+  } else if (typeof WebSocket !== 'undefined') {
+    this.WS = WebSocket
+  } else {
+    throw new Error('System has no WebSocket support')
+  }
   this.url = url
 }
 
-BrowserConnection.prototype = {
-
-  connect: function connect () {
-    if (typeof WebSocket === 'undefined') {
-      throw new Error('Browser has no WebSocket support')
-    }
-
-    this.emitter.emit('connecting')
-    this.ws = new WebSocket(this.url)
+WsConnection.prototype = {
+  init: function init (ws) {
     var self = this
 
-    this.ws.onerror = function (e) {
+    ws.onerror = function (e) {
       self.emitter.emit('error', e)
     }
 
-    this.ws.onclose = function () {
+    ws.onclose = function () {
       if (self.connected) {
         self.connected = false
         self.emitter.emit('disconnect')
       }
     }
 
-    this.ws.onmessage = function (event) {
+    ws.onmessage = function (event) {
       var data
       try {
         data = JSON.parse(event.data)
@@ -54,6 +54,14 @@ BrowserConnection.prototype = {
       self.emitter.emit('message', data)
     }
 
+    this.ws = ws
+  },
+
+  connect: function connect () {
+    this.emitter.emit('connecting')
+    this.init(new this.WS(this.url))
+
+    var self = this
     return new Promise(function (resolve) {
       self.ws.onopen = function () {
         self.connected = true
@@ -76,7 +84,7 @@ BrowserConnection.prototype = {
   },
 
   send: function send (message) {
-    if (this.ws && this.ws.readyState === WebSocket.OPEN) {
+    if (this.ws && this.ws.readyState === this.ws.OPEN) {
       this.ws.send(JSON.stringify(message))
     } else {
       this.disconnect()
@@ -91,4 +99,4 @@ BrowserConnection.prototype = {
 
 }
 
-module.exports = BrowserConnection
+module.exports = WsConnection

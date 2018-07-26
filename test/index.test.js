@@ -1,6 +1,6 @@
-var BrowserConnection = require('../browser-connection')
 var ServerConnection = require('../server-connection')
 var isFirstOlder = require('../is-first-older')
+var WsConnection = require('../ws-connection')
 var MemoryStore = require('../memory-store')
 var ClientNode = require('../client-node')
 var ServerNode = require('../server-node')
@@ -29,8 +29,8 @@ it('has log class', function () {
   expect(core.Log).toBe(Log)
 })
 
-it('has BrowserConnection class', function () {
-  expect(core.BrowserConnection).toBe(BrowserConnection)
+it('has WsConnection class', function () {
+  expect(core.WsConnection).toBe(WsConnection)
 })
 
 it('has ServerConnection class', function () {

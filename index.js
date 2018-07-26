@@ -1,7 +1,7 @@
-var BrowserConnection = require('./browser-connection')
 var ServerConnection = require('./server-connection')
 var eachStoreCheck = require('./each-store-check')
 var isFirstOlder = require('./is-first-older')
+var WsConnection = require('./ws-connection')
 var MemoryStore = require('./memory-store')
 var ClientNode = require('./client-node')
 var ServerNode = require('./server-node')
@@ -14,10 +14,10 @@ var TestPair = require('./test-pair')
 var Log = require('./log')
 
 module.exports = {
-  BrowserConnection: BrowserConnection,
   ServerConnection: ServerConnection,
   eachStoreCheck: eachStoreCheck,
   isFirstOlder: isFirstOlder,
+  WsConnection: WsConnection,
   MemoryStore: MemoryStore,
   ClientNode: ClientNode,
   ServerNode: ServerNode,

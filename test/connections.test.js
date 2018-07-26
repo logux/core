@@ -1,20 +1,18 @@
 var WebSocket = require('ws')
 var delay = require('nanodelay')
 
-var BrowserConnection = require('../browser-connection')
 var ServerConnection = require('../server-connection')
+var WsConnection = require('../ws-connection')
 
 var wss
 afterEach(function () {
   wss.close()
-  delete global.WebSocket
 })
 
 it('works in real protocol', function () {
-  global.WebSocket = WebSocket
   wss = new WebSocket.Server({ port: 8081 })
 
-  var client = new BrowserConnection('ws://0.0.0.0:8081')
+  var client = new WsConnection('ws://0.0.0.0:8081', WebSocket)
   var clientReceived = []
   client.on('message', function (msg) {
     clientReceived.push(msg)

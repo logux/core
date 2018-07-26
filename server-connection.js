@@ -1,5 +1,8 @@
 var NanoEvents = require('nanoevents')
 
+var WsConnection = require('./ws-connection')
+var merge = require('./merge')
+
 /**
  * Logux connection for server WebSocket.
  *
@@ -15,31 +18,12 @@ var NanoEvents = require('nanoevents')
  * })
  *
  * @class
- * @extends Connection
+ * @extends WsConnection
  */
 function ServerConnection (ws) {
   this.connected = true
   this.emitter = new NanoEvents()
-  this.ws = ws
-  var self = this
-
-  this.ws.on('message', function (msg) {
-    var data
-    try {
-      data = JSON.parse(msg)
-    } catch (e) {
-      self.error(msg)
-      return
-    }
-    self.emitter.emit('message', data)
-  })
-
-  this.ws.on('close', function () {
-    if (self.connected) {
-      self.connected = false
-      self.emitter.emit('disconnect')
-    }
-  })
+  this.init(ws)
 }
 
 ServerConnection.prototype = {
@@ -47,39 +31,11 @@ ServerConnection.prototype = {
   connect: function connect () {
     throw new Error('ServerConnection accepts already connected WebSocket ' +
                     'instance and could not reconnect it')
-  },
-
-  disconnect: function disconnect () {
-    if (this.connected) {
-      this.connected = false
-      this.emitter.emit('disconnect')
-      this.ws.close()
-    }
-  },
-
-  on: function on (event, listener) {
-    return this.emitter.on(event, listener)
-  },
-
-  send: function send (message) {
-    if (this.ws.readyState !== this.ws.OPEN) {
-      this.disconnect()
-      return
-    }
-    var json = JSON.stringify(message)
-    try {
-      this.ws.send(json)
-    } catch (e) {
-      this.emitter.emit('error', e)
-    }
-  },
-
-  error: function error (message) {
-    var err = new Error('Wrong message format')
-    err.received = message
-    this.emitter.emit('error', err)
   }
 
 }
+
+ServerConnection.prototype = merge(
+  ServerConnection.prototype, WsConnection.prototype)
 
 module.exports = ServerConnection
