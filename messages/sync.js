@@ -62,15 +62,15 @@ module.exports = {
 
       meta.time = meta.time + this.baseTime
 
-      var process = Promise.resolve([action, meta])
+      var process
       if (this.options.inFilter) {
-        process = process.then(function (data) {
-          return node.options.inFilter(data[0], data[1]).then(function (res) {
-            return res ? data : false
-          }).catch(function (e) {
-            node.error(e)
-          })
+        process = node.options.inFilter(action, meta).then(function (res) {
+          return res ? [action, meta] : false
+        }).catch(function (e) {
+          node.error(e)
         })
+      } else {
+        process = Promise.resolve([action, meta])
       }
 
       process.then(function (data) {
