@@ -202,22 +202,22 @@ it('maps output actions', function () {
 })
 
 it('filters input actions', function () {
-  return createTest().then(function (test) {
+  return createTest(function (test) {
     test.rightNode.options.inFilter = function (action, meta) {
       expect(meta.id).toBeDefined()
       expect(meta.time).toBeDefined()
-      return Promise.resolve(action.type === 'b')
+      return Promise.resolve(action.type !== 'c')
     }
     test.leftNode.log.add({ type: 'a' })
-    return test.wait('left')
-  }).then(function (test) {
-    expect(test.leftNode.log.actions()).toEqual([{ type: 'a' }])
-    expect(test.rightNode.log.actions()).toEqual([])
     test.leftNode.log.add({ type: 'b' })
-    return test.wait('left')
+    test.leftNode.log.add({ type: 'c' })
   }).then(function (test) {
-    expect(test.leftNode.log.actions()).toEqual([{ type: 'a' }, { type: 'b' }])
-    expect(test.rightNode.log.actions()).toEqual([{ type: 'b' }])
+    expect(test.leftNode.log.actions()).toEqual([
+      { type: 'a' }, { type: 'b' }, { type: 'c' }
+    ])
+    expect(test.rightNode.log.actions()).toEqual([
+      { type: 'a' }, { type: 'b' }
+    ])
   })
 })
 
