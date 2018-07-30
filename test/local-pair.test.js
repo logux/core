@@ -116,7 +116,7 @@ it('emulates delay', function () {
 
   var prevTime = Date.now()
   return tracker.pair.left.connect().then(function () {
-    expect(Date.now() - prevTime).toBeGreaterThanOrEqual(50)
+    expect(Date.now() - prevTime).toBeGreaterThanOrEqual(48)
 
     prevTime = Date.now()
     tracker.pair.left.send(['test'])
