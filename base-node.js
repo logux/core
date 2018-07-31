@@ -174,7 +174,7 @@ function BaseNode (nodeId, log, connection, options) {
   }))
   this.unbind.push(connection.on('error', function (error) {
     if (error.message === 'Wrong message format') {
-      node.sendError(new SyncError(node, 'wrong-format', error.received))
+      node.sendError(new SyncError('wrong-format', error.received))
       node.connection.disconnect('error')
     } else {
       node.error(error)
@@ -384,7 +384,7 @@ BaseNode.prototype = {
       if (this.authenticating) {
         this.unauthenticated.push(msg)
       } else {
-        this.sendError(new SyncError(this, 'missed-auth', JSON.stringify(msg)))
+        this.sendError(new SyncError('missed-auth', JSON.stringify(msg)))
       }
       return
     }
@@ -420,7 +420,7 @@ BaseNode.prototype = {
   },
 
   syncError: function syncError (type, options, received) {
-    var err = new SyncError(this, type, options, received)
+    var err = new SyncError(type, options, received)
     this.emitter.emit('error', err)
     if (!NOT_TO_THROW[type] && this.throwsError) {
       throw err

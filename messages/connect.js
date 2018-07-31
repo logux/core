@@ -19,7 +19,7 @@ function auth (node, nodeId, credentials, callback) {
       }
       node.unauthenticated = []
     } else {
-      node.sendError(new SyncError(node, 'wrong-credentials'))
+      node.sendError(new SyncError('wrong-credentials'))
       node.destroy()
     }
   }).catch(function (e) {
@@ -38,7 +38,7 @@ function checkProtocol (node, ver) {
   if (ver >= node.minProtocol) {
     return true
   } else {
-    node.sendError(new SyncError(node, 'wrong-protocol', {
+    node.sendError(new SyncError('wrong-protocol', {
       supported: node.minProtocol, used: ver
     }))
     node.destroy()

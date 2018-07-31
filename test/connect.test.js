@@ -164,7 +164,7 @@ it('checks subprotocol version', function () {
   test = createTest()
   test.leftNode.options.subprotocol = '1.0.0'
   test.rightNode.on('connect', function () {
-    throw new SyncError(test.rightNode, 'wrong-subprotocol', {
+    throw new SyncError('wrong-subprotocol', {
       supported: '2.x',
       used: test.rightNode.remoteSubprotocol
     })
@@ -184,7 +184,7 @@ it('checks subprotocol version in client', function () {
   test = createTest()
   test.rightNode.options.subprotocol = '1.0.0'
   test.leftNode.on('connect', function () {
-    throw new SyncError(test.leftNode, 'wrong-subprotocol', {
+    throw new SyncError('wrong-subprotocol', {
       supported: '2.x',
       used: test.leftNode.remoteSubprotocol
     })
@@ -391,7 +391,7 @@ it('sends authentication errors', function () {
   test = createTest()
   test.rightNode.options = {
     auth: function () {
-      return Promise.reject(new SyncError(test.rightNode, 'bruteforce'))
+      return Promise.reject(new SyncError('bruteforce'))
     }
   }
 

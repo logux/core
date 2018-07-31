@@ -86,7 +86,7 @@ var validators = {
 }
 
 function wrongFormat (node, msg) {
-  node.sendError(new SyncError(node, 'wrong-format', JSON.stringify(msg)))
+  node.sendError(new SyncError('wrong-format', JSON.stringify(msg)))
   node.connection.disconnect('error')
   return false
 }
@@ -99,7 +99,7 @@ function validate (node, msg) {
 
   var validator = validators[name]
   if (!validator || !node[name + 'Message']) {
-    node.sendError(new SyncError(node, 'unknown-message', name))
+    node.sendError(new SyncError('unknown-message', name))
     node.connection.disconnect('error')
     return false
   }

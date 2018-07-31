@@ -78,7 +78,7 @@ it('throws a error on error message by default', function () {
   node = createNode()
   expect(function () {
     node.onMessage(['error', 'wrong-format', '1'])
-  }).toThrow(new SyncError(node, 'wrong-format', '1', true))
+  }).toThrow(new SyncError('wrong-format', '1', true))
 })
 
 it('does not throw errors which are not relevant to code', function () {
@@ -97,7 +97,7 @@ it('disables throwing a error on listener', function () {
   })
 
   node.onMessage(['error', 'wrong-format', '2'])
-  expect(errors).toEqual([new SyncError(node, 'wrong-format', '2', true)])
+  expect(errors).toEqual([new SyncError('wrong-format', '2', true)])
 })
 
 it('emits a event on error sending', function () {
@@ -107,7 +107,7 @@ it('emits a event on error sending', function () {
       errors.push(err)
     })
 
-    var error = new SyncError(test.leftNode, 'test', 'type')
+    var error = new SyncError('test', 'type')
     test.leftNode.sendError(error)
     expect(errors).toEqual([error])
   })
