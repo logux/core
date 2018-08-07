@@ -8,7 +8,9 @@ module.exports = {
 
   pingMessage: function pingMessage (synced) {
     this.setLastReceived(synced)
-    this.send(['pong', this.lastAddedCache])
+    if (this.connected && this.authenticated) {
+      this.send(['pong', this.lastAddedCache])
+    }
   },
 
   pongMessage: function pongMessage (synced) {
