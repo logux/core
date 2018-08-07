@@ -326,9 +326,7 @@ it('listens for window events', function () {
 
     navigator.onLine = true
     listeners.resume()
-    return pair.wait()
-  }).then(function () {
-    return pair.wait()
+    return delay(10)
   }).then(function () {
     expect(recon.connected).toBeTruthy()
     pair.right.disconnect()
