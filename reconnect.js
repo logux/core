@@ -71,17 +71,26 @@ function Reconnect (connection, options) {
       if (!document.hidden) self.connect()
     }
   }
-  function network () {
+  function connect () {
     if (self.reconnecting && !self.connected && !self.connecting) {
       if (navigator.onLine) self.connect()
     }
   }
+  function disconnect () {
+    self.disconnect('freeze')
+  }
   if (typeof navigator !== 'undefined') {
     document.addEventListener('visibilitychange', visibility, false)
-    window.addEventListener('online', network, false)
+    window.addEventListener('focus', connect, false)
+    window.addEventListener('online', connect, false)
+    window.addEventListener('resume', connect, false)
+    window.addEventListener('freeze', disconnect, false)
     this.unbind.push(function () {
       document.removeEventListener('visibilitychange', visibility, false)
-      window.removeEventListener('online', network, false)
+      window.removeEventListener('focus', connect, false)
+      window.removeEventListener('online', connect, false)
+      window.removeEventListener('resume', connect, false)
+      window.removeEventListener('freeze', disconnect, false)
     })
   }
 }
@@ -95,7 +104,9 @@ Reconnect.prototype = {
   },
 
   disconnect: function disconnect (reason) {
-    if (reason !== 'timeout' && reason !== 'error') this.reconnecting = false
+    if (reason !== 'timeout' && reason !== 'error' && reason !== 'freeze') {
+      this.reconnecting = false
+    }
     return this.connection.disconnect(reason)
   },
 
