@@ -201,6 +201,24 @@ it('maps output actions', function () {
   })
 })
 
+it('uses output filter before map', function () {
+  var calls = []
+  return createTest().then(function (test) {
+    test.leftNode.options.outMap = function (action, meta) {
+      calls.push('map')
+      return Promise.resolve([action, meta])
+    }
+    test.leftNode.options.outFilter = function () {
+      calls.push('filter')
+      return Promise.resolve(true)
+    }
+    test.leftNode.log.add({ type: 'a' })
+    return test.wait('left')
+  }).then(function () {
+    expect(calls).toEqual(['filter', 'map'])
+  })
+})
+
 it('filters input actions', function () {
   return createTest(function (test) {
     test.rightNode.options.inFilter = function (action, meta) {
@@ -233,6 +251,24 @@ it('maps input actions', function () {
   }).then(function (test) {
     expect(test.leftNode.log.actions()).toEqual([{ type: 'a' }])
     expect(test.rightNode.log.actions()).toEqual([{ type: 'a1' }])
+  })
+})
+
+it('uses input map before filter', function () {
+  var calls = []
+  return createTest().then(function (test) {
+    test.rightNode.options.inMap = function (action, meta) {
+      calls.push('map')
+      return Promise.resolve([action, meta])
+    }
+    test.rightNode.options.inFilter = function () {
+      calls.push('filter')
+      return Promise.resolve(true)
+    }
+    test.leftNode.log.add({ type: 'a' })
+    return test.wait('left')
+  }).then(function () {
+    expect(calls).toEqual(['map', 'filter'])
   })
 })
 

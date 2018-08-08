@@ -61,24 +61,23 @@ module.exports = {
       }
 
       meta.time = meta.time + this.baseTime
+      if (node.timeFix) meta.time = meta.time + node.timeFix
 
       var process = Promise.resolve([action, meta])
-      if (this.options.inFilter) {
+
+      if (node.options.inMap) {
         process = process.then(function (data) {
-          return node.options.inFilter(data[0], data[1]).then(function (res) {
-            return res ? data : false
-          })
+          return node.options.inMap(data[0], data[1])
         }).catch(function (e) {
           node.error(e)
         })
       }
 
       process.then(function (data) {
-        if (!data) return false
-
-        if (node.timeFix) data[1].time = data[1].time + node.timeFix
-        if (node.options.inMap) {
-          return node.options.inMap(data[0], data[1]).catch(function (e) {
+        if (node.options.inFilter) {
+          return node.options.inFilter(data[0], data[1]).then(function (res) {
+            return res ? data : false
+          }).catch(function (e) {
             node.error(e)
           })
         } else {
