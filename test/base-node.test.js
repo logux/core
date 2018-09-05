@@ -85,7 +85,9 @@ it('disconnects on destroy', function () {
 
 it('does not throw error on send to disconnected connection', function () {
   var node = createNode()
-  node.sendDuilian()
+  expect(function () {
+    node.sendDuilian()
+  }).not.toThrow()
 })
 
 it('sends messages to connection', function () {
