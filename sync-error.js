@@ -99,8 +99,6 @@ SyncError.describe = function describe (type, options) {
     return 'Unknown message `' + options + '` type'
   } else if (type === 'bruteforce') {
     return 'Too many wrong authentication attempts'
-  } else if (type === 'missed-auth') {
-    return 'Start authentication before sending message ' + options
   } else if (type === 'wrong-protocol') {
     return 'Logux supports protocols only from version ' + options.supported +
            ', but you use ' + options.used

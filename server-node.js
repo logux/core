@@ -78,7 +78,6 @@ ServerNode.prototype = {
   },
 
   connectMessage: function connectMessage () {
-    this.authenticating = true
     var node = this
     var args = arguments
     this.initializing.then(function () {

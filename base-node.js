@@ -115,7 +115,6 @@ function BaseNode (nodeId, log, connection, options) {
    * @type {boolean}
    */
   this.authenticated = false
-  this.authenticating = false
   this.unauthenticated = []
 
   this.timeFix = 0
@@ -381,11 +380,7 @@ BaseNode.prototype = {
     var name = msg[0]
 
     if (!this.authenticated && BEFORE_AUTH.indexOf(name) === -1) {
-      if (this.authenticating) {
-        this.unauthenticated.push(msg)
-      } else {
-        this.sendError(new SyncError('missed-auth', JSON.stringify(msg)))
-      }
+      this.unauthenticated.push(msg)
       return
     }
 

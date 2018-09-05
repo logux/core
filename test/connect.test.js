@@ -240,23 +240,6 @@ it('sends credentials in connected', function () {
   })
 })
 
-it('sends error on messages before auth', function () {
-  var log = TestTime.getLog()
-  test = new TestPair()
-  test.leftNode = new BaseNode('client', log, test.left)
-  test.rightNode = new ServerNode('server', log, test.right)
-  test.leftNode.catch(function () { })
-
-  return test.left.connect().then(function () {
-    test.leftNode.sendDuilian()
-    return test.wait('left')
-  }).then(function () {
-    expect(test.rightSent).toEqual([
-      ['error', 'missed-auth', '["duilian","金木水火土"]']
-    ])
-  })
-})
-
 it('denies access for wrong users', function () {
   test = createTest()
   test.rightNode.options = {

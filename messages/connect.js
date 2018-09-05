@@ -7,12 +7,9 @@ function auth (node, nodeId, credentials, callback) {
     return
   }
 
-  node.authenticating = true
   node.options.auth(credentials, nodeId).then(function (access) {
     if (access) {
       node.authenticated = true
-      node.authenticating = false
-
       callback()
       for (var i = 0; i < node.unauthenticated.length; i++) {
         node.onMessage(node.unauthenticated[i])
