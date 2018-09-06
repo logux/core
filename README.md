@@ -136,11 +136,11 @@ if (isFirstOlder(lastChange, meta)) {
 ```
 
 `meta.time` uses this time difference between client and server. So it contains
-time according local system time. As a result, `meta.time` could be different
+time according to local system time. As a result, `meta.time` could be different
 on different machines.
 
 `meta.id` uses time in first position, but it doesn’t use time difference
-between client as server. So `meta.id` is same on every machine
+between client as server. So `meta.id` is the same on every machine
 (as expected from ID).
 
 
@@ -150,8 +150,8 @@ Action metadata has `added` with sequence number. Every next action added
 to current log will get bigger `added` number.
 
 After synchronization actions from other log could have lower `id`,
-because they was created before synchronization. But `added` shows only when
-action was added to this log, not when they was created.
+because they were created before synchronization. But `added` shows only when
+action was added to this log, not when they were created.
 
 As result actions in synchronized logs will have the same `id`, but different
 `added` metadata.
@@ -261,7 +261,7 @@ log.add(syncedAction, { id, time }).then(meta => {
 })
 ```
 
-If you set ID manually, log could contains action with same ID.
+If you set ID manually, log could contain action with the same ID.
 In this case log will ignore new action and pass `false` to Promise.
 
 
@@ -323,7 +323,7 @@ log.each({ order: 'added' }, (action, meta) => {
 ### Comparing
 
 `isFirstOlder()` uses `meta.time` and `meta.id` to compare action creation
-time even if they was created in same milliseconds.
+time even if they were created in same milliseconds.
 
 ```js
 import isFirstOlder from 'logux-core/is-first-older'
@@ -443,7 +443,7 @@ const log2 = time.nextLog()
 
 ## Events
 
-All events doesn’t support asynchronous listeners. If you need asynchronous
+All events don't support asynchronous listeners. If you need asynchronous
 calls inside listeners, you should care about calling order by your own.
 
 ```js
@@ -479,11 +479,11 @@ It will emitted for reason-less action and for actions without a `reasons`.
 If action have reasons to put it to store, event will be emitted
 after store saved a event and `meta` will contain `added` property.
 
-It will not be emitted only if action with same `meta.id` is already presented
+It will not be emitted only if action with the same `meta.id` is already presented
 in store.
 
 It is the best place for action listeners to change application store according
-new actions.
+to new actions.
 
 ```js
 let lastChange
@@ -537,7 +537,7 @@ Think about this store as a basic store realization.
 
 ### Custom Store
 
-Any object implementing this methods can be considered a Store:
+Any object implementing these methods can be considered a Store:
 
 * `add(entry)` puts new log entry in the store. Returns a Promise with new
   action meta or `false` if action with same `id` was already in log.
