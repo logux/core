@@ -24,7 +24,7 @@ function WsConnection (url, WS, opts) {
   } else if (typeof WebSocket !== 'undefined') {
     this.WS = WebSocket
   } else {
-    throw new Error('System has no WebSocket support')
+    throw new Error('No WebSocket support')
   }
   this.url = url
   this.opts = opts
