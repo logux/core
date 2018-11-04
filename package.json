@@ -5,6 +5,13 @@
   "keywords": [
     "logux"
   ],
+  "scripts": {
+    "spellcheck": "yarn docs && yaspeller-ci *.md docs/*.html",
+    "clean": "rimraf docs/ coverage/",
+    "lint": "eslint-ci *.js messages/*.js test/{**/,}*.js",
+    "docs": "jsdoc -d docs/ *.js",
+    "test": "jest --coverage && yarn lint && yarn spellcheck"
+  },
   "author": "Andrey Sitnik <andrey@sitnik.ru>",
   "license": "MIT",
   "repository": "logux/logux-core",
@@ -35,13 +42,6 @@
     "rimraf": "^2.6.2",
     "ws": "^6.1.0",
     "yaspeller-ci": "^1.0.0"
-  },
-  "scripts": {
-    "spellcheck": "yarn docs && yaspeller-ci *.md docs/*.html",
-    "clean": "rimraf docs/ coverage/",
-    "lint": "eslint-ci *.js messages/*.js test/{**/,}*.js",
-    "docs": "jsdoc -d docs/ *.js",
-    "test": "jest --coverage && yarn lint && yarn spellcheck"
   },
   "husky": {
     "hooks": {
