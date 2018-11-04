@@ -89,7 +89,7 @@ WsConnection.prototype = {
     if (this.ws && this.ws.readyState === this.ws.OPEN) {
       this.ws.send(JSON.stringify(message))
     } else {
-      this.disconnect()
+      this.emitter.emit('error', new Error('WS was closed'))
     }
   },
 

@@ -156,9 +156,14 @@ it('does not send to closed socket', function () {
   global.WebSocket = FakeWebSocket
   var connection = new WsConnection('ws://locahost')
 
+  var errors = []
+  connection.on('error', function (e) {
+    errors.push(e.message)
+  })
+
   return connection.connect().then(function () {
     connection.ws.readyState = 2
     connection.send(['test'])
-    expect(connection.connected).toBeFalsy()
+    expect(errors).toEqual(['WS was closed'])
   })
 })

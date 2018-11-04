@@ -84,9 +84,14 @@ it('does not send to closed socket', function () {
 
   var connection = new ServerConnection(ws)
 
+  var errors = []
+  connection.on('error', function (e) {
+    errors.push(e.message)
+  })
+
   connection.ws.readyState = 2
 
   connection.send(['test'])
   expect(sent).toEqual([])
-  expect(connection.connected).toBeFalsy()
+  expect(errors).toEqual(['WS was closed'])
 })
