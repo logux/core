@@ -12,7 +12,7 @@ afterEach(function () {
 it('connects first', function () {
   var pair = new TestPair()
   node = new ClientNode('client', TestTime.getLog(), pair.left)
-  node.sendConnect = jest.fn()
+  jest.spyOn(node, 'sendConnect')
   return pair.left.connect().then(function () {
     expect(node.sendConnect).toBeCalled()
   })

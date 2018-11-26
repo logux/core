@@ -67,8 +67,9 @@ it('unbind all listeners on destroy', function () {
 
 it('destroys connection on destroy', function () {
   var node = createNode()
-  node.connection.disconnect = jest.fn()
-  node.connection.destroy = jest.fn()
+  node.connection.destroy = function () { }
+  jest.spyOn(node.connection, 'disconnect')
+  jest.spyOn(node.connection, 'destroy')
 
   node.destroy()
   expect(node.connection.disconnect).not.toBeCalledWith('destroy')

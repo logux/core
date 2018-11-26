@@ -20,7 +20,7 @@ it('has connecting state from the beginning', function () {
 it('destroys on disconnect', function () {
   var pair = new TestPair()
   node = new ServerNode('server', TestTime.getLog(), pair.left)
-  node.destroy = jest.fn()
+  jest.spyOn(node, 'destroy')
   return pair.left.connect().then(function () {
     pair.left.disconnect()
     expect(node.destroy).toBeCalled()
@@ -37,7 +37,7 @@ it('destroys on connect timeout', function () {
     error = err
   })
 
-  node.destroy = jest.fn()
+  jest.spyOn(node, 'destroy')
   return pair.left.connect().then(function () {
     expect(node.destroy).not.toBeCalled()
     return delay(200)

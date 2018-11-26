@@ -101,9 +101,10 @@ it('closes WebSocket', function () {
 
   return connection.connect().then(function () {
     var ws = connection.ws
-    ws.close = jest.fn(function () {
+    ws.close = function () {
       ws.onclose()
-    })
+    }
+    jest.spyOn(ws, 'close')
 
     connection.disconnect()
     expect(ws.close).toHaveBeenCalled()
