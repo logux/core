@@ -14,7 +14,7 @@
   },
   "author": "Andrey Sitnik <andrey@sitnik.ru>",
   "license": "MIT",
-  "repository": "logux/logux-core",
+  "repository": "logux/core",
   "engines": {
     "node": ">=6.0.0"
   },
