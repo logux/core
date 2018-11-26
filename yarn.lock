@@ -32,6 +32,13 @@
     log-update "^2.3.0"
     strip-ansi "^3.0.1"
 
+"@logux/eslint-config@^27.0.0":
+  version "27.0.0"
+  resolved "https://registry.yarnpkg.com/@logux/eslint-config/-/eslint-config-27.0.0.tgz#a967eac4f01e35354cf5eed6de4e2c1242fc7903"
+  integrity sha512-IFoa9mcQfiQFEbYET+DmHW9T4vvzAJY8nojfiKHyI3NJNL9qTu/Brppnmk6/J09HyhQD0j3JhaqCdP6uC4doYg==
+  dependencies:
+    globals "^11.9.0"
+
 "@samverschueren/stream-to-observable@^0.3.0":
   version "0.3.0"
   resolved "https://registry.yarnpkg.com/@samverschueren/stream-to-observable/-/stream-to-observable-0.3.0.tgz#ecdf48d532c58ea477acfcab80348424f8d0662f"
@@ -1081,13 +1088,6 @@ eslint-ci@^1.0.0:
   integrity sha512-8Itb/739gpX11nqvWg6kkpge7NwS1o+SkhfFAItfvH9/i5IoY6NLKKKzIagHakT2WmMdnq4HfcymYh/0NGvAVA==
   dependencies:
     ci-job-number "^0.3.0"
-
-eslint-config-logux@^27.0.0:
-  version "27.0.0"
-  resolved "https://registry.yarnpkg.com/eslint-config-logux/-/eslint-config-logux-27.0.0.tgz#3b40245b714602dcabb38d62bb9ea7177a3e8bd9"
-  integrity sha512-bxz0VGPyiQB8hxcA2EMRvcEmip2aaWnk92FRHjV4vGL5QjGo8O+ryYpzJem1ZJ9rzZkwV12BXjVwRx3DeoBRwg==
-  dependencies:
-    globals "^11.9.0"
 
 eslint-config-standard@^12.0.0:
   version "12.0.0"
