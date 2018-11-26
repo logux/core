@@ -63,17 +63,7 @@
     }
   },
   "eslintConfig": {
-    "extends": "eslint-config-logux/browser",
-    "overrides": [
-      {
-        "files": [
-          "*.test.js"
-        ],
-        "rules": {
-          "jest/expect-expect": "off"
-        }
-      }
-    ]
+    "extends": "@logux/eslint-config/browser"
   },
   "yaspeller": {
     "lang": "en",
