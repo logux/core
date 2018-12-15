@@ -2,10 +2,10 @@ var NanoEvents = require('nanoevents')
 
 var connectMessages = require('./messages/connect')
 var errorMessages = require('./messages/error')
+var debugMessages = require('./messages/debug')
 var pingMessages = require('./messages/ping')
 var syncMessages = require('./messages/sync')
-var debugMessages = require('./messages/debug')
-var SyncError = require('./sync-error')
+var LoguxError = require('./logux-error')
 
 var MIXINS = [
   errorMessages,
@@ -173,7 +173,7 @@ function BaseNode (nodeId, log, connection, options) {
   }))
   this.unbind.push(connection.on('error', function (error) {
     if (error.message === 'Wrong message format') {
-      node.sendError(new SyncError('wrong-format', error.received))
+      node.sendError(new LoguxError('wrong-format', error.received))
       node.connection.disconnect('error')
     } else {
       node.error(error)
@@ -257,7 +257,7 @@ BaseNode.prototype = {
    *
    * * `state`: synchronization state was changed.
    * * `connect`: custom check before node authentication. You can throw
-   *              a {@link SyncError} to send error to remote node.
+   *              a {@link LoguxError} to send error to remote node.
    * * `error`: synchronization error was raised.
    * * `clientError`: when error was sent to remote node.
    * * `debug`: when debug information received from remote node.
@@ -415,7 +415,7 @@ BaseNode.prototype = {
   },
 
   syncError: function syncError (type, options, received) {
-    var err = new SyncError(type, options, received)
+    var err = new LoguxError(type, options, received)
     this.emitter.emit('error', err)
     if (!NOT_TO_THROW[type] && this.throwsError) {
       throw err

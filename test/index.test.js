@@ -4,8 +4,8 @@ var WsConnection = require('../ws-connection')
 var MemoryStore = require('../memory-store')
 var ClientNode = require('../client-node')
 var ServerNode = require('../server-node')
+var LoguxError = require('../logux-error')
 var LocalPair = require('../local-pair')
-var SyncError = require('../sync-error')
 var Reconnect = require('../reconnect')
 var BaseNode = require('../base-node')
 var TestPair = require('../test-pair')
@@ -49,8 +49,8 @@ it('has LocalPair class', function () {
   expect(core.LocalPair).toBe(LocalPair)
 })
 
-it('has SyncError class', function () {
-  expect(core.SyncError).toBe(SyncError)
+it('has LoguxError class', function () {
+  expect(core.LoguxError).toBe(LoguxError)
 })
 
 it('has Reconnect class', function () {

@@ -5,8 +5,8 @@ var WsConnection = require('./ws-connection')
 var MemoryStore = require('./memory-store')
 var ClientNode = require('./client-node')
 var ServerNode = require('./server-node')
+var LoguxError = require('./logux-error')
 var LocalPair = require('./local-pair')
-var SyncError = require('./sync-error')
 var Reconnect = require('./reconnect')
 var TestTime = require('./test-time')
 var BaseNode = require('./base-node')
@@ -21,8 +21,8 @@ module.exports = {
   MemoryStore: MemoryStore,
   ClientNode: ClientNode,
   ServerNode: ServerNode,
+  LoguxError: LoguxError,
   LocalPair: LocalPair,
-  SyncError: SyncError,
   Reconnect: Reconnect,
   TestTime: TestTime,
   BaseNode: BaseNode,

@@ -2,7 +2,7 @@ var delay = require('nanodelay')
 
 var ServerNode = require('../server-node')
 var ClientNode = require('../client-node')
-var SyncError = require('../sync-error')
+var LoguxError = require('../logux-error')
 var TestTime = require('../test-time')
 var TestPair = require('../test-pair')
 var BaseNode = require('../base-node')
@@ -164,7 +164,7 @@ it('checks subprotocol version', function () {
   test = createTest()
   test.leftNode.options.subprotocol = '1.0.0'
   test.rightNode.on('connect', function () {
-    throw new SyncError('wrong-subprotocol', {
+    throw new LoguxError('wrong-subprotocol', {
       supported: '2.x',
       used: test.rightNode.remoteSubprotocol
     })
@@ -184,7 +184,7 @@ it('checks subprotocol version in client', function () {
   test = createTest()
   test.rightNode.options.subprotocol = '1.0.0'
   test.leftNode.on('connect', function () {
-    throw new SyncError('wrong-subprotocol', {
+    throw new LoguxError('wrong-subprotocol', {
       supported: '2.x',
       used: test.leftNode.remoteSubprotocol
     })
@@ -339,7 +339,7 @@ it('uses timeout between connect and connected', function () {
   return pair.left.connect().then(function () {
     return delay(101)
   }).then(function () {
-    expect(error.name).toEqual('SyncError')
+    expect(error.name).toEqual('LoguxError')
     expect(error.message).not.toContain('received')
     expect(error.message).toContain('timeout')
   })
@@ -374,7 +374,7 @@ it('sends authentication errors', function () {
   test = createTest()
   test.rightNode.options = {
     auth: function () {
-      return Promise.reject(new SyncError('bruteforce'))
+      return Promise.reject(new LoguxError('bruteforce'))
     }
   }
 

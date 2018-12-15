@@ -1,9 +1,9 @@
-var SyncError = require('../sync-error')
+var LoguxError = require('../logux-error')
 
 function catchError (desc, type, received) {
   var error
   try {
-    throw new SyncError(desc, type, received)
+    throw new LoguxError(desc, type, received)
   } catch (e) {
     error = e
   }
@@ -12,12 +12,12 @@ function catchError (desc, type, received) {
 
 it('has stack trace', function () {
   var error = catchError('test')
-  expect(error.stack).toContain('sync-error.test.js')
+  expect(error.stack).toContain('logux-error.test.js')
 })
 
 it('has class name', function () {
   var error = catchError('test')
-  expect(error.name).toEqual('SyncError')
+  expect(error.name).toEqual('LoguxError')
 })
 
 it('has error description', function () {
@@ -34,17 +34,17 @@ it('has received', function () {
 
 it('stringifies', function () {
   var error = catchError('test', 'custom', true)
-  expect('' + error).toContain('SyncError: Logux received test error')
+  expect('' + error).toContain('LoguxError: Logux received test error')
 })
 
 it('stringifies local error', function () {
   var error = catchError('test')
-  expect(error.toString()).toContain('SyncError: test')
+  expect(error.toString()).toContain('LoguxError: test')
 })
 
 it('stringifies bruteforce error', function () {
   expect(catchError('bruteforce').toString()).toContain(
-    'SyncError: Too many wrong authentication attempts')
+    'LoguxError: Too many wrong authentication attempts')
 })
 
 it('stringifies subprotocol error', function () {
@@ -53,11 +53,11 @@ it('stringifies subprotocol error', function () {
     used: '1.0'
   }, true)
   expect(error.toString()).toContain(
-    'SyncError: Logux received wrong-subprotocol error ' +
+    'LoguxError: Logux received wrong-subprotocol error ' +
     '(Only 2.x || 3.x application subprotocols are supported, but you use 1.0)')
 })
 
 it('returns description by error type', function () {
   expect(catchError('wrong-format', '{}').toString()).toContain(
-    'SyncError: Wrong message format in {}')
+    'LoguxError: Wrong message format in {}')
 })

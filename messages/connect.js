@@ -1,4 +1,4 @@
-var SyncError = require('../sync-error')
+var LoguxError = require('../logux-error')
 
 function auth (node, nodeId, credentials, callback) {
   if (!node.options.auth) {
@@ -16,11 +16,11 @@ function auth (node, nodeId, credentials, callback) {
       }
       node.unauthenticated = []
     } else {
-      node.sendError(new SyncError('wrong-credentials'))
+      node.sendError(new LoguxError('wrong-credentials'))
       node.destroy()
     }
   }).catch(function (e) {
-    if (e.name === 'SyncError') {
+    if (e.name === 'LoguxError') {
       node.sendError(e)
       node.destroy()
     } else {
@@ -35,7 +35,7 @@ function checkProtocol (node, ver) {
   if (ver >= node.minProtocol) {
     return true
   } else {
-    node.sendError(new SyncError('wrong-protocol', {
+    node.sendError(new LoguxError('wrong-protocol', {
       supported: node.minProtocol, used: ver
     }))
     node.destroy()
@@ -47,7 +47,7 @@ function emitEvent (node) {
   try {
     node.emitter.emit('connect')
   } catch (e) {
-    if (e.name === 'SyncError') {
+    if (e.name === 'LoguxError') {
       node.sendError(e)
       return false
     } else {

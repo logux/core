@@ -118,7 +118,7 @@
       "eachStoreCheck",
       "waitFor",
       "TestPair",
-      "SyncError",
+      "LoguxError",
       "ServerNode",
       "ServerConnection",
       "rightNode",
@@ -156,8 +156,9 @@
       "Oct",
       "remoteNodeId",
       "localNodeId",
-      "a SyncError",
-      "BrowserConnection"
+      "a LoguxError",
+      "BrowserConnection",
+      "logux"
     ]
   }
 }

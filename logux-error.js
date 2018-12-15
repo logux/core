@@ -6,24 +6,24 @@
  * @param {boolean} received Was error received from remote node.
  *
  * @example
- * if (error.name === 'SyncError') {
+ * if (error.name === 'LoguxError') {
  *   console.log('Server throws: ' + error.description)
  * }
  *
  * @extends Error
  * @class
  */
-function SyncError (type, options, received) {
+function LoguxError (type, options, received) {
   Error.call(this, type)
 
   /**
-   * Always equal to `SyncError`. The best way to check error class.
+   * Always equal to `LoguxError`. The best way to check error class.
    * @type {string}
    *
    * @example
-   * if (error.name === 'SyncError') { }
+   * if (error.name === 'LoguxError') { }
    */
-  this.name = 'SyncError'
+  this.name = 'LoguxError'
 
   /**
    * The error code.
@@ -54,7 +54,7 @@ function SyncError (type, options, received) {
    * @example
    * console.log('Server throws: ' + error.description)
    */
-  this.description = SyncError.describe(type, options)
+  this.description = LoguxError.describe(type, options)
 
   /**
    * Was error received from remote client.
@@ -73,7 +73,7 @@ function SyncError (type, options, received) {
   }
 
   if (Error.captureStackTrace) {
-    Error.captureStackTrace(this, SyncError)
+    Error.captureStackTrace(this, LoguxError)
   }
 }
 
@@ -87,10 +87,10 @@ function SyncError (type, options, received) {
  *
  * @example
  * errorMessage(msg) {
- *   console.log(SyncError.describe(msg[1], msg[2]))
+ *   console.log(LoguxError.describe(msg[1], msg[2]))
  * }
  */
-SyncError.describe = function describe (type, options) {
+LoguxError.describe = function describe (type, options) {
   if (type === 'timeout') {
     return 'A timeout was reached (' + options + 'ms)'
   } else if (type === 'wrong-format') {
@@ -112,6 +112,6 @@ SyncError.describe = function describe (type, options) {
   }
 }
 
-SyncError.prototype = Error.prototype
+LoguxError.prototype = Error.prototype
 
-module.exports = SyncError
+module.exports = LoguxError
