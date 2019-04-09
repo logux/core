@@ -3,7 +3,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## 0.3 Ω
 * Rename project from `logux-core` to `@logux/core`.
-* Remove Node.js 6, 8, and 9 support.
+* Remove Node.js 6 and 8 support.
 * Merge with `logux-sync`.
 * Merge with `logux-store-tests`.
 * Use sting-based `meta.id`.
