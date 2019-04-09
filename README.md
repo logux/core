@@ -40,6 +40,8 @@ npm install @logux/core
 
 ## Usage
 
+See [documentation] for Logux API.
+
 ```js
 import { TestTime, TestLog, TestPair } from '@logux/core'
 import ClientNode from '@logux/core'
@@ -62,3 +64,5 @@ log.on('add', (action, meta) => {
   }
 })
 ```
+
+[documentation]: https://github.com/logux/logux
