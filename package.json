@@ -6,7 +6,7 @@
     "logux"
   ],
   "scripts": {
-    "spellcheck": "yarn docs && yaspeller-ci *.md docs/*.html",
+    "spell": "yarn docs && yaspeller-ci *.md docs/*.html",
     "clean": "rimraf docs/ coverage/",
     "lint": "eslint-ci *.js messages/*.js test/{**/,}*.js",
     "docs": "jsdoc -d docs/ *.js",
@@ -71,24 +71,15 @@
       "docs/*.js.html"
     ],
     "dictionary": [
-      "CRDT",
+      "js",
       "Logux",
       "MemoryStore",
-      "Redux",
-      "js",
-      "JS",
-      "localStorage",
-      "docdash",
       "generateId",
       "JSDoc",
       "nanoevents",
-      "DevTools",
       "lastAdded",
       "nodeId",
       "Versioning",
-      "timestamp",
-      "timestamps",
-      "getTime",
       "isFirstOlder",
       "firstMeta",
       "secondMeta",
@@ -144,8 +135,6 @@
       "unsubscribe",
       "remoteProtocol",
       "WebSocket",
-      "WS",
-      "ws",
       "reconnectable",
       "lastId",
       "GMT",
@@ -157,9 +146,8 @@
       "Oct",
       "remoteNodeId",
       "localNodeId",
-      "a LoguxError",
-      "BrowserConnection",
-      "logux"
+      "logux",
+      "img"
     ]
   }
 }
