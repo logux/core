@@ -8,8 +8,6 @@ of operations between client, server, and other clients.
 
 **Documentation: [logux/logux]**
 
-[logux/logux]: https://github.com/logux/logux
-
 This repository contains Logux core components:
 
 * **Log** to store node’s actions.
@@ -26,6 +24,10 @@ This repository contains Logux core components:
   <img src="https://evilmartians.com/badges/sponsored-by-evil-martians.svg"
        alt="Sponsored by Evil Martians" width="236" height="54">
 </a>
+
+[logux/logux]: https://github.com/logux/logux
+[cult-img]: http://cultofmartians.com/assets/badges/badge.svg
+[cult]: http://cultofmartians.com/done.html
 
 
 ## Install
