@@ -9,7 +9,7 @@ between client, server, and other clients.
 
 **Documentation: [logux/logux]**
 
-This repository contains Logux core components:
+This repository contains Logux core components for JavaScript:
 
 * `Log` to store node’s actions.
 * `MemoryStore` to store log in the memory.
