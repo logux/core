@@ -303,9 +303,8 @@ BaseNode.prototype = {
    * @return {Promise} Promise until specific state.
    *
    * @example
-   * node.waitFor('synchronized').then(() => {
-   *   console.log('Everything is synchronized')
-   * })
+   * await node.waitFor('synchronized')
+   * console.log('Everything is synchronized')
    */
   waitFor: function (state) {
     if (this.state === state) {

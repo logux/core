@@ -244,9 +244,8 @@ Log.prototype = {
    *                   or `false` on unknown ID.
    *
    * @example
-   * process.then(action, function () {
-   *   log.changeMeta(action, { status: 'processed' })
-   * })
+   * await process(action)
+   * log.changeMeta(action, { status: 'processed' })
    */
   changeMeta: function changeMeta (id, diff) {
     var key
@@ -310,9 +309,8 @@ Log.prototype = {
    *
    * @example
    * if (action.type === 'logux/undo') {
-   *   log.byId(action.id).then(([undidAction, undidMeta]) => {
-   *     log.changeMeta(meta.id, { reasons: undidMeta.reasons })
-   *   })
+   *   const [undidAction, undidMeta] = await log.byId(action.id)
+   *   log.changeMeta(meta.id, { reasons: undidMeta.reasons })
    * }
    */
   byId: function byId (id) {

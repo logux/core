@@ -24,15 +24,13 @@ function clone (obj) {
  *
  * @example
  * import { testPair } from 'logux-core'
- * it('tracks events', () => {
+ * it('tracks events', async () => {
  *   const pair = new testPair()
  *   const client = new ClientNode(pair.right)
- *   return pair.left.connect().then(() => {
- *     expect(pair.leftEvents).toEqual('connect')
- *     return pair.left.send(msg)
- *   }).then(() => {
- *     expect(pair.leftSent).toEqual([msg])
- *   })
+ *   await pair.left.connect()
+ *   expect(pair.leftEvents).toEqual('connect')
+ *   await pair.left.send(msg)
+ *   expect(pair.leftSent).toEqual([msg])
  * })
  *
  * @extends LocalPair
@@ -110,14 +108,12 @@ TestPair.prototype = {
    * @return {undefined}
    *
    * @example
-   * client.connection.connect().then(() => {
-   *   pair.clear() // Remove all connecting messages
-   *   return client.log.add({ type: 'a' })
-   * }).then(() => {
-   *   expect(pair.leftSent).toEqual([
-   *     ['sync', …]
-   *   ])
-   * })
+   * await client.connection.connect()
+   * pair.clear() // Remove all connecting messages
+   * await client.log.add({ type: 'a' })
+   * expect(pair.leftSent).toEqual([
+   *   ['sync', …]
+   * ])
    */
   clear: function clear () {
     /**
@@ -125,9 +121,8 @@ TestPair.prototype = {
      * @type {Message[]}
      *
      * @example
-     * pair.left.send(msg).then(() => {
-     *   pair.leftSent //=> [msg]
-     * })
+     * await pair.left.send(msg)
+     * pair.leftSent //=> [msg]
      */
     this.leftSent = []
     /**
@@ -145,9 +140,8 @@ TestPair.prototype = {
      * @type {Array[]}
      *
      * @example
-     * pair.left.connect().then(() => {
-     *   pair.leftEvents //=> [['connect']]
-     * })
+     * await pair.left.connect()
+     * pair.leftEvents //=> [['connect']]
      */
     this.leftEvents = []
     /**
@@ -155,9 +149,8 @@ TestPair.prototype = {
      * @type {Array[]}
      *
      * @example
-     * pair.right.connect().then(() => {
-     *   pair.rightEvents //=> [['connect']]
-     * })
+     * await pair.right.connect()
+     * pair.rightEvents //=> [['connect']]
      */
     this.rightEvents = []
   },
@@ -171,9 +164,8 @@ TestPair.prototype = {
    *
    * @example
    * pair.left.send(['test'])
-   * return pair.wait('left').then(() => {
-   *   pair.leftSend //=> [['test']]
-   * })
+   * await pair.wait('left')
+   * pair.leftSend //=> [['test']]
    */
   wait: function wait (receiver) {
     var pair = this
