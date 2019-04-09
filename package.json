@@ -147,7 +147,8 @@
       "remoteNodeId",
       "localNodeId",
       "logux",
-      "img"
+      "img",
+      "GraphQL"
     ]
   }
 }

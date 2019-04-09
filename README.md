@@ -3,10 +3,11 @@
 <img align="right" width="95" height="95" title="Logux logo"
      src="https://cdn.rawgit.com/logux/logux/master/logo.svg">
 
-Logux is a new way to connect client and server. It synchronizes log
-of operations between client, server, and other clients.
+Logux is a new way to connect client and server. Instead of sending
+HTTP requests (e.g., AJAX, REST, and GraphQL) it synchronizes log of operations
+between client, server, and other clients.
 
-**Documentation: [`logux/logux`]**
+**Documentation: [logux/logux]**
 
 This repository contains Logux core components:
 
@@ -25,7 +26,7 @@ This repository contains Logux core components:
        alt="Sponsored by Evil Martians" width="236" height="54">
 </a>
 
-[`logux/logux`]: https://github.com/logux/logux
+[logux/logux]: https://github.com/logux/logux
 [cult-img]: http://cultofmartians.com/assets/badges/badge.svg
 [cult]: http://cultofmartians.com/done.html
 
