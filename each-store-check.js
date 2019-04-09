@@ -1,5 +1,3 @@
-'use strict'
-
 var assert = require('assert')
 
 function all (request, list) {
