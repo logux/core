@@ -4,7 +4,7 @@
      src="https://cdn.rawgit.com/logux/logux/master/logo.svg">
 
 Logux is a new way to connect client and server. Instead of sending
-HTTP requests (e.g., AJAX, REST, and GraphQL) it synchronizes log of operations
+HTTP requests (e.g., AJAX and GraphQL) it synchronizes log of operations
 between client, server, and other clients.
 
 **Documentation: [logux/logux]**
