@@ -1,6 +1,6 @@
 {
   "name": "@logux/core",
-  "version": "0.2.2",
+  "version": "0.3.0",
   "description": "Logux core components",
   "keywords": [
     "logux",
@@ -155,7 +155,8 @@
       "img",
       "GraphQL",
       "ws",
-      "WS"
+      "WS",
+      "Kushka"
     ]
   }
 }

@@ -1,6 +1,26 @@
 # Change Log
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## 0.3 Ω
+* Rename project from `logux-core` to `@logux/core`.
+* Remove Node.js 6, 8, and 9 support.
+* Merge with `logux-sync`.
+* Merge with `logux-store-tests`.
+* Use sting-based `meta.id`.
+* Rename `BaseSync`, `ClientSync`, `ServerSync` to `*Node`.
+* Rename `SyncError` to `LoguxError`.
+* Remove `missed-auth` error.
+* Rename `BrowserConnection` to `WsConnection`.
+* Run input map before filter.
+* Add `Store#clean()` (by Arthur Kushka).
+* Add `criteria.id` to `Store#removeReason`.
+* Add `TestTime#lastId`.
+* Add `TestLog#entries` and `TestLog#actions`.
+* Use more events for `Reconnect`.
+* Do not throw on `wrong-subprotocol`, `wrong-protocol`, and `timeout`.
+* Allow to send debug before authentication.
+* Move all Logux docs to singe place.
+
 ## 0.2.2
 * Allow to set `meta.keepLast` in `preadd` event listener.
 
