@@ -15,7 +15,7 @@
     "clean": "rimraf docs/ coverage/",
     "lint": "eslint-ci *.js messages/*.js test/{**/,}*.js",
     "docs": "jsdoc -d docs/ *.js",
-    "test": "jest --coverage && yarn lint && yarn spellcheck"
+    "test": "jest --coverage && yarn lint && yarn spell"
   },
   "author": "Andrey Sitnik <andrey@sitnik.ru>",
   "license": "MIT",
