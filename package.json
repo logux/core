@@ -1,9 +1,14 @@
 {
   "name": "@logux/core",
   "version": "0.2.2",
-  "description": "Logux log, synchronization tools, and common utilities",
+  "description": "Logux core components",
   "keywords": [
-    "logux"
+    "logux",
+    "core",
+    "connection",
+    "websocket",
+    "crdt",
+    "event sourcing"
   ],
   "scripts": {
     "spell": "yarn docs && yaspeller-ci *.md docs/*.html",
