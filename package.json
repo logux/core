@@ -13,7 +13,7 @@
   "scripts": {
     "docs": "documentation build *.js -f md -o api.md",
     "spell": "yarn docs && yaspeller-ci *.md",
-    "clean": "rimraf docs/ coverage/",
+    "clean": "rimraf api.md coverage/",
     "lint": "eslint-ci *.js messages/*.js test/{**/,}*.js",
     "test": "jest --coverage && yarn lint && yarn spell"
   },
