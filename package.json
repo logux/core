@@ -72,9 +72,6 @@
   "yaspeller": {
     "lang": "en",
     "ignoreCapitalization": true,
-    "excludeFiles": [
-      "docs/*.js.html"
-    ],
     "dictionary": [
       "js",
       "Logux",
