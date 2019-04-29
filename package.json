@@ -8,7 +8,8 @@
     "connection",
     "websocket",
     "crdt",
-    "event sourcing"
+    "event sourcing",
+    "distributed systems"
   ],
   "scripts": {
     "docs": "documentation build *.js -f md -o api.md",
