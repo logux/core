@@ -1,6 +1,9 @@
 # Change Log
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## 0.3.1
+* Fix using old `added` in `sync` message.
+
 ## 0.3 Ω
 * Rename project from `logux-core` to `@logux/core`.
 * Remove Node.js 6 and 8 support.
