@@ -25,7 +25,10 @@ var BEFORE_AUTH = ['connect', 'connected', 'error', 'debug']
 
 function syncMappedEvent (node, action, meta) {
   var added = meta.added
-  if (typeof added === 'undefined') added = node.lastSent
+  if (typeof added === 'undefined') {
+    var lastAdded = node.lastAddedCache
+    added = lastAdded > node.lastSent ? lastAdded : node.lastSent
+  }
   if (node.options.outMap) {
     node.options.outMap(action, meta).then(function (changed) {
       node.sendSync(added, [changed])

@@ -532,6 +532,22 @@ it('starts and ends timeout', function () {
   })
 })
 
+it('uses always latest added', function () {
+  return createTest().then(function (test) {
+    test.leftNode.log.on('preadd', function (action, meta) {
+      meta.reasons = action.type === 'a' ? ['t'] : []
+    })
+    test.rightNode.send = function () { }
+    test.leftNode.log.add({ type: 'a' })
+    return delay(1, test)
+  }).then(function (test) {
+    test.leftNode.log.add({ type: 'b' })
+    return delay(1, test)
+  }).then(function (test) {
+    expect(test.leftSent[1][1]).toEqual(1)
+  })
+})
+
 it('changes multiple actions in map', function () {
   var test
   return createTest(function (created) {
