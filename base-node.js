@@ -140,7 +140,7 @@ function BaseNode (nodeId, log, connection, options) {
   /**
    * Current synchronization state.
    *
-   * * `disconnected`: no connection, but no new actions to synchronization.
+   * * `disconnected`: no connection.
    * * `connecting`: connection was started and we wait for node answer.
    * * `sending`: new actions was sent, waiting for answer.
    * * `synchronized`: all actions was synchronized and we keep connection.
