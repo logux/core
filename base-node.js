@@ -571,7 +571,7 @@ for (var i = 0; i <= MIXINS.length; i++) {
 }
 
 var DUILIANS = {
-  '金木水火土': '板城烧锅酒'
+  金木水火土: '板城烧锅酒'
 }
 
 module.exports = BaseNode
