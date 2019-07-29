@@ -1,51 +1,46 @@
-var WebSocket = require('ws')
-var delay = require('nanodelay')
+let WebSocket = require('ws')
+let delay = require('nanodelay')
 
-var ServerConnection = require('../server-connection')
-var WsConnection = require('../ws-connection')
+let ServerConnection = require('../server-connection')
+let WsConnection = require('../ws-connection')
 
-var wss
-afterEach(function () {
+let wss
+afterEach(() => {
   wss.close()
 })
 
-it('works in real protocol', function () {
+it('works in real protocol', async () => {
   wss = new WebSocket.Server({ port: 8081 })
 
-  var client = new WsConnection('ws://0.0.0.0:8081', WebSocket)
-  var clientReceived = []
-  client.on('message', function (msg) {
+  let client = new WsConnection('ws://0.0.0.0:8081', WebSocket)
+  let clientReceived = []
+  client.on('message', msg => {
     clientReceived.push(msg)
   })
 
-  var server
-  var serverReceived = []
-  return new Promise(function (resolve) {
-    wss.on('connection', function (ws) {
+  let server
+  let serverReceived = []
+  await new Promise(resolve => {
+    wss.on('connection', ws => {
       server = new ServerConnection(ws)
-      server.on('message', function (msg) {
+      server.on('message', msg => {
         serverReceived.push(msg)
       })
       resolve()
     })
     client.connect()
-  }).then(function () {
-    return delay(100)
-  }).then(function () {
-    expect(server.connected).toBeTruthy()
-    expect(client.connected).toBeTruthy()
-    client.send(['test'])
-    return delay(100)
-  }).then(function () {
-    expect(serverReceived).toEqual([['test']])
-    server.send(['test'])
-    return delay(100)
-  }).then(function () {
-    expect(clientReceived).toEqual([['test']])
-    server.disconnect()
-    return delay(100)
-  }).then(function () {
-    expect(server.connected).toBeFalsy()
-    expect(client.connected).toBeFalsy()
   })
+  await delay(100)
+  expect(server.connected).toBeTruthy()
+  expect(client.connected).toBeTruthy()
+  client.send(['test'])
+  await delay(100)
+  expect(serverReceived).toEqual([['test']])
+  server.send(['test'])
+  await delay(100)
+  expect(clientReceived).toEqual([['test']])
+  server.disconnect()
+  await delay(100)
+  expect(server.connected).toBeFalsy()
+  expect(client.connected).toBeFalsy()
 })

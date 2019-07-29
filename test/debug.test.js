@@ -1,37 +1,34 @@
-var ServerNode = require('../server-node')
-var TestTime = require('../test-time')
-var TestPair = require('../test-pair')
+let ServerNode = require('../server-node')
+let TestTime = require('../test-time')
+let TestPair = require('../test-pair')
 
-var node
+let node
 
-function createTest () {
-  var test = new TestPair()
+async function createTest () {
+  let test = new TestPair()
   node = new ServerNode('server', TestTime.getLog(), test.left)
   test.leftNode = node
-  return test.left.connect().then(function () {
-    return test
-  })
+  await test.left.connect()
+  return test
 }
 
-afterEach(function () {
+afterEach(() => {
   node.destroy()
 })
 
-it('sends debug messages', function () {
-  return createTest().then(function (test) {
-    test.leftNode.sendDebug('testType', 'testData')
-    return test.wait('right')
-  }).then(function (test) {
-    expect(test.leftSent).toEqual([['debug', 'testType', 'testData']])
-  })
+it('sends debug messages', async () => {
+  let test = await createTest()
+  test.leftNode.sendDebug('testType', 'testData')
+  await test.wait('right')
+  expect(test.leftSent).toEqual([['debug', 'testType', 'testData']])
 })
 
-it('emits a debug on debug error messages', function () {
-  var pair = new TestPair()
+it('emits a debug on debug error messages', () => {
+  let pair = new TestPair()
   node = new ServerNode('server', TestTime.getLog(), pair.left)
 
-  var debugs = []
-  node.on('debug', function (type, data) {
+  let debugs = []
+  node.on('debug', (type, data) => {
     debugs.push(type, data)
   })
 
@@ -40,8 +37,8 @@ it('emits a debug on debug error messages', function () {
   expect(debugs).toEqual(['error', 'testData'])
 })
 
-it('checks types', function () {
-  var wrongs = [
+it('checks types', async () => {
+  let wrongs = [
     ['debug'],
     ['debug', 0],
     ['debug', []],
@@ -50,15 +47,13 @@ it('checks types', function () {
     ['debug', 'error', []],
     ['debug', 'error', {}]
   ]
-  return Promise.all(wrongs.map(function (command) {
-    return createTest().then(function (test) {
-      test.right.send(command)
-      return test.wait('right')
-    }).then(function (test) {
-      expect(test.leftNode.connected).toBeFalsy()
-      expect(test.leftSent).toEqual([
-        ['error', 'wrong-format', JSON.stringify(command)]
-      ])
-    })
+  await Promise.all(wrongs.map(async command => {
+    let test = await createTest()
+    test.right.send(command)
+    await test.wait('right')
+    expect(test.leftNode.connected).toBeFalsy()
+    expect(test.leftSent).toEqual([
+      ['error', 'wrong-format', JSON.stringify(command)]
+    ])
   }))
 })

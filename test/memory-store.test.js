@@ -1,8 +1,6 @@
-var eachStoreCheck = require('../each-store-check')
-var MemoryStore = require('../memory-store')
+let eachStoreCheck = require('../each-store-check')
+let MemoryStore = require('../memory-store')
 
-eachStoreCheck(function (desc, creator) {
-  it(desc, creator(function () {
-    return new MemoryStore()
-  }))
+eachStoreCheck((desc, creator) => {
+  it(desc, creator(() => new MemoryStore()))
 })

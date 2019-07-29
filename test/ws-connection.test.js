@@ -1,170 +1,161 @@
-var WsConnection = require('../ws-connection')
+let WsConnection = require('../ws-connection')
 
 function FakeWebSocket (url, protocols, opts) {
   this.opts = opts
   this.sent = []
-  var self = this
-  setTimeout(function () {
+  let self = this
+  setTimeout(() => {
     self.onopen()
   }, 1)
 }
 FakeWebSocket.prototype = {
-  send: function (msg) {
+  send (msg) {
     this.sent.push(msg)
   },
-  close: function () { }
+  close () { }
 }
 
-afterEach(function () {
+afterEach(() => {
   delete global.WebSocket
 })
 
-it('throws a error on lack of WebSocket support', function () {
-  expect(function () {
+it('throws a error on lack of WebSocket support', () => {
+  expect(() => {
     new WsConnection('ws://locahost')
   }).toThrowError(/WebSocket/)
 })
 
-it('emits error on wrong format', function () {
+it('emits error on wrong format', async () => {
   global.WebSocket = FakeWebSocket
-  var connection = new WsConnection('ws://locahost')
-  var error
-  connection.on('error', function (err) {
+  let connection = new WsConnection('ws://locahost')
+  let error
+  connection.on('error', err => {
     error = err
   })
 
-  return connection.connect().then(function () {
-    connection.ws.onmessage({ data: '{' })
-    expect(error.message).toEqual('Wrong message format')
-    expect(error.received).toEqual('{')
-  })
+  await connection.connect()
+  connection.ws.onmessage({ data: '{' })
+  expect(error.message).toEqual('Wrong message format')
+  expect(error.received).toEqual('{')
 })
 
-it('emits error on error', function () {
+it('emits error on error', async () => {
   global.WebSocket = FakeWebSocket
-  var connection = new WsConnection('ws://locahost')
-  var error
-  connection.on('error', function (err) {
+  let connection = new WsConnection('ws://locahost')
+  let error
+  connection.on('error', err => {
     error = err
   })
 
-  return connection.connect().then(function () {
-    connection.ws.onerror({ error: new Error('test') })
-    expect(error.message).toEqual('test')
-    connection.ws.onerror({ })
-    expect(error.message).toEqual('WS Error')
-  })
+  await connection.connect()
+  connection.ws.onerror({ error: new Error('test') })
+  expect(error.message).toEqual('test')
+  connection.ws.onerror({ })
+  expect(error.message).toEqual('WS Error')
 })
 
-it('emits connection states', function () {
+it('emits connection states', async () => {
   global.WebSocket = FakeWebSocket
-  var connection = new WsConnection('ws://locahost')
+  let connection = new WsConnection('ws://locahost')
 
-  var states = []
-  connection.on('connecting', function () {
+  let states = []
+  connection.on('connecting', () => {
     states.push('connecting')
   })
-  connection.on('connect', function () {
+  connection.on('connect', () => {
     states.push('connect')
   })
-  connection.on('disconnect', function () {
+  connection.on('disconnect', () => {
     states.push('disconnect')
   })
 
   expect(states).toEqual([])
   expect(connection.connected).toBeFalsy()
 
-  var connecting = connection.connect()
+  let connecting = connection.connect()
   expect(states).toEqual(['connecting'])
   expect(connection.connected).toBeFalsy()
 
-  return connecting.then(function () {
-    expect(states).toEqual(['connecting', 'connect'])
-    expect(connection.connected).toBeTruthy()
+  await connecting
+  expect(states).toEqual(['connecting', 'connect'])
+  expect(connection.connected).toBeTruthy()
 
-    connection.ws.onclose()
-    expect(states).toEqual(['connecting', 'connect', 'disconnect'])
-    expect(connection.connected).toBeFalsy()
+  connection.ws.onclose()
+  expect(states).toEqual(['connecting', 'connect', 'disconnect'])
+  expect(connection.connected).toBeFalsy()
 
-    connection.connect()
-    connection.ws.onclose()
-    expect(states).toEqual([
-      'connecting', 'connect', 'disconnect', 'connecting', 'disconnect'
-    ])
-    expect(connection.connected).toBeFalsy()
-  })
+  connection.connect()
+  connection.ws.onclose()
+  expect(states).toEqual([
+    'connecting', 'connect', 'disconnect', 'connecting', 'disconnect'
+  ])
+  expect(connection.connected).toBeFalsy()
 })
 
-it('closes WebSocket', function () {
+it('closes WebSocket', async () => {
   global.WebSocket = FakeWebSocket
-  var connection = new WsConnection('ws://locahost')
+  let connection = new WsConnection('ws://locahost')
 
-  return connection.connect().then(function () {
-    var ws = connection.ws
-    ws.close = function () {
-      ws.onclose()
-    }
-    jest.spyOn(ws, 'close')
+  await connection.connect()
+  let ws = connection.ws
+  ws.close = () => {
+    ws.onclose()
+  }
+  jest.spyOn(ws, 'close')
 
-    connection.disconnect()
-    expect(ws.close).toHaveBeenCalled()
-    expect(connection.connected).toBeFalsy()
-  })
+  connection.disconnect()
+  expect(ws.close).toHaveBeenCalled()
+  expect(connection.connected).toBeFalsy()
 })
 
-it('receives messages', function () {
+it('receives messages', async () => {
   global.WebSocket = FakeWebSocket
-  var connection = new WsConnection('ws://locahost')
+  let connection = new WsConnection('ws://locahost')
 
-  var received = []
-  connection.on('message', function (msg) {
+  let received = []
+  connection.on('message', msg => {
     received.push(msg)
   })
 
-  return connection.connect().then(function () {
-    connection.ws.onmessage({ data: '["test"]' })
-    expect(received).toEqual([['test']])
-  })
+  await connection.connect()
+  connection.ws.onmessage({ data: '["test"]' })
+  expect(received).toEqual([['test']])
 })
 
-it('sends messages', function () {
+it('sends messages', async () => {
   global.WebSocket = FakeWebSocket
-  var connection = new WsConnection('ws://locahost')
+  let connection = new WsConnection('ws://locahost')
 
-  return connection.connect().then(function () {
-    connection.send(['test'])
-    expect(connection.ws.sent).toEqual(['["test"]'])
-  })
+  await connection.connect()
+  connection.send(['test'])
+  expect(connection.ws.sent).toEqual(['["test"]'])
 })
 
-it('uses custom WebSocket implementation', function () {
-  var connection = new WsConnection('ws://locahost', FakeWebSocket)
+it('uses custom WebSocket implementation', async () => {
+  let connection = new WsConnection('ws://locahost', FakeWebSocket)
 
-  return connection.connect().then(function () {
-    connection.send(['test'])
-    expect(connection.ws.sent).toEqual(['["test"]'])
-  })
+  await connection.connect()
+  connection.send(['test'])
+  expect(connection.ws.sent).toEqual(['["test"]'])
 })
 
-it('passes extra option for WebSocket', function () {
-  var connection = new WsConnection('ws://locahost', FakeWebSocket, { a: 1 })
-  return connection.connect().then(function () {
-    expect(connection.ws.opts).toEqual({ a: 1 })
-  })
+it('passes extra option for WebSocket', async () => {
+  let connection = new WsConnection('ws://locahost', FakeWebSocket, { a: 1 })
+  await connection.connect()
+  expect(connection.ws.opts).toEqual({ a: 1 })
 })
 
-it('does not send to closed socket', function () {
+it('does not send to closed socket', async () => {
   global.WebSocket = FakeWebSocket
-  var connection = new WsConnection('ws://locahost')
+  let connection = new WsConnection('ws://locahost')
 
-  var errors = []
-  connection.on('error', function (e) {
+  let errors = []
+  connection.on('error', e => {
     errors.push(e.message)
   })
 
-  return connection.connect().then(function () {
-    connection.ws.readyState = 2
-    connection.send(['test'])
-    expect(errors).toEqual(['WS was closed'])
-  })
+  await connection.connect()
+  connection.ws.readyState = 2
+  connection.send(['test'])
+  expect(errors).toEqual(['WS was closed'])
 })

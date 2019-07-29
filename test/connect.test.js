@@ -1,37 +1,37 @@
-var delay = require('nanodelay')
+let delay = require('nanodelay')
 
-var ServerNode = require('../server-node')
-var ClientNode = require('../client-node')
-var LoguxError = require('../logux-error')
-var TestTime = require('../test-time')
-var TestPair = require('../test-pair')
-var BaseNode = require('../base-node')
+let ServerNode = require('../server-node')
+let ClientNode = require('../client-node')
+let LoguxError = require('../logux-error')
+let TestTime = require('../test-time')
+let TestPair = require('../test-pair')
+let BaseNode = require('../base-node')
 
-var PROTOCOL = BaseNode.prototype.localProtocol
+let PROTOCOL = BaseNode.prototype.localProtocol
 
-var test
+let test
 
 function createTest () {
-  var time = new TestTime()
-  var pair = new TestPair()
+  let time = new TestTime()
+  let pair = new TestPair()
 
   pair.leftNode = new ClientNode('client', time.nextLog(), pair.left)
   pair.rightNode = new ServerNode('server', time.nextLog(), pair.right)
 
-  var current = 0
-  pair.leftNode.now = function () {
+  let current = 0
+  pair.leftNode.now = () => {
     current += 1
     return current
   }
   pair.rightNode.now = pair.leftNode.now
 
-  pair.leftNode.catch(function () { })
-  pair.rightNode.catch(function () { })
+  pair.leftNode.catch(() => true)
+  pair.rightNode.catch(() => true)
 
   return pair
 }
 
-afterEach(function () {
+afterEach(() => {
   if (test) {
     test.leftNode.destroy()
     test.rightNode.destroy()
@@ -39,94 +39,82 @@ afterEach(function () {
   }
 })
 
-it('sends protocol version and name in connect message', function () {
+it('sends protocol version and name in connect message', async () => {
   test = createTest()
-  return test.left.connect().then(function () {
-    return test.wait()
-  }).then(function () {
-    expect(test.leftSent).toEqual([
-      ['connect', PROTOCOL, 'client', 0]
-    ])
-  })
+  await test.left.connect()
+  await test.wait()
+  expect(test.leftSent).toEqual([
+    ['connect', PROTOCOL, 'client', 0]
+  ])
 })
 
-it('answers with protocol version and name in connected message', function () {
+it('answers with protocol version and name in connected message', async () => {
   test = createTest()
-  return test.left.connect().then(function () {
-    return test.wait('left')
-  }).then(function () {
-    expect(test.rightSent).toEqual([
-      ['connected', PROTOCOL, 'server', [2, 3]]
-    ])
-  })
+  await test.left.connect()
+  await test.wait('left')
+  expect(test.rightSent).toEqual([
+    ['connected', PROTOCOL, 'server', [2, 3]]
+  ])
 })
 
-it('checks client protocol version', function () {
+it('checks client protocol version', async () => {
   test = createTest()
   test.leftNode.localProtocol = 1
   test.rightNode.minProtocol = 2
 
-  return test.left.connect().then(function () {
-    return test.wait('left')
-  }).then(function () {
-    expect(test.rightSent).toEqual([
-      ['error', 'wrong-protocol', { supported: 2, used: 1 }]
-    ])
-    expect(test.rightNode.connected).toBeFalsy()
-  })
+  await test.left.connect()
+  await test.wait('left')
+  expect(test.rightSent).toEqual([
+    ['error', 'wrong-protocol', { supported: 2, used: 1 }]
+  ])
+  expect(test.rightNode.connected).toBeFalsy()
 })
 
-it('checks server protocol version', function () {
+it('checks server protocol version', async () => {
   test = createTest()
   test.leftNode.minProtocol = 2
   test.rightNode.localProtocol = 1
 
-  return test.left.connect().then(function () {
-    return test.wait('left')
-  }).then(function () {
-    return test.wait('right')
-  }).then(function () {
-    expect(test.leftSent).toEqual([
-      ['connect', PROTOCOL, 'client', 0],
-      ['error', 'wrong-protocol', { supported: 2, used: 1 }]
-    ])
-    expect(test.leftSent.connected).toBeFalsy()
-  })
+  await test.left.connect()
+  await test.wait('left')
+  await test.wait('right')
+  expect(test.leftSent).toEqual([
+    ['connect', PROTOCOL, 'client', 0],
+    ['error', 'wrong-protocol', { supported: 2, used: 1 }]
+  ])
+  expect(test.leftSent.connected).toBeFalsy()
 })
 
-it('checks types in connect message', function () {
-  var wrongs = [
+it('checks types in connect message', async () => {
+  let wrongs = [
     ['connect', []],
     ['connect', PROTOCOL, 'client', 0, 'abc'],
     ['connected', []],
     ['connected', PROTOCOL, 'client', [0]]
   ]
-  return Promise.all(wrongs.map(function (msg) {
-    var log = TestTime.getLog()
-    var pair = new TestPair()
-    var node = new ServerNode('server', log, pair.left)
-    return pair.left.connect().then(function () {
-      pair.right.send(msg)
-      return pair.wait('right')
-    }).then(function () {
-      expect(node.connected).toBeFalsy()
-      expect(pair.leftSent).toEqual([
-        ['error', 'wrong-format', JSON.stringify(msg)]
-      ])
-    })
+  await Promise.all(wrongs.map(async msg => {
+    let log = TestTime.getLog()
+    let pair = new TestPair()
+    let node = new ServerNode('server', log, pair.left)
+    await pair.left.connect()
+    pair.right.send(msg)
+    await pair.wait('right')
+    expect(node.connected).toBeFalsy()
+    expect(pair.leftSent).toEqual([
+      ['error', 'wrong-format', JSON.stringify(msg)]
+    ])
   }))
 })
 
-it('saves other node name', function () {
+it('saves other node name', async () => {
   test = createTest()
   test.left.connect()
-  return test.leftNode.waitFor('synchronized').then(function () {
-    expect(test.leftNode.remoteNodeId).toEqual('server')
-    expect(test.rightNode.remoteNodeId).toEqual('client')
-  })
+  await test.leftNode.waitFor('synchronized')
+  expect(test.leftNode.remoteNodeId).toEqual('server')
+  expect(test.rightNode.remoteNodeId).toEqual('client')
 })
 
-it('saves other client protocol', function () {
+it('saves other client protocol', async () => {
   test = createTest()
   test.leftNode.minProtocol = 1
   test.leftNode.localProtocol = 1
@@ -134,256 +122,224 @@ it('saves other client protocol', function () {
   test.rightNode.localProtocol = 2
 
   test.left.connect()
-  return test.leftNode.waitFor('synchronized').then(function () {
-    expect(test.leftNode.remoteProtocol).toEqual(2)
-    expect(test.rightNode.remoteProtocol).toEqual(1)
-  })
+  await test.leftNode.waitFor('synchronized')
+  expect(test.leftNode.remoteProtocol).toEqual(2)
+  expect(test.rightNode.remoteProtocol).toEqual(1)
 })
 
-it('saves other client subprotocol', function () {
+it('saves other client subprotocol', async () => {
   test = createTest()
   test.leftNode.options.subprotocol = '1.0.0'
   test.rightNode.options.subprotocol = '1.1.0'
 
   test.left.connect()
-  return test.leftNode.waitFor('synchronized').then(function () {
-    expect(test.leftNode.remoteSubprotocol).toEqual('1.1.0')
-    expect(test.rightNode.remoteSubprotocol).toEqual('1.0.0')
-  })
+  await test.leftNode.waitFor('synchronized')
+  expect(test.leftNode.remoteSubprotocol).toEqual('1.1.0')
+  expect(test.rightNode.remoteSubprotocol).toEqual('1.0.0')
 })
 
-it('has default subprotocol', function () {
+it('has default subprotocol', async () => {
   test = createTest()
   test.left.connect()
-  return test.leftNode.waitFor('synchronized').then(function () {
-    expect(test.rightNode.remoteSubprotocol).toEqual('0.0.0')
-  })
+  await test.leftNode.waitFor('synchronized')
+  expect(test.rightNode.remoteSubprotocol).toEqual('0.0.0')
 })
 
-it('checks subprotocol version', function () {
+it('checks subprotocol version', async () => {
   test = createTest()
   test.leftNode.options.subprotocol = '1.0.0'
-  test.rightNode.on('connect', function () {
+  test.rightNode.on('connect', () => {
     throw new LoguxError('wrong-subprotocol', {
       supported: '2.x',
       used: test.rightNode.remoteSubprotocol
     })
   })
 
-  return test.left.connect().then(function () {
-    return test.wait('left')
-  }).then(function () {
-    expect(test.rightSent).toEqual([
-      ['error', 'wrong-subprotocol', { supported: '2.x', used: '1.0.0' }]
-    ])
-    expect(test.rightNode.connected).toBeFalsy()
-  })
+  await test.left.connect()
+  await test.wait('left')
+  expect(test.rightSent).toEqual([
+    ['error', 'wrong-subprotocol', { supported: '2.x', used: '1.0.0' }]
+  ])
+  expect(test.rightNode.connected).toBeFalsy()
 })
 
-it('checks subprotocol version in client', function () {
+it('checks subprotocol version in client', async () => {
   test = createTest()
   test.rightNode.options.subprotocol = '1.0.0'
-  test.leftNode.on('connect', function () {
+  test.leftNode.on('connect', () => {
     throw new LoguxError('wrong-subprotocol', {
       supported: '2.x',
       used: test.leftNode.remoteSubprotocol
     })
   })
 
-  return test.left.connect().then(function () {
-    return test.wait('right')
-  }).then(function () {
-    return test.wait('right')
-  }).then(function () {
-    expect(test.leftSent).toEqual([
-      ['connect', PROTOCOL, 'client', 0],
-      ['error', 'wrong-subprotocol', { supported: '2.x', used: '1.0.0' }]
-    ])
-    expect(test.leftNode.connected).toBeFalsy()
-  })
+  await test.left.connect()
+  await test.wait('right')
+  await test.wait('right')
+  expect(test.leftSent).toEqual([
+    ['connect', PROTOCOL, 'client', 0],
+    ['error', 'wrong-subprotocol', { supported: '2.x', used: '1.0.0' }]
+  ])
+  expect(test.leftNode.connected).toBeFalsy()
 })
 
-it('throws regular errors during connect event', function () {
+it('throws regular errors during connect event', () => {
   test = createTest()
 
-  var error = new Error('test')
-  test.leftNode.on('connect', function () {
+  let error = new Error('test')
+  test.leftNode.on('connect', () => {
     throw error
   })
 
-  expect(function () {
+  expect(() => {
     test.leftNode.connectMessage(PROTOCOL, 'client', 0)
   }).toThrow(error)
 })
 
-it('sends credentials in connect', function () {
+it('sends credentials in connect', async () => {
   test = createTest()
   test.leftNode.options = { credentials: { a: 1 } }
 
   test.left.connect()
-  return test.leftNode.waitFor('synchronized').then(function () {
-    expect(test.leftSent).toEqual([
-      ['connect', PROTOCOL, 'client', 0, { credentials: { a: 1 } }]
-    ])
-  })
+  await test.leftNode.waitFor('synchronized')
+  expect(test.leftSent).toEqual([
+    ['connect', PROTOCOL, 'client', 0, { credentials: { a: 1 } }]
+  ])
 })
 
-it('sends credentials in connected', function () {
+it('sends credentials in connected', async () => {
   test = createTest()
   test.rightNode.options = { credentials: 1 }
 
   test.left.connect()
-  return test.leftNode.waitFor('synchronized').then(function () {
-    expect(test.rightSent).toEqual([
-      ['connected', PROTOCOL, 'server', [2, 3], { credentials: 1 }]
-    ])
-  })
+  await test.leftNode.waitFor('synchronized')
+  expect(test.rightSent).toEqual([
+    ['connected', PROTOCOL, 'server', [2, 3], { credentials: 1 }]
+  ])
 })
 
-it('denies access for wrong users', function () {
+it('denies access for wrong users', async () => {
   test = createTest()
   test.rightNode.options = {
-    auth: function () {
-      return Promise.resolve(false)
+    async auth () {
+      return false
     }
   }
 
-  return test.left.connect().then(function () {
-    return test.wait('left')
-  }).then(function () {
-    expect(test.rightSent).toEqual([
-      ['error', 'wrong-credentials']
-    ])
-    expect(test.rightNode.connected).toBeFalsy()
-  })
+  await test.left.connect()
+  await test.wait('left')
+  expect(test.rightSent).toEqual([
+    ['error', 'wrong-credentials']
+  ])
+  expect(test.rightNode.connected).toBeFalsy()
 })
 
-it('denies access to wrong server', function () {
+it('denies access to wrong server', async () => {
   test = createTest()
   test.leftNode.options = {
-    auth: function () {
-      return Promise.resolve(false)
+    async auth () {
+      return false
     }
   }
 
-  return test.left.connect().then(function () {
-    return test.wait('right')
-  }).then(function () {
-    return test.wait('right')
-  }).then(function () {
-    expect(test.leftSent).toEqual([
-      ['connect', PROTOCOL, 'client', 0],
-      ['error', 'wrong-credentials']
-    ])
-    expect(test.leftNode.connected).toBeFalsy()
-  })
+  await test.left.connect()
+  await test.wait('right')
+  await test.wait('right')
+  expect(test.leftSent).toEqual([
+    ['connect', PROTOCOL, 'client', 0],
+    ['error', 'wrong-credentials']
+  ])
+  expect(test.leftNode.connected).toBeFalsy()
 })
 
-it('allows access for right users', function () {
+it('allows access for right users', async () => {
   test = createTest()
   test.leftNode.options = { credentials: 'a' }
   test.rightNode.options = {
-    auth: function (credentials, nodeId) {
-      return delay(10).then(function () {
-        return credentials === 'a' && nodeId === 'client'
-      })
+    async auth (credentials, nodeId) {
+      await delay(10)
+      return credentials === 'a' && nodeId === 'client'
     }
   }
 
-  return test.left.connect().then(function () {
-    test.leftNode.sendDuilian(0)
-    return delay(50)
-  }).then(function () {
-    expect(test.rightSent[0]).toEqual(['connected', PROTOCOL, 'server', [1, 2]])
-  })
+  await test.left.connect()
+  test.leftNode.sendDuilian(0)
+  await delay(50)
+  expect(test.rightSent[0]).toEqual(['connected', PROTOCOL, 'server', [1, 2]])
 })
 
-it('has default timeFix', function () {
+it('has default timeFix', async () => {
   test = createTest()
   test.left.connect()
-  return test.leftNode.waitFor('synchronized').then(function () {
-    expect(test.leftNode.timeFix).toEqual(0)
-  })
+  await test.leftNode.waitFor('synchronized')
+  expect(test.leftNode.timeFix).toEqual(0)
 })
 
-it('calculates time difference', function () {
+it('calculates time difference', async () => {
   test = createTest()
-  var clientTime = [10000, 10000 + 1000 + 100 + 1]
-  test.leftNode.now = function () {
-    return clientTime.shift()
-  }
-  var serverTime = [0 + 50, 0 + 50 + 1000]
-  test.rightNode.now = function () {
-    return serverTime.shift()
-  }
+  let clientTime = [10000, 10000 + 1000 + 100 + 1]
+  test.leftNode.now = () => clientTime.shift()
+  let serverTime = [0 + 50, 0 + 50 + 1000]
+  test.rightNode.now = () => serverTime.shift()
 
   test.leftNode.options.fixTime = true
   test.left.connect()
-  return test.leftNode.waitFor('synchronized').then(function () {
-    expect(test.leftNode.baseTime).toEqual(1050)
-    expect(test.rightNode.baseTime).toEqual(1050)
-    expect(test.leftNode.timeFix).toEqual(10000)
-  })
+  await test.leftNode.waitFor('synchronized')
+  expect(test.leftNode.baseTime).toEqual(1050)
+  expect(test.rightNode.baseTime).toEqual(1050)
+  expect(test.leftNode.timeFix).toEqual(10000)
 })
 
-it('uses timeout between connect and connected', function () {
-  var log = TestTime.getLog()
-  var pair = new TestPair()
-  var client = new ClientNode('client', log, pair.left, { timeout: 100 })
+it('uses timeout between connect and connected', async () => {
+  let log = TestTime.getLog()
+  let pair = new TestPair()
+  let client = new ClientNode('client', log, pair.left, { timeout: 100 })
 
-  var error
-  client.catch(function (err) {
+  let error
+  client.catch(err => {
     error = err
   })
 
-  return pair.left.connect().then(function () {
-    return delay(101)
-  }).then(function () {
-    expect(error.name).toEqual('LoguxError')
-    expect(error.message).not.toContain('received')
-    expect(error.message).toContain('timeout')
-  })
+  await pair.left.connect()
+  await delay(101)
+  expect(error.name).toEqual('LoguxError')
+  expect(error.message).not.toContain('received')
+  expect(error.message).toContain('timeout')
 })
 
-it('catches authentication errors', function () {
+it('catches authentication errors', async () => {
   test = createTest()
-  var errors = []
-  test.rightNode.catch(function (e) {
+  let errors = []
+  test.rightNode.catch(e => {
     errors.push(e)
   })
 
-  var error = new Error()
+  let error = new Error()
   test.rightNode.options = {
-    auth: function () {
-      return Promise.reject(error)
+    async auth () {
+      throw error
     }
   }
 
-  return test.left.connect().then(function () {
-    return test.wait('right')
-  }).then(function () {
-    return delay(1)
-  }).then(function () {
-    expect(errors).toEqual([error])
-    expect(test.rightSent).toEqual([])
-    expect(test.rightNode.connected).toBeFalsy()
-  })
+  await test.left.connect()
+  await test.wait('right')
+  await delay(1)
+  expect(errors).toEqual([error])
+  expect(test.rightSent).toEqual([])
+  expect(test.rightNode.connected).toBeFalsy()
 })
 
-it('sends authentication errors', function () {
+it('sends authentication errors', async () => {
   test = createTest()
   test.rightNode.options = {
-    auth: function () {
-      return Promise.reject(new LoguxError('bruteforce'))
+    async auth () {
+      throw new LoguxError('bruteforce')
     }
   }
 
-  return test.left.connect().then(function () {
-    return test.wait('right')
-  }).then(function () {
-    return test.wait('left')
-  }).then(function () {
-    expect(test.rightSent).toEqual([['error', 'bruteforce']])
-    expect(test.rightNode.connected).toBeFalsy()
-  })
+  await test.left.connect()
+  await test.wait('right')
+  await test.wait('left')
+  expect(test.rightSent).toEqual([['error', 'bruteforce']])
+  expect(test.rightNode.connected).toBeFalsy()
 })

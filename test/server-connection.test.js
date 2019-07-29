@@ -1,17 +1,17 @@
-var ServerConnection = require('../server-connection')
+let ServerConnection = require('../server-connection')
 
-it('throws on connect method call', function () {
-  var connection = new ServerConnection({ })
-  expect(function () {
+it('throws on connect method call', () => {
+  let connection = new ServerConnection({ })
+  expect(() => {
     connection.connect()
   }).toThrowError(/reconnect/)
 })
 
-it('emits connection states', function () {
-  var connection = new ServerConnection({ })
+it('emits connection states', () => {
+  let connection = new ServerConnection({ })
 
-  var states = []
-  connection.on('disconnect', function () {
+  let states = []
+  connection.on('disconnect', () => {
     states.push('disconnect')
   })
 
@@ -23,10 +23,10 @@ it('emits connection states', function () {
   expect(connection.connected).toBeFalsy()
 })
 
-it('emits error on wrong format', function () {
-  var connection = new ServerConnection({ })
-  var error
-  connection.on('error', function (err) {
+it('emits error on wrong format', () => {
+  let connection = new ServerConnection({ })
+  let error
+  connection.on('error', err => {
     error = err
   })
 
@@ -35,24 +35,24 @@ it('emits error on wrong format', function () {
   expect(error.received).toEqual('{')
 })
 
-it('closes WebSocket', function () {
-  var ws = {
-    close: jest.fn(function () {
+it('closes WebSocket', () => {
+  let ws = {
+    close: jest.fn(() => {
       ws.onclose()
     })
   }
-  var connection = new ServerConnection(ws)
+  let connection = new ServerConnection(ws)
 
   connection.disconnect()
   expect(ws.close).toHaveBeenCalled()
   expect(connection.connected).toBeFalsy()
 })
 
-it('receives messages', function () {
-  var connection = new ServerConnection({ })
+it('receives messages', () => {
+  let connection = new ServerConnection({ })
 
-  var received = []
-  connection.on('message', function (msg) {
+  let received = []
+  connection.on('message', msg => {
     received.push(msg)
   })
 
@@ -60,32 +60,32 @@ it('receives messages', function () {
   expect(received).toEqual([['test']])
 })
 
-it('sends messages', function () {
-  var sent = []
-  var ws = {
-    send: function (msg) {
+it('sends messages', () => {
+  let sent = []
+  let ws = {
+    send (msg) {
       sent.push(msg)
     }
   }
-  var connection = new ServerConnection(ws)
+  let connection = new ServerConnection(ws)
 
   connection.send(['test'])
   expect(sent).toEqual(['["test"]'])
 })
 
-it('does not send to closed socket', function () {
-  var sent = []
-  var ws = {
-    send: function (msg) {
+it('does not send to closed socket', () => {
+  let sent = []
+  let ws = {
+    send (msg) {
       sent.push(msg)
     },
-    close: function () { }
+    close () { }
   }
 
-  var connection = new ServerConnection(ws)
+  let connection = new ServerConnection(ws)
 
-  var errors = []
-  connection.on('error', function (e) {
+  let errors = []
+  connection.on('error', e => {
     errors.push(e.message)
   })
 

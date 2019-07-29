@@ -1,98 +1,91 @@
-var ServerNode = require('../server-node')
-var LoguxError = require('../logux-error')
-var TestTime = require('../test-time')
-var TestPair = require('../test-pair')
+let ServerNode = require('../server-node')
+let LoguxError = require('../logux-error')
+let TestTime = require('../test-time')
+let TestPair = require('../test-pair')
 
-var node
+let node
 
 function createNode () {
-  var pair = new TestPair()
+  let pair = new TestPair()
   return new ServerNode('server', TestTime.getLog(), pair.left)
 }
 
-function createTest () {
-  var test = new TestPair()
+async function createTest () {
+  let test = new TestPair()
   node = new ServerNode('server', TestTime.getLog(), test.left)
   test.leftNode = node
-  return test.left.connect().then(function () {
-    return test
-  })
+  await test.left.connect()
+  return test
 }
 
-afterEach(function () {
+afterEach(() => {
   node.destroy()
 })
 
-it('sends error on wrong message format', function () {
-  var wrongs = [
+it('sends error on wrong message format', async () => {
+  let wrongs = [
     1,
     { hi: 1 },
     [],
     [1]
   ]
-  return Promise.all(wrongs.map(function (msg) {
-    return createTest().then(function (test) {
-      test.right.send(msg)
-      return test.wait('right')
-    }).then(function (test) {
-      expect(test.left.connected).toBeFalsy()
-      expect(test.leftSent).toEqual([
-        ['error', 'wrong-format', JSON.stringify(msg)]
-      ])
-    })
+  await Promise.all(wrongs.map(async msg => {
+    let test = await createTest()
+    test.right.send(msg)
+    await test.wait('right')
+    expect(test.left.connected).toBeFalsy()
+    expect(test.leftSent).toEqual([
+      ['error', 'wrong-format', JSON.stringify(msg)]
+    ])
   }))
 })
 
-it('sends error on wrong error parameters', function () {
-  var wrongs = [
+it('sends error on wrong error parameters', async () => {
+  let wrongs = [
     ['error'],
     ['error', 1],
     ['error', { }]
   ]
-  return Promise.all(wrongs.map(function (msg) {
-    return createTest().then(function (test) {
-      test.right.send(msg)
-      return test.wait('right')
-    }).then(function (test) {
-      expect(test.left.connected).toBeFalsy()
-      expect(test.leftSent).toEqual([
-        ['error', 'wrong-format', JSON.stringify(msg)]
-      ])
-    })
+  await Promise.all(wrongs.map(async msg => {
+    let test = await createTest()
+    test.right.send(msg)
+    await test.wait('right')
+    expect(test.left.connected).toBeFalsy()
+    expect(test.leftSent).toEqual([
+      ['error', 'wrong-format', JSON.stringify(msg)]
+    ])
   }))
 })
 
-it('sends error on unknown message type', function () {
-  return createTest().then(function (test) {
-    test.right.send(['test'])
-    return test.wait('right')
-  }).then(function (test) {
-    expect(test.left.connected).toBeFalsy()
-    expect(test.leftSent).toEqual([
-      ['error', 'unknown-message', 'test']
-    ])
-  })
+it('sends error on unknown message type', async () => {
+  let test = await createTest()
+  test.right.send(['test'])
+  await test.wait('right')
+  expect(test.left.connected).toBeFalsy()
+  expect(test.leftSent).toEqual([
+    ['error', 'unknown-message', 'test']
+  ])
 })
 
-it('throws a error on error message by default', function () {
+it('throws a error on error message by default', () => {
   node = createNode()
-  expect(function () {
+  expect(() => {
     node.onMessage(['error', 'wrong-format', '1'])
   }).toThrow(new LoguxError('wrong-format', '1', true))
 })
 
-it('does not throw errors which are not relevant to code', function () {
+it('does not throw errors which are not relevant to code', () => {
   node = createNode()
   node.onMessage(['error', 'timeout', '1'])
   node.onMessage(['error', 'wrong-protocol', { }])
   node.onMessage(['error', 'wrong-subprotocol', { }])
 })
 
-it('disables throwing a error on listener', function () {
+it('disables throwing a error on listener', () => {
   node = createNode()
 
-  var errors = []
-  node.catch(function (error) {
+  let errors = []
+  node.catch(error => {
     errors.push(error)
   })
 
@@ -100,15 +93,14 @@ it('disables throwing a error on listener', function () {
   expect(errors).toEqual([new LoguxError('wrong-format', '2', true)])
 })
 
-it('emits a event on error sending', function () {
-  return createTest().then(function (test) {
-    var errors = []
-    test.leftNode.on('clientError', function (err) {
-      errors.push(err)
-    })
-
-    var error = new LoguxError('test', 'type')
-    test.leftNode.sendError(error)
-    expect(errors).toEqual([error])
+it('emits a event on error sending', async () => {
+  let test = await createTest()
+  let errors = []
+  test.leftNode.on('clientError', err => {
+    errors.push(err)
   })
+
+  let error = new LoguxError('test', 'type')
+  test.leftNode.sendError(error)
+  expect(errors).toEqual([error])
 })
