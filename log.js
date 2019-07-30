@@ -248,10 +248,10 @@ Log.prototype = {
    * log.changeMeta(action, { status: 'processed' })
    */
   changeMeta: function changeMeta (id, diff) {
-    var key
-    for (key in diff) {
-      if (key === 'id' || key === 'added' || key === 'time') {
-        throw new Error('Meta "' + key + '" is read-only')
+    var k
+    for (k in diff) {
+      if (k === 'id' || k === 'added' || k === 'time' || k === 'subprotocol') {
+        throw new Error('Meta "' + k + '" is read-only')
       }
     }
 
@@ -259,7 +259,7 @@ Log.prototype = {
     if (diff.reasons && diff.reasons.length === 0) {
       return this.store.remove(id).then(function (entry) {
         if (entry) {
-          for (key in diff) entry[1][key] = diff[key]
+          for (k in diff) entry[1][k] = diff[k]
           emitter.emit('clean', entry[0], entry[1])
         }
         return !!entry

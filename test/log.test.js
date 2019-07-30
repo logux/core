@@ -261,6 +261,9 @@ it('does not allow to change ID or added', () => {
   expect(() => {
     log.changeMeta('1 n 0', { time: 2 })
   }).toThrowError(/"time" is read-only/)
+  expect(() => {
+    log.changeMeta('1 n 0', { subprotocol: '1.0.0' })
+  }).toThrowError(/"subprotocol" is read-only/)
 })
 
 it('removes action on setting entry reasons', async () => {
