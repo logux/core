@@ -1,6 +1,9 @@
 # Change Log
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## 0.3.2
+* Fix read-only meta keys.
+
 ## 0.3.1
 * Fix using old `added` in `sync` message.
 
