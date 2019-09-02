@@ -15,8 +15,7 @@
     "api": "documentation build *.js -f md -o api.md",
     "spell": "yarn api && yaspeller-ci *.md",
     "clean": "rimraf api.md coverage/",
-    "lint": "eslint-ci *.js messages/*.js test/{**/,}*.js",
-    "test": "jest --coverage && yarn lint && yarn spell"
+    "test": "jest --coverage && eslint-ci . && size-limit && yarn spell"
   },
   "author": "Andrey Sitnik <andrey@sitnik.ru>",
   "license": "MIT",
@@ -29,6 +28,7 @@
   },
   "devDependencies": {
     "@logux/eslint-config": "^31.0.0",
+    "@logux/sharec-config": "^0.4.3",
     "clean-publish": "^1.1.2",
     "documentation": "^12.1.1",
     "eslint": "^6.3.0",
@@ -132,5 +132,8 @@
       "WebSocket",
       "WsConnection"
     ]
+  },
+  "sharec": {
+    "version": "0.4.3"
   }
 }
