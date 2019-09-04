@@ -585,20 +585,21 @@ module.exports = BaseNode
  * @callback authCallback
  * @param {object} credentials Remote node credentials.
  * @param {string} nodeId Unique ID of remote node instance.
- * @return {Promise} Promise with boolean value.
+ * @return {Promise<boolean>} Promise with boolean value.
  */
 
 /**
  * @callback filter
  * @param {Action} action New action from log.
  * @param {Meta} meta New action metadata.
- * @return {Promise} Promise with `true` if action should be synchronized
- *                   with remote log.
+ * @return {Promise<boolean>} Promise with `true` if action should
+ *                            be synchronized with remote log.
  */
 
 /**
  * @callback mapper
  * @param {Action} action New action from log.
  * @param {Meta} meta New action metadata.
- * @return {Promise} Promise with array of changed action and changed metadata.
+ * @return {Promise<Entry>} Promise with array of changed action
+ *                          and changed metadata.
  */

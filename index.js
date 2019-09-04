@@ -50,12 +50,6 @@ module.exports = {
  */
 
 /**
- * @callback listener
- * @param {Action} action New action.
- * @param {Meta} meta The action’s metadata.
- */
-
-/**
  * Array with {@link Action} and its {@link Meta}.
  *
  * @typedef {Array} Entry
@@ -64,8 +58,22 @@ module.exports = {
  */
 
 /**
+ * If entry was not found Log return `[null, null]`.
+ *
+ * @typedef {Array} Nope
+ * @property {null} 0
+ * @property {null} 1
+ */
+
+/**
+ * @callback listener
+ * @param {Action} action New action.
+ * @param {Meta} meta The action’s metadata.
+ */
+
+/**
  * @callback next
- * @return {Promise} Promise with next {@link Page}.
+ * @return {Promise<Page>} Promise with next {@link Page}.
  */
 
 /**
@@ -101,8 +109,9 @@ module.exports = {
  * @param {Action} action The action to add.
  * @param {Meta} meta Action’s metadata.
  *
- * @return {Promise} Promise with `meta` for new action or `false`
- *                   if action with same `meta.id` was already in store.
+ * @return {Promise<Meta|false>} Promise with `meta` for new action or `false`
+ *                               if action with same `meta.id` was already
+ *                               in store.
  *
  * @name add
  * @function
@@ -113,7 +122,7 @@ module.exports = {
  *
  * @param {string} id Action ID.
  *
- * @return {Promise} Promise with entry if action was in store.
+ * @return {Promise<Entry|false>} Promise with entry if action was in store.
  *
  * @name remove
  * @function
@@ -131,7 +140,7 @@ module.exports = {
  * @param {"created"|"added"} [opts.order] Sort entries by created time or
  *                                         when they was added to current log.
  *
- * @return {Promise} Promise with first {@link Page}.
+ * @return {Promise<Page>} Promise with first {@link Page}.
  *
  * @name get
  * @function
@@ -143,7 +152,7 @@ module.exports = {
  * @param {string} id Action ID.
  * @param {object} diff Object with values to change in action metadata.
  *
- * @return {Promise} Promise with `true` if metadata was changed
+ * @return {Promise<boolean>} Promise with `true` if metadata was changed
  *                   or `false` on unknown ID.
  *
  * @name changeMeta
@@ -155,7 +164,7 @@ module.exports = {
  *
  * @param {string} id Action ID.
  *
- * @return {Promise} Promise with array of action and metadata.
+ * @return {Promise<Entry|Nope>} Promise with array of action and metadata.
  *
  * @name byId
  * @function
@@ -196,7 +205,7 @@ module.exports = {
  * Return biggest `added` number in store.
  * All actions in this log have less or same `added` time.
  *
- * @return {Promise} Promise with biggest `added` number.
+ * @return {Promise<number>} Promise with biggest `added` number.
  *
  * @name getLastAdded
  * @function
@@ -205,7 +214,7 @@ module.exports = {
 /**
  * Get `added` values for latest synchronized received/sent events.
  *
- * @return {Promise} Promise with {@link LastSynced}.
+ * @return {Promise<number>} Promise with {@link LastSynced}.
  *
  * @name getLastSynced
  * @function

@@ -89,8 +89,8 @@ Log.prototype = {
    *                                  Action without reasons will be removed.
    * @param {string} [meta.keepLast] Set code as reason and remove this reasons
    *                                 from previous actions.
-   * @return {Promise} Promise with `meta` if action was added to log
-   *                   or `false` if action was already in log
+   * @return {Promise<Meta|fale>} Promise with `meta` if action was added
+   *                              to log or `false` if action was already in log
    *
    * @example
    * removeButton.addEventListener('click', () => {
@@ -240,8 +240,8 @@ Log.prototype = {
    * @param {string} id Action ID.
    * @param {object} diff Object with values to change in action metadata.
    *
-   * @return {Promise} Promise with `true` if metadata was changed
-   *                   or `false` on unknown ID.
+   * @return {Promise<boolean>} Promise with `true` if metadata was changed
+   *                            or `false` on unknown ID.
    *
    * @example
    * await process(action)
@@ -305,7 +305,7 @@ Log.prototype = {
    *
    * @param {string} id Action ID.
    *
-   * @return {Promise} Promise with boolean.
+   * @return {Promise<Entry|Nope>} Promise with entry.
    *
    * @example
    * if (action.type === 'logux/undo') {
