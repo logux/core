@@ -280,9 +280,9 @@ Log.prototype = {
    * @param {number} [criteria.maxAdded] Remove reason only for actions
    *                                     with lower `added`.
    * @param {string} [criteria.olderThan] Remove reasons only for actions
-   *                                     with bigger `id`.
+   *                                      with bigger `id`.
    * @param {string} [criteria.youngerThan] Remove reason only for actions
-   *                                       with lower `id`.
+   *                                        with lower `id`.
    * @param {string} [criteria.id] Remove reason only for action with `id`.
    *
    * @return {Promise} Promise when cleaning will be finished.
