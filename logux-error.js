@@ -3,7 +3,7 @@
  *
  * @param {string} type The error code.
  * @param {any} options The error option.
- * @param {boolean} received Was error received from remote node.
+ * @param {boolean} [received=false] Was error received from remote node.
  *
  * @example
  * if (error.name === 'LoguxError') {

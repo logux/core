@@ -5,7 +5,7 @@ var NanoEvents = require('nanoevents')
  *
  * @param {string} url WebSocket server URL.
  * @param {function} [WS] WebSocket class if you want change implementation.
- * @param {object} opts Extra option for WebSocket constructor.
+ * @param {object} [opts] Extra option for WebSocket constructor.
  *
  * @example
  * import { WsConnection } from 'logux-core'
