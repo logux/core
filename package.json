@@ -1,6 +1,6 @@
 {
   "name": "@logux/core",
-  "version": "0.3.2",
+  "version": "0.3.3",
   "description": "Logux core components",
   "keywords": [
     "logux",
@@ -130,7 +130,8 @@
       "Versioning",
       "waitFor",
       "WebSocket",
-      "WsConnection"
+      "WsConnection",
+      "JSDoc"
     ]
   },
   "sharec": {
