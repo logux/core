@@ -68,7 +68,7 @@ function Reconnect (connection, options) {
 
   function visibility () {
     if (self.reconnecting && !self.connected && !self.connecting) {
-      if (!document.hidden) self.connect()
+      if (typeof document !== 'undefined' && !document.hidden) self.connect()
     }
   }
   function connect () {
@@ -79,7 +79,10 @@ function Reconnect (connection, options) {
   function disconnect () {
     self.disconnect('freeze')
   }
-  if (typeof navigator !== 'undefined') {
+  if (
+    typeof document !== 'undefined' &&
+    typeof window !== 'undefined'
+  ) {
     document.addEventListener('visibilitychange', visibility, false)
     window.addEventListener('focus', connect, false)
     window.addEventListener('online', connect, false)
