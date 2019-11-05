@@ -1,6 +1,9 @@
 # Change Log
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## 0.3.4
+* Fix React Native and React Server-Side Rendering support (by Can Rau).
+
 ## 0.3.3
 * Fix JSDoc.
 
