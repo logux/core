@@ -23,7 +23,7 @@ it('destroys on disconnect', async () => {
   jest.spyOn(node, 'destroy')
   await pair.left.connect()
   pair.left.disconnect()
-  expect(node.destroy).toBeCalled()
+  expect(node.destroy).toHaveBeenCalledTimes(1)
 })
 
 it('destroys on connect timeout', async () => {
@@ -38,10 +38,10 @@ it('destroys on connect timeout', async () => {
 
   jest.spyOn(node, 'destroy')
   await pair.left.connect()
-  expect(node.destroy).not.toBeCalled()
+  expect(node.destroy).not.toHaveBeenCalled()
   await delay(200)
   expect(error.message).toContain('timeout')
-  expect(node.destroy).toBeCalled()
+  expect(node.destroy).toHaveBeenCalledTimes(1)
 })
 
 it('throws on fixTime option', () => {
@@ -49,7 +49,7 @@ it('throws on fixTime option', () => {
   let pair = new TestPair()
   expect(() => {
     new ServerNode('a', log, pair.left, { fixTime: true })
-  }).toThrowError(/fixTime/)
+  }).toThrow(/fixTime/)
 })
 
 it('loads only last added from store', async () => {
@@ -81,7 +81,7 @@ it('supports connection before initializing', async () => {
   expect(pair.leftSent).toEqual([])
   returnLastAdded(10)
   await delay(70)
-  expect(node.connected).toBeTruthy()
+  expect(node.connected).toBe(true)
   expect(pair.leftSent).toHaveLength(2)
   expect(pair.leftSent[0][0]).toEqual('connected')
   expect(pair.leftSent[1]).toEqual(['ping', 10])

@@ -67,7 +67,7 @@ it('checks client protocol version', async () => {
   expect(test.rightSent).toEqual([
     ['error', 'wrong-protocol', { supported: 2, used: 1 }]
   ])
-  expect(test.rightNode.connected).toBeFalsy()
+  expect(test.rightNode.connected).toBe(false)
 })
 
 it('checks server protocol version', async () => {
@@ -82,7 +82,7 @@ it('checks server protocol version', async () => {
     ['connect', PROTOCOL, 'client', 0],
     ['error', 'wrong-protocol', { supported: 2, used: 1 }]
   ])
-  expect(test.leftSent.connected).toBeFalsy()
+  expect(test.left.connected).toBe(false)
 })
 
 it('checks types in connect message', async () => {
@@ -99,7 +99,7 @@ it('checks types in connect message', async () => {
     await pair.left.connect()
     pair.right.send(msg)
     await pair.wait('right')
-    expect(node.connected).toBeFalsy()
+    expect(node.connected).toBe(false)
     expect(pair.leftSent).toEqual([
       ['error', 'wrong-format', JSON.stringify(msg)]
     ])
@@ -160,7 +160,7 @@ it('checks subprotocol version', async () => {
   expect(test.rightSent).toEqual([
     ['error', 'wrong-subprotocol', { supported: '2.x', used: '1.0.0' }]
   ])
-  expect(test.rightNode.connected).toBeFalsy()
+  expect(test.rightNode.connected).toBe(false)
 })
 
 it('checks subprotocol version in client', async () => {
@@ -180,7 +180,7 @@ it('checks subprotocol version in client', async () => {
     ['connect', PROTOCOL, 'client', 0],
     ['error', 'wrong-subprotocol', { supported: '2.x', used: '1.0.0' }]
   ])
-  expect(test.leftNode.connected).toBeFalsy()
+  expect(test.leftNode.connected).toBe(false)
 })
 
 it('throws regular errors during connect event', () => {
@@ -231,7 +231,7 @@ it('denies access for wrong users', async () => {
   expect(test.rightSent).toEqual([
     ['error', 'wrong-credentials']
   ])
-  expect(test.rightNode.connected).toBeFalsy()
+  expect(test.rightNode.connected).toBe(false)
 })
 
 it('denies access to wrong server', async () => {
@@ -249,7 +249,7 @@ it('denies access to wrong server', async () => {
     ['connect', PROTOCOL, 'client', 0],
     ['error', 'wrong-credentials']
   ])
-  expect(test.leftNode.connected).toBeFalsy()
+  expect(test.leftNode.connected).toBe(false)
 })
 
 it('allows access for right users', async () => {
@@ -326,7 +326,7 @@ it('catches authentication errors', async () => {
   await delay(1)
   expect(errors).toEqual([error])
   expect(test.rightSent).toEqual([])
-  expect(test.rightNode.connected).toBeFalsy()
+  expect(test.rightNode.connected).toBe(false)
 })
 
 it('sends authentication errors', async () => {
@@ -341,5 +341,5 @@ it('sends authentication errors', async () => {
   await test.wait('right')
   await test.wait('left')
   expect(test.rightSent).toEqual([['error', 'bruteforce']])
-  expect(test.rightNode.connected).toBeFalsy()
+  expect(test.rightNode.connected).toBe(false)
 })

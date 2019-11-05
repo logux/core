@@ -32,7 +32,7 @@ afterEach(() => {
 it('throws on ping and no timeout options', () => {
   expect(() => {
     new ClientNode('client', null, null, { ping: 1000, timeout: 0 })
-  }).toThrowError(/set timeout option/)
+  }).toThrow(/set timeout option/)
 })
 
 it('answers pong on ping', async () => {
@@ -117,7 +117,7 @@ it('checks types', async () => {
     await test.left.connect()
     test.right.send(command)
     await test.wait('right')
-    expect(test.leftNode.connected).toBeFalsy()
+    expect(test.leftNode.connected).toBe(false)
     expect(test.leftSent).toEqual([
       ['error', 'wrong-format', JSON.stringify(command)]
     ])

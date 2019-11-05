@@ -4,7 +4,7 @@ it('throws on connect method call', () => {
   let connection = new ServerConnection({ })
   expect(() => {
     connection.connect()
-  }).toThrowError(/reconnect/)
+  }).toThrow(/reconnect/)
 })
 
 it('emits connection states', () => {
@@ -16,11 +16,11 @@ it('emits connection states', () => {
   })
 
   expect(states).toEqual([])
-  expect(connection.connected).toBeTruthy()
+  expect(connection.connected).toBe(true)
 
   connection.ws.onclose()
   expect(states).toEqual(['disconnect'])
-  expect(connection.connected).toBeFalsy()
+  expect(connection.connected).toBe(false)
 })
 
 it('emits error on wrong format', () => {
@@ -44,8 +44,8 @@ it('closes WebSocket', () => {
   let connection = new ServerConnection(ws)
 
   connection.disconnect()
-  expect(ws.close).toHaveBeenCalled()
-  expect(connection.connected).toBeFalsy()
+  expect(ws.close).toHaveBeenCalledTimes(1)
+  expect(connection.connected).toBe(false)
 })
 
 it('receives messages', () => {

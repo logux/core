@@ -68,15 +68,15 @@ it('destroys connection on destroy', () => {
   jest.spyOn(node.connection, 'destroy')
 
   node.destroy()
-  expect(node.connection.disconnect).not.toBeCalledWith('destroy')
-  expect(node.connection.destroy).toBeCalled()
+  expect(node.connection.disconnect).not.toHaveBeenCalledWith('destroy')
+  expect(node.connection.destroy).toHaveBeenCalledTimes(1)
 })
 
 it('disconnects on destroy', async () => {
   let node = createNode()
   await node.connection.connect()
   node.destroy()
-  expect(node.connection.connected).toBeFalsy()
+  expect(node.connection.connected).toBe(false)
 })
 
 it('does not throw error on send to disconnected connection', () => {
@@ -95,11 +95,11 @@ it('sends messages to connection', async () => {
 
 it('has connection state', async () => {
   let node = createNode()
-  expect(node.connected).toBeFalsy()
+  expect(node.connected).toBe(false)
   await node.connection.connect()
-  expect(node.connected).toBeTruthy()
+  expect(node.connected).toBe(true)
   node.connection.disconnect()
-  expect(node.connected).toBeFalsy()
+  expect(node.connected).toBe(false)
 })
 
 it('has state', async () => {
@@ -208,7 +208,7 @@ it('accepts already connected connection', async () => {
   await pair.left.connect()
   node = new BaseNode('client', TestTime.getLog(), pair.left)
   await node.initializing
-  expect(node.connected).toBeTruthy()
+  expect(node.connected).toBe(true)
 })
 
 it('receives errors from connection', async () => {
@@ -221,7 +221,7 @@ it('receives errors from connection', async () => {
   let error = new Error('test')
   test.left.emitter.emit('error', error)
 
-  expect(test.leftNode.connected).toBeFalsy()
+  expect(test.leftNode.connected).toBe(false)
   expect(test.leftEvents).toEqual([
     ['connect'],
     ['disconnect', 'error']
@@ -239,7 +239,7 @@ it('receives format errors from connection', async () => {
   error.received = 'options'
   test.left.emitter.emit('error', error)
   await test.wait()
-  expect(test.leftNode.connected).toBeFalsy()
+  expect(test.leftNode.connected).toBe(false)
   expect(test.leftEvents).toEqual([
     ['connect'],
     ['disconnect', 'error']
@@ -272,6 +272,6 @@ it('disconnect on the error during send', async () => {
   }
   test.leftNode.send(['ping', 0])
   await delay(1)
-  expect(test.leftNode.connected).toBeFalsy()
+  expect(test.leftNode.connected).toBe(false)
   expect(errors).toEqual([error])
 })

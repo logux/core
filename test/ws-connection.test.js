@@ -22,7 +22,7 @@ afterEach(() => {
 it('throws a error on lack of WebSocket support', () => {
   expect(() => {
     new WsConnection('ws://locahost')
-  }).toThrowError(/WebSocket/)
+  }).toThrow(/WebSocket/)
 })
 
 it('emits error on wrong format', async () => {
@@ -70,26 +70,26 @@ it('emits connection states', async () => {
   })
 
   expect(states).toEqual([])
-  expect(connection.connected).toBeFalsy()
+  expect(connection.connected).toBe(false)
 
   let connecting = connection.connect()
   expect(states).toEqual(['connecting'])
-  expect(connection.connected).toBeFalsy()
+  expect(connection.connected).toBe(false)
 
   await connecting
   expect(states).toEqual(['connecting', 'connect'])
-  expect(connection.connected).toBeTruthy()
+  expect(connection.connected).toBe(true)
 
   connection.ws.onclose()
   expect(states).toEqual(['connecting', 'connect', 'disconnect'])
-  expect(connection.connected).toBeFalsy()
+  expect(connection.connected).toBe(false)
 
   connection.connect()
   connection.ws.onclose()
   expect(states).toEqual([
     'connecting', 'connect', 'disconnect', 'connecting', 'disconnect'
   ])
-  expect(connection.connected).toBeFalsy()
+  expect(connection.connected).toBe(false)
 })
 
 it('closes WebSocket', async () => {
@@ -104,8 +104,8 @@ it('closes WebSocket', async () => {
   jest.spyOn(ws, 'close')
 
   connection.disconnect()
-  expect(ws.close).toHaveBeenCalled()
-  expect(connection.connected).toBeFalsy()
+  expect(ws.close).toHaveBeenCalledTimes(1)
+  expect(connection.connected).toBe(false)
 })
 
 it('receives messages', async () => {

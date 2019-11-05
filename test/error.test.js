@@ -33,7 +33,7 @@ it('sends error on wrong message format', async () => {
     let test = await createTest()
     test.right.send(msg)
     await test.wait('right')
-    expect(test.left.connected).toBeFalsy()
+    expect(test.left.connected).toBe(false)
     expect(test.leftSent).toEqual([
       ['error', 'wrong-format', JSON.stringify(msg)]
     ])
@@ -50,7 +50,7 @@ it('sends error on wrong error parameters', async () => {
     let test = await createTest()
     test.right.send(msg)
     await test.wait('right')
-    expect(test.left.connected).toBeFalsy()
+    expect(test.left.connected).toBe(false)
     expect(test.leftSent).toEqual([
       ['error', 'wrong-format', JSON.stringify(msg)]
     ])
@@ -61,7 +61,7 @@ it('sends error on unknown message type', async () => {
   let test = await createTest()
   test.right.send(['test'])
   await test.wait('right')
-  expect(test.left.connected).toBeFalsy()
+  expect(test.left.connected).toBe(false)
   expect(test.leftSent).toEqual([
     ['error', 'unknown-message', 'test']
   ])

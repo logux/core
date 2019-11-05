@@ -108,7 +108,7 @@ it('checks sync types', async () => {
     test.leftNode.catch(() => true)
     test.leftNode.send(msg)
     await test.wait('left')
-    expect(test.rightNode.connected).toBeFalsy()
+    expect(test.rightNode.connected).toBe(false)
     expect(test.rightSent).toEqual([
       ['error', 'wrong-format', JSON.stringify(msg)]
     ])

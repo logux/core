@@ -32,26 +32,26 @@ afterEach(() => {
 it('requires node ID', () => {
   expect(() => {
     new Log()
-  }).toThrowError(/node ID/)
+  }).toThrow(/node ID/)
 })
 
 it('requires store', () => {
   expect(() => {
     new Log({ nodeId: 'test' })
-  }).toThrowError(/store/)
+  }).toThrow(/store/)
 })
 
 it('checks node ID', () => {
   expect(() => {
     new Log({ nodeId: 'a b', store: new MemoryStore() })
-  }).toThrowError(/Space/)
+  }).toThrow(/Space/)
 })
 
 it('requires type for action', () => {
   let log = createLog()
   expect(() => {
     log.add({ a: 1 })
-  }).toThrowError(/type/)
+  }).toThrow(/type/)
 })
 
 it('sends new entries to listeners', async () => {
@@ -104,7 +104,7 @@ it('ignore entry with existed ID', async () => {
   let result1 = await log.add({ type: 'A' }, meta)
   expect(typeof result1).toEqual('object')
   let result2 = await log.add({ type: 'B' }, meta)
-  expect(result2).toBeFalsy()
+  expect(result2).toBe(false)
   checkActions(log, [{ type: 'A' }])
   expect(added).toEqual([{ type: 'A' }])
 })
@@ -237,7 +237,7 @@ it('changes meta', async () => {
     [{ type: 'B' }, { reasons: ['t'], id: '2 node 0', a: 1 }]
   ])
   let result = await log.changeMeta('2 node 0', { a: 2, b: 2 })
-  expect(result).toBeTruthy()
+  expect(result).toBe(true)
   checkEntries(log, [
     [
       { type: 'A' },
@@ -254,16 +254,16 @@ it('does not allow to change ID or added', () => {
   let log = createLog()
   expect(() => {
     log.changeMeta('1 n 0', { id: '2 n 0' })
-  }).toThrowError(/"id" is read-only/)
+  }).toThrow(/"id" is read-only/)
   expect(() => {
     log.changeMeta('1 n 0', { added: 2 })
-  }).toThrowError(/"added" is read-only/)
+  }).toThrow(/"added" is read-only/)
   expect(() => {
     log.changeMeta('1 n 0', { time: 2 })
-  }).toThrowError(/"time" is read-only/)
+  }).toThrow(/"time" is read-only/)
   expect(() => {
     log.changeMeta('1 n 0', { subprotocol: '1.0.0' })
-  }).toThrowError(/"subprotocol" is read-only/)
+  }).toThrow(/"subprotocol" is read-only/)
 })
 
 it('removes action on setting entry reasons', async () => {
@@ -277,7 +277,7 @@ it('removes action on setting entry reasons', async () => {
   })
 
   let result1 = await log.changeMeta('2 n 0', { reasons: [], a: 1 })
-  expect(result1).toBeTruthy()
+  expect(result1).toBe(true)
   expect(cleaned).toEqual([
     [{ type: 'B' }, { id: '2 n 0', time: 2, added: 2, reasons: [], a: 1 }]
   ])
@@ -285,7 +285,7 @@ it('removes action on setting entry reasons', async () => {
     [{ type: 'A' }, { id: '1 n 0', time: 1, added: 1, reasons: ['test'] }]
   ])
   let result2 = await log.changeMeta('3 n 0', { reasons: [] })
-  expect(result2).toBeFalsy()
+  expect(result2).toBe(false)
 })
 
 it('returns action by ID', async () => {
@@ -375,13 +375,13 @@ it('checks ID for actions without reasons', async () => {
 
   await log.add({ type: 'A' }, { id: '1 n 0', reasons: ['t'] })
   let meta1 = await log.add({ type: 'B' }, { id: '1 n 0' })
-  expect(meta1).toBeFalsy()
+  expect(meta1).toBe(false)
   expect(added).toEqual([
     [{ type: 'A' }, 1]
   ])
   expect(cleaned).toEqual([])
   let meta2 = await log.add({ type: 'C' }, { id: '2 n 0' })
-  expect(meta2).not.toBeFalsy()
+  expect(meta2).not.toBe(false)
   expect(added).toEqual([
     [{ type: 'A' }, 1],
     [{ type: 'C' }, undefined]

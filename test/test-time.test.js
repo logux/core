@@ -4,7 +4,7 @@ let TestTime = require('../test-time')
 it('creates test log', () => {
   let log = TestTime.getLog()
   expect(log.nodeId).toEqual('test1')
-  expect(log.store instanceof MemoryStore).toBeTruthy()
+  expect(log.store instanceof MemoryStore).toBe(true)
 })
 
 it('creates test log with specific parameters', () => {

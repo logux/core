@@ -14,7 +14,7 @@ it('connects first', async () => {
   node = new ClientNode('client', TestTime.getLog(), pair.left)
   jest.spyOn(node, 'sendConnect')
   await pair.left.connect()
-  expect(node.sendConnect).toBeCalled()
+  expect(node.sendConnect).toHaveBeenCalledTimes(1)
 })
 
 it('saves last added from ping', async () => {

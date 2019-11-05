@@ -30,10 +30,10 @@ it('enables reconnecting on connect', () => {
     connected: false
   }
   let recon = new Reconnect(con)
-  expect(recon.reconnecting).toBeFalsy()
+  expect(recon.reconnecting).toBe(false)
 
   recon.connect()
-  expect(recon.reconnecting).toBeTruthy()
+  expect(recon.reconnecting).toBe(true)
 })
 
 it('enables reconnecting if connection was already connected', () => {
@@ -43,7 +43,7 @@ it('enables reconnecting if connection was already connected', () => {
     connected: true
   }
   let recon = new Reconnect(con)
-  expect(recon.reconnecting).toBeTruthy()
+  expect(recon.reconnecting).toBe(true)
 })
 
 it('disables reconnecting on destroy and empty disconnect', async () => {
@@ -52,14 +52,14 @@ it('disables reconnecting on destroy and empty disconnect', async () => {
 
   await recon.connect()
   recon.disconnect('destroy')
-  expect(recon.reconnecting).toBeFalsy()
+  expect(recon.reconnecting).toBe(false)
   expect(pair.leftEvents).toEqual([
     ['connect'],
     ['disconnect', 'destroy']
   ])
   await recon.connect()
   recon.disconnect()
-  expect(recon.reconnecting).toBeFalsy()
+  expect(recon.reconnecting).toBe(false)
 })
 
 it('reconnects on timeout and error disconnect', () => {
@@ -71,10 +71,10 @@ it('reconnects on timeout and error disconnect', () => {
   let recon = new Reconnect(con)
 
   recon.disconnect('timeout')
-  expect(recon.reconnecting).toBeTruthy()
+  expect(recon.reconnecting).toBe(true)
 
   recon.disconnect('error')
-  expect(recon.reconnecting).toBeTruthy()
+  expect(recon.reconnecting).toBe(true)
 })
 
 it('proxies connection methods', () => {
@@ -93,16 +93,16 @@ it('proxies connection methods', () => {
     }
   }
   let recon = new Reconnect(con)
-  expect(recon.connected).toBeFalsy()
+  expect(recon.connected).toBe(false)
 
   recon.connect()
-  expect(recon.connected).toBeTruthy()
+  expect(recon.connected).toBe(true)
 
   recon.send(['test'])
   expect(sent).toEqual([['test']])
 
   recon.disconnect()
-  expect(recon.connected).toBeFalsy()
+  expect(recon.connected).toBe(false)
 })
 
 it('proxies connection events', async () => {
@@ -132,7 +132,7 @@ it('disables reconnection on protocol error', async () => {
   pair.right.send(['error', 'wrong-protocol'])
   pair.right.disconnect()
   await pair.wait()
-  expect(recon.reconnecting).toBeFalsy()
+  expect(recon.reconnecting).toBe(false)
 })
 
 it('disables reconnection on authentication error', async () => {
@@ -142,7 +142,7 @@ it('disables reconnection on authentication error', async () => {
   pair.right.send(['error', 'wrong-credentials'])
   pair.right.disconnect()
   await pair.wait()
-  expect(recon.reconnecting).toBeFalsy()
+  expect(recon.reconnecting).toBe(false)
 })
 
 it('disables reconnection on subprotocol error', async () => {
@@ -152,7 +152,7 @@ it('disables reconnection on subprotocol error', async () => {
   pair.right.send(['error', 'wrong-subprotocol'])
   pair.right.disconnect()
   await pair.wait()
-  expect(recon.reconnecting).toBeFalsy()
+  expect(recon.reconnecting).toBe(false)
 })
 
 it('disconnects and unbind listeners on destory', async () => {
@@ -166,7 +166,7 @@ it('disconnects and unbind listeners on destory', async () => {
   recon.destroy()
   await pair.wait()
   expect(pair.left.emitter.events.connect).toHaveLength(origin)
-  expect(pair.right.connected).toBeFalsy()
+  expect(pair.right.connected).toBe(false)
 })
 
 it('reconnects automatically with delay', async () => {
@@ -175,9 +175,9 @@ it('reconnects automatically with delay', async () => {
   await recon.connect()
   pair.right.disconnect()
   await pair.wait()
-  expect(pair.right.connected).toBeFalsy()
+  expect(pair.right.connected).toBe(false)
   await delay(70)
-  expect(pair.right.connected).toBeTruthy()
+  expect(pair.right.connected).toBe(true)
 })
 
 it('allows to disable reconnecting', async () => {
@@ -188,7 +188,7 @@ it('allows to disable reconnecting', async () => {
   pair.right.disconnect()
   await pair.wait()
   await delay(1)
-  expect(pair.right.connected).toBeFalsy()
+  expect(pair.right.connected).toBe(false)
 })
 
 it('has maximum reconnection attempts', async () => {
@@ -208,7 +208,7 @@ it('has maximum reconnection attempts', async () => {
   recon.connect()
 
   await delay(10)
-  expect(recon.reconnecting).toBeFalsy()
+  expect(recon.reconnecting).toBe(false)
   expect(connects).toBe(3)
 })
 
@@ -219,17 +219,17 @@ it('tracks connecting state', () => {
     maxDelay: 5000
   })
 
-  expect(recon.connecting).toBeFalsy()
+  expect(recon.connecting).toBe(false)
 
   pair.left.emitter.emit('connecting')
-  expect(recon.connecting).toBeTruthy()
+  expect(recon.connecting).toBe(true)
 
   pair.left.emitter.emit('disconnect')
-  expect(recon.connecting).toBeFalsy()
+  expect(recon.connecting).toBe(false)
 
   pair.left.emitter.emit('connecting')
   pair.left.emitter.emit('connect')
-  expect(recon.connecting).toBeFalsy()
+  expect(recon.connecting).toBe(false)
 })
 
 it('has dynamic delay', () => {
@@ -282,37 +282,37 @@ it('listens for window events', async () => {
   await recon.connect()
   pair.right.disconnect()
   await pair.wait()
-  expect(recon.connected).toBeFalsy()
+  expect(recon.connected).toBe(false)
 
   document.hidden = true
   listeners.visibilitychange()
-  expect(recon.connecting).toBeFalsy()
+  expect(recon.connecting).toBe(false)
 
   document.hidden = false
   listeners.visibilitychange()
   await pair.wait()
-  expect(recon.connected).toBeTruthy()
+  expect(recon.connected).toBe(true)
 
   listeners.freeze()
-  expect(recon.connecting).toBeFalsy()
-  expect(recon.connected).toBeFalsy()
+  expect(recon.connecting).toBe(false)
+  expect(recon.connected).toBe(false)
 
   navigator.onLine = false
   listeners.resume()
-  expect(recon.connecting).toBeFalsy()
+  expect(recon.connecting).toBe(false)
 
   navigator.onLine = true
   listeners.resume()
   await delay(10)
-  expect(recon.connected).toBeTruthy()
+  expect(recon.connected).toBe(true)
   pair.right.disconnect()
   await pair.wait()
-  expect(pair.right.connected).toBeFalsy()
+  expect(pair.right.connected).toBe(false)
 
   navigator.onLine = true
   listeners.online()
   await pair.wait()
-  expect(pair.right.connected).toBeTruthy()
+  expect(pair.right.connected).toBe(true)
 
   recon.destroy()
   expect(Object.keys(listeners)).toHaveLength(0)

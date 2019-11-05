@@ -27,9 +27,9 @@ it('has error description', () => {
 
 it('has received', () => {
   let own = catchError('test', 'custom')
-  expect(own.received).toBeFalsy()
+  expect(own.received).toBe(false)
   let received = catchError('test', 'custom', true)
-  expect(received.received).toBeTruthy()
+  expect(received.received).toBe(true)
 })
 
 it('stringifies', () => {

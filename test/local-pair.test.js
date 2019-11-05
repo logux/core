@@ -48,14 +48,14 @@ it('throws a error on disconnection in disconnected state', () => {
   let pair = new LocalPair()
   expect(() => {
     pair.left.disconnect()
-  }).toThrowError(/already finished/)
+  }).toThrow(/already finished/)
 })
 
 it('throws a error on message in disconnected state', () => {
   let pair = new LocalPair()
   expect(() => {
     pair.left.send(['test'])
-  }).toThrowError(/started before sending/)
+  }).toThrow(/started before sending/)
 })
 
 it('throws a error on connection in connected state', async () => {
@@ -63,7 +63,7 @@ it('throws a error on connection in connected state', async () => {
   await pair.left.connect()
   expect(() => {
     pair.left.connect()
-  }).toThrowError(/already established/)
+  }).toThrow(/already established/)
 })
 
 it('sends a connect event', async () => {
