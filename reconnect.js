@@ -81,7 +81,9 @@ function Reconnect (connection, options) {
   }
   if (
     typeof document !== 'undefined' &&
-    typeof window !== 'undefined'
+    typeof window !== 'undefined' &&
+    document.addEventListener &&
+    window.addEventListener
   ) {
     document.addEventListener('visibilitychange', visibility, false)
     window.addEventListener('focus', connect, false)
