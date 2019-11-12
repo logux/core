@@ -132,7 +132,9 @@
       "waitFor",
       "WebSocket",
       "WsConnection",
-      "JSDoc"
+      "JSDoc",
+      "ClientNode",
+      "ServerNode"
     ]
   },
   "sharec": {
