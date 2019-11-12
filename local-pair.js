@@ -81,6 +81,7 @@ LocalConnection.prototype = {
  * const server = new ServerNode(pair.right)
  *
  * @class
+ * @name LocalPair
  */
 function LocalPair (delay) {
   /**

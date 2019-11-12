@@ -43,6 +43,7 @@ var DEFAULT_OPTIONS = {
  * })
  *
  * @extends BaseNode
+ * @name ServerNode
  * @class
  */
 function ServerNode (nodeId, log, connection, options) {

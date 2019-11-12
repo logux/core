@@ -44,6 +44,7 @@ var DEFAULT_OPTIONS = {
  * const node = new ClientNode(nodeId, log, connection)
  *
  * @extends BaseNode
+ * @name ClientNode
  * @class
  */
 function ClientNode (nodeId, log, connection, options) {
