@@ -123,6 +123,8 @@ TestPair.prototype = {
      * @example
      * await pair.left.send(msg)
      * pair.leftSent //=> [msg]
+     *
+     * @memberof TestPair#
      */
     this.leftSent = []
     /**
@@ -132,6 +134,8 @@ TestPair.prototype = {
      * @example
      * pair.right.send(msg)
      * pair.rightSent //=> [msg]
+     *
+     * @memberof TestPair#
      */
     this.rightSent = []
 
@@ -142,6 +146,8 @@ TestPair.prototype = {
      * @example
      * await pair.left.connect()
      * pair.leftEvents //=> [['connect']]
+     *
+     * @memberof TestPair#
      */
     this.leftEvents = []
     /**
@@ -151,6 +157,8 @@ TestPair.prototype = {
      * @example
      * await pair.right.connect()
      * pair.rightEvents //=> [['connect']]
+     *
+     * @memberof TestPair#
      */
     this.rightEvents = []
   },
