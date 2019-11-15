@@ -82,15 +82,9 @@ Log.prototype = {
    *
    * @param {Action} action The new action.
    * @param {Meta} [meta] Open structure for action metadata.
-   * @param {string} [meta.id] Unique action ID.
-   * @param {number} [meta.time] Action created time.
-   *                             Milliseconds since UNIX epoch.
-   * @param {string[]} [meta.reasons] Why action should be kept in log.
-   *                                  Action without reasons will be removed.
-   * @param {string} [meta.keepLast] Set code as reason and remove this reasons
-   *                                 from previous actions.
-   * @return {Promise<Meta|fale>} Promise with `meta` if action was added
-   *                              to log or `false` if action was already in log
+   * @return {Promise<Meta|false>} Promise with `meta` if action was added
+   *                               to log or `false` if action was already
+   *                               in log.
    *
    * @example
    * removeButton.addEventListener('click', () => {

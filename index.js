@@ -47,6 +47,12 @@ module.exports = {
  * @property {string} id Action unique ID. {@link Log#add} set it automatically.
  * @property {number} added Sequence number of action in current log.
  *                          {@link Log#add} will fill it.
+ * @property {number} [time] Action created time.
+ *                           Milliseconds since UNIX epoch.
+ * @property {string[]} [reasons] Why action should be kept in log.
+ *                                Action without reasons will be removed.
+ * @property {string} [keepLast] Set code as reason and remove this reasons
+ *                               from previous actions.
  */
 
 /**
