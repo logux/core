@@ -297,7 +297,7 @@ BaseNode.prototype = {
   },
 
   /**
-   * Return Promise until {@link BaseNode#state} sync will have specific state.
+   * Return Promise until sync will have specific state.
    *
    * If current state is correct, method will return resolved Promise.
    *
