@@ -119,9 +119,6 @@ Reconnect.prototype = {
    * Unbind all listeners and disconnect. Use it if you will not need
    * this class anymore.
    *
-   * {@link BaseNode#destroy} will call this method instead
-   * of {@link Reconnect#disconnect}.
-   *
    * @return {undefined}
    */
   destroy: function destroy () {
