@@ -19,6 +19,7 @@
   },
   "author": "Andrey Sitnik <andrey@sitnik.ru>",
   "license": "MIT",
+  "homepage": "https://logux.io/",
   "repository": "logux/core",
   "engines": {
     "node": ">=10.0.0"
@@ -134,7 +135,8 @@
       "WsConnection",
       "JSDoc",
       "ClientNode",
-      "ServerNode"
+      "ServerNode",
+      "io"
     ]
   },
   "sharec": {
