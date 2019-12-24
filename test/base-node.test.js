@@ -170,6 +170,13 @@ it('loads lastSent, lastReceived and lastAdded from store', async () => {
   expect(node.lastReceived).toBe(2)
 })
 
+it('does not override smaller lastSent', async () => {
+  let node = createNode()
+  node.setLastSent(2)
+  node.setLastSent(1)
+  expect(node.log.store.lastSent).toEqual(2)
+})
+
 it('has separated timeouts', async () => {
   let node = createNode({ timeout: 100 })
 

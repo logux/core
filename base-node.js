@@ -524,8 +524,10 @@ BaseNode.prototype = {
   },
 
   setLastSent: function setLastSent (value) {
-    if (this.lastSent < value) this.lastSent = value
-    this.log.store.setLastSynced({ sent: value })
+    if (this.lastSent < value) {
+      this.lastSent = value
+      this.log.store.setLastSynced({ sent: value })
+    }
   },
 
   setLastReceived: function setLastReceived (value) {
