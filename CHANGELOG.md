@@ -1,6 +1,9 @@
 # Change Log
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## 0.3.5
+* Fix actions double sending to the server.
+
 ## 0.3.4
 * Fix React Native and React Server-Side Rendering support (by Can Rau).
 
