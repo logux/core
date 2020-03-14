@@ -43,8 +43,7 @@ npm install @logux/core
 See [documentation] for Logux API.
 
 ```js
-import { TestTime, TestLog, TestPair } from '@logux/core'
-import ClientNode from '@logux/core'
+import { ClientNode, TestTime, TestLog, TestPair } from '@logux/core'
 
 let time = new TestTime()
 let pair = new TestPair()
@@ -52,7 +51,7 @@ let node = new ClientNode('client:test', time.nextLog(), pair.left)
 ```
 
 ```js
-import isFirstOlder from '@logux/core/is-first-older'
+import { isFirstOlder } from '@logux/core'
 
 let lastRename
 log.on('add', (action, meta) => {
@@ -65,4 +64,4 @@ log.on('add', (action, meta) => {
 })
 ```
 
-[documentation]: https://github.com/logux/logux
+[documentation]: https://logux.io/web-api/
