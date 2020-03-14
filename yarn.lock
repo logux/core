@@ -339,10 +339,10 @@
   dependencies:
     globals "^12.3.0"
 
-"@logux/sharec-config@^0.6.0":
-  version "0.6.1"
-  resolved "https://registry.yarnpkg.com/@logux/sharec-config/-/sharec-config-0.6.1.tgz#cde12a2962428ecebc8f957fc204db9676719330"
-  integrity sha512-ZgQ6eudzq+Pt2uHotB9f2pRMX7xGBtOF6VU84R+qD19h5JVpN0BBVvqpncFr7WRL+tAvpt/GAt3tAxOmzNl0VA==
+"@logux/sharec-config@^0.6.2":
+  version "0.6.2"
+  resolved "https://registry.yarnpkg.com/@logux/sharec-config/-/sharec-config-0.6.2.tgz#b5417e3b7de7053724cd5681545cd49df34a28d2"
+  integrity sha512-MIxLQPB9ayPukZkClY+xyYdCTjI9BHnncAVA8WIMiMtuy/rTZDkYi/sdnyPIEzEaq5B70B92mxAczEXyQScIZg==
   dependencies:
     sharec "^2.14.0-beta"
 
