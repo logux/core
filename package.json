@@ -13,9 +13,9 @@
   ],
   "scripts": {
     "api": "documentation build *.js -f md -o api.md",
-    "spell": "yarn api && yaspeller-ci *.md",
-    "clean": "rimraf api.md coverage/",
-    "test": "jest --coverage && eslint-ci . && yarn spell"
+    "spell": "yaspeller-ci *.md",
+    "clean": "rimraf coverage/",
+    "test": "jest-ci --coverage && eslint-ci . && check-dts && yarn spell"
   },
   "author": "Andrey Sitnik <andrey@sitnik.ru>",
   "license": "MIT",
@@ -25,32 +25,34 @@
     "node": ">=10.0.0"
   },
   "dependencies": {
-    "nanoevents": "^2.0.0"
+    "nanoevents": "^5.0.1"
   },
   "devDependencies": {
-    "@logux/eslint-config": "^35.0.2",
-    "@logux/sharec-config": "^0.5.6",
-    "clean-publish": "^1.1.4",
+    "@logux/eslint-config": "^36.1.1",
+    "@logux/sharec-config": "^0.6.0",
+    "check-dts": "^0.1.3",
     "documentation": "^12.1.4",
+    "dual-publish": "^0.5.0",
     "eslint": "^6.8.0",
     "eslint-ci": "^1.0.0",
     "eslint-config-standard": "^14.1.0",
-    "eslint-plugin-es5": "^1.4.1",
-    "eslint-plugin-import": "^2.19.1",
-    "eslint-plugin-jest": "^23.1.1",
-    "eslint-plugin-node": "^10.0.0",
+    "eslint-plugin-import": "^2.20.1",
+    "eslint-plugin-jest": "^23.8.2",
+    "eslint-plugin-node": "^11.0.0",
     "eslint-plugin-prefer-let": "^1.0.1",
     "eslint-plugin-promise": "^4.2.1",
     "eslint-plugin-security": "^1.4.0",
     "eslint-plugin-standard": "^4.0.1",
-    "eslint-plugin-unicorn": "^15.0.1",
-    "husky": "^3.1.0",
-    "jest": "^24.9.0",
-    "lint-staged": "^9.5.0",
-    "nanodelay": "^0.1.4",
-    "rimraf": "^3.0.0",
-    "ws": "^7.2.1",
-    "yaspeller-ci": "^1.0.1"
+    "eslint-plugin-unicorn": "^17.2.0",
+    "husky": "^4.2.3",
+    "jest": "^25.1.0",
+    "jest-ci": "^0.1.1",
+    "lint-staged": "^10.0.8",
+    "nanodelay": "^1.0.1",
+    "rimraf": "^3.0.2",
+    "typedoc": "^0.16.11",
+    "ws": "^7.2.3",
+    "yaspeller-ci": "^1.0.2"
   },
   "husky": {
     "hooks": {
@@ -70,7 +72,10 @@
     }
   },
   "eslintConfig": {
-    "extends": "@logux/eslint-config/browser"
+    "extends": "@logux/eslint-config",
+    "rules": {
+      "no-invalid-this": "off"
+    }
   },
   "yaspeller": {
     "lang": "en",
@@ -141,6 +146,6 @@
   },
   "sharec": {
     "config": "@logux/sharec-config",
-    "version": "0.5.6"
+    "version": "0.6.0"
   }
 }
