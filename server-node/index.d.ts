@@ -1,4 +1,5 @@
 import { BaseNode } from '../base-node'
+import { Meta } from '../log'
 
 /**
  * Server node in synchronization pair.
@@ -14,4 +15,4 @@ import { BaseNode } from '../base-node'
  * })
  * ```
  */
-export class ServerNode extends BaseNode { }
+export class ServerNode<M = Meta> extends BaseNode<M> { }

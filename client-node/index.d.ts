@@ -1,4 +1,5 @@
 import { BaseNode } from '../base-node'
+import { Meta } from '../log'
 
 /**
  * Client node in synchronization pair.
@@ -12,4 +13,4 @@ import { BaseNode } from '../base-node'
  * const node = new ClientNode(nodeId, log, connection)
  * ```
  */
-export class ClientNode extends BaseNode { }
+export class ClientNode<M = Meta> extends BaseNode<M> { }

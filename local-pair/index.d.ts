@@ -12,9 +12,9 @@ import { Connection } from '../base-node'
  */
 export class LocalPair {
   /**
-   * @param delay Delay for connection and send events.
+   * @param delay Delay for connection and send events. Default is `1`.
    */
-  constructor (delay: number)
+  constructor (delay?: number)
 
   /**
    * Delay for connection and send events to emulate real connection latency.

@@ -127,7 +127,7 @@ type NodeOptions = {
  * Base methods for synchronization nodes. Client and server nodes
  * are based on this module.
  */
-export class BaseNode {
+export class BaseNode<M = Meta> {
   /**
    * @param nodeId Unique current machine name.
    * @param log Logux log instance to be synchronized.
@@ -211,7 +211,7 @@ export class BaseNode {
   /**
    * Log for synchronization.
    */
-  log: Log
+  log: Log<M>
 
   /**
    * Connection used to communicate to remote node.

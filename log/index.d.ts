@@ -7,12 +7,12 @@
  */
 export type ID = string
 
-interface actionListener {
-  (action: Action, meta: Meta): void
+interface actionListener<M> {
+  (action: Action, meta: M): void
 }
 
-interface actionIterator {
-  (action: Action, meta: Meta): boolean | void
+interface actionIterator<M> {
+  (action: Action, meta: M): boolean | void
 }
 
 /**
@@ -193,7 +193,7 @@ export abstract class Store {
    * @returns Promise when cleaning will be finished.
    */
   removeReason (
-    reason: string, criteria: Criteria, callback: actionListener
+    reason: string, criteria: Criteria, callback: actionListener<Meta>
   ): Promise<void>
 
   /**
@@ -252,7 +252,7 @@ type LogOptions = {
  * log.add({ type: 'beep' })
  * ```
  */
-export class Log {
+export class Log<M = Meta> {
   /**
    * @param opts Log options.
    */
@@ -281,7 +281,7 @@ export class Log {
    * @returns Promise with `meta` if action was added to log or `false`
    *          if action was already in log.
    */
-  add (action: Action, meta?: Partial<Meta>): Promise<Meta|false>
+  add (action: Action, meta?: Partial<M>): Promise<M|false>
 
   /**
    * Subscribe for log events. It implements nanoevents API. Supported events:
@@ -304,7 +304,9 @@ export class Log {
    * @param listener The listener function.
    * @returns Unbind listener from event.
    */
-  on (event: 'preadd' | 'add' | 'clean', listener: actionListener): () => void
+  on (
+    event: 'preadd' | 'add' | 'clean', listener: actionListener<M>
+  ): () => void
 
   /**
    * Generate next unique action ID.
@@ -338,7 +340,7 @@ export class Log {
    * @param callback Function will be executed on every action.
    * @returns When iteration will be finished by iterator or end of actions.
    */
-  each (opts: GetOptions, callback: actionIterator): Promise<void>
+  each (opts: GetOptions, callback: actionIterator<M>): Promise<void>
 
   /**
    * Change action metadata. You will remove action by setting `reasons: []`.
@@ -353,7 +355,7 @@ export class Log {
    * @returns Promise with `true` if metadata was changed or `false`
    *          on unknown ID.
    */
-  changeMeta (id: ID, diff: Partial<Meta>): Promise<boolean>
+  changeMeta (id: ID, diff: Partial<M>): Promise<boolean>
 
   /**
    * Remove reason tag from action’s metadata and remove actions without reason
@@ -384,5 +386,5 @@ export class Log {
    * @param id Action ID.
    * @returns Promise with array of action and metadata.
    */
-  byId (id: ID): Promise<[Action, Meta]|[null, null]>
+  byId (id: ID): Promise<[Action, M]|[null, null]>
 }
