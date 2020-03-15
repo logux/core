@@ -11,6 +11,10 @@ interface actionListener {
   (action: Action, meta: Meta): void
 }
 
+interface actionIterator {
+  (action: Action, meta: Meta): boolean | void
+}
+
 /**
  * Action’s metadata.
  *
@@ -233,10 +237,6 @@ type LogOptions = {
   nodeId: string
 }
 
-interface iterator {
-  (action, meta): boolean | void
-}
-
 /**
  * Stores actions with time marks. Log is main idea in Logux.
  * In most end-user tools you will work with log and should know log API.
@@ -338,7 +338,7 @@ export class Log {
    * @param callback Function will be executed on every action.
    * @returns When iteration will be finished by iterator or end of actions.
    */
-  each (opts: GetOptions, callback: iterator): Promise<void>
+  each (opts: GetOptions, callback: actionIterator): Promise<void>
 
   /**
    * Change action metadata. You will remove action by setting `reasons: []`.

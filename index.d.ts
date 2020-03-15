@@ -1,5 +1,5 @@
+export { Log, ID, Action, Meta, Store } from './log'
 export { BaseNode, Connection } from './base-node'
-export { Log, ID, Meta, Store } from './log'
 export { ServerConnection } from './server-connection'
 export { eachStoreCheck } from './each-store-check'
 export { isFirstOlder } from './is-first-older'
