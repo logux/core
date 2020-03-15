@@ -9,5 +9,5 @@ let pair = new LocalPair()
 
 let client = new ClientNode<MyMeta>('client', log, pair.left)
 
-// Type 'string' is not assignable to type 'number | undefined'.
+// THROWS Type 'string' is not assignable to type 'number | undefined'.
 client.log.add({ type: 'A' }, { extra: '1' })
