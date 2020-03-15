@@ -1366,10 +1366,10 @@ domexception@^1.0.1:
   dependencies:
     webidl-conversions "^4.0.2"
 
-dual-publish@^0.5.1:
-  version "0.5.1"
-  resolved "https://registry.yarnpkg.com/dual-publish/-/dual-publish-0.5.1.tgz#f3ea2457b70e9a1bf3993f9743ea4615562abe0f"
-  integrity sha512-kl8RkhWQJb6FA+Bqk9dLla/xoAv6CixteVVm5FrtAUGYORnU/dxcl7k3kdbjwQadyR1GD4DAUBHnqLjCqLUpNw==
+dual-publish@^0.5.2:
+  version "0.5.2"
+  resolved "https://registry.yarnpkg.com/dual-publish/-/dual-publish-0.5.2.tgz#e7f728ccc5c83c984fc0c472fc6c2afad45b88d2"
+  integrity sha512-XbcYg1my9FGVuj2wAJBoiMmFxKaw84FzP5FUy2HkXW5zajsq4WQ4gZNbPyCsr3dUoVWKi0J4KlshNj79QdtLhw==
   dependencies:
     chalk "^3.0.0"
     clean-publish "^1.1.6"
