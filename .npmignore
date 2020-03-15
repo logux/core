@@ -6,4 +6,5 @@ coverage/
 .travis.yml
 
 **/*.test.js
-**/*.ts
+**/types.ts
+**/errors.ts
