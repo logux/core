@@ -1,3 +1,5 @@
+import { Unsubscribe } from 'nanoevents'
+
 /**
  * Action unique ID accross all nodes.
  *
@@ -306,7 +308,7 @@ export class Log<M = Meta> {
    */
   on (
     event: 'preadd' | 'add' | 'clean', listener: actionListener<M>
-  ): () => void
+  ): Unsubscribe
 
   /**
    * Generate next unique action ID.

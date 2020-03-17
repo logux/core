@@ -1,3 +1,5 @@
+import { Unsubscribe } from 'nanoevents'
+
 import { Log, Action, Meta } from '../log'
 import { LoguxError } from '../logux-error'
 
@@ -49,7 +51,7 @@ export abstract class Connection {
   on (
     event: 'connecting' | 'connect' | 'disconnect' | 'message' | 'error',
     listener: () => void
-  ): () => void
+  ): Unsubscribe
 
   /**
    * Start connection. Connection should be in disconnected state
@@ -293,7 +295,7 @@ export class BaseNode<M = Meta> {
   on (
     event: 'state' | 'connect' | 'error' | 'clientError' | 'debug',
     listener: () => void
-  ): () => void
+  ): Unsubscribe
 
   /**
    * Disable throwing a error on error message and create error listener.
