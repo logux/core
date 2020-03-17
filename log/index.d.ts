@@ -56,6 +56,11 @@ export type Meta = {
    */
   reasons?: string[]
 
+  /**
+   * Set value to `reasons` and this reason from old action.
+   */
+  keepLast: string
+
   [extra: string]: any
 }
 
