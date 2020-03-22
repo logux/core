@@ -6,8 +6,8 @@ import { Connection } from '../base-node'
  * ```js
  * import { LocalPair, ClientNode, ServerNode } from '@logux/core'
  * const pair = new LocalPair()
- * const client = new ClientNode('client, log1, pair.left)
- * const server = new ServerNode('server, log2, pair.right)
+ * const client = new ClientNode('client', log1, pair.left)
+ * const server = new ServerNode('server', log2, pair.right)
  * ```
  */
 export class LocalPair {
