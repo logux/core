@@ -276,7 +276,7 @@ export class BaseNode<M = Meta> {
    *
    * * `state`: synchronization state was changed.
    * * `connect`: custom check before node authentication. You can throw
-   *              a `LoguxError` to send error to remote node.
+   *              a {@link LoguxError} to send error to remote node.
    * * `error`: synchronization error was raised.
    * * `clientError`: when error was sent to remote node.
    * * `debug`: when debug information received from remote node.
