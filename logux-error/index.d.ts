@@ -60,6 +60,11 @@ export class LoguxError<
   message: string
 
   /**
+   * Calls which cause the error.
+   */
+  stack: string
+
+  /**
    * The error code.
    *
    * ```js
