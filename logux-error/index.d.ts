@@ -55,6 +55,11 @@ export class LoguxError<
   name: 'LoguxError'
 
   /**
+   * Full text of error to print in debug message.
+   */
+  message: string
+
+  /**
    * The error code.
    *
    * ```js
