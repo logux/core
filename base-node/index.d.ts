@@ -271,7 +271,6 @@ export class BaseNode<M = Meta> {
   state: NodeState
 
   /**
-   *
    * Subscribe for synchronization events. It implements nanoevents API.
    * Supported events:
    *
@@ -311,7 +310,6 @@ export class BaseNode<M = Meta> {
   catch (listener: (error: LoguxError) => void)
 
   /**
-   *
    * Return Promise until sync will have specific state.
    *
    * If current state is correct, method will return resolved Promise.
