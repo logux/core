@@ -307,7 +307,7 @@ export class BaseNode<M = Meta> {
    *
    * @param listener The error listener.
    */
-  catch (listener: (error: LoguxError) => void)
+  catch (listener: (error: LoguxError) => void): void
 
   /**
    * Return Promise until sync will have specific state.
