@@ -258,6 +258,8 @@ type LogOptions = {
  * log.on('add', beeper)
  * log.add({ type: 'beep' })
  * ```
+ *
+ * @template M Meta’s type.
  */
 export class Log<M = Meta> {
   /**

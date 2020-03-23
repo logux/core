@@ -14,5 +14,7 @@ import { Meta } from '../log'
  *   const node = new ServerNode('server' + id, log, connection)
  * })
  * ```
+ *
+ * @template M Meta’s type.
  */
 export class ServerNode<M = Meta> extends BaseNode<M> { }

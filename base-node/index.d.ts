@@ -128,6 +128,8 @@ type NodeOptions = {
 /**
  * Base methods for synchronization nodes. Client and server nodes
  * are based on this module.
+ *
+ * @template M Meta’s type.
  */
 export class BaseNode<M = Meta> {
   /**

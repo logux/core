@@ -12,5 +12,7 @@ import { Meta } from '../log'
  * const connection = new BrowserConnection(url)
  * const node = new ClientNode(nodeId, log, connection)
  * ```
+ *
+ * @template M Meta’s type.
  */
 export class ClientNode<M = Meta> extends BaseNode<M> { }
