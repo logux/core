@@ -1,7 +1,7 @@
 import { Unsubscribe } from 'nanoevents'
 
+import { LoguxError, LoguxErrorOptions } from '../logux-error'
 import { Log, Action, Meta } from '../log'
-import { LoguxError } from '../logux-error'
 
 interface Authentificator {
   (credentials: string, nodeId: string): Promise<boolean>
@@ -16,6 +16,17 @@ interface Mapper {
 }
 
 type NodeState = 'disconnected' | 'connecting' | 'sending' | 'synchronized'
+
+type Message =
+  ['error', keyof LoguxErrorOptions, any?] |
+  ['connect', number, string, number, object?] |
+  ['connected', number, string, [number, number], object?] |
+  ['ping', number] |
+  ['pong', number] |
+  // Inaccurate type until https://github.com/microsoft/TypeScript/issues/26113
+  ['sync', number, object, object] |
+  ['synced', number] |
+  ['debug', 'error', string]
 
 /**
  * Abstract interface for connection to synchronize logs over it.
@@ -32,7 +43,7 @@ export abstract class Connection {
    *
    * @param message The message to be sent.
    */
-  send (message: string[]): void
+  send (message: Message): void
 
   /**
    * Subscribe for connection events. It implements nanoevents API.

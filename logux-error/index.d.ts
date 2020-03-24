@@ -1,6 +1,6 @@
 type Versions = { supported: string, used: string }
 
-type LoguxErrorOptions = {
+export type LoguxErrorOptions = {
   'timeout': number,
   'bruteforce': void,
   'wrong-format': string,
