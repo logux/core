@@ -17,4 +17,4 @@ import { Meta } from '../log'
  *
  * @template M Meta’s type.
  */
-export class ServerNode<M = Meta> extends BaseNode<M> { }
+export class ServerNode<M extends Meta = Meta> extends BaseNode<M> { }

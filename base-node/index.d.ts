@@ -131,7 +131,7 @@ type NodeOptions = {
  *
  * @template M Meta’s type.
  */
-export class BaseNode<M = Meta> {
+export class BaseNode<M extends Meta = Meta> {
   /**
    * @param nodeId Unique current machine name.
    * @param log Logux log instance to be synchronized.

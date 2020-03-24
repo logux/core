@@ -9,11 +9,11 @@ import { Unsubscribe } from 'nanoevents'
  */
 export type ID = string
 
-interface ActionListener<M> {
+interface ActionListener<M extends Meta> {
   (action: Action, meta: M): void
 }
 
-interface ActionIterator<M> {
+interface ActionIterator<M extends Meta> {
   (action: Action, meta: M): boolean | void
 }
 
@@ -261,7 +261,7 @@ type LogOptions = {
  *
  * @template M Meta’s type.
  */
-export class Log<M = Meta> {
+export class Log<M extends Meta = Meta> {
   /**
    * @param opts Log options.
    */
