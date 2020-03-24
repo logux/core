@@ -9,11 +9,11 @@ import { Unsubscribe } from 'nanoevents'
  */
 export type ID = string
 
-interface actionListener<M> {
+interface ActionListener<M> {
   (action: Action, meta: M): void
 }
 
-interface actionIterator<M> {
+interface ActionIterator<M> {
   (action: Action, meta: M): boolean | void
 }
 
@@ -200,7 +200,7 @@ export abstract class Store {
    * @returns Promise when cleaning will be finished.
    */
   removeReason (
-    reason: string, criteria: Criteria, callback: actionListener<Meta>
+    reason: string, criteria: Criteria, callback: ActionListener<Meta>
   ): Promise<void>
 
   /**
@@ -314,7 +314,7 @@ export class Log<M = Meta> {
    * @returns Unbind listener from event.
    */
   on (
-    event: 'preadd' | 'add' | 'clean', listener: actionListener<M>
+    event: 'preadd' | 'add' | 'clean', listener: ActionListener<M>
   ): Unsubscribe
 
   /**
@@ -349,7 +349,7 @@ export class Log<M = Meta> {
    * @param callback Function will be executed on every action.
    * @returns When iteration will be finished by iterator or end of actions.
    */
-  each (opts: GetOptions, callback: actionIterator<M>): Promise<void>
+  each (opts: GetOptions, callback: ActionIterator<M>): Promise<void>
 
   /**
    * Change action metadata. You will remove action by setting `reasons: []`.

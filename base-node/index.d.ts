@@ -3,15 +3,15 @@ import { Unsubscribe } from 'nanoevents'
 import { Log, Action, Meta } from '../log'
 import { LoguxError } from '../logux-error'
 
-interface authentificator {
+interface Authentificator {
   (credentials: string, nodeId: string): Promise<boolean>
 }
 
-interface filter {
+interface Filter {
   (action: Action, meta: Meta): Promise<boolean>
 }
 
-interface mapper {
+interface Mapper {
   (action: Action, meta: Meta): Promise<[Action, Meta]>
 }
 
@@ -81,7 +81,7 @@ type NodeOptions = {
   /**
    * Function to check client credentials.
    */
-  auth?: authentificator
+  auth?: Authentificator
 
   /**
    * Detect difference between client and server and fix time
@@ -107,22 +107,22 @@ type NodeOptions = {
   /**
    * Function to filter actions from remote node. Best place for access control.
    */
-  inFilter?: filter
+  inFilter?: Filter
 
   /**
    * Map function to change remote node’s action before put it to current log.
    */
-  inMap?: mapper
+  inMap?: Mapper
 
   /**
    * Filter function to select actions to synchronization.
    */
-  outFilter?: filter
+  outFilter?: Filter
 
   /**
    * Map function to change action before sending it to remote client.
    */
-  outMap?: mapper
+  outMap?: Mapper
 }
 
 /**
