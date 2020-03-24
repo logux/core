@@ -1,5 +1,5 @@
+export { Log, ID, Action, AnyAction, Meta, Store } from './log'
 export { LoguxError, LoguxErrorOptions } from './logux-error'
-export { Log, ID, Action, Meta, Store } from './log'
 export { BaseNode, Connection } from './base-node'
 export { ServerConnection } from './server-connection'
 export { eachStoreCheck } from './each-store-check'

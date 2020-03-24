@@ -17,19 +17,6 @@ interface ActionIterator<M extends Meta> {
   (action: Action, meta: M): boolean | void
 }
 
-/**
- * Action’s metadata.
- *
- * ```js
- * {
- *   added: 5,
- *   id: "1564508138460 380:R7BNGAP5:px3-J3oc 0",
- *   reasons: ['amplifr/lastPrices'],  ​
- *   subprotocol: '0.6.2',
- *   time: 1564508138460
- * }
- * ```
- */
 export type Meta = {
   /**
    * Sequence number of action in current log. Log fills it.
@@ -64,19 +51,16 @@ export type Meta = {
   [extra: string]: any
 }
 
-/**
- * Action from the log.
- *
- * ```js
- * { type: 'add', id: 'project:12:price' value: 12 }
- * ```
- */
-export interface Action {
+export type Action = {
   /**
    * Action type name.
    */
   type: string
 
+  [extra: string]: any
+}
+
+export type AnyAction = Action & {
   [extra: string]: any
 }
 
