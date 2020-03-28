@@ -107,6 +107,23 @@ it('closes WebSocket', async () => {
   expect(connection.connected).toBe(false)
 })
 
+it('close WebSocket 2 times', async () => {
+  global.WebSocket = FakeWebSocket
+  let connection = new WsConnection('ws://locahost')
+
+  await connection.connect()
+  let ws = connection.ws
+  ws.close = () => {
+    ws.onclose()
+  }
+  jest.spyOn(ws, 'close')
+
+  connection.disconnect()
+  connection.disconnect()
+  expect(ws.close).toHaveBeenCalledTimes(1)
+  expect(connection.connected).toBe(false)
+})
+
 it('receives messages', async () => {
   global.WebSocket = FakeWebSocket
   let connection = new WsConnection('ws://locahost')
