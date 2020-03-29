@@ -465,6 +465,14 @@ it('starts and ends timeout', async () => {
   expect(test.leftNode.timeouts).toHaveLength(0)
 })
 
+it('should nothing happend if syncedMessage of empty syncing', async () => {
+  let test = await createTest()
+  expect(test.leftNode.timeouts).toHaveLength(0)
+
+  test.leftNode.syncedMessage(1)
+  expect(test.leftNode.timeouts).toHaveLength(0)
+})
+
 it('uses always latest added', async () => {
   let test = await createTest()
   test.leftNode.log.on('preadd', (action, meta) => {
