@@ -10,6 +10,13 @@ function catchError (desc, type, received) {
   return error
 }
 
+it('does not crash if captureStackTrace does not exist', () => {
+  let captureStackTrace = global.Error.captureStackTrace
+  delete global.Error.captureStackTrace
+  catchError('test')
+  global.Error.captureStackTrace = captureStackTrace
+})
+
 it('has stack trace', () => {
   let error = catchError('test')
   expect(error.stack).toContain('index.test.js')
