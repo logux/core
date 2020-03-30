@@ -1,6 +1,12 @@
 # Change Log
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## 0.4 ñ
+* Add ES modules support.
+* Add TypeScript definitions.
+* Move API docs from JSDoc to TypeDoc.
+* Mark package as side effect free.
+
 ## 0.3.5
 * Fix actions double sending to the server.
 

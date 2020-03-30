@@ -1,6 +1,6 @@
 {
   "name": "@logux/core",
-  "version": "0.3.5",
+  "version": "0.4.0",
   "description": "Logux core components",
   "keywords": [
     "logux",
@@ -88,7 +88,10 @@
       "logux",
       "GraphQL",
       "WebSocket",
-      "io"
+      "io",
+      "ES",
+      "TypeDoc",
+      "ñ"
     ]
   },
   "sharec": {
