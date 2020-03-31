@@ -98,6 +98,23 @@ it('sends only one ping if timeout is bigger than ping', async () => {
   expect(test.leftSent).toEqual([['ping', 1]])
 })
 
+it('do not try clear timeout if it does not set', async () => {
+  let test = await createTest({
+    ping: undefined
+  })
+  await delay(250)
+  test.leftNode.sendPing()
+  expect(test.leftSent).toEqual([])
+})
+
+it('do not send ping if not connected', async () => {
+  let test = await createTest({ fixTime: false })
+  test.right.send(['ping', 1])
+  test.left.disconnect()
+  await test.wait('right')
+  expect(test.leftSent).toEqual([])
+})
+
 it('checks types', async () => {
   let wrongs = [
     ['ping'],
