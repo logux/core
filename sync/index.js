@@ -80,7 +80,7 @@ async function syncMessage (added, ...data) {
       }
     }).then(changed => {
       if (!changed) return false
-      this.received[changed[1].id] = true
+      if (this.received) this.received[changed[1].id] = true
       return this.log.add(changed[0], changed[1])
     })
 
