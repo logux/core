@@ -1,6 +1,9 @@
 # Change Log
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## 0.4.1
+* Fix private API for Logux Server.
+
 ## 0.4 ñ
 * Add ES modules support.
 * Add TypeScript definitions.
