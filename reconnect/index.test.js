@@ -316,3 +316,30 @@ it('listens for window events', async () => {
   recon.destroy()
   expect(Object.keys(listeners)).toHaveLength(0)
 })
+
+it('do not fire connect from listeners if not reconnecting', async () => {
+  let listeners = { }
+  global.navigator = { }
+  global.window = {
+    addEventListener (name, callback) {
+      listeners[name] = callback
+    },
+    removeEventListener (name, callback) {
+      if (listeners[name] === callback) {
+        delete listeners[name]
+      }
+    }
+  }
+  global.document = global.window
+
+  let pair = new TestPair()
+  new Reconnect(pair.left)
+
+  let connect = jest.spyOn(Reconnect.prototype, 'connect')
+
+  listeners.visibilitychange()
+  expect(connect).toHaveBeenCalledTimes(0)
+
+  listeners.online()
+  expect(connect).toHaveBeenCalledTimes(0)
+})
