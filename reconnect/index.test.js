@@ -317,7 +317,7 @@ it('listens for window events', async () => {
   expect(Object.keys(listeners)).toHaveLength(0)
 })
 
-it('do not fire connect from listeners if not reconnecting', async () => {
+it('does connect on online if client was not connected', async () => {
   let listeners = { }
   global.navigator = { }
   global.window = {
