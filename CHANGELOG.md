@@ -1,6 +1,9 @@
 # Change Log
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## 0.4.2
+* Fix types.
+
 ## 0.4.1
 * Fix private API for Logux Server.
 
