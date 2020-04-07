@@ -15,4 +15,4 @@ import { Store } from '../log'
  */
 export function eachStoreCheck (
   test: (name: string, creator: () => Store) => void
-)
+): void
