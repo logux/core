@@ -996,17 +996,25 @@ chalk@^3.0.0:
     ansi-styles "^4.1.0"
     supports-color "^7.1.0"
 
+chalk@^4.0.0:
+  version "4.0.0"
+  resolved "https://registry.yarnpkg.com/chalk/-/chalk-4.0.0.tgz#6e98081ed2d17faab615eb52ac66ec1fe6209e72"
+  integrity sha512-N9oWFcegS0sFr9oh1oz2d7Npos6vNoWW9HvtCg5N1KRFpUhaAhvTv5Y58g880fZaEYSNm3qDz8SU1UrGvp+n7A==
+  dependencies:
+    ansi-styles "^4.1.0"
+    supports-color "^7.1.0"
+
 chardet@^0.7.0:
   version "0.7.0"
   resolved "https://registry.yarnpkg.com/chardet/-/chardet-0.7.0.tgz#90094849f0937f2eedc2425d0d28a9e5f0cbad9e"
   integrity sha512-mT8iDcrh03qDGRRmoA2hmBJnxpllMR+0/0qlzjqZES6NdiWDcZkCNAk4rPFZ9Q85r27unkiNNg8ZOiwZXBHwcA==
 
-check-dts@^0.1.4:
-  version "0.1.4"
-  resolved "https://registry.yarnpkg.com/check-dts/-/check-dts-0.1.4.tgz#cae69a4259163aa06a113d2ce5537aca61e6b536"
-  integrity sha512-ijGAPC7Hx4CCtgN6FlT4WVHfGEZH0Kzu9U8IYKHgxo/HZnycwEfQTPsrv8fHH5fTnZ3qDCDCtnHPl7H2pGZISQ==
+check-dts@^0.2.0:
+  version "0.2.0"
+  resolved "https://registry.yarnpkg.com/check-dts/-/check-dts-0.2.0.tgz#746554d8844dcb9a4db9f75a23ad212e2d491848"
+  integrity sha512-RGO5mORSZcyJ8rB1yJNNKuQF0HiQbhP+ad4JFvnUyTFhcJexlaOv0YPvtdPdsOhuryRjiUe7x7Ytbd3rP2yw8Q==
   dependencies:
-    chalk "^3.0.0"
+    chalk "^4.0.0"
     ci-job-number "^1.2.1"
     globby "^11.0.0"
     line-column "^1.0.2"
