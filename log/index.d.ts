@@ -46,7 +46,7 @@ export type Meta = {
   /**
    * Set value to `reasons` and this reason from old action.
    */
-  keepLast: string
+  keepLast?: string
 
   [extra: string]: any
 }
