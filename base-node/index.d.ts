@@ -4,7 +4,7 @@ import { LoguxError, LoguxErrorOptions } from '../logux-error'
 import { Log, Action, Meta } from '../log'
 
 interface Authentificator {
-  (credentials: string, nodeId: string): Promise<boolean>
+  (nodeId: string, token: string): Promise<boolean>
 }
 
 interface Filter {
@@ -87,7 +87,7 @@ type NodeOptions = {
   /**
    * Client credentials. For example, access token.
    */
-  credentials?: string
+  token?: string
 
   /**
    * Function to check client credentials.

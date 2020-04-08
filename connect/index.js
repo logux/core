@@ -1,6 +1,6 @@
 let { LoguxError } = require('../logux-error')
 
-async function auth (node, nodeId, credentials, callback) {
+async function auth (node, nodeId, token, callback) {
   if (!node.options.auth) {
     node.authenticated = true
     callback()
@@ -8,7 +8,7 @@ async function auth (node, nodeId, credentials, callback) {
   }
 
   try {
-    let access = await node.options.auth(credentials, nodeId)
+    let access = await node.options.auth(nodeId, token)
     if (access) {
       node.authenticated = true
       callback()
@@ -67,8 +67,8 @@ function sendConnect () {
   ]
 
   let options = { }
-  if (this.options.credentials) {
-    options.credentials = this.options.credentials
+  if (this.options.token) {
+    options.token = this.options.token
   }
   if (this.options.subprotocol) {
     options.subprotocol = this.options.subprotocol
@@ -89,8 +89,8 @@ function sendConnected (start, end) {
   ]
 
   let options = { }
-  if (this.options.credentials) {
-    options.credentials = this.options.credentials
+  if (this.options.token) {
+    options.token = this.options.token
   }
   if (this.options.subprotocol) {
     options.subprotocol = this.options.subprotocol
@@ -114,7 +114,7 @@ function connectMessage (ver, nodeId, synced, options) {
     return
   }
 
-  auth(this, nodeId, options.credentials, () => {
+  auth(this, nodeId, options.token, () => {
     this.baseTime = this.now()
     this.sendConnected(start, this.baseTime)
     this.syncSince(synced)
@@ -144,7 +144,7 @@ function connectedMessage (ver, nodeId, time, options) {
     return
   }
 
-  auth(this, nodeId, options.credentials, () => {
+  auth(this, nodeId, options.token, () => {
     this.syncSince(this.lastSent)
   })
 }

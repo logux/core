@@ -196,23 +196,23 @@ it('throws regular errors during connect event', () => {
 
 it('sends credentials in connect', async () => {
   test = createTest()
-  test.leftNode.options = { credentials: { a: 1 } }
+  test.leftNode.options = { token: { a: 1 } }
 
   test.left.connect()
   await test.leftNode.waitFor('synchronized')
   expect(test.leftSent).toEqual([
-    ['connect', PROTOCOL, 'client', 0, { credentials: { a: 1 } }]
+    ['connect', PROTOCOL, 'client', 0, { token: { a: 1 } }]
   ])
 })
 
 it('sends credentials in connected', async () => {
   test = createTest()
-  test.rightNode.options = { credentials: 1 }
+  test.rightNode.options = { token: 1 }
 
   test.left.connect()
   await test.leftNode.waitFor('synchronized')
   expect(test.rightSent).toEqual([
-    ['connected', PROTOCOL, 'server', [2, 3], { credentials: 1 }]
+    ['connected', PROTOCOL, 'server', [2, 3], { token: 1 }]
   ])
 })
 
@@ -252,11 +252,11 @@ it('denies access to wrong server', async () => {
 
 it('allows access for right users', async () => {
   test = createTest()
-  test.leftNode.options = { credentials: 'a' }
+  test.leftNode.options = { token: 'a' }
   test.rightNode.options = {
-    async auth (credentials, nodeId) {
+    async auth (nodeId, token) {
       await delay(10)
-      return credentials === 'a' && nodeId === 'client'
+      return token === 'a' && nodeId === 'client'
     }
   }
 
