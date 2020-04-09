@@ -127,6 +127,10 @@ class Reconnect {
   get connected () {
     return this.connection.connected
   }
+
+  get emitter () {
+    return this.connection.emitter
+  }
 }
 
 module.exports = { Reconnect }

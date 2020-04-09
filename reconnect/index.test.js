@@ -86,6 +86,7 @@ it('proxies connection methods', () => {
     connect () {
       this.connected = true
     },
+    emitter: { },
     connected: false,
     disconnect () {
       this.connected = false
@@ -93,6 +94,7 @@ it('proxies connection methods', () => {
   }
   let recon = new Reconnect(con)
   expect(recon.connected).toBe(false)
+  expect(recon.emitter).toBe(con.emitter)
 
   recon.connect()
   expect(recon.connected).toBe(true)
