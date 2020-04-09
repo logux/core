@@ -15,7 +15,7 @@ interface Mapper {
   (action: Action, meta: Meta): Promise<[Action, Meta]>
 }
 
-interface TokenGenerator {
+export interface TokenGenerator {
   (): string | Promise<string>
 }
 

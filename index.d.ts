@@ -1,6 +1,6 @@
 export { Log, ID, Action, AnyAction, Meta, Store } from './log'
+export { BaseNode, Connection, TokenGenerator } from './base-node'
 export { LoguxError, LoguxErrorOptions } from './logux-error'
-export { BaseNode, Connection } from './base-node'
 export { ServerConnection } from './server-connection'
 export { eachStoreCheck } from './each-store-check'
 export { isFirstOlder } from './is-first-older'
