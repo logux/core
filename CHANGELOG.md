@@ -5,6 +5,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 * Fix protocol version.
 
 ## 0.5 ö
+* Use WebSocket Protocol version 3.
 * Change `auth` callback signature.
 * Rename `credentials` option to `token`.
 * User ID must be always a string.
