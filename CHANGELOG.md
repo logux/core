@@ -1,6 +1,9 @@
 # Change Log
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## 0.5.1
+* Fix protocol version.
+
 ## 0.5 ö
 * Change `auth` callback signature.
 * Rename `credentials` option to `token`.
