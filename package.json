@@ -80,7 +80,7 @@
     "ignoreCapitalization": true,
     "ignoreText": [
       " \\(by [^)]+\\).",
-      "\\d+\\.\\d+(\\.\\d)? \\W"
+      "\\d+\\.\\d+ \\W"
     ],
     "dictionary": [
       "Versioning",
