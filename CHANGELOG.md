@@ -1,6 +1,12 @@
 # Change Log
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## 0.5 ö
+* Change `auth` callback signature.
+* Rename `credentials` option to `token`.
+* User ID must be always a string.
+* Add support for dynamic tokens.
+
 ## 0.4.2
 * Fix types.
 
