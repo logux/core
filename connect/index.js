@@ -58,7 +58,7 @@ function emitEvent (node) {
   return true
 }
 
-function sendConnect () {
+async function sendConnect () {
   let message = [
     'connect',
     this.localProtocol,
@@ -68,7 +68,11 @@ function sendConnect () {
 
   let options = { }
   if (this.options.token) {
-    options.token = this.options.token
+    if (typeof this.options.token === 'function') {
+      options.token = await this.options.token()
+    } else {
+      options.token = this.options.token
+    }
   }
   if (this.options.subprotocol) {
     options.subprotocol = this.options.subprotocol
@@ -80,7 +84,7 @@ function sendConnect () {
   this.send(message)
 }
 
-function sendConnected (start, end) {
+async function sendConnected (start, end) {
   let message = [
     'connected',
     this.localProtocol,
@@ -90,7 +94,11 @@ function sendConnected (start, end) {
 
   let options = { }
   if (this.options.token) {
-    options.token = this.options.token
+    if (typeof this.options.token === 'function') {
+      options.token = await this.options.token()
+    } else {
+      options.token = this.options.token
+    }
   }
   if (this.options.subprotocol) {
     options.subprotocol = this.options.subprotocol

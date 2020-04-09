@@ -15,6 +15,10 @@ interface Mapper {
   (action: Action, meta: Meta): Promise<[Action, Meta]>
 }
 
+interface TokenGenerator {
+  (): string | Promise<string>
+}
+
 type NodeState = 'disconnected' | 'connecting' | 'sending' | 'synchronized'
 
 type Message =
@@ -87,7 +91,7 @@ type NodeOptions = {
   /**
    * Client credentials. For example, access token.
    */
-  token?: string
+  token?: string | TokenGenerator
 
   /**
    * Function to check client credentials.

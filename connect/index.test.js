@@ -196,23 +196,45 @@ it('throws regular errors during connect event', () => {
 
 it('sends credentials in connect', async () => {
   test = createTest()
-  test.leftNode.options = { token: { a: 1 } }
+  test.leftNode.options = { token: '1' }
 
   test.left.connect()
   await test.leftNode.waitFor('synchronized')
   expect(test.leftSent).toEqual([
-    ['connect', PROTOCOL, 'client', 0, { token: { a: 1 } }]
+    ['connect', PROTOCOL, 'client', 0, { token: '1' }]
+  ])
+})
+
+it('genereates credentials in connect', async () => {
+  test = createTest()
+  test.leftNode.options = { token: () => Promise.resolve('1') }
+
+  test.left.connect()
+  await test.leftNode.waitFor('synchronized')
+  expect(test.leftSent).toEqual([
+    ['connect', PROTOCOL, 'client', 0, { token: '1' }]
   ])
 })
 
 it('sends credentials in connected', async () => {
   test = createTest()
-  test.rightNode.options = { token: 1 }
+  test.rightNode.options = { token: '1' }
 
   test.left.connect()
   await test.leftNode.waitFor('synchronized')
   expect(test.rightSent).toEqual([
-    ['connected', PROTOCOL, 'server', [2, 3], { token: 1 }]
+    ['connected', PROTOCOL, 'server', [2, 3], { token: '1' }]
+  ])
+})
+
+it('generates credentials in connected', async () => {
+  test = createTest()
+  test.rightNode.options = { token: () => Promise.resolve('1') }
+
+  test.left.connect()
+  await test.leftNode.waitFor('synchronized')
+  expect(test.rightSent).toEqual([
+    ['connected', PROTOCOL, 'server', [2, 3], { token: '1' }]
   ])
 })
 
