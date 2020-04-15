@@ -172,7 +172,6 @@ export class BaseNode<M extends Meta = Meta> {
    * It is undefined until nodes handshake.
    *
    * ```js
-   *
    * if (node.remoteProtocol >= 5) {
    *   useNewAPI()
    * } else {
