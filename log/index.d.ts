@@ -34,14 +34,14 @@ export type Meta = {
   id: ID,
 
   /**
+   * Why action should be kept in log. Action without reasons will be removed.
+   */
+  reasons: string[]
+
+  /**
    * Set code as reason and remove this reasons from previous actions.
    */
   subprotocol?: string,
-
-  /**
-   * Why action should be kept in log. Action without reasons will be removed.
-   */
-  reasons?: string[]
 
   /**
    * Set value to `reasons` and this reason from old action.
