@@ -4,7 +4,7 @@ import { LoguxError, LoguxErrorOptions } from '../logux-error'
 import { Log, Action, Meta } from '../log'
 
 interface Authentificator {
-  (nodeId: string, token: string): Promise<boolean>
+  (nodeId: string, token: string, headers: object): Promise<boolean>
 }
 
 interface Filter {
@@ -30,7 +30,8 @@ type Message =
   // Inaccurate type until https://github.com/microsoft/TypeScript/issues/26113
   ['sync', number, object, object] |
   ['synced', number] |
-  ['debug', 'error', string]
+  ['debug', 'error', string] |
+  ['headers', object]
 
 /**
  * Abstract interface for connection to synchronize logs over it.

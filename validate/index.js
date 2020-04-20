@@ -80,6 +80,10 @@ let validators = {
   debug (msg) {
     return (msg.length === 3) && isString(msg[1]) &&
            (msg[1] === 'error' && isString(msg[2]))
+  },
+
+  headers (msg) {
+    return (msg.length === 2) && isObject(msg[1])
   }
 
 }

@@ -8,7 +8,7 @@ async function auth (node, nodeId, token, callback) {
   }
 
   try {
-    let access = await node.options.auth(nodeId, token)
+    let access = await node.options.auth(nodeId, token, node.remoteHeaders)
     if (access) {
       node.authenticated = true
       callback()
@@ -80,6 +80,11 @@ async function sendConnect () {
   if (Object.keys(options).length > 0) message.push(options)
 
   if (this.options.fixTime) this.connectSended = this.now()
+
+  if (Object.keys(this.localHeaders).length > 0) {
+    this.sendHeaders(this.localHeaders)
+  }
+
   this.startTimeout()
   this.send(message)
 }
@@ -104,6 +109,10 @@ async function sendConnected (start, end) {
     options.subprotocol = this.options.subprotocol
   }
   if (Object.keys(options).length > 0) message.push(options)
+
+  if (Object.keys(this.localHeaders).length > 0) {
+    this.sendHeaders(this.localHeaders)
+  }
 
   this.send(message)
 }
