@@ -108,7 +108,11 @@ class BaseNode {
 
   catch (listener) {
     this.throwsError = false
-    this.on('error', listener)
+    let unbind = this.on('error', listener)
+    return () => {
+      this.throwsError = true
+      unbind()
+    }
   }
 
   waitFor (state) {

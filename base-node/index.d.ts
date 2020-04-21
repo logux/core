@@ -322,8 +322,9 @@ export class BaseNode<M extends Meta = Meta> {
    * ```
    *
    * @param listener The error listener.
+   * @returns Unbind listener from event.
    */
-  catch (listener: (error: LoguxError) => void): void
+  catch (listener: (error: LoguxError) => void): Unsubscribe
 
   /**
    * Return Promise until sync will have specific state.

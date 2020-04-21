@@ -234,6 +234,25 @@ it('receives errors from connection', async () => {
   expect(emitted).toEqual(error)
 })
 
+it('cancels error catching', async () => {
+  let test = await createTest()
+  let emitted
+  let unbind = test.leftNode.catch(e => {
+    emitted = e
+  })
+
+  unbind()
+  let error = new Error('test')
+  let catched
+  try {
+    test.left.emitter.emit('error', error)
+  } catch (e) {
+    catched = e
+  }
+  expect(emitted).toBeUndefined()
+  expect(catched).toBe(error)
+})
+
 it('does not fall on sync without connection', async () => {
   await createNode().syncSince(0)
 })
