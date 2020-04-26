@@ -335,25 +335,8 @@ export class Log<M extends Meta = Meta> {
   each (callback: ActionIterator<M>): Promise<void>
 
   /**
-   * Iterates through all actions, from last to first.
-   *
-   * Return false from callback if you want to stop iteration.
-   *
-   * ```js
-   * log.each({ order: 'created' }, (action, meta) => {
-   *   if (compareTime(meta.id, lastBeep) <= 0) {
-   *     return false;
-   *   } else if (action.type === 'beep') {
-   *     beep()
-   *     lastBeep = meta.id
-   *     return false;
-   *   }
-   * })
-   * ```
-   *
    * @param opts Iterator options.
    * @param callback Function will be executed on every action.
-   * @returns When iteration will be finished by iterator or end of actions.
    */
   each (opts: GetOptions, callback: ActionIterator<M>): Promise<void>
 
