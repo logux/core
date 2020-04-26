@@ -333,6 +333,7 @@ export class Log<M extends Meta = Meta> {
    * @param callback Function will be executed on every action.
    * @returns When iteration will be finished by iterator or end of actions.
    */
+  each (callback: ActionIterator<M>): Promise<void>
   each (opts: GetOptions, callback: ActionIterator<M>): Promise<void>
 
   /**
