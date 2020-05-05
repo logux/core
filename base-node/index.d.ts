@@ -59,13 +59,14 @@ export abstract class Connection {
    * * `disconnect`: connection was closed by any side.
    * * `message`: message was receive from remote node.
    * * `error`: error during connection, sending or receiving.
+   * * `headers`: headers was receive from remote node.
    *
    * @param event Event name.
    * @param listener Event listener.
    * @returns Unbind listener from event.
    */
   on (
-    event: 'connecting' | 'connect' | 'disconnect' | 'message' | 'error',
+    event: 'connecting' | 'connect' | 'disconnect' | 'message' | 'error' | 'headers',
     listener: () => void
   ): Unsubscribe
 
@@ -197,6 +198,13 @@ export class BaseNode<M extends Meta = Meta> {
    * ```
    */
   remoteSubprotocol: string | undefined
+
+
+  /**
+   * Headers set by remote node.
+   * By default, it is an empty object.
+   */
+  remoteHeaders: object
 
   /**
    * Minimum version of Logux protocol, which is supported.
@@ -351,4 +359,12 @@ export class BaseNode<M extends Meta = Meta> {
    * ```
    */
   destroy (): void
+
+
+  /**
+   * Set headers for current node. 
+   * 
+   * @param headers
+   */
+  setLocalHeaders (headers: object): void
 }

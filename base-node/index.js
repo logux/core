@@ -343,10 +343,10 @@ class BaseNode {
     }
   }
 
-  setLocalHeaders (data) {
-    this.localHeaders = data
+  setLocalHeaders (headers) {
+    this.localHeaders = headers
     if (this.connected) {
-      this.sendHeaders(data)
+      this.sendHeaders(headers)
     }
   }
 }
