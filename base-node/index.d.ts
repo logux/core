@@ -203,6 +203,12 @@ export class BaseNode<M extends Meta = Meta> {
   /**
    * Headers set by remote node.
    * By default, it is an empty object.
+   * 
+   * ```js
+   * if (Object.keys(node.remoteHeaders).length > 0) {
+   *   console.log(`Headers set by remote node:`, node.remoteHeaders)
+   * }
+   * ```
    */
   remoteHeaders: object
 
@@ -364,7 +370,7 @@ export class BaseNode<M extends Meta = Meta> {
   /**
    * Set headers for current node. 
    * 
-   * @param headers
+   * @param headers The data object will be set as headers for current node.
    */
   setLocalHeaders (headers: object): void
 }
