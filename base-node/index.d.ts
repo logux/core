@@ -3,11 +3,8 @@ import { Unsubscribe } from 'nanoevents'
 import { LoguxError, LoguxErrorOptions } from '../logux-error'
 import { Log, Action, Meta } from '../log'
 
-/**
- * @template H Remote headers type.
- */
-interface Authentificator<H extends object = {}> {
-  (nodeId: string, token: string, headers: H | {}): Promise<boolean>
+interface Authentificator<H> {
+  (nodeId: string, token: string, headers: H | { }): Promise<boolean>
 }
 
 interface Filter {
@@ -92,10 +89,7 @@ export abstract class Connection {
   disconnect (reason?: 'error' | 'timeout' | 'destroy'): void
 }
 
-/**
- * @template H Remote headers type.
- */
-type NodeOptions<H extends object = {}> = {
+type NodeOptions<H> = {
   /**
    * Client credentials. For example, access token.
    */
@@ -155,7 +149,7 @@ type NodeOptions<H extends object = {}> = {
  * @template M Meta’s type.
  * @template H Remote headers type.
  */
-export class BaseNode<M extends Meta = Meta, H extends object = {}> {
+export class BaseNode<M extends Meta = Meta, H extends object = { }> {
   /**
    * @param nodeId Unique current machine name.
    * @param log Logux log instance to be synchronized.
@@ -210,16 +204,13 @@ export class BaseNode<M extends Meta = Meta, H extends object = {}> {
   /**
    * Headers set by remote node.
    * By default, it is an empty object.
-   * 
+   *
    * ```js
-   * if (node.remoteHeaders.language !== undefined) {
-   *   console.log('Client's language is:', node.remoteHeaders.language)
-   * } else {
-   *   console.log('Client does not set the language')
-   * }
+   * let message = I18N_ERRORS[node.remoteHeaders.language || 'en']
+   * node.log.add({ type: 'error', message })
    * ```
    */
-  remoteHeaders: H | {}
+  remoteHeaders: H | { }
 
   /**
    * Minimum version of Logux protocol, which is supported.
@@ -376,16 +367,16 @@ export class BaseNode<M extends Meta = Meta, H extends object = {}> {
    */
   destroy (): void
 
-
   /**
    * Set headers for current node.
-   * 
+   *
    * ```js
    * if (navigator) {
    *   node.setLocalHeaders({ language: navigator.language })
    * }
+   * node.connection.connect()
    * ```
-   * 
+   *
    * @param headers The data object will be set as headers for current node.
    */
   setLocalHeaders (headers: object): void
