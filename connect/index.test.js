@@ -363,3 +363,71 @@ it('sends authentication errors', async () => {
   expect(test.rightSent).toEqual([['error', 'bruteforce']])
   expect(test.rightNode.connected).toBe(false)
 })
+
+it('sends headers before connect message (if headers is set)', async () => {
+  test = createTest()
+  test.leftNode.setLocalHeaders({ env: 'development' })
+  await test.left.connect()
+  await delay(101)
+  expect(test.leftSent).toEqual([
+    ['headers', { env: 'development' }],
+    ['connect', PROTOCOL, 'client', 0]
+  ])
+})
+
+it('answers with headers before connected message (if headers is set)',
+  async () => {
+    test = createTest()
+    test.rightNode.setLocalHeaders({ env: 'development' })
+    await test.left.connect()
+    await delay(101)
+    expect(test.rightSent).toEqual([
+      ['headers', { env: 'development' }],
+      ['connected', PROTOCOL, 'server', [2, 3]]
+    ])
+  })
+
+it('sends headers if connection is active', async () => {
+  test = createTest()
+  await test.left.connect()
+  await test.wait()
+  expect(test.leftSent).toEqual([
+    ['connect', PROTOCOL, 'client', 0]
+  ])
+
+  test.leftNode.setLocalHeaders({ env: 'development' })
+  await delay(101)
+  expect(test.leftSent).toEqual([
+    ['connect', PROTOCOL, 'client', 0],
+    ['headers', { env: 'development' }]
+  ])
+})
+
+it('saves remote headers', async () => {
+  test = createTest()
+  test.leftNode.setLocalHeaders({ env: 'development' })
+  await test.left.connect()
+  await delay(101)
+  expect(test.rightNode.remoteHeaders).toEqual({ env: 'development' })
+})
+
+it('allows access only with headers', async () => {
+  test = createTest()
+
+  test.leftNode.options = { token: 'a' }
+  test.rightNode.options = {
+    async auth (nodeId, token, headers) {
+      await delay(10)
+      return token === 'a' &&
+        nodeId === 'client' &&
+        headers.env === 'development'
+    }
+  }
+
+  test.leftNode.setLocalHeaders({ env: 'development' })
+  await test.left.connect()
+  await delay(101)
+  test.leftNode.sendDuilian(0)
+
+  expect(test.rightSent[0]).toEqual(['connected', PROTOCOL, 'server', [1, 2]])
+})

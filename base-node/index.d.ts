@@ -3,8 +3,11 @@ import { Unsubscribe } from 'nanoevents'
 import { LoguxError, LoguxErrorOptions } from '../logux-error'
 import { Log, Action, Meta } from '../log'
 
-interface Authentificator {
-  (nodeId: string, token: string): Promise<boolean>
+/**
+ * @template H Remote headers type.
+ */
+interface Authentificator<H extends object = {}> {
+  (nodeId: string, token: string, headers: H | {}): Promise<boolean>
 }
 
 interface Filter {
@@ -30,7 +33,8 @@ type Message =
   // Inaccurate type until https://github.com/microsoft/TypeScript/issues/26113
   ['sync', number, object, object] |
   ['synced', number] |
-  ['debug', 'error', string]
+  ['debug', 'error', string] |
+  ['headers', object]
 
 /**
  * Abstract interface for connection to synchronize logs over it.
@@ -58,13 +62,14 @@ export abstract class Connection {
    * * `disconnect`: connection was closed by any side.
    * * `message`: message was receive from remote node.
    * * `error`: error during connection, sending or receiving.
+   * * `headers`: headers was receive from remote node.
    *
    * @param event Event name.
    * @param listener Event listener.
    * @returns Unbind listener from event.
    */
   on (
-    event: 'connecting' | 'connect' | 'disconnect' | 'message' | 'error',
+    event: 'connecting' | 'connect' | 'disconnect' | 'message' | 'error' | 'headers',
     listener: () => void
   ): Unsubscribe
 
@@ -87,7 +92,10 @@ export abstract class Connection {
   disconnect (reason?: 'error' | 'timeout' | 'destroy'): void
 }
 
-type NodeOptions = {
+/**
+ * @template H Remote headers type.
+ */
+type NodeOptions<H extends object = {}> = {
   /**
    * Client credentials. For example, access token.
    */
@@ -96,7 +104,7 @@ type NodeOptions = {
   /**
    * Function to check client credentials.
    */
-  auth?: Authentificator
+  auth?: Authentificator<H>
 
   /**
    * Detect difference between client and server and fix time
@@ -145,8 +153,9 @@ type NodeOptions = {
  * are based on this module.
  *
  * @template M Meta’s type.
+ * @template H Remote headers type.
  */
-export class BaseNode<M extends Meta = Meta> {
+export class BaseNode<M extends Meta = Meta, H extends object = {}> {
   /**
    * @param nodeId Unique current machine name.
    * @param log Logux log instance to be synchronized.
@@ -154,7 +163,7 @@ export class BaseNode<M extends Meta = Meta> {
    * @param options Synchronization options.
    */
   constructor (
-    nodeId: string, log: Log, connection: Connection, options?: NodeOptions
+    nodeId: string, log: Log, connection: Connection, options?: NodeOptions<H>
   )
 
   /**
@@ -196,6 +205,21 @@ export class BaseNode<M extends Meta = Meta> {
    * ```
    */
   remoteSubprotocol: string | undefined
+
+
+  /**
+   * Headers set by remote node.
+   * By default, it is an empty object.
+   * 
+   * ```js
+   * if (node.remoteHeaders.language !== undefined) {
+   *   console.log('Client's language is:', node.remoteHeaders.language)
+   * } else {
+   *   console.log('Client does not set the language')
+   * }
+   * ```
+   */
+  remoteHeaders: H | {}
 
   /**
    * Minimum version of Logux protocol, which is supported.
@@ -239,7 +263,7 @@ export class BaseNode<M extends Meta = Meta> {
   /**
    * Synchronization options.
    */
-  options: NodeOptions
+  options: NodeOptions<H>
 
   /**
    * Is synchronization in process.
@@ -351,4 +375,18 @@ export class BaseNode<M extends Meta = Meta> {
    * ```
    */
   destroy (): void
+
+
+  /**
+   * Set headers for current node.
+   * 
+   * ```js
+   * if (navigator) {
+   *   node.setLocalHeaders({ language: navigator.language })
+   * }
+   * ```
+   * 
+   * @param headers The data object will be set as headers for current node.
+   */
+  setLocalHeaders (headers: object): void
 }

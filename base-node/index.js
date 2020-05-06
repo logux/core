@@ -9,6 +9,7 @@ let {
 let { sendPing, pingMessage, pongMessage } = require('../ping')
 let { sendDebug, debugMessage } = require('../debug')
 let { sendError, errorMessage } = require('../error')
+let { sendHeaders, headersMessage } = require('../headers')
 let { LoguxError } = require('../logux-error')
 
 const NOT_TO_THROW = {
@@ -17,7 +18,7 @@ const NOT_TO_THROW = {
   'timeout': true
 }
 
-const BEFORE_AUTH = ['connect', 'connected', 'error', 'debug']
+const BEFORE_AUTH = ['connect', 'connected', 'error', 'debug', 'headers']
 
 async function syncMappedEvent (node, action, meta) {
   let added = meta.added
@@ -100,6 +101,8 @@ class BaseNode {
     this.initialized = false
     this.lastAddedCache = 0
     this.initializing = this.initialize()
+    this.localHeaders = {}
+    this.remoteHeaders = {}
   }
 
   on (event, listener) {
@@ -343,6 +346,13 @@ class BaseNode {
       this.send(['duilian', DUILIANS[line]])
     }
   }
+
+  setLocalHeaders (headers) {
+    this.localHeaders = headers
+    if (this.connected) {
+      this.sendHeaders(headers)
+    }
+  }
 }
 
 BaseNode.prototype.sendConnect = sendConnect
@@ -364,6 +374,9 @@ BaseNode.prototype.debugMessage = debugMessage
 
 BaseNode.prototype.sendError = sendError
 BaseNode.prototype.errorMessage = errorMessage
+
+BaseNode.prototype.sendHeaders = sendHeaders
+BaseNode.prototype.headersMessage = headersMessage
 
 const DUILIANS = {
   金木水火土: '板城烧锅酒'
