@@ -28,8 +28,8 @@
     "nanoevents": "^5.1.5"
   },
   "devDependencies": {
-    "@logux/eslint-config": "^37.2.0",
-    "@logux/sharec-config": "^0.6.4",
+    "@logux/eslint-config": "^38.0.0",
+    "@logux/sharec-config": "^0.7.0",
     "@typescript-eslint/eslint-plugin": "^2.31.0",
     "@typescript-eslint/parser": "^2.31.0",
     "check-dts": "^0.3.0",
@@ -41,6 +41,7 @@
     "eslint-plugin-jest": "^23.10.0",
     "eslint-plugin-node": "^11.1.0",
     "eslint-plugin-prefer-let": "^1.0.1",
+    "eslint-plugin-prettierx": "^0.11.0",
     "eslint-plugin-promise": "^4.2.1",
     "eslint-plugin-security": "^1.4.0",
     "eslint-plugin-standard": "^4.0.1",
@@ -63,7 +64,7 @@
   },
   "lint-staged": {
     "*.md": "yaspeller",
-    "*.js": "eslint"
+    "*.js": "eslint --fix"
   },
   "jest": {
     "testEnvironment": "node",
@@ -105,6 +106,6 @@
   },
   "sharec": {
     "config": "@logux/sharec-config",
-    "version": "0.6.4"
+    "version": "0.7.0"
   }
 }
