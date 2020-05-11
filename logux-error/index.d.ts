@@ -1,12 +1,12 @@
 type Versions = { supported: string, used: string }
 
 export type LoguxErrorOptions = {
-  'timeout': number,
-  'bruteforce': void,
-  'wrong-format': string,
-  'wrong-protocol': Versions,
-  'unknown-message': string,
-  'wrong-credentials': void,
+  'timeout': number
+  'bruteforce': void
+  'wrong-format': string
+  'wrong-protocol': Versions
+  'unknown-message': string
+  'wrong-credentials': void
   'wrong-subprotocol': Versions
 }
 

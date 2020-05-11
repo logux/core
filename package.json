@@ -28,8 +28,10 @@
     "nanoevents": "^5.1.5"
   },
   "devDependencies": {
-    "@logux/eslint-config": "^37.0.0",
+    "@logux/eslint-config": "^37.2.0",
     "@logux/sharec-config": "^0.6.4",
+    "@typescript-eslint/eslint-plugin": "^2.31.0",
+    "@typescript-eslint/parser": "^2.31.0",
     "check-dts": "^0.3.0",
     "dual-publish": "^0.10.2",
     "eslint": "^7.0.0",
@@ -49,6 +51,8 @@
     "lint-staged": "^10.2.2",
     "nanodelay": "^1.0.1",
     "rimraf": "^3.0.2",
+    "ts-jest": "^25.5.1",
+    "typescript": "^3.8.3",
     "ws": "^7.3.0",
     "yaspeller-ci": "^1.0.2"
   },
@@ -70,11 +74,15 @@
     }
   },
   "eslintConfig": {
-    "extends": "@logux/eslint-config",
+    "extends": "@logux/eslint-config/ts",
     "rules": {
+      "@typescript-eslint/no-explicit-any": "off",
       "no-invalid-this": "off"
     }
   },
+  "eslintIgnore": [
+    "**/errors.ts"
+  ],
   "yaspeller": {
     "lang": "en",
     "ignoreCapitalization": true,

@@ -5,7 +5,7 @@ type TestLogOptions = {
   /**
    * Unique log name.
    */
-  nodeId: string,
+  nodeId: string
   /**
    * Store for log. Will use {@link MemoryStore} by default.
    */

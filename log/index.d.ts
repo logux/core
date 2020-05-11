@@ -21,17 +21,17 @@ export type Meta = {
   /**
    * Sequence number of action in current log. Log fills it.
    */
-  added: number,
+  added: number
 
   /**
    * Action created time in current node time. Milliseconds since UNIX epoch.
    */
-  time: number,
+  time: number
 
   /**
    * Action unique ID. Log sets it automatically.
    */
-  id: ID,
+  id: ID
 
   /**
    * Why action should be kept in log. Action without reasons will be removed.
@@ -41,7 +41,7 @@ export type Meta = {
   /**
    * Set code as reason and remove this reasons from previous actions.
    */
-  subprotocol?: string,
+  subprotocol?: string
 
   /**
    * Set value to `reasons` and this reason from old action.
@@ -78,12 +78,12 @@ type Criteria = {
   /**
    * Remove reason only older than specific action.
    */
-  olderThan?: Meta,
+  olderThan?: Meta
 
   /**
    * Remove reason only younger than specific action.
    */
-  youngerThan?: Meta,
+  youngerThan?: Meta
 
   /**
    * Remove reason only for action with `id`.
@@ -221,7 +221,7 @@ type LogOptions = {
   /**
    * Store for log.
    */
-  store: Store,
+  store: Store
   /**
    * Unique current machine name.
    */

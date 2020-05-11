@@ -66,7 +66,8 @@ export abstract class Connection {
    * @returns Unbind listener from event.
    */
   on (
-    event: 'connecting' | 'connect' | 'disconnect' | 'message' | 'error' | 'headers',
+    event: 'connecting' | 'connect' | 'disconnect' |
+    'message' | 'error' | 'headers',
     listener: () => void
   ): Unsubscribe
 
@@ -119,7 +120,7 @@ type NodeOptions<H> = {
   /**
    * Application subprotocol version in SemVer format.
    */
-  subprotocol?: string,
+  subprotocol?: string
 
   /**
    * Function to filter actions from remote node. Best place for access control.
@@ -199,7 +200,6 @@ export class BaseNode<M extends Meta = Meta, H extends object = { }> {
    * ```
    */
   remoteSubprotocol: string | undefined
-
 
   /**
    * Headers set by remote node.
