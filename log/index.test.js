@@ -139,11 +139,7 @@ it('iterates by added order', async () => {
   await log.each({ order: 'added' }, action => {
     actions.push(action)
   })
-  expect(actions).toEqual([
-    { type: 'C' },
-    { type: 'B' },
-    { type: 'A' }
-  ])
+  expect(actions).toEqual([{ type: 'C' }, { type: 'B' }, { type: 'A' }])
 })
 
 it('disables iteration on false', async () => {
@@ -242,10 +238,7 @@ it('changes meta', async () => {
   let result = await log.changeMeta('2 node 0', { a: 2, b: 2 })
   expect(result).toBe(true)
   checkEntries(log, [
-    [
-      { type: 'A' },
-      { id: '1 node 0', time: 1, added: 1, reasons: ['t'] }
-    ],
+    [{ type: 'A' }, { id: '1 node 0', time: 1, added: 1, reasons: ['t'] }],
     [
       { type: 'B' },
       { id: '2 node 0', time: 2, added: 2, reasons: ['t'], a: 2, b: 2 }
@@ -262,7 +255,7 @@ it('does not allow to change ID or added', async () => {
     } catch (e) {
       err = e
     }
-    expect(err.message).toContain(`"${ key }" is read-only`)
+    expect(err.message).toContain(`"${key}" is read-only`)
   }
 })
 
@@ -289,9 +282,7 @@ it('removes action on setting entry reasons', async () => {
 })
 
 it('returns action by ID', async () => {
-  let log = await logWith([
-    [{ type: 'A' }, { reasons: ['test'], id: '1 n 0' }]
-  ])
+  let log = await logWith([[{ type: 'A' }, { reasons: ['test'], id: '1 n 0' }]])
   let result1 = await log.byId('1 n 0')
   expect(result1[0]).toEqual({ type: 'A' })
   expect(result1[1].reasons).toEqual(['test'])
@@ -313,9 +304,7 @@ it('cleans log by reason', async () => {
   await log.removeReason('a')
   checkActions(log, [{ type: 'AB' }, { type: 'B' }])
   expect(log.store.created[1][1].reasons).toEqual(['b'])
-  expect(cleaned).toEqual([
-    [{ type: 'A' }, 1, []]
-  ])
+  expect(cleaned).toEqual([[{ type: 'A' }, 1, []]])
 })
 
 it('removes reason with minimum and maximum added', async () => {
@@ -343,21 +332,15 @@ it('does not put actions without reasons to log', async () => {
 
   let meta = await log.add({ type: 'A' })
   expect(meta.reasons).toEqual([])
-  expect(added).toEqual([
-    [{ type: 'A' }, undefined]
-  ])
-  expect(cleaned).toEqual([
-    [{ type: 'A' }, undefined]
-  ])
+  expect(added).toEqual([[{ type: 'A' }, undefined]])
+  expect(cleaned).toEqual([[{ type: 'A' }, undefined]])
   checkActions(log, [])
   await log.add({ type: 'B' }, { reasons: ['test'] })
   expect(added).toEqual([
     [{ type: 'A' }, undefined],
     [{ type: 'B' }, 1]
   ])
-  expect(cleaned).toEqual([
-    [{ type: 'A' }, undefined]
-  ])
+  expect(cleaned).toEqual([[{ type: 'A' }, undefined]])
   checkActions(log, [{ type: 'B' }])
 })
 
@@ -376,9 +359,7 @@ it('checks ID for actions without reasons', async () => {
   await log.add({ type: 'A' }, { id: '1 n 0', reasons: ['t'] })
   let meta1 = await log.add({ type: 'B' }, { id: '1 n 0' })
   expect(meta1).toBe(false)
-  expect(added).toEqual([
-    [{ type: 'A' }, 1]
-  ])
+  expect(added).toEqual([[{ type: 'A' }, 1]])
   expect(cleaned).toEqual([])
   let meta2 = await log.add({ type: 'C' }, { id: '2 n 0' })
   expect(meta2).not.toBe(false)
@@ -386,9 +367,7 @@ it('checks ID for actions without reasons', async () => {
     [{ type: 'A' }, 1],
     [{ type: 'C' }, undefined]
   ])
-  expect(cleaned).toEqual([
-    [{ type: 'C' }, undefined]
-  ])
+  expect(cleaned).toEqual([[{ type: 'C' }, undefined]])
 })
 
 it('fires preadd event', async () => {

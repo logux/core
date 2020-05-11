@@ -11,7 +11,7 @@ const FATAL_ERRORS = [
 ]
 
 class Reconnect {
-  constructor (connection, options = { }) {
+  constructor (connection, options = {}) {
     this.connection = connection
     this.options = { ...DEFAULT_OPTIONS, ...options }
 
@@ -21,22 +21,30 @@ class Reconnect {
 
     this.unbind = []
 
-    this.unbind.push(this.connection.on('message', msg => {
-      if (msg[0] === 'error' && FATAL_ERRORS.includes(msg[1])) {
-        this.reconnecting = false
-      }
-    }))
-    this.unbind.push(this.connection.on('connecting', () => {
-      this.connecting = true
-    }))
-    this.unbind.push(this.connection.on('connect', () => {
-      this.attempts = 0
-      this.connecting = false
-    }))
-    this.unbind.push(this.connection.on('disconnect', () => {
-      this.connecting = false
-      if (this.reconnecting) this.reconnect()
-    }))
+    this.unbind.push(
+      this.connection.on('message', msg => {
+        if (msg[0] === 'error' && FATAL_ERRORS.includes(msg[1])) {
+          this.reconnecting = false
+        }
+      })
+    )
+    this.unbind.push(
+      this.connection.on('connecting', () => {
+        this.connecting = true
+      })
+    )
+    this.unbind.push(
+      this.connection.on('connect', () => {
+        this.attempts = 0
+        this.connecting = false
+      })
+    )
+    this.unbind.push(
+      this.connection.on('disconnect', () => {
+        this.connecting = false
+        if (this.reconnecting) this.reconnect()
+      })
+    )
     this.unbind.push(() => {
       clearTimeout(this.timer)
     })

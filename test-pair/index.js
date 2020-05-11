@@ -4,7 +4,7 @@ function clone (obj) {
   if (Array.isArray(obj)) {
     return obj.map(i => clone(i))
   } else if (typeof obj === 'object') {
-    let cloned = { }
+    let cloned = {}
     for (let i in obj) {
       cloned[i] = clone(obj[i])
     }

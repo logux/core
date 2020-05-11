@@ -36,9 +36,12 @@ function checkProtocol (node, ver) {
   if (ver >= node.minProtocol) {
     return true
   } else {
-    node.sendError(new LoguxError('wrong-protocol', {
-      supported: node.minProtocol, used: ver
-    }))
+    node.sendError(
+      new LoguxError('wrong-protocol', {
+        supported: node.minProtocol,
+        used: ver
+      })
+    )
     node.destroy()
     return false
   }
@@ -66,7 +69,7 @@ async function sendConnect () {
     this.lastReceived
   ]
 
-  let options = { }
+  let options = {}
   if (this.options.token) {
     if (typeof this.options.token === 'function') {
       options.token = await this.options.token()
@@ -97,7 +100,7 @@ async function sendConnected (start, end) {
     [start, end]
   ]
 
-  let options = { }
+  let options = {}
   if (this.options.token) {
     if (typeof this.options.token === 'function') {
       options.token = await this.options.token()
@@ -119,7 +122,7 @@ async function sendConnected (start, end) {
 
 function connectMessage (ver, nodeId, synced, options) {
   let start = this.now()
-  if (!options) options = { }
+  if (!options) options = {}
 
   this.remoteNodeId = nodeId
   if (!checkProtocol(this, ver)) return
@@ -139,7 +142,7 @@ function connectMessage (ver, nodeId, synced, options) {
 }
 
 function connectedMessage (ver, nodeId, time, options) {
-  if (!options) options = { }
+  if (!options) options = {}
 
   this.endTimeout()
   this.remoteNodeId = nodeId
@@ -151,7 +154,7 @@ function connectedMessage (ver, nodeId, time, options) {
     let now = this.now()
     let authTime = time[1] - time[0]
     let roundTrip = now - this.connectSended - authTime
-    this.timeFix = Math.floor(this.connectSended - time[0] + (roundTrip / 2))
+    this.timeFix = Math.floor(this.connectSended - time[0] + roundTrip / 2)
   }
 
   this.remoteSubprotocol = options.subprotocol || '0.0.0'
@@ -167,5 +170,8 @@ function connectedMessage (ver, nodeId, time, options) {
 }
 
 module.exports = {
-  sendConnect, sendConnected, connectMessage, connectedMessage
+  sendConnect,
+  sendConnected,
+  connectMessage,
+  connectedMessage
 }

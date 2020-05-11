@@ -58,17 +58,31 @@ it('sends ping on idle connection', async () => {
   expect(test.leftSent).toEqual([['duilian', '']])
   await delay(100)
   expect(error).toBeUndefined()
-  expect(test.leftSent).toEqual([['duilian', ''], ['ping', 1]])
+  expect(test.leftSent).toEqual([
+    ['duilian', ''],
+    ['ping', 1]
+  ])
   test.right.send(['pong', 1])
   await delay(250)
   expect(error).toBeUndefined()
-  expect(test.leftSent).toEqual([['duilian', ''], ['ping', 1]])
+  expect(test.leftSent).toEqual([
+    ['duilian', ''],
+    ['ping', 1]
+  ])
   await delay(100)
   expect(error).toBeUndefined()
-  expect(test.leftSent).toEqual([['duilian', ''], ['ping', 1], ['ping', 1]])
+  expect(test.leftSent).toEqual([
+    ['duilian', ''],
+    ['ping', 1],
+    ['ping', 1]
+  ])
   await delay(250)
   expect(error.message).toContain('timeout')
-  expect(test.leftSent).toEqual([['duilian', ''], ['ping', 1], ['ping', 1]])
+  expect(test.leftSent).toEqual([
+    ['duilian', ''],
+    ['ping', 1],
+    ['ping', 1]
+  ])
   expect(test.leftEvents[3]).toEqual(['disconnect', 'timeout'])
 })
 
@@ -124,16 +138,18 @@ it('checks types', async () => {
     ['pong', 'abc'],
     ['pong', {}]
   ]
-  await Promise.all(wrongs.map(async command => {
-    let test = new TestPair()
-    let log = TestTime.getLog()
-    test.leftNode = new ServerNode('server', log, test.left)
-    await test.left.connect()
-    test.right.send(command)
-    await test.wait('right')
-    expect(test.leftNode.connected).toBe(false)
-    expect(test.leftSent).toEqual([
-      ['error', 'wrong-format', JSON.stringify(command)]
-    ])
-  }))
+  await Promise.all(
+    wrongs.map(async command => {
+      let test = new TestPair()
+      let log = TestTime.getLog()
+      test.leftNode = new ServerNode('server', log, test.left)
+      await test.left.connect()
+      test.right.send(command)
+      await test.wait('right')
+      expect(test.leftNode.connected).toBe(false)
+      expect(test.leftSent).toEqual([
+        ['error', 'wrong-format', JSON.stringify(command)]
+      ])
+    })
+  )
 })

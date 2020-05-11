@@ -36,9 +36,10 @@ it('does not connect before initializing', async () => {
   let log = TestTime.getLog()
 
   let returnLastAdded
-  log.store.getLastAdded = () => new Promise(resolve => {
-    returnLastAdded = resolve
-  })
+  log.store.getLastAdded = () =>
+    new Promise(resolve => {
+      returnLastAdded = resolve
+    })
 
   let pair = new TestPair()
   node = new ClientNode('client', log, pair.left, { fixTime: false })
@@ -48,7 +49,5 @@ it('does not connect before initializing', async () => {
   expect(pair.leftSent).toEqual([])
   returnLastAdded(10)
   await delay(10)
-  expect(pair.leftSent).toEqual([
-    ['connect', node.localProtocol, 'client', 0]
-  ])
+  expect(pair.leftSent).toEqual([['connect', node.localProtocol, 'client', 0]])
 })

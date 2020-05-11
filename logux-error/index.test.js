@@ -51,17 +51,22 @@ it('stringifies local error', () => {
 
 it('stringifies bruteforce error', () => {
   expect(catchError('bruteforce').toString()).toContain(
-    'LoguxError: Too many wrong authentication attempts')
+    'LoguxError: Too many wrong authentication attempts'
+  )
 })
 
 it('stringifies subprotocol error', () => {
-  let error = catchError('wrong-subprotocol', {
-    supported: '2.x || 3.x',
-    used: '1.0'
-  }, true)
+  let error = catchError(
+    'wrong-subprotocol',
+    {
+      supported: '2.x',
+      used: '1.0'
+    },
+    true
+  )
   expect(error.toString()).toContain(
     'LoguxError: Logux received wrong-subprotocol error ' +
-    '(Only 2.x || 3.x application subprotocols are supported, but you use 1.0)'
+      '(Only 2.x application subprotocols are supported, but you use 1.0)'
   )
 })
 

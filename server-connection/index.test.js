@@ -1,14 +1,14 @@
 let { ServerConnection } = require('..')
 
 it('throws on connect method call', () => {
-  let connection = new ServerConnection({ })
+  let connection = new ServerConnection({})
   expect(() => {
     connection.connect()
   }).toThrow(/reconnect/)
 })
 
 it('emits connection states', () => {
-  let connection = new ServerConnection({ })
+  let connection = new ServerConnection({})
 
   let states = []
   connection.on('disconnect', () => {
@@ -24,7 +24,7 @@ it('emits connection states', () => {
 })
 
 it('emits error on wrong format', () => {
-  let connection = new ServerConnection({ })
+  let connection = new ServerConnection({})
   let error
   connection.on('error', err => {
     error = err
@@ -49,7 +49,7 @@ it('closes WebSocket', () => {
 })
 
 it('receives messages', () => {
-  let connection = new ServerConnection({ })
+  let connection = new ServerConnection({})
 
   let received = []
   connection.on('message', msg => {
@@ -79,7 +79,7 @@ it('does not send to closed socket', () => {
     send (msg) {
       sent.push(msg)
     },
-    close () { }
+    close () {}
   }
 
   let connection = new ServerConnection(ws)

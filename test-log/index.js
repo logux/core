@@ -2,7 +2,7 @@ let { MemoryStore } = require('../memory-store')
 let { Log } = require('../log')
 
 class TestLog extends Log {
-  constructor (time, id, opts = { }) {
+  constructor (time, id, opts = {}) {
     if (!opts.store) opts.store = new MemoryStore()
     if (typeof opts.nodeId === 'undefined') {
       opts.nodeId = 'test' + id

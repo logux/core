@@ -1,4 +1,7 @@
-type Versions = { supported: string, used: string }
+type Versions = {
+  supported: string
+  used: string
+}
 
 export type LoguxErrorOptions = {
   'timeout': number
@@ -34,16 +37,17 @@ export class LoguxError<
    * }
    * ```
    */
-  static description<
-    T extends keyof LoguxErrorOptions
-  >(type: T, options?: LoguxErrorOptions[T]): string
+  static description<T extends keyof LoguxErrorOptions> (
+    type: T,
+    options?: LoguxErrorOptions[T]
+  ): string
 
   /**
    * @param type The error code.
    * @param options The error option.
    * @param received Was error received from remote node.
    */
-  constructor(type: T, options?: LoguxErrorOptions[T], received?: boolean)
+  constructor (type: T, options?: LoguxErrorOptions[T], received?: boolean)
 
   /**
    * Always equal to `LoguxError`. The best way to check error class.

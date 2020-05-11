@@ -15,4 +15,4 @@ import { Store } from '../log'
  * })
  * ```
  */
-export class MemoryStore extends Store { }
+export class MemoryStore extends Store {}

@@ -9,11 +9,15 @@ class LoguxError extends Error {
     } else if (type === 'bruteforce') {
       return 'Too many wrong authentication attempts'
     } else if (type === 'wrong-protocol') {
-      return 'Logux supports protocols only from version ' + options.supported +
-             ', but you use ' + options.used
+      return (
+        `Logux supports protocols only from version ${options.supported}` +
+        `, but you use ${options.used}`
+      )
     } else if (type === 'wrong-subprotocol') {
-      return 'Only ' + options.supported + ' application subprotocols are ' +
-             'supported, but you use ' + options.used
+      return (
+        `Only ${options.supported} application subprotocols are ` +
+        `supported, but you use ${options.used}`
+      )
     } else if (type === 'wrong-credentials') {
       return 'Wrong credentials'
     } else {

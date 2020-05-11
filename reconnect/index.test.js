@@ -10,22 +10,22 @@ afterEach(() => {
 })
 
 it('saves connection and options', () => {
-  let con = { on () { } }
+  let con = { on () {} }
   let recon = new Reconnect(con, { a: 1 })
   expect(recon.connection).toBe(con)
   expect(recon.options.a).toEqual(1)
 })
 
 it('uses default options', () => {
-  let con = { on () { } }
+  let con = { on () {} }
   let recon = new Reconnect(con)
   expect(typeof recon.options.minDelay).toEqual('number')
 })
 
 it('enables reconnecting on connect', () => {
   let con = {
-    on () { },
-    connect () { },
+    on () {},
+    connect () {},
     connected: false
   }
   let recon = new Reconnect(con)
@@ -37,8 +37,8 @@ it('enables reconnecting on connect', () => {
 
 it('enables reconnecting if connection was already connected', () => {
   let con = {
-    on () { },
-    connect () { },
+    on () {},
+    connect () {},
     connected: true
   }
   let recon = new Reconnect(con)
@@ -52,10 +52,7 @@ it('disables reconnecting on destroy and empty disconnect', async () => {
   await recon.connect()
   recon.disconnect('destroy')
   expect(recon.reconnecting).toBe(false)
-  expect(pair.leftEvents).toEqual([
-    ['connect'],
-    ['disconnect', 'destroy']
-  ])
+  expect(pair.leftEvents).toEqual([['connect'], ['disconnect', 'destroy']])
   await recon.connect()
   recon.disconnect()
   expect(recon.reconnecting).toBe(false)
@@ -63,9 +60,9 @@ it('disables reconnecting on destroy and empty disconnect', async () => {
 
 it('reconnects on timeout and error disconnect', () => {
   let con = {
-    on () { },
+    on () {},
     connected: true,
-    disconnect () { }
+    disconnect () {}
   }
   let recon = new Reconnect(con)
 
@@ -79,14 +76,14 @@ it('reconnects on timeout and error disconnect', () => {
 it('proxies connection methods', () => {
   let sent = []
   let con = {
-    on () { },
+    on () {},
     send (msg) {
       sent.push(msg)
     },
     connect () {
       this.connected = true
     },
-    emitter: { },
+    emitter: {},
     connected: false,
     disconnect () {
       this.connected = false
@@ -263,8 +260,8 @@ it('has dynamic delay', () => {
 })
 
 it('listens for window events', async () => {
-  let listeners = { }
-  global.navigator = { }
+  let listeners = {}
+  global.navigator = {}
   global.window = {
     addEventListener (name, callback) {
       listeners[name] = callback
@@ -320,8 +317,8 @@ it('listens for window events', async () => {
 })
 
 it('does connect on online if client was not connected', async () => {
-  let listeners = { }
-  global.navigator = { }
+  let listeners = {}
+  global.navigator = {}
   global.window = {
     addEventListener (name, callback) {
       listeners[name] = callback

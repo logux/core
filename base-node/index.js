@@ -1,11 +1,12 @@
 let { createNanoEvents } = require('nanoevents')
 
 let {
-  sendConnect, sendConnected, connectMessage, connectedMessage
+  sendConnect,
+  sendConnected,
+  connectMessage,
+  connectedMessage
 } = require('../connect')
-let {
-  sendSync, sendSynced, syncMessage, syncedMessage
-} = require('../sync')
+let { sendSync, sendSynced, syncMessage, syncedMessage } = require('../sync')
 let { sendPing, pingMessage, pongMessage } = require('../ping')
 let { sendDebug, debugMessage } = require('../debug')
 let { sendError, errorMessage } = require('../error')
@@ -39,7 +40,7 @@ async function syncMappedEvent (node, action, meta) {
 }
 
 class BaseNode {
-  constructor (nodeId, log, connection, options = { }) {
+  constructor (nodeId, log, connection, options = {}) {
     this.remoteNodeId = undefined
     this.remoteProtocol = undefined
     this.remoteSubprotocol = undefined
@@ -62,7 +63,7 @@ class BaseNode {
 
     this.timeFix = 0
     this.syncing = 0
-    this.received = { }
+    this.received = {}
 
     this.lastSent = 0
     this.lastReceived = 0
@@ -74,29 +75,41 @@ class BaseNode {
     this.throwsError = true
 
     this.unbind = []
-    this.unbind.push(log.on('add', (action, meta) => {
-      this.onAdd(action, meta)
-    }))
-    this.unbind.push(connection.on('connecting', () => {
-      this.onConnecting()
-    }))
-    this.unbind.push(connection.on('connect', () => {
-      this.onConnect()
-    }))
-    this.unbind.push(connection.on('message', message => {
-      this.onMessage(message)
-    }))
-    this.unbind.push(connection.on('error', error => {
-      if (error.message === 'Wrong message format') {
-        this.sendError(new LoguxError('wrong-format', error.received))
-        this.connection.disconnect('error')
-      } else {
-        this.error(error)
-      }
-    }))
-    this.unbind.push(connection.on('disconnect', () => {
-      this.onDisconnect()
-    }))
+    this.unbind.push(
+      log.on('add', (action, meta) => {
+        this.onAdd(action, meta)
+      })
+    )
+    this.unbind.push(
+      connection.on('connecting', () => {
+        this.onConnecting()
+      })
+    )
+    this.unbind.push(
+      connection.on('connect', () => {
+        this.onConnect()
+      })
+    )
+    this.unbind.push(
+      connection.on('message', message => {
+        this.onMessage(message)
+      })
+    )
+    this.unbind.push(
+      connection.on('error', error => {
+        if (error.message === 'Wrong message format') {
+          this.sendError(new LoguxError('wrong-format', error.received))
+          this.connection.disconnect('error')
+        } else {
+          this.error(error)
+        }
+      })
+    )
+    this.unbind.push(
+      connection.on('disconnect', () => {
+        this.onDisconnect()
+      })
+    )
 
     this.initialized = false
     this.lastAddedCache = 0
@@ -262,15 +275,20 @@ class BaseNode {
     await this.log.each({ order: 'added' }, (action, meta) => {
       if (meta.added <= lastSynced) return false
       if (this.options.outFilter) {
-        promises.push(this.options.outFilter(action, meta).then(r => {
-          if (r) {
-            return [action, meta]
-          } else {
-            return false
-          }
-        }).catch(e => {
-          this.error(e)
-        }))
+        promises.push(
+          this.options
+            .outFilter(action, meta)
+            .then(r => {
+              if (r) {
+                return [action, meta]
+              } else {
+                return false
+              }
+            })
+            .catch(e => {
+              this.error(e)
+            })
+        )
       } else {
         promises.push(Promise.resolve([action, meta]))
       }
@@ -294,13 +312,17 @@ class BaseNode {
     if (!this.connected) return
     if (data.entries.length > 0) {
       if (this.options.outMap) {
-        Promise.all(data.entries.map(i => {
-          return this.options.outMap(i[0], i[1])
-        })).then(changed => {
-          this.sendSync(data.added, changed)
-        }).catch(e => {
-          this.error(e)
-        })
+        Promise.all(
+          data.entries.map(i => {
+            return this.options.outMap(i[0], i[1])
+          })
+        )
+          .then(changed => {
+            this.sendSync(data.added, changed)
+          })
+          .catch(e => {
+            this.error(e)
+          })
       } else {
         this.sendSync(data.added, data.entries)
       }

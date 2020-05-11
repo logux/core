@@ -1,10 +1,15 @@
 let { delay } = require('nanodelay')
 
 let {
-  BaseNode, ServerNode, ClientNode, LoguxError, TestTime, TestPair
+  BaseNode,
+  ServerNode,
+  ClientNode,
+  LoguxError,
+  TestTime,
+  TestPair
 } = require('..')
 
-let fakeNode = new BaseNode('id', TestTime.getLog(), (new TestPair()).left)
+let fakeNode = new BaseNode('id', TestTime.getLog(), new TestPair().left)
 const PROTOCOL = fakeNode.localProtocol
 
 let test
@@ -41,18 +46,14 @@ it('sends protocol version and name in connect message', async () => {
   test = createTest()
   await test.left.connect()
   await test.wait()
-  expect(test.leftSent).toEqual([
-    ['connect', PROTOCOL, 'client', 0]
-  ])
+  expect(test.leftSent).toEqual([['connect', PROTOCOL, 'client', 0]])
 })
 
 it('answers with protocol version and name in connected message', async () => {
   test = createTest()
   await test.left.connect()
   await test.wait('left')
-  expect(test.rightSent).toEqual([
-    ['connected', PROTOCOL, 'server', [2, 3]]
-  ])
+  expect(test.rightSent).toEqual([['connected', PROTOCOL, 'server', [2, 3]]])
 })
 
 it('checks client protocol version', async () => {
@@ -90,18 +91,20 @@ it('checks types in connect message', async () => {
     ['connected', []],
     ['connected', PROTOCOL, 'client', [0]]
   ]
-  await Promise.all(wrongs.map(async msg => {
-    let log = TestTime.getLog()
-    let pair = new TestPair()
-    let node = new ServerNode('server', log, pair.left)
-    await pair.left.connect()
-    pair.right.send(msg)
-    await pair.wait('right')
-    expect(node.connected).toBe(false)
-    expect(pair.leftSent).toEqual([
-      ['error', 'wrong-format', JSON.stringify(msg)]
-    ])
-  }))
+  await Promise.all(
+    wrongs.map(async msg => {
+      let log = TestTime.getLog()
+      let pair = new TestPair()
+      let node = new ServerNode('server', log, pair.left)
+      await pair.left.connect()
+      pair.right.send(msg)
+      await pair.wait('right')
+      expect(node.connected).toBe(false)
+      expect(pair.leftSent).toEqual([
+        ['error', 'wrong-format', JSON.stringify(msg)]
+      ])
+    })
+  )
 })
 
 it('saves other node name', async () => {
@@ -248,9 +251,7 @@ it('denies access for wrong users', async () => {
 
   await test.left.connect()
   await test.wait('left')
-  expect(test.rightSent).toEqual([
-    ['error', 'wrong-credentials']
-  ])
+  expect(test.rightSent).toEqual([['error', 'wrong-credentials']])
   expect(test.rightNode.connected).toBe(false)
 })
 
@@ -375,25 +376,22 @@ it('sends headers before connect message (if headers is set)', async () => {
   ])
 })
 
-it('answers with headers before connected message (if headers is set)',
-  async () => {
-    test = createTest()
-    test.rightNode.setLocalHeaders({ env: 'development' })
-    await test.left.connect()
-    await delay(101)
-    expect(test.rightSent).toEqual([
-      ['headers', { env: 'development' }],
-      ['connected', PROTOCOL, 'server', [2, 3]]
-    ])
-  })
+it('answers with headers before connected message', async () => {
+  test = createTest()
+  test.rightNode.setLocalHeaders({ env: 'development' })
+  await test.left.connect()
+  await delay(101)
+  expect(test.rightSent).toEqual([
+    ['headers', { env: 'development' }],
+    ['connected', PROTOCOL, 'server', [2, 3]]
+  ])
+})
 
 it('sends headers if connection is active', async () => {
   test = createTest()
   await test.left.connect()
   await test.wait()
-  expect(test.leftSent).toEqual([
-    ['connect', PROTOCOL, 'client', 0]
-  ])
+  expect(test.leftSent).toEqual([['connect', PROTOCOL, 'client', 0]])
 
   test.leftNode.setLocalHeaders({ env: 'development' })
   await delay(101)
@@ -418,9 +416,9 @@ it('allows access only with headers', async () => {
   test.rightNode.options = {
     async auth (nodeId, token, headers) {
       await delay(10)
-      return token === 'a' &&
-        nodeId === 'client' &&
-        headers.env === 'development'
+      return (
+        token === 'a' && nodeId === 'client' && headers.env === 'development'
+      )
     }
   }
 

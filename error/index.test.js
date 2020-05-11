@@ -20,38 +20,33 @@ afterEach(() => {
 })
 
 it('sends error on wrong message format', async () => {
-  let wrongs = [
-    1,
-    { hi: 1 },
-    [],
-    [1]
-  ]
-  await Promise.all(wrongs.map(async msg => {
-    let test = await createTest()
-    test.right.send(msg)
-    await test.wait('right')
-    expect(test.left.connected).toBe(false)
-    expect(test.leftSent).toEqual([
-      ['error', 'wrong-format', JSON.stringify(msg)]
-    ])
-  }))
+  let wrongs = [1, { hi: 1 }, [], [1]]
+  await Promise.all(
+    wrongs.map(async msg => {
+      let test = await createTest()
+      test.right.send(msg)
+      await test.wait('right')
+      expect(test.left.connected).toBe(false)
+      expect(test.leftSent).toEqual([
+        ['error', 'wrong-format', JSON.stringify(msg)]
+      ])
+    })
+  )
 })
 
 it('sends error on wrong error parameters', async () => {
-  let wrongs = [
-    ['error'],
-    ['error', 1],
-    ['error', { }]
-  ]
-  await Promise.all(wrongs.map(async msg => {
-    let test = await createTest()
-    test.right.send(msg)
-    await test.wait('right')
-    expect(test.left.connected).toBe(false)
-    expect(test.leftSent).toEqual([
-      ['error', 'wrong-format', JSON.stringify(msg)]
-    ])
-  }))
+  let wrongs = [['error'], ['error', 1], ['error', {}]]
+  await Promise.all(
+    wrongs.map(async msg => {
+      let test = await createTest()
+      test.right.send(msg)
+      await test.wait('right')
+      expect(test.left.connected).toBe(false)
+      expect(test.leftSent).toEqual([
+        ['error', 'wrong-format', JSON.stringify(msg)]
+      ])
+    })
+  )
 })
 
 it('sends error on unknown message type', async () => {
@@ -59,9 +54,7 @@ it('sends error on unknown message type', async () => {
   test.right.send(['test'])
   await test.wait('right')
   expect(test.left.connected).toBe(false)
-  expect(test.leftSent).toEqual([
-    ['error', 'unknown-message', 'test']
-  ])
+  expect(test.leftSent).toEqual([['error', 'unknown-message', 'test']])
 })
 
 it('throws a error on error message by default', () => {
@@ -74,8 +67,8 @@ it('throws a error on error message by default', () => {
 it('does not throw errors which are not relevant to code', () => {
   node = createNode()
   node.onMessage(['error', 'timeout', '1'])
-  node.onMessage(['error', 'wrong-protocol', { }])
-  node.onMessage(['error', 'wrong-subprotocol', { }])
+  node.onMessage(['error', 'wrong-protocol', {}])
+  node.onMessage(['error', 'wrong-subprotocol', {}])
 })
 
 it('disables throwing a error on listener', () => {

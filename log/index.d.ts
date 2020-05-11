@@ -112,7 +112,7 @@ type Page = {
   /**
    * Next page loader.
    */
-  next? (): Promise<Page>
+  next?(): Promise<Page>
 }
 
 type GetOptions = {
@@ -134,7 +134,7 @@ export abstract class Store {
    * @returns Promise with `meta` for new action or `false` if action with
    *          same `meta.id` was already in store.
    */
-  add (action: Action, meta: Meta): Promise<Meta|false>
+  add (action: Action, meta: Meta): Promise<Meta | false>
 
   /**
    * Return a Promise with first page. Page object has `entries` property
@@ -155,7 +155,7 @@ export abstract class Store {
    * @param id Action ID.
    * @returns Promise with entry if action was in store.
    */
-  remove (id: ID): Promise<[Action, Meta]|false>
+  remove (id: ID): Promise<[Action, Meta] | false>
 
   /**
    * Change action metadata.
@@ -173,7 +173,7 @@ export abstract class Store {
    * @param id Action ID.
    * @returns Promise with array of action and metadata.
    */
-  byId (id: ID): Promise<[Action, Meta]|[null, null]>
+  byId (id: ID): Promise<[Action, Meta] | [null, null]>
 
   /**
    * Remove reason from action’s metadata and remove actions without reasons.
@@ -184,7 +184,9 @@ export abstract class Store {
    * @returns Promise when cleaning will be finished.
    */
   removeReason (
-    reason: string, criteria: Criteria, callback: ActionListener<Meta>
+    reason: string,
+    criteria: Criteria,
+    callback: ActionListener<Meta>
   ): Promise<void>
 
   /**
@@ -274,7 +276,7 @@ export class Log<M extends Meta = Meta> {
    * @returns Promise with `meta` if action was added to log or `false`
    *          if action was already in log.
    */
-  add (action: Action, meta?: Partial<M>): Promise<M|false>
+  add (action: Action, meta?: Partial<M>): Promise<M | false>
 
   /**
    * Subscribe for log events. It implements nanoevents API. Supported events:
@@ -298,7 +300,8 @@ export class Log<M extends Meta = Meta> {
    * @returns Unbind listener from event.
    */
   on (
-    event: 'preadd' | 'add' | 'clean', listener: ActionListener<M>
+    event: 'preadd' | 'add' | 'clean',
+    listener: ActionListener<M>
   ): Unsubscribe
 
   /**
@@ -384,5 +387,5 @@ export class Log<M extends Meta = Meta> {
    * @param id Action ID.
    * @returns Promise with array of action and metadata.
    */
-  byId (id: ID): Promise<[Action, M]|[null, null]>
+  byId (id: ID): Promise<[Action, M] | [null, null]>
 }

@@ -38,7 +38,7 @@ it('saves all arguments', () => {
 })
 
 it('allows to miss options', () => {
-  expect(createNode().options).toEqual({ })
+  expect(createNode().options).toEqual({})
 })
 
 it('has protocol version', () => {
@@ -61,7 +61,7 @@ it('unbind all listeners on destroy', () => {
 
 it('destroys connection on destroy', () => {
   let node = createNode()
-  node.connection.destroy = function () { }
+  node.connection.destroy = function () {}
   jest.spyOn(node.connection, 'disconnect')
   jest.spyOn(node.connection, 'destroy')
 
@@ -227,10 +227,7 @@ it('receives errors from connection', async () => {
   test.left.emitter.emit('error', error)
 
   expect(test.leftNode.connected).toBe(false)
-  expect(test.leftEvents).toEqual([
-    ['connect'],
-    ['disconnect', 'error']
-  ])
+  expect(test.leftEvents).toEqual([['connect'], ['disconnect', 'error']])
   expect(emitted).toEqual(error)
 })
 
@@ -264,13 +261,8 @@ it('receives format errors from connection', async () => {
   test.left.emitter.emit('error', error)
   await test.wait()
   expect(test.leftNode.connected).toBe(false)
-  expect(test.leftEvents).toEqual([
-    ['connect'],
-    ['disconnect', 'error']
-  ])
-  expect(test.leftSent).toEqual([
-    ['error', 'wrong-format', 'options']
-  ])
+  expect(test.leftEvents).toEqual([['connect'], ['disconnect', 'error']])
+  expect(test.leftSent).toEqual([['error', 'wrong-format', 'options']])
 })
 
 it('throws error by default', async () => {

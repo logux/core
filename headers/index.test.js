@@ -40,14 +40,16 @@ it('checks types', async () => {
     ['headers', 'abc'],
     ['headers', {}, 'abc']
   ]
-  await Promise.all(wrongs.map(async command => {
-    let test = await createTestPair()
-    test.right.send(command)
-    await test.wait('right')
-    expect(test.leftNode.connected).toBe(false)
-    expect(test.leftSent).toEqual([
-      ['error', 'wrong-format', JSON.stringify(command)]
-    ])
-    node.destroy()
-  }))
+  await Promise.all(
+    wrongs.map(async command => {
+      let test = await createTestPair()
+      test.right.send(command)
+      await test.wait('right')
+      expect(test.leftNode.connected).toBe(false)
+      expect(test.leftSent).toEqual([
+        ['error', 'wrong-format', JSON.stringify(command)]
+      ])
+      node.destroy()
+    })
+  )
 })

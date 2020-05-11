@@ -20,14 +20,8 @@ it('uses special ID generator in test log', async () => {
     log.add({ type: 'b' }, { reasons: ['test'] })
   ])
   expect(log.entries()).toEqual([
-    [
-      { type: 'a' },
-      { added: 1, time: 1, id: '1 test1 0', reasons: ['test'] }
-    ],
-    [
-      { type: 'b' },
-      { added: 2, time: 2, id: '2 test1 0', reasons: ['test'] }
-    ]
+    [{ type: 'a' }, { added: 1, time: 1, id: '1 test1 0', reasons: ['test'] }],
+    [{ type: 'b' }, { added: 2, time: 2, id: '2 test1 0', reasons: ['test'] }]
   ])
 })
 
@@ -44,16 +38,10 @@ it('creates test logs with same time', async () => {
     log2.add({ type: 'b' }, { reasons: ['test'] })
   ])
   expect(log1.entries()).toEqual([
-    [
-      { type: 'a' },
-      { added: 1, time: 1, id: '1 test1 0', reasons: ['test'] }
-    ]
+    [{ type: 'a' }, { added: 1, time: 1, id: '1 test1 0', reasons: ['test'] }]
   ])
   expect(log2.entries()).toEqual([
-    [
-      { type: 'b' },
-      { added: 1, time: 2, id: '2 test2 0', reasons: ['test'] }
-    ]
+    [{ type: 'b' }, { added: 1, time: 2, id: '2 test2 0', reasons: ['test'] }]
   ])
 })
 

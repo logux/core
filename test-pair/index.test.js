@@ -7,33 +7,18 @@ it('tracks events', async () => {
 
   pair.left.connect()
   await pair.wait()
-  expect(pair.leftEvents).toEqual([
-    ['connect']
-  ])
-  expect(pair.rightEvents).toEqual([
-    ['connect']
-  ])
+  expect(pair.leftEvents).toEqual([['connect']])
+  expect(pair.rightEvents).toEqual([['connect']])
 
   pair.left.send('test')
-  expect(pair.rightEvents).toEqual([
-    ['connect']
-  ])
+  expect(pair.rightEvents).toEqual([['connect']])
 
   await pair.wait()
-  expect(pair.rightEvents).toEqual([
-    ['connect'],
-    ['message', 'test']
-  ])
+  expect(pair.rightEvents).toEqual([['connect'], ['message', 'test']])
 
   pair.left.disconnect('timeout')
-  expect(pair.leftEvents).toEqual([
-    ['connect'],
-    ['disconnect', 'timeout']
-  ])
-  expect(pair.rightEvents).toEqual([
-    ['connect'],
-    ['message', 'test']
-  ])
+  expect(pair.leftEvents).toEqual([['connect'], ['disconnect', 'timeout']])
+  expect(pair.rightEvents).toEqual([['connect'], ['message', 'test']])
   await pair.wait()
   expect(pair.rightEvents).toEqual([
     ['connect'],
@@ -86,10 +71,7 @@ it('clones messages', async () => {
   await pair.wait()
   msg.list[0] = 2
   expect(pair.leftSent).toEqual([{ list: [1] }])
-  expect(pair.rightEvents).toEqual([
-    ['connect'],
-    ['message', { list: [1] }]
-  ])
+  expect(pair.rightEvents).toEqual([['connect'], ['message', { list: [1] }]])
 })
 
 it('returns self in wait()', async () => {

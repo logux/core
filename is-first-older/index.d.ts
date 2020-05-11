@@ -16,4 +16,4 @@ import { Meta } from '..'
  * @param firstMeta Some action’s metadata.
  * @param secondMeta Other action’s metadata.
  */
-export function isFirstOlder(firstMeta: Meta, secondMeta: Meta): boolean
+export function isFirstOlder (firstMeta: Meta, secondMeta: Meta): boolean

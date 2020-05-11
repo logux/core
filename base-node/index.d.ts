@@ -4,7 +4,7 @@ import { LoguxError, LoguxErrorOptions } from '../logux-error'
 import { Log, Action, Meta } from '../log'
 
 interface Authentificator<H> {
-  (nodeId: string, token: string, headers: H | { }): Promise<boolean>
+  (nodeId: string, token: string, headers: H | {}): Promise<boolean>
 }
 
 interface Filter {
@@ -22,16 +22,16 @@ export interface TokenGenerator {
 type NodeState = 'disconnected' | 'connecting' | 'sending' | 'synchronized'
 
 type Message =
-  ['error', keyof LoguxErrorOptions, any?] |
-  ['connect', number, string, number, object?] |
-  ['connected', number, string, [number, number], object?] |
-  ['ping', number] |
-  ['pong', number] |
+  | ['error', keyof LoguxErrorOptions, any?]
+  | ['connect', number, string, number, object?]
+  | ['connected', number, string, [number, number], object?]
+  | ['ping', number]
+  | ['pong', number]
   // Inaccurate type until https://github.com/microsoft/TypeScript/issues/26113
-  ['sync', number, object, object] |
-  ['synced', number] |
-  ['debug', 'error', string] |
-  ['headers', object]
+  | ['sync', number, object, object]
+  | ['synced', number]
+  | ['debug', 'error', string]
+  | ['headers', object]
 
 /**
  * Abstract interface for connection to synchronize logs over it.
@@ -66,8 +66,13 @@ export abstract class Connection {
    * @returns Unbind listener from event.
    */
   on (
-    event: 'connecting' | 'connect' | 'disconnect' |
-    'message' | 'error' | 'headers',
+    event:
+      | 'connecting'
+      | 'connect  '
+      | 'disconnect'
+      | 'message'
+      | 'error  '
+      | 'headers',
     listener: () => void
   ): Unsubscribe
 
@@ -150,7 +155,7 @@ type NodeOptions<H> = {
  * @template M Meta’s type.
  * @template H Remote headers type.
  */
-export class BaseNode<M extends Meta = Meta, H extends object = { }> {
+export class BaseNode<M extends Meta = Meta, H extends object = {}> {
   /**
    * @param nodeId Unique current machine name.
    * @param log Logux log instance to be synchronized.
@@ -158,7 +163,10 @@ export class BaseNode<M extends Meta = Meta, H extends object = { }> {
    * @param options Synchronization options.
    */
   constructor (
-    nodeId: string, log: Log, connection: Connection, options?: NodeOptions<H>
+    nodeId: string,
+    log: Log,
+    connection: Connection,
+    options?: NodeOptions<H>
   )
 
   /**
@@ -210,7 +218,7 @@ export class BaseNode<M extends Meta = Meta, H extends object = { }> {
    * node.log.add({ type: 'error', message })
    * ```
    */
-  remoteHeaders: H | { }
+  remoteHeaders: H | {}
 
   /**
    * Minimum version of Logux protocol, which is supported.

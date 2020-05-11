@@ -11,7 +11,7 @@ FakeWebSocket.prototype = {
   send (msg) {
     this.sent.push(msg)
   },
-  close () { }
+  close () {}
 }
 
 afterEach(() => {
@@ -49,7 +49,7 @@ it('emits error on error', async () => {
   await connection.connect()
   connection.ws.onerror({ error: new Error('test') })
   expect(error.message).toEqual('test')
-  connection.ws.onerror({ })
+  connection.ws.onerror({})
   expect(error.message).toEqual('WS Error')
 })
 
@@ -86,7 +86,11 @@ it('emits connection states', async () => {
   connection.connect()
   connection.ws.onclose()
   expect(states).toEqual([
-    'connecting', 'connect', 'disconnect', 'connecting', 'disconnect'
+    'connecting',
+    'connect',
+    'disconnect',
+    'connecting',
+    'disconnect'
   ])
   expect(connection.connected).toBe(false)
 })

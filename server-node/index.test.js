@@ -66,9 +66,10 @@ it('supports connection before initializing', async () => {
   let log = TestTime.getLog()
 
   let returnLastAdded
-  log.store.getLastAdded = () => new Promise(resolve => {
-    returnLastAdded = resolve
-  })
+  log.store.getLastAdded = () =>
+    new Promise(resolve => {
+      returnLastAdded = resolve
+    })
 
   let pair = new TestPair()
   node = new ServerNode('server', log, pair.left, { timeout: 50, ping: 50 })

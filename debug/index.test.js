@@ -45,13 +45,15 @@ it('checks types', async () => {
     ['debug', 'error', []],
     ['debug', 'error', {}]
   ]
-  await Promise.all(wrongs.map(async command => {
-    let test = await createTest()
-    test.right.send(command)
-    await test.wait('right')
-    expect(test.leftNode.connected).toBe(false)
-    expect(test.leftSent).toEqual([
-      ['error', 'wrong-format', JSON.stringify(command)]
-    ])
-  }))
+  await Promise.all(
+    wrongs.map(async command => {
+      let test = await createTest()
+      test.right.send(command)
+      await test.wait('right')
+      expect(test.leftNode.connected).toBe(false)
+      expect(test.leftSent).toEqual([
+        ['error', 'wrong-format', JSON.stringify(command)]
+      ])
+    })
+  )
 })

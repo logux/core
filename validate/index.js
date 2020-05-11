@@ -17,29 +17,49 @@ function isArray (value) {
 }
 
 function isTwoNumbers (value) {
-  return isArray(value) && value.length === 2 &&
-         isNumber(value[0]) && isNumber(value[1])
+  return (
+    isArray(value) &&
+    value.length === 2 &&
+    isNumber(value[0]) &&
+    isNumber(value[1])
+  )
 }
 
 function isID (value) {
-  return isArray(value) && value.length === 3 &&
-         isNumber(value[0]) && isString(value[1]) && isNumber(value[2])
+  return (
+    isArray(value) &&
+    value.length === 3 &&
+    isNumber(value[0]) &&
+    isString(value[1]) &&
+    isNumber(value[2])
+  )
 }
 
 function isMeta (value) {
-  return isObject(value) && isNumber(value.time) &&
-        (isNumber(value.id) || isTwoNumbers(value.id) || isID(value.id))
+  return (
+    isObject(value) &&
+    isNumber(value.time) &&
+    (isNumber(value.id) || isTwoNumbers(value.id) || isID(value.id))
+  )
 }
 
 let validators = {
   connect (msg) {
-    return isNumber(msg[1]) && isString(msg[2]) && isNumber(msg[3]) &&
+    return (
+      isNumber(msg[1]) &&
+      isString(msg[2]) &&
+      isNumber(msg[3]) &&
       (msg.length === 4 || (msg.length === 5 && isObject(msg[4])))
+    )
   },
 
   connected (msg) {
-    return isNumber(msg[1]) && isString(msg[2]) && isTwoNumbers(msg[3]) &&
+    return (
+      isNumber(msg[1]) &&
+      isString(msg[2]) &&
+      isTwoNumbers(msg[3]) &&
       (msg.length === 4 || (msg.length === 5 && isObject(msg[4])))
+    )
   },
 
   ping (msg) {
@@ -74,18 +94,21 @@ let validators = {
   },
 
   duilian (msg) {
-    return (msg.length === 2) && isString(msg[1])
+    return msg.length === 2 && isString(msg[1])
   },
 
   debug (msg) {
-    return (msg.length === 3) && isString(msg[1]) &&
-           (msg[1] === 'error' && isString(msg[2]))
+    return (
+      msg.length === 3 &&
+      isString(msg[1]) &&
+      msg[1] === 'error' &&
+      isString(msg[2])
+    )
   },
 
   headers (msg) {
-    return (msg.length === 2) && isObject(msg[1])
+    return msg.length === 2 && isObject(msg[1])
   }
-
 }
 
 function wrongFormat (node, msg) {

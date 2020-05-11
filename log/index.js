@@ -1,7 +1,7 @@
 let { createNanoEvents } = require('nanoevents')
 
 class Log {
-  constructor (opts = { }) {
+  constructor (opts = {}) {
     if (typeof opts.nodeId === 'undefined') {
       throw new Error('Expected node ID')
     }
@@ -26,7 +26,7 @@ class Log {
     return this.emitter.on(event, listener)
   }
 
-  async add (action, meta = { }) {
+  async add (action, meta = {}) {
     if (typeof action.type === 'undefined') {
       throw new Error('Expected "type" in action')
     }
@@ -143,7 +143,7 @@ class Log {
     }
   }
 
-  removeReason (reason, criteria = { }) {
+  removeReason (reason, criteria = {}) {
     return this.store.removeReason(reason, criteria, (action, meta) => {
       this.emitter.emit('clean', action, meta)
     })

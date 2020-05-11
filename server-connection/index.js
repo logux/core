@@ -10,7 +10,7 @@ class ServerConnection extends WsConnection {
   connect () {
     throw new Error(
       'ServerConnection accepts already connected WebSocket ' +
-      'instance and could not reconnect it'
+        'instance and could not reconnect it'
     )
   }
 }

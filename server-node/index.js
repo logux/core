@@ -7,7 +7,7 @@ const DEFAULT_OPTIONS = {
 }
 
 class ServerNode extends BaseNode {
-  constructor (nodeId, log, connection, options = { }) {
+  constructor (nodeId, log, connection, options = {}) {
     options = { ...DEFAULT_OPTIONS, ...options }
     super(nodeId, log, connection, options)
 

@@ -50,9 +50,7 @@ it('sends sync messages', async () => {
   expect(test.leftSent).toEqual([
     ['sync', 1, actionA, { id: [1, 'test1', 0], time: 1, reasons: ['t'] }]
   ])
-  expect(test.rightSent).toEqual([
-    ['synced', 1]
-  ])
+  expect(test.rightSent).toEqual([['synced', 1]])
 
   test.rightNode.log.add(actionB)
   await test.wait('right')
@@ -74,12 +72,7 @@ it('uses last added on non-added action', async () => {
   test.leftNode.log.add({ type: 'a' })
   await test.wait('left')
   expect(test.leftSent).toEqual([
-    [
-      'sync',
-      0,
-      { type: 'a' },
-      { id: [1, 'test1', 0], time: 1, reasons: [] }
-    ]
+    ['sync', 0, { type: 'a' }, { id: [1, 'test1', 0], time: 1, reasons: [] }]
   ])
 })
 
@@ -88,7 +81,7 @@ it('checks sync types', async () => {
     ['sync'],
     ['sync', 0, { type: 'a' }],
     ['sync', 0, { type: 'a' }, []],
-    ['sync', 0, { type: 'a' }, { }],
+    ['sync', 0, { type: 'a' }, {}],
     ['sync', 0, { type: 'a' }, { id: 0 }],
     ['sync', 0, { type: 'a' }, { time: 0 }],
     ['sync', 0, { type: 'a' }, { id: 0, time: '0' }],
@@ -96,20 +89,22 @@ it('checks sync types', async () => {
     ['sync', 0, { type: 'a' }, { id: [0, 'node'], time: 0 }],
     ['sync', 0, { type: 'a' }, { id: '1 node 0', time: 0 }],
     ['sync', 0, { type: 'a' }, { id: [1, 'node', 1, '0'], time: 0 }],
-    ['sync', 0, { }, { id: 0, time: 0 }],
+    ['sync', 0, {}, { id: 0, time: 0 }],
     ['synced'],
     ['synced', 'abc']
   ]
-  await Promise.all(wrongs.map(async msg => {
-    let test = await createTest()
-    test.leftNode.catch(() => true)
-    test.leftNode.send(msg)
-    await test.wait('left')
-    expect(test.rightNode.connected).toBe(false)
-    expect(test.rightSent).toEqual([
-      ['error', 'wrong-format', JSON.stringify(msg)]
-    ])
-  }))
+  await Promise.all(
+    wrongs.map(async msg => {
+      let test = await createTest()
+      test.leftNode.catch(() => true)
+      test.leftNode.send(msg)
+      await test.wait('left')
+      expect(test.rightNode.connected).toBe(false)
+      expect(test.rightSent).toEqual([
+        ['error', 'wrong-format', JSON.stringify(msg)]
+      ])
+    })
+  )
 })
 
 it('synchronizes actions', async () => {
@@ -204,11 +199,11 @@ it('filters input actions', async () => {
     created.leftNode.log.add({ type: 'c' })
   })
   expect(test.leftNode.log.actions()).toEqual([
-    { type: 'a' }, { type: 'b' }, { type: 'c' }
+    { type: 'a' },
+    { type: 'b' },
+    { type: 'c' }
   ])
-  expect(test.rightNode.log.actions()).toEqual([
-    { type: 'a' }, { type: 'b' }
-  ])
+  expect(test.rightNode.log.actions()).toEqual([{ type: 'a' }, { type: 'b' }])
 })
 
 it('maps input actions', async () => {
@@ -349,10 +344,7 @@ it('compresses time', async () => {
     ]
   ])
   expect(test.rightNode.log.entries()).toEqual([
-    [
-      { type: 'a' },
-      { id: '1 test1 0', time: 1, added: 1, reasons: ['t'] }
-    ]
+    [{ type: 'a' }, { id: '1 test1 0', time: 1, added: 1, reasons: ['t'] }]
   ])
 })
 
@@ -370,18 +362,9 @@ it('compresses IDs', async () => {
     ['sync', 3, { type: 'a' }, { id: [1, 'o', 0], time: 1, reasons: ['t'] }]
   ])
   expect(test.rightNode.log.entries()).toEqual([
-    [
-      { type: 'a' },
-      { id: '1 client 0', time: 1, added: 1, reasons: ['t'] }
-    ],
-    [
-      { type: 'a' },
-      { id: '1 client 1', time: 1, added: 2, reasons: ['t'] }
-    ],
-    [
-      { type: 'a' },
-      { id: '1 o 0', time: 1, added: 3, reasons: ['t'] }
-    ]
+    [{ type: 'a' }, { id: '1 client 0', time: 1, added: 1, reasons: ['t'] }],
+    [{ type: 'a' }, { id: '1 client 1', time: 1, added: 2, reasons: ['t'] }],
+    [{ type: 'a' }, { id: '1 o 0', time: 1, added: 3, reasons: ['t'] }]
   ])
 })
 
@@ -407,24 +390,12 @@ it('fixes created time', async () => {
   ])
   await test.leftNode.waitFor('synchronized')
   expect(test.leftNode.log.entries()).toEqual([
-    [
-      { type: 'a' },
-      { id: '11 test1 0', time: 11, added: 1, reasons: ['t'] }
-    ],
-    [
-      { type: 'b' },
-      { id: '2 test2 0', time: 12, added: 2, reasons: ['t'] }
-    ]
+    [{ type: 'a' }, { id: '11 test1 0', time: 11, added: 1, reasons: ['t'] }],
+    [{ type: 'b' }, { id: '2 test2 0', time: 12, added: 2, reasons: ['t'] }]
   ])
   expect(test.rightNode.log.entries()).toEqual([
-    [
-      { type: 'a' },
-      { id: '11 test1 0', time: 1, added: 2, reasons: ['t'] }
-    ],
-    [
-      { type: 'b' },
-      { id: '2 test2 0', time: 2, added: 1, reasons: ['t'] }
-    ]
+    [{ type: 'a' }, { id: '11 test1 0', time: 1, added: 2, reasons: ['t'] }],
+    [{ type: 'b' }, { id: '2 test2 0', time: 2, added: 1, reasons: ['t'] }]
   ])
 })
 
@@ -437,14 +408,8 @@ it('supports multiple actions in sync', async () => {
   await test.wait('right')
   expect(test.leftNode.lastReceived).toBe(2)
   expect(test.leftNode.log.entries()).toEqual([
-    [
-      { type: 'a' },
-      { id: '1 test2 0', time: 1, added: 1, reasons: ['t'] }
-    ],
-    [
-      { type: 'b' },
-      { id: '2 test2 0', time: 2, added: 2, reasons: ['t'] }
-    ]
+    [{ type: 'a' }, { id: '1 test2 0', time: 1, added: 1, reasons: ['t'] }],
+    [{ type: 'b' }, { id: '2 test2 0', time: 2, added: 2, reasons: ['t'] }]
   ])
 })
 
@@ -478,7 +443,7 @@ it('uses always latest added', async () => {
   test.leftNode.log.on('preadd', (action, meta) => {
     meta.reasons = action.type === 'a' ? ['t'] : []
   })
-  test.rightNode.send = function () { }
+  test.rightNode.send = function () {}
   test.leftNode.log.add({ type: 'a' })
   await delay(1)
   test.leftNode.log.add({ type: 'b' })

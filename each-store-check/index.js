@@ -35,10 +35,7 @@ async function checkLastSynced (store, expectedSent, expectedRecieved) {
 function eachStoreCheck (test) {
   test('is empty in the beginning', factory => async () => {
     let store = factory()
-    await Promise.all([
-      checkLastAdded(store, 0),
-      checkLastSynced(store, 0, 0)
-    ])
+    await Promise.all([checkLastAdded(store, 0), checkLastSynced(store, 0, 0)])
   })
 
   test('updates latest synced values', factory => async () => {
@@ -88,11 +85,11 @@ function eachStoreCheck (test) {
 
   test('changes meta', factory => async () => {
     let store = factory()
-    await store.add({ }, { id: '1 n 0', time: 1, a: 1 })
+    await store.add({}, { id: '1 n 0', time: 1, a: 1 })
     let result = await store.changeMeta('1 n 0', { a: 2, b: 2 })
     assert.strictEqual(result, true)
     await checkBoth(store, [
-      [{ }, { id: '1 n 0', time: 1, added: 1, a: 2, b: 2 }]
+      [{}, { id: '1 n 0', time: 1, added: 1, a: 2, b: 2 }]
     ])
   })
 
@@ -115,7 +112,8 @@ function eachStoreCheck (test) {
     ])
     let result = await store.remove('1 node1 1')
     assert.deepStrictEqual(result, [
-      { type: '2' }, { id: '1 node1 1', time: 2, added: 2 }
+      { type: '2' },
+      { id: '1 node1 1', time: 2, added: 2 }
     ])
     await checkBoth(store, [
       [{ type: '1' }, { id: '1 node1 0', time: 1, added: 1 }],
@@ -159,7 +157,7 @@ function eachStoreCheck (test) {
       store.add({ type: '3' }, { id: '3 n 0', time: 3, reasons: ['a', 'b'] }),
       store.add({ type: '4' }, { id: '4 n 0', time: 4, reasons: ['b'] })
     ])
-    await store.removeReason('a', { }, (action, meta) => {
+    await store.removeReason('a', {}, (action, meta) => {
       removed.push([action, meta])
     })
     await checkBoth(store, [
@@ -256,10 +254,10 @@ function eachStoreCheck (test) {
 
   test('removes reason with zero at maximum added', factory => async () => {
     let store = factory()
-    await store.add({ }, { id: '1 n 0', time: 1, reasons: ['a'] })
+    await store.add({}, { id: '1 n 0', time: 1, reasons: ['a'] })
     await store.removeReason('a', { maxAdded: 0 }, () => {})
     await checkBoth(store, [
-      [{ }, { added: 1, id: '1 n 0', time: 1, reasons: ['a'] }]
+      [{}, { added: 1, id: '1 n 0', time: 1, reasons: ['a'] }]
     ])
   })
 
@@ -313,9 +311,7 @@ function eachStoreCheck (test) {
     assert.deepStrictEqual(meta1, { id, time: 1, added: 1 })
     let meta2 = await store.add({ a: 2 }, { id, time: 2 })
     assert.ok(!meta2)
-    await checkBoth(store, [
-      [{ a: 1 }, { id, time: 1, added: 1 }]
-    ])
+    await checkBoth(store, [[{ a: 1 }, { id, time: 1, added: 1 }]])
   })
 
   test('stores any metadata', factory => async () => {
