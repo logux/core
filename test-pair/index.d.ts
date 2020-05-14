@@ -1,5 +1,6 @@
 import { LocalPair } from '../local-pair'
 import { BaseNode } from '../base-node'
+import { TestLog } from '../test-log'
 
 /**
  * Two paired loopback connections with events tracking
@@ -29,7 +30,7 @@ export class TestPair extends LocalPair {
    * }
    * ```
    */
-  leftNode: BaseNode
+  leftNode: BaseNode<{}, TestLog>
 
   /**
    * Node instance used in this test, connected with `right`.
@@ -42,7 +43,7 @@ export class TestPair extends LocalPair {
    * }
    * ```
    */
-  rightNode: BaseNode
+  rightNode: BaseNode<{}, TestLog>
 
   /**
    * Sent messages from `left` connection.
@@ -110,5 +111,5 @@ export class TestPair extends LocalPair {
    * @param receiver Wait for specific receiver event.
    * @returns Promise until next event.
    */
-  wait (receiver: 'left' | 'right'): Promise<void>
+  wait (receiver?: 'left' | 'right'): Promise<void>
 }
