@@ -1,18 +1,22 @@
-let { delay } = require('nanodelay')
+import { delay } from 'nanodelay'
 
-let { ClientNode, TestTime, TestPair } = require('..')
+import { ClientNode, TestTime, TestPair } from '..'
 
-let node
+let node: ClientNode
 afterEach(() => {
   node.destroy()
 })
 
+function privateMethods (obj: object): any {
+  return obj
+}
+
 it('connects first', async () => {
   let pair = new TestPair()
   node = new ClientNode('client', TestTime.getLog(), pair.left)
-  jest.spyOn(node, 'sendConnect')
+  jest.spyOn(privateMethods(node), 'sendConnect')
   await pair.left.connect()
-  expect(node.sendConnect).toHaveBeenCalledTimes(1)
+  expect(privateMethods(node).sendConnect).toHaveBeenCalledTimes(1)
 })
 
 it('saves last added from ping', async () => {
@@ -26,7 +30,7 @@ it('saves last added from ping', async () => {
   pair.right.send(['ping', 1])
   await pair.wait('right')
   expect(node.lastReceived).toBe(1)
-  node.sendPing()
+  privateMethods(node).sendPing()
   pair.right.send(['pong', 2])
   await pair.wait('left')
   expect(node.lastReceived).toBe(2)
@@ -35,7 +39,9 @@ it('saves last added from ping', async () => {
 it('does not connect before initializing', async () => {
   let log = TestTime.getLog()
 
-  let returnLastAdded
+  let returnLastAdded = (added: number): void => {
+    throw new Error('getLastAdded was not called')
+  }
   log.store.getLastAdded = () =>
     new Promise(resolve => {
       returnLastAdded = resolve

@@ -1,8 +1,17 @@
-let { delay } = require('nanodelay')
+import { delay } from 'nanodelay'
 
-let { ClientNode, ServerNode, TestTime, TestPair } = require('..')
+import { ClientNode, ServerNode, TestTime, TestPair } from '..'
 
-let destroyable
+let destroyable: TestPair
+
+afterEach(() => {
+  destroyable.leftNode.destroy()
+  destroyable.rightNode.destroy()
+})
+
+function privateMethods (obj: object): any {
+  return obj
+}
 
 function createPair () {
   let time = new TestTime()
@@ -25,21 +34,16 @@ function createPair () {
   return test
 }
 
-async function createTest (before) {
+async function createTest (before?: (test: TestPair) => void) {
   let test = createPair()
-  if (before) before(test)
+  before?.(test)
   test.left.connect()
   await test.leftNode.waitFor('synchronized')
   test.clear()
-  test.leftNode.baseTime = 0
-  test.rightNode.baseTime = 0
+  privateMethods(test.leftNode).baseTime = 0
+  privateMethods(test.rightNode).baseTime = 0
   return test
 }
-
-afterEach(() => {
-  destroyable.leftNode.destroy()
-  destroyable.rightNode.destroy()
-})
 
 it('sends sync messages', async () => {
   let actionA = { type: 'a' }
@@ -97,6 +101,7 @@ it('checks sync types', async () => {
     wrongs.map(async msg => {
       let test = await createTest()
       test.leftNode.catch(() => true)
+      // @ts-expect-error
       test.leftNode.send(msg)
       await test.wait('left')
       expect(test.rightNode.connected).toBe(false)
@@ -131,8 +136,8 @@ it('remembers synced added', async () => {
   await test.wait('right')
   expect(test.leftNode.lastSent).toBe(1)
   expect(test.leftNode.lastReceived).toBe(2)
-  expect(test.leftNode.log.store.lastSent).toBe(1)
-  expect(test.leftNode.log.store.lastReceived).toBe(2)
+  expect(privateMethods(test.leftNode.log.store).lastSent).toBe(1)
+  expect(privateMethods(test.leftNode.log.store).lastReceived).toBe(2)
 })
 
 it('filters output actions', async () => {
@@ -172,7 +177,7 @@ it('maps output actions', async () => {
 })
 
 it('uses output filter before map', async () => {
-  let calls = []
+  let calls: string[] = []
   let test = await createTest()
   test.leftNode.options.outMap = async (action, meta) => {
     calls.push('map')
@@ -220,7 +225,7 @@ it('maps input actions', async () => {
 })
 
 it('uses input map before filter', async () => {
-  let calls = []
+  let calls: string[] = []
   let test = await createTest()
   test.rightNode.options.inMap = async (action, meta) => {
     calls.push('map')
@@ -237,7 +242,7 @@ it('uses input map before filter', async () => {
 
 it('reports errors during initial output filter', async () => {
   let error = new Error('test')
-  let catched = []
+  let catched: Error[] = []
   let test = createPair()
   test.rightNode.log.add({ type: 'a' })
   test.rightNode.catch(e => {
@@ -253,7 +258,7 @@ it('reports errors during initial output filter', async () => {
 
 it('reports errors during output filter', async () => {
   let error = new Error('test')
-  let catched = []
+  let catched: Error[] = []
   let test = await createTest(created => {
     created.rightNode.catch(e => {
       catched.push(e)
@@ -269,7 +274,7 @@ it('reports errors during output filter', async () => {
 
 it('reports errors during initial output map', async () => {
   let error = new Error('test')
-  let catched = []
+  let catched: Error[] = []
   let test = createPair()
   test.rightNode.log.add({ type: 'a' })
   test.rightNode.catch(e => {
@@ -285,7 +290,7 @@ it('reports errors during initial output map', async () => {
 
 it('reports errors during output map', async () => {
   let error = new Error('test')
-  let catched = []
+  let catched: Error[] = []
   let test = await createTest(created => {
     created.rightNode.catch(e => {
       catched.push(e)
@@ -301,7 +306,7 @@ it('reports errors during output map', async () => {
 
 it('reports errors during input filter', async () => {
   let error = new Error('test')
-  let catched = []
+  let catched: Error[] = []
   let test = await createTest()
   test.rightNode.catch(e => {
     catched.push(e)
@@ -316,7 +321,7 @@ it('reports errors during input filter', async () => {
 
 it('reports errors during input map', async () => {
   let error = new Error('test')
-  let catched = []
+  let catched: Error[] = []
   let test = await createTest()
   test.rightNode.catch(e => {
     catched.push(e)
@@ -331,8 +336,8 @@ it('reports errors during input map', async () => {
 
 it('compresses time', async () => {
   let test = await createTest()
-  test.leftNode.baseTime = 100
-  test.rightNode.baseTime = 100
+  privateMethods(test.leftNode).baseTime = 100
+  privateMethods(test.rightNode).baseTime = 100
   await test.leftNode.log.add({ type: 'a' }, { id: '1 test1 0', time: 1 })
   await test.leftNode.waitFor('synchronized')
   expect(test.leftSent).toEqual([
@@ -401,7 +406,7 @@ it('fixes created time', async () => {
 
 it('supports multiple actions in sync', async () => {
   let test = await createTest()
-  test.rightNode.sendSync(2, [
+  privateMethods(test.rightNode).sendSync(2, [
     [{ type: 'b' }, { id: '2 test2 0', time: 2, added: 2 }],
     [{ type: 'a' }, { id: '1 test2 0', time: 1, added: 1 }]
   ])
@@ -415,27 +420,27 @@ it('supports multiple actions in sync', async () => {
 
 it('starts and ends timeout', async () => {
   let test = await createTest()
-  test.leftNode.sendSync(1, [
+  privateMethods(test.leftNode).sendSync(1, [
     [{ type: 'a' }, { id: '1 test2 0', time: 1, added: 1 }]
   ])
-  test.leftNode.sendSync(2, [
+  privateMethods(test.leftNode).sendSync(2, [
     [{ type: 'a' }, { id: '2 test2 0', time: 2, added: 1 }]
   ])
-  expect(test.leftNode.timeouts).toHaveLength(2)
+  expect(privateMethods(test.leftNode).timeouts).toHaveLength(2)
 
-  test.leftNode.syncedMessage(1)
-  expect(test.leftNode.timeouts).toHaveLength(1)
+  privateMethods(test.leftNode).syncedMessage(1)
+  expect(privateMethods(test.leftNode).timeouts).toHaveLength(1)
 
-  test.leftNode.syncedMessage(2)
-  expect(test.leftNode.timeouts).toHaveLength(0)
+  privateMethods(test.leftNode).syncedMessage(2)
+  expect(privateMethods(test.leftNode).timeouts).toHaveLength(0)
 })
 
 it('should nothing happend if syncedMessage of empty syncing', async () => {
   let test = await createTest()
-  expect(test.leftNode.timeouts).toHaveLength(0)
+  expect(privateMethods(test.leftNode).timeouts).toHaveLength(0)
 
-  test.leftNode.syncedMessage(1)
-  expect(test.leftNode.timeouts).toHaveLength(0)
+  privateMethods(test.leftNode).syncedMessage(1)
+  expect(privateMethods(test.leftNode).timeouts).toHaveLength(0)
 })
 
 it('uses always latest added', async () => {
@@ -443,7 +448,7 @@ it('uses always latest added', async () => {
   test.leftNode.log.on('preadd', (action, meta) => {
     meta.reasons = action.type === 'a' ? ['t'] : []
   })
-  test.rightNode.send = function () {}
+  privateMethods(test.rightNode).send = () => {}
   test.leftNode.log.add({ type: 'a' })
   await delay(1)
   test.leftNode.log.add({ type: 'b' })
@@ -465,7 +470,7 @@ it('changes multiple actions in map', async () => {
 })
 
 it('synchronizes actions on connect', async () => {
-  let added = []
+  let added: string[] = []
   let test = await createTest()
   test.leftNode.log.on('add', action => {
     added.push(action.type)

@@ -1,41 +1,55 @@
-let { LocalPair } = require('..')
+import { LocalPair, Connection, Message } from '..'
 
-function listen (tracker, connection) {
-  let actions = []
+type Event =
+  | ['connect']
+  | ['connecting']
+  | ['disconnect', string]
+  | ['message', Message]
+
+function track (tracker: Tracker, connection: Connection): Event[] {
+  let events: Event[] = []
   connection.on('connecting', () => {
-    actions.push(['connecting'])
-    if (tracker.waiting) tracker.waiting()
+    events.push(['connecting'])
+    tracker.waiting?.()
   })
   connection.on('connect', () => {
-    actions.push(['connect'])
-    if (tracker.waiting) tracker.waiting()
+    events.push(['connect'])
+    tracker.waiting?.()
   })
   connection.on('disconnect', reason => {
-    actions.push(['disconnect', reason])
-    if (tracker.waiting) tracker.waiting()
+    events.push(['disconnect', reason])
+    tracker.waiting?.()
   })
   connection.on('message', msg => {
-    actions.push(msg)
-    if (tracker.waiting) tracker.waiting()
+    events.push(['message', msg])
+    tracker.waiting?.()
   })
-  return actions
+  return events
 }
 
-function createTracker (delay) {
-  let result = {
-    pair: new LocalPair(delay),
-    wait () {
-      return new Promise(resolve => {
-        result.waiting = () => {
-          result.waiting = false
-          resolve()
-        }
-      })
-    }
+class Tracker {
+  pair: LocalPair
+
+  waiting?: () => void
+
+  left: Event[]
+
+  right: Event[]
+
+  constructor (delay?: number) {
+    this.pair = new LocalPair(delay)
+    this.left = track(this, this.pair.left)
+    this.right = track(this, this.pair.right)
   }
-  result.left = listen(result, result.pair.left)
-  result.right = listen(result, result.pair.right)
-  return result
+
+  wait () {
+    return new Promise(resolve => {
+      this.waiting = () => {
+        delete this.waiting
+        resolve()
+      }
+    })
+  }
 }
 
 it('has right link between connections', () => {
@@ -54,7 +68,7 @@ it('throws a error on disconnection in disconnected state', () => {
 it('throws a error on message in disconnected state', () => {
   let pair = new LocalPair()
   expect(() => {
-    pair.left.send(['test'])
+    pair.left.send(['ping', 1])
   }).toThrow(/started before sending/)
 })
 
@@ -67,7 +81,7 @@ it('throws a error on connection in connected state', async () => {
 })
 
 it('sends a connect event', async () => {
-  let tracker = createTracker()
+  let tracker = new Tracker()
   expect(tracker.left).toEqual([])
 
   let connecting = tracker.pair.left.connect()
@@ -80,7 +94,7 @@ it('sends a connect event', async () => {
 })
 
 it('sends a disconnect event', async () => {
-  let tracker = createTracker()
+  let tracker = new Tracker()
   await tracker.pair.left.connect()
   tracker.pair.right.disconnect('error')
   expect(tracker.left).toEqual([['connecting'], ['connect']])
@@ -95,17 +109,17 @@ it('sends a disconnect event', async () => {
 })
 
 it('sends a message event', async () => {
-  let tracker = createTracker()
+  let tracker = new Tracker()
   await tracker.pair.left.connect()
-  tracker.pair.left.send(['test'])
+  tracker.pair.left.send(['ping', 1])
   expect(tracker.right).toEqual([['connect']])
   await tracker.wait()
   expect(tracker.left).toEqual([['connecting'], ['connect']])
-  expect(tracker.right).toEqual([['connect'], ['test']])
+  expect(tracker.right).toEqual([['connect'], ['message', ['ping', 1]]])
 })
 
 it('emulates delay', async () => {
-  let tracker = createTracker(50)
+  let tracker = new Tracker(50)
   expect(tracker.pair.delay).toEqual(50)
 
   let prevTime = Date.now()
@@ -113,7 +127,7 @@ it('emulates delay', async () => {
   expect(Date.now() - prevTime).toBeGreaterThanOrEqual(48)
 
   prevTime = Date.now()
-  tracker.pair.left.send(['test'])
+  tracker.pair.left.send(['ping', 1])
   await tracker.wait()
   expect(Date.now() - prevTime).toBeGreaterThanOrEqual(48)
 })

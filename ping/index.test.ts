@@ -1,14 +1,30 @@
-let { delay } = require('nanodelay')
+import { delay } from 'nanodelay'
 
-let { ServerNode, ClientNode, TestTime, TestPair } = require('..')
+import {
+  ServerNode,
+  ClientNode,
+  BaseNode,
+  TestTime,
+  TestLog,
+  TestPair,
+  NodeOptions
+} from '..'
 
-let node
+let node: BaseNode<{}, TestLog> | undefined
 
-async function createTest (opts) {
+afterEach(() => {
+  node?.destroy()
+})
+
+function privateMethods (obj: object): any {
+  return obj
+}
+
+async function createTest (opts: NodeOptions) {
   let log = TestTime.getLog()
   let test = new TestPair()
   await log.add({ type: 'test' }, { reasons: ['test'] })
-  log.store.lastSent = 1
+  privateMethods(log.store).lastSent = 1
   node = new ClientNode('client', log, test.left, opts)
   test.leftNode = node
   await test.left.connect()
@@ -19,16 +35,11 @@ async function createTest (opts) {
   return test
 }
 
-afterEach(() => {
-  if (node) {
-    node.destroy()
-    node = undefined
-  }
-})
-
 it('throws on ping and no timeout options', () => {
+  let pair = new TestPair()
+  let log = TestTime.getLog()
   expect(() => {
-    new ClientNode('client', null, null, { ping: 1000, timeout: 0 })
+    new ClientNode('client', log, pair.left, { ping: 1000, timeout: 0 })
   }).toThrow(/set timeout option/)
 })
 
@@ -40,7 +51,7 @@ it('answers pong on ping', async () => {
 })
 
 it('sends ping on idle connection', async () => {
-  let error
+  let error: Error | undefined
   let test = await createTest({
     ping: 300,
     timeout: 100,
@@ -50,9 +61,9 @@ it('sends ping on idle connection', async () => {
     error = err
   })
   await delay(250)
-  test.right.send(['duilian', ''])
+  privateMethods(test.right).send(['duilian', ''])
   await delay(250)
-  test.leftNode.send(['duilian', ''])
+  privateMethods(test.leftNode).send(['duilian', ''])
   await delay(250)
   expect(error).toBeUndefined()
   expect(test.leftSent).toEqual([['duilian', '']])
@@ -77,6 +88,7 @@ it('sends ping on idle connection', async () => {
     ['ping', 1]
   ])
   await delay(250)
+  if (typeof error === 'undefined') throw new Error('Error was not sent')
   expect(error.message).toContain('timeout')
   expect(test.leftSent).toEqual([
     ['duilian', ''],
@@ -117,7 +129,7 @@ it('do not try clear timeout if it does not set', async () => {
     ping: undefined
   })
   await delay(250)
-  test.leftNode.sendPing()
+  privateMethods(test.leftNode).sendPing()
   expect(test.leftSent).toEqual([])
 })
 
@@ -139,16 +151,17 @@ it('checks types', async () => {
     ['pong', {}]
   ]
   await Promise.all(
-    wrongs.map(async command => {
+    wrongs.map(async msg => {
       let test = new TestPair()
       let log = TestTime.getLog()
       test.leftNode = new ServerNode('server', log, test.left)
       await test.left.connect()
-      test.right.send(command)
+      // @ts-expect-error
+      test.right.send(msg)
       await test.wait('right')
       expect(test.leftNode.connected).toBe(false)
       expect(test.leftSent).toEqual([
-        ['error', 'wrong-format', JSON.stringify(command)]
+        ['error', 'wrong-format', JSON.stringify(msg)]
       ])
     })
   )

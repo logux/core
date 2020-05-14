@@ -1,4 +1,4 @@
-let { MemoryStore, Log } = require('..')
+import { MemoryStore, Log, Action, Meta, Page } from '..'
 
 function createLog () {
   return new Log({
@@ -7,17 +7,20 @@ function createLog () {
   })
 }
 
-function checkActions (log, expected) {
-  let actions = log.store.created.map(entry => entry[0])
+function checkActions (log: Log<Meta, MemoryStore>, expected: Action[]) {
+  let actions = log.store.entries.map(entry => entry[0])
   expect(actions).toEqual(expected)
 }
 
-function checkEntries (log, expected) {
-  let entries = log.store.created.map(entry => [entry[0], entry[1]])
+function checkEntries (
+  log: Log<Meta, MemoryStore>,
+  expected: [Action, Partial<Meta>][]
+) {
+  let entries = log.store.entries.map(entry => [entry[0], entry[1]])
   expect(entries).toEqual(expected)
 }
 
-async function logWith (entries) {
+async function logWith (entries: [Action, Partial<Meta>][]) {
   let log = createLog()
   await Promise.all(entries.map(entry => log.add(entry[0], entry[1])))
   return log
@@ -30,12 +33,14 @@ afterEach(() => {
 
 it('requires node ID', () => {
   expect(() => {
+    // @ts-expect-error
     new Log()
   }).toThrow(/node ID/)
 })
 
 it('requires store', () => {
   expect(() => {
+    // @ts-expect-error
     new Log({ nodeId: 'test' })
   }).toThrow(/store/)
 })
@@ -50,6 +55,7 @@ it('requires type for action', async () => {
   let log = createLog()
   let err
   try {
+    // @ts-expect-error
     await log.add({ a: 1 })
   } catch (e) {
     err = e
@@ -59,8 +65,8 @@ it('requires type for action', async () => {
 
 it('sends new entries to listeners', async () => {
   let log = createLog()
-  let actions1 = []
-  let actions2 = []
+  let actions1: Action[] = []
+  let actions2: Action[] = []
 
   await log.add({ type: 'A' })
   log.on('add', (action, meta) => {
@@ -84,7 +90,7 @@ it('sends new entries to listeners', async () => {
 it('unsubscribes listeners', async () => {
   let log = createLog()
 
-  let actions = []
+  let actions: Action[] = []
   let unsubscribe = log.on('add', action => {
     actions.push(action)
   })
@@ -98,7 +104,7 @@ it('unsubscribes listeners', async () => {
 it('ignore entry with existed ID', async () => {
   let log = createLog()
 
-  let added = []
+  let added: Action[] = []
   log.on('add', action => {
     added.push(action)
   })
@@ -118,7 +124,7 @@ it('iterates through added entries', async () => {
     [{ type: 'B' }, { id: '2 n 0', reasons: ['test'] }],
     [{ type: 'C' }, { id: '1 n 0', reasons: ['test'] }]
   ])
-  let entries = []
+  let entries: [Action, Meta][] = []
   await log.each((action, meta) => {
     entries.push([action, meta])
   })
@@ -135,7 +141,7 @@ it('iterates by added order', async () => {
     [{ type: 'B' }, { id: '2 n 0', reasons: ['test'] }],
     [{ type: 'C' }, { id: '1 n 0', reasons: ['test'] }]
   ])
-  let actions = []
+  let actions: Action[] = []
   await log.each({ order: 'added' }, action => {
     actions.push(action)
   })
@@ -147,7 +153,7 @@ it('disables iteration on false', async () => {
     [{ type: 'A' }, { reasons: ['test'] }],
     [{ type: 'B' }, { reasons: ['test'] }]
   ])
-  let actions = []
+  let actions: Action[] = []
   await log.each(action => {
     actions.push(action)
     return false
@@ -156,23 +162,23 @@ it('disables iteration on false', async () => {
 })
 
 it('supports multi-pages stores', async () => {
-  let store = {
-    async get () {
-      return {
-        entries: [['a', 'a']],
-        async next () {
-          return { entries: [['b', 'b']] }
-        }
+  let store = new MemoryStore()
+  let meta: Meta = { id: '1 0 0', added: 0, time: 0, reasons: [] }
+  store.get = async (opts?: object): Promise<Page> => {
+    return {
+      entries: [[{ type: 'a' }, meta]],
+      async next (): Promise<Page> {
+        return { entries: [[{ type: 'b' }, meta]] }
       }
     }
   }
   let log = new Log({ nodeId: 'test', store })
 
-  let actions = []
+  let actions: Action[] = []
   await log.each(action => {
     actions.push(action)
   })
-  expect(actions).toEqual(['a', 'b'])
+  expect(actions).toEqual([{ type: 'a' }, { type: 'b' }])
 })
 
 it('copies time from ID', async () => {
@@ -204,7 +210,7 @@ it('sets default ID and time and empty reasons for new entries', async () => {
     expect(meta.added).toBeUndefined()
     expect(meta.reasons).toEqual([])
     expect(typeof meta.time).toEqual('number')
-    expect(meta.id).toEqual(meta.time + ' test 0')
+    expect(meta.id).toEqual(`${meta.time} test 0`)
   })
   await log.add({ type: 'A' })
   expect(called).toEqual(1)
@@ -224,7 +230,7 @@ it('always generates biggest ID', () => {
   let log = createLog()
   let times = [10, 9]
 
-  Date.now = () => times.shift()
+  Date.now = () => times.shift() ?? 0
 
   expect(log.generateId()).toEqual('10 test 0')
   expect(log.generateId()).toEqual('10 test 1')
@@ -264,7 +270,7 @@ it('removes action on setting entry reasons', async () => {
     [{ type: 'A' }, { reasons: ['test'], id: '1 n 0' }],
     [{ type: 'B' }, { reasons: ['test'], id: '2 n 0' }]
   ])
-  let cleaned = []
+  let cleaned: [Action, Meta][] = []
   log.on('clean', (action, meta) => {
     cleaned.push([action, meta])
   })
@@ -283,9 +289,12 @@ it('removes action on setting entry reasons', async () => {
 
 it('returns action by ID', async () => {
   let log = await logWith([[{ type: 'A' }, { reasons: ['test'], id: '1 n 0' }]])
+
   let result1 = await log.byId('1 n 0')
+  if (result1[0] === null) throw new Error('Action was no found')
   expect(result1[0]).toEqual({ type: 'A' })
   expect(result1[1].reasons).toEqual(['test'])
+
   let result2 = await log.byId('2 n 0')
   expect(result2[0]).toBeNull()
   expect(result2[1]).toBeNull()
@@ -297,13 +306,13 @@ it('cleans log by reason', async () => {
     [{ type: 'AB' }, { reasons: ['a', 'b'] }],
     [{ type: 'B' }, { reasons: ['b'] }]
   ])
-  let cleaned = []
+  let cleaned: [Action, Meta['added'], Meta['reasons']][] = []
   log.on('clean', (action, meta) => {
     cleaned.push([action, meta.added, meta.reasons])
   })
   await log.removeReason('a')
   checkActions(log, [{ type: 'AB' }, { type: 'B' }])
-  expect(log.store.created[1][1].reasons).toEqual(['b'])
+  expect(log.store.entries[1][1].reasons).toEqual(['b'])
   expect(cleaned).toEqual([[{ type: 'A' }, 1, []]])
 })
 
@@ -320,17 +329,18 @@ it('removes reason with minimum and maximum added', async () => {
 it('does not put actions without reasons to log', async () => {
   let log = createLog()
 
-  let added = []
+  let added: [Action, Meta['added']][] = []
   log.on('add', (action, meta) => {
     expect(meta.id).not.toBeUndefined()
     added.push([action, meta.added])
   })
-  let cleaned = []
+  let cleaned: [Action, Meta['added']][] = []
   log.on('clean', (action, meta) => {
     cleaned.push([action, meta.added])
   })
 
   let meta = await log.add({ type: 'A' })
+  if (meta === false) throw new Error('Action was no added')
   expect(meta.reasons).toEqual([])
   expect(added).toEqual([[{ type: 'A' }, undefined]])
   expect(cleaned).toEqual([[{ type: 'A' }, undefined]])
@@ -347,11 +357,11 @@ it('does not put actions without reasons to log', async () => {
 it('checks ID for actions without reasons', async () => {
   let log = createLog()
 
-  let added = []
+  let added: [Action, Meta['added']][] = []
   log.on('add', (action, meta) => {
     added.push([action, meta.added])
   })
-  let cleaned = []
+  let cleaned: [Action, Meta['added']][] = []
   log.on('clean', (action, meta) => {
     cleaned.push([action, meta.added])
   })
@@ -373,12 +383,12 @@ it('checks ID for actions without reasons', async () => {
 it('fires preadd event', async () => {
   let log = createLog()
 
-  let add = []
+  let add: string[] = []
   log.on('add', action => {
     add.push(action.type)
   })
 
-  let preadd = []
+  let preadd: string[] = []
   log.on('preadd', (action, meta) => {
     expect(meta.added).toBeUndefined()
     if (action.type === 'A') meta.reasons.push('test')
@@ -402,7 +412,7 @@ it('removes reasons when keepLast option is used', async () => {
     [{ type: '2' }, { keepLast: 'a' }],
     [{ type: '3' }, { keepLast: 'a' }]
   ])
-  await checkActions(log, [{ type: '3' }])
+  checkActions(log, [{ type: '3' }])
 })
 
 it('allows to set keepLast in preadd', async () => {
@@ -415,21 +425,31 @@ it('allows to set keepLast in preadd', async () => {
     log.add({ type: '2' }),
     log.add({ type: '3' })
   ])
-  await checkActions(log, [{ type: '3' }])
+  checkActions(log, [{ type: '3' }])
 })
 
 it('ensures `reasons` to be array of string values', async () => {
   let log = createLog()
 
   let meta1 = await log.add({ type: '1' })
+  if (meta1 === false) throw new Error('Action was no found')
   expect(meta1.reasons).toEqual([])
-  let meta2 = await log.add({ type: '2' }, { reasons: 'a' })
-  expect(meta2.reasons).toEqual(['a'])
-  let err
+
+  let err1
   try {
+    // @ts-expect-error
+    await log.add({ type: '3' }, { reasons: 1 })
+  } catch (e) {
+    err1 = e
+  }
+  expect(err1.message).toEqual('Expected "reasons" to be an array of strings')
+
+  let err2
+  try {
+    // @ts-expect-error
     await log.add({ type: '3' }, { reasons: [false, 1] })
   } catch (e) {
-    err = e
+    err2 = e
   }
-  expect(err.message).toEqual('Expected "reasons" to be strings')
+  expect(err2.message).toEqual('Expected "reasons" to be an array of strings')
 })

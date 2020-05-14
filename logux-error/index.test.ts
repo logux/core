@@ -1,9 +1,14 @@
-let { LoguxError } = require('..')
+import { LoguxErrorOptions } from '.'
+import { LoguxError } from '..'
 
-function catchError (desc, type, received) {
+function catchError<T extends keyof LoguxErrorOptions> (
+  type: T,
+  opts?: LoguxErrorOptions[T],
+  received?: boolean
+) {
   let error
   try {
-    throw new LoguxError(desc, type, received)
+    throw new LoguxError(type, opts, received)
   } catch (e) {
     error = e
   }
@@ -13,40 +18,44 @@ function catchError (desc, type, received) {
 it('does not crash if captureStackTrace does not exist', () => {
   let captureStackTrace = global.Error.captureStackTrace
   delete global.Error.captureStackTrace
-  catchError('test')
+  catchError('wrong-credentials')
   global.Error.captureStackTrace = captureStackTrace
 })
 
 it('has stack trace', () => {
-  let error = catchError('test')
-  expect(error.stack).toContain('index.test.js')
+  let error = catchError('wrong-credentials')
+  expect(error.stack).toContain('index.test.ts')
 })
 
 it('has class name', () => {
-  let error = catchError('test')
+  let error = catchError('wrong-credentials')
   expect(error.name).toEqual('LoguxError')
 })
 
 it('has error description', () => {
-  let error = catchError('test')
-  expect(error.description).toEqual('test')
+  let error = catchError('wrong-credentials')
+  expect(error.description).toEqual('Wrong credentials')
 })
 
 it('has received', () => {
-  let own = catchError('test', 'custom')
+  let own = catchError('timeout', 10)
   expect(own.received).toBe(false)
-  let received = catchError('test', 'custom', true)
+  let received = catchError('timeout', 10, true)
   expect(received.received).toBe(true)
 })
 
 it('stringifies', () => {
-  let error = catchError('test', 'custom', true)
-  expect('' + error).toContain('LoguxError: Logux received test error')
+  let error = catchError('timeout', 10, true)
+  expect(String(error)).toContain(
+    'LoguxError: Logux received timeout error (A timeout was reached (10 ms))'
+  )
 })
 
-it('stringifies local error', () => {
-  let error = catchError('test')
-  expect(error.toString()).toContain('LoguxError: test')
+it('stringifies local unknown error', () => {
+  let error = catchError('timeout', 10)
+  expect(error.toString()).toContain(
+    'LoguxError: A timeout was reached (10 ms)'
+  )
 })
 
 it('stringifies bruteforce error', () => {
@@ -74,4 +83,9 @@ it('returns description by error type', () => {
   expect(catchError('wrong-format', '{}').toString()).toContain(
     'LoguxError: Wrong message format in {}'
   )
+})
+
+it('returns description by unknown type', () => {
+  // @ts-expect-error
+  expect(catchError('unknown').toString()).toContain('LoguxError: unknown')
 })

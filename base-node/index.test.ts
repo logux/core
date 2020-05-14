@@ -1,10 +1,9 @@
-let { createNanoEvents } = require('nanoevents')
-let { delay } = require('nanodelay')
+import { Emitter } from 'nanoevents'
+import { delay } from 'nanodelay'
 
-let { BaseNode, TestTime, TestPair } = require('..')
+import { BaseNode, TestTime, TestPair, NodeOptions, NodeState } from '..'
 
-function createNode (opts) {
-  let pair = new TestPair()
+function createNode (opts?: NodeOptions, pair = new TestPair()) {
   let log = TestTime.getLog()
   log.on('preadd', (action, meta) => {
     meta.reasons = ['test']
@@ -13,28 +12,51 @@ function createNode (opts) {
 }
 
 async function createTest () {
-  let node = createNode()
-  let test = node.connection.pair
-  test.leftNode = node
-  await test.left.connect()
-  return test
+  let pair = new TestPair()
+  let node = createNode({}, pair)
+  pair.leftNode = node
+  await pair.left.connect()
+  return pair
 }
 
-function listeners (emitter) {
-  return Object.keys(emitter.events)
-    .map(i => emitter.events[i].length)
-    .reduce((all, i) => all + i, 0)
+function privateMethods (obj: object): any {
+  return obj
+}
+
+type WithEmitter = {
+  emitter: Emitter
+}
+
+function hasEmitter (obj: object): obj is WithEmitter {
+  return 'emitter' in obj
+}
+
+function emit (obj: object, event: string, ...args: any) {
+  if (hasEmitter(obj)) {
+    obj.emitter.emit(event, ...args)
+  }
+}
+
+function listeners (obj: object) {
+  let count = 0
+  if (hasEmitter(obj)) {
+    for (let i in obj.emitter.events) {
+      count += obj.emitter.events[i]?.length ?? 0
+    }
+  }
+  return count
 }
 
 it('saves all arguments', () => {
   let log = TestTime.getLog()
-  let connection = createNanoEvents()
-  let node = new BaseNode('client', log, connection, { a: 1 })
+  let pair = new TestPair()
+  let options = {}
+  let node = new BaseNode('client', log, pair.left, options)
 
   expect(node.localNodeId).toEqual('client')
   expect(node.log).toBe(log)
-  expect(node.connection).toBe(connection)
-  expect(node.options).toEqual({ a: 1 })
+  expect(node.connection).toBe(pair.left)
+  expect(node.options).toBe(options)
 })
 
 it('allows to miss options', () => {
@@ -49,14 +71,16 @@ it('has protocol version', () => {
 })
 
 it('unbind all listeners on destroy', () => {
-  let node = new BaseNode('client', TestTime.getLog(), createNanoEvents())
+  let pair = new TestPair()
+  let conListenersBefore = listeners(pair.left)
+  let node = new BaseNode('client', TestTime.getLog(), pair.left)
 
-  expect(listeners(node.log.emitter)).toBeGreaterThan(0)
-  expect(listeners(node.connection)).toBeGreaterThan(0)
+  expect(listeners(node.log)).toBeGreaterThan(0)
+  expect(listeners(pair.left)).toBeGreaterThan(conListenersBefore)
 
   node.destroy()
-  expect(listeners(node.log.emitter)).toEqual(0)
-  expect(listeners(node.connection)).toEqual(0)
+  expect(listeners(node.log)).toEqual(0)
+  expect(listeners(pair.left)).toEqual(conListenersBefore)
 })
 
 it('destroys connection on destroy', () => {
@@ -80,13 +104,13 @@ it('disconnects on destroy', async () => {
 it('does not throw error on send to disconnected connection', () => {
   let node = createNode()
   expect(() => {
-    node.sendDuilian()
+    privateMethods(node).sendDuilian()
   }).not.toThrow()
 })
 
 it('sends messages to connection', async () => {
   let test = await createTest()
-  test.leftNode.send(['test'])
+  privateMethods(test.leftNode).send(['test'])
   await test.wait()
   expect(test.leftSent).toEqual([['test']])
 })
@@ -101,17 +125,17 @@ it('has connection state', async () => {
 })
 
 it('has state', async () => {
-  let node = createNode()
-  let pair = node.connection.pair
+  let pair = new TestPair()
+  let node = createNode({}, pair)
 
-  let states = []
+  let states: NodeState[] = []
   node.on('state', () => {
     states.push(node.state)
   })
 
   expect(node.state).toEqual('disconnected')
   await node.connection.connect()
-  node.sendConnect()
+  privateMethods(node).sendConnect()
   pair.right.send(['connected', node.localProtocol, 'server', [0, 0]])
   await node.waitFor('synchronized')
   expect(node.state).toEqual('synchronized')
@@ -124,10 +148,10 @@ it('has state', async () => {
   expect(node.state).toEqual('disconnected')
   await node.log.add({ type: 'b' })
   expect(node.state).toEqual('disconnected')
-  node.connection.emitter.emit('connecting')
+  emit(node.connection, 'connecting')
   expect(node.state).toEqual('connecting')
   await node.connection.connect()
-  node.sendConnect()
+  privateMethods(node).sendConnect()
   pair.right.send(['connected', node.localProtocol, 'server', [0, 0]])
   await node.waitFor('sending')
   expect(node.state).toEqual('sending')
@@ -156,37 +180,38 @@ it('does not wait for state change is current state is correct', async () => {
 
 it('loads lastSent, lastReceived and lastAdded from store', async () => {
   let log = TestTime.getLog()
-  let con = createNanoEvents()
+  let pair = new TestPair()
   let node
 
   log.store.setLastSynced({ sent: 1, received: 2 })
   await log.add({ type: 'a' }, { reasons: ['test'] })
-  node = new BaseNode('client', log, con)
+  node = new BaseNode('client', log, pair.left)
   await node.initializing
-  expect(node.lastAddedCache).toBe(1)
+  expect(privateMethods(node).lastAddedCache).toBe(1)
   expect(node.lastSent).toBe(1)
   expect(node.lastReceived).toBe(2)
 })
 
 it('does not override smaller lastSent', async () => {
   let node = createNode()
-  node.setLastSent(2)
-  node.setLastSent(1)
-  expect(node.log.store.lastSent).toEqual(2)
+  privateMethods(node).setLastSent(2)
+  privateMethods(node).setLastSent(1)
+  expect(privateMethods(node.log.store).lastSent).toEqual(2)
 })
 
 it('has separated timeouts', async () => {
   let node = createNode({ timeout: 100 })
 
-  let error
+  let error: Error | undefined
   node.catch(e => {
     error = e
   })
 
-  node.startTimeout()
+  privateMethods(node).startTimeout()
   await delay(60)
-  node.startTimeout()
+  privateMethods(node).startTimeout()
   await delay(60)
+  if (typeof error === 'undefined') throw new Error('Error was no sent')
   expect(error.message).toContain('timeout')
 })
 
@@ -198,12 +223,12 @@ it('stops timeouts on disconnect', async () => {
     error = e
   })
 
-  node.startTimeout()
-  node.startTimeout()
-  node.onDisconnect()
+  privateMethods(node).startTimeout()
+  privateMethods(node).startTimeout()
+  privateMethods(node).onDisconnect()
 
   await delay(50)
-  node.startTimeout()
+  privateMethods(node).startTimeout()
   expect(error).toBeUndefined()
 })
 
@@ -224,7 +249,7 @@ it('receives errors from connection', async () => {
   })
 
   let error = new Error('test')
-  test.left.emitter.emit('error', error)
+  emit(test.left, 'error', error)
 
   expect(test.leftNode.connected).toBe(false)
   expect(test.leftEvents).toEqual([['connect'], ['disconnect', 'error']])
@@ -234,7 +259,7 @@ it('receives errors from connection', async () => {
 it('cancels error catching', async () => {
   let test = await createTest()
   let emitted
-  let unbind = test.leftNode.catch(e => {
+  let unbind = test.leftNode.catch((e: Error) => {
     emitted = e
   })
 
@@ -242,7 +267,7 @@ it('cancels error catching', async () => {
   let error = new Error('test')
   let catched
   try {
-    test.left.emitter.emit('error', error)
+    emit(test.left, 'error', error)
   } catch (e) {
     catched = e
   }
@@ -251,14 +276,14 @@ it('cancels error catching', async () => {
 })
 
 it('does not fall on sync without connection', async () => {
-  await createNode().syncSince(0)
+  await privateMethods(createNode()).syncSince(0)
 })
 
 it('receives format errors from connection', async () => {
   let test = await createTest()
   let error = new Error('Wrong message format')
-  error.received = 'options'
-  test.left.emitter.emit('error', error)
+  privateMethods(error).received = 'options'
+  emit(test.left, 'error', error)
   await test.wait()
   expect(test.leftNode.connected).toBe(false)
   expect(test.leftEvents).toEqual([['connect'], ['disconnect', 'error']])
@@ -272,13 +297,13 @@ it('throws error by default', async () => {
     throw error
   }
   expect(() => {
-    test.leftNode.send(['ping', 0])
+    privateMethods(test.leftNode).send(['ping', 0])
   }).toThrow(error)
 })
 
 it('disconnect on the error during send', async () => {
   let error = new Error('test')
-  let errors = []
+  let errors: Error[] = []
   let test = await createTest()
   test.leftNode.catch(e => {
     errors.push(e)
@@ -286,7 +311,7 @@ it('disconnect on the error during send', async () => {
   test.leftNode.connection.send = () => {
     throw error
   }
-  test.leftNode.send(['ping', 0])
+  privateMethods(test.leftNode).send(['ping', 0])
   await delay(1)
   expect(test.leftNode.connected).toBe(false)
   expect(errors).toEqual([error])

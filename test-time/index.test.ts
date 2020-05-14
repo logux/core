@@ -1,4 +1,4 @@
-let { MemoryStore, TestTime } = require('..')
+import { MemoryStore, TestTime } from '..'
 
 it('creates test log', () => {
   let log = TestTime.getLog()

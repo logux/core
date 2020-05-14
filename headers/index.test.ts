@@ -1,17 +1,18 @@
-let { ServerNode, TestTime, TestPair } = require('..')
+import { ServerNode, TestTime, TestPair, TestLog } from '..'
 
-let node
+let node: ServerNode<{}, TestLog>
 
 afterEach(() => {
-  if (node) {
-    node.destroy()
-    node = undefined
-  }
+  node.destroy()
 })
+
+function privateMethods (obj: object): any {
+  return obj
+}
 
 async function createTestPair () {
   let pair = new TestPair()
-  node = new ServerNode('server', TestTime.getLog(), pair.left)
+  node = new ServerNode<{}, TestLog>('server', TestTime.getLog(), pair.left)
   pair.leftNode = node
   await pair.left.connect()
 
@@ -26,7 +27,7 @@ it('emits a headers on header messages', async () => {
     headers = data
   })
 
-  test.leftNode.onMessage(['headers', { test: 'test' }])
+  privateMethods(test.leftNode).onMessage(['headers', { test: 'test' }])
 
   expect(headers).toEqual({ test: 'test' })
 })
@@ -41,15 +42,16 @@ it('checks types', async () => {
     ['headers', {}, 'abc']
   ]
   await Promise.all(
-    wrongs.map(async command => {
+    wrongs.map(async msg => {
       let test = await createTestPair()
-      test.right.send(command)
+      // @ts-expect-error
+      test.right.send(msg)
       await test.wait('right')
       expect(test.leftNode.connected).toBe(false)
       expect(test.leftSent).toEqual([
-        ['error', 'wrong-format', JSON.stringify(command)]
+        ['error', 'wrong-format', JSON.stringify(msg)]
       ])
-      node.destroy()
+      test.leftNode.destroy()
     })
   )
 })

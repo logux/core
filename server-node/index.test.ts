@@ -1,12 +1,15 @@
-let { createNanoEvents } = require('nanoevents')
-let { delay } = require('nanodelay')
+import { delay } from 'nanodelay'
 
-let { ServerNode, TestTime, TestPair } = require('..')
+import { ServerNode, TestTime, TestPair } from '..'
 
-let node
+let node: ServerNode
 afterEach(() => {
   node.destroy()
 })
+
+function privateMethods (obj: object): any {
+  return obj
+}
 
 it('has connecting state from the beginning', () => {
   let pair = new TestPair()
@@ -29,7 +32,7 @@ it('destroys on connect timeout', async () => {
   let pair = new TestPair()
   node = new ServerNode('server', log, pair.left, { timeout: 200 })
 
-  let error
+  let error: Error | undefined
   node.catch(err => {
     error = err
   })
@@ -38,6 +41,7 @@ it('destroys on connect timeout', async () => {
   await pair.left.connect()
   expect(node.destroy).not.toHaveBeenCalled()
   await delay(200)
+  if (typeof error === 'undefined') throw new Error('Error was not sent')
   expect(error.message).toContain('timeout')
   expect(node.destroy).toHaveBeenCalledTimes(1)
 })
@@ -52,12 +56,12 @@ it('throws on fixTime option', () => {
 
 it('loads only last added from store', async () => {
   let log = TestTime.getLog()
-  let con = createNanoEvents()
+  let pair = new TestPair()
   log.store.setLastSynced({ sent: 1, received: 2 })
   await log.add({ type: 'a' }, { reasons: ['test'] })
-  node = new ServerNode('server', log, con)
+  node = new ServerNode('server', log, pair.left)
   await node.initializing
-  expect(node.lastAddedCache).toBe(1)
+  expect(privateMethods(node).lastAddedCache).toBe(1)
   expect(node.lastSent).toBe(0)
   expect(node.lastReceived).toBe(0)
 })
@@ -65,7 +69,9 @@ it('loads only last added from store', async () => {
 it('supports connection before initializing', async () => {
   let log = TestTime.getLog()
 
-  let returnLastAdded
+  let returnLastAdded = (lastAdded: number): void => {
+    throw new Error('getLastAdded was not called')
+  }
   log.store.getLastAdded = () =>
     new Promise(resolve => {
       returnLastAdded = resolve

@@ -1,4 +1,4 @@
-let { MemoryStore, eachStoreCheck } = require('..')
+import { MemoryStore, eachStoreCheck } from '..'
 
 eachStoreCheck((desc, creator) => {
   it(
