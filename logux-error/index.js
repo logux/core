@@ -1,7 +1,7 @@
 class LoguxError extends Error {
   static describe (type, options) {
     if (type === 'timeout') {
-      return 'A timeout was reached (' + options + 'ms)'
+      return 'A timeout was reached (' + options + ' ms)'
     } else if (type === 'wrong-format') {
       return 'Wrong message format in ' + options
     } else if (type === 'unknown-message') {
