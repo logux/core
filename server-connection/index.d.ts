@@ -1,5 +1,7 @@
 import { Connection } from '../base-node'
 
+import WebSocket = require('ws')
+
 /**
  * Logux connection for server WebSocket.
  *
@@ -15,7 +17,12 @@ import { Connection } from '../base-node'
  */
 export class ServerConnection extends Connection {
   /**
-   * @param ws WebSocket instance
+   * WebSocket connection instance
    */
-  constructor (ws: object)
+  ws: WebSocket
+
+  /**
+   * @param ws WebSocket connection instance
+   */
+  constructor (ws: WebSocket)
 }
