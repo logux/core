@@ -22,7 +22,7 @@ function isDefined (value) {
 
 class MemoryStore {
   constructor () {
-    this.created = []
+    this.entries = []
     this.added = []
     this.lastReceived = 0
     this.lastAdded = 0
@@ -33,7 +33,7 @@ class MemoryStore {
     let entry = [action, meta]
     let id = meta.id
 
-    let list = this.created
+    let list = this.entries
     for (let i = 0; i < list.length; i++) {
       let [, otherMeta] = list[i]
       if (id === otherMeta.id) {
@@ -49,23 +49,23 @@ class MemoryStore {
   }
 
   async byId (id) {
-    let created = find(this.created, id)
+    let created = find(this.entries, id)
     if (created === -1) {
       return [null, null]
     } else {
-      let [action, meta] = this.created[created]
+      let [action, meta] = this.entries[created]
       return [action, meta]
     }
   }
 
   async remove (id, created) {
     if (typeof created === 'undefined') {
-      created = find(this.created, id)
+      created = find(this.entries, id)
       if (created === -1) return Promise.resolve(false)
     }
 
-    let entry = [this.created[created][0], this.created[created][1]]
-    this.created.splice(created, 1)
+    let entry = [this.entries[created][0], this.entries[created][1]]
+    this.entries.splice(created, 1)
 
     let added = entry[1].added
     let m = 0
@@ -89,7 +89,7 @@ class MemoryStore {
   async get (opts) {
     let entries
     if (opts.order === 'created') {
-      entries = this.created
+      entries = this.entries
     } else {
       entries = this.added
     }
@@ -97,11 +97,11 @@ class MemoryStore {
   }
 
   async changeMeta (id, diff) {
-    let index = find(this.created, id)
+    let index = find(this.entries, id)
     if (index === -1) {
       return false
     } else {
-      let meta = this.created[index][1]
+      let meta = this.entries[index][1]
       for (let key in diff) meta[key] = diff[key]
       return true
     }
@@ -111,20 +111,20 @@ class MemoryStore {
     let removed = []
 
     if (criteria.id) {
-      let index = find(this.created, criteria.id)
+      let index = find(this.entries, criteria.id)
       if (index !== -1) {
-        let meta = this.created[index][1]
+        let meta = this.entries[index][1]
         let reasonPos = meta.reasons.indexOf(reason)
         if (reasonPos !== -1) {
           meta.reasons.splice(reasonPos, 1)
           if (meta.reasons.length === 0) {
-            callback(this.created[index][0], meta)
+            callback(this.entries[index][0], meta)
             this.remove(criteria.id)
           }
         }
       }
     } else {
-      this.created = this.created.filter(([action, meta]) => {
+      this.entries = this.entries.filter(([action, meta]) => {
         let c = criteria
 
         let reasonPos = meta.reasons.indexOf(reason)
@@ -158,7 +158,7 @@ class MemoryStore {
   }
 
   async clean () {
-    this.created = []
+    this.entries = []
     this.added = []
     this.lastReceived = 0
     this.lastAdded = 0

@@ -20,7 +20,7 @@ import { Log, Action, Meta } from '../log'
  * })
  * ```
  */
-export class TestLog extends Log {
+export class TestLog<M extends Meta = Meta> extends Log<M> {
   /**
    * Return all entries (with metadata) inside log, sorted by created time.
    *
@@ -45,5 +45,5 @@ export class TestLog extends Log {
    * ])
    * ```
    */
-  actions: Action[]
+  actions (): Action[]
 }

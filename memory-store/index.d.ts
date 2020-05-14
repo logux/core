@@ -1,4 +1,4 @@
-import { Store } from '../log'
+import { LogStore, Action, Meta } from '../log'
 
 /**
  * Simple memory-based log store.
@@ -15,4 +15,9 @@ import { Store } from '../log'
  * })
  * ```
  */
-export class MemoryStore extends Store {}
+export class MemoryStore extends LogStore {
+  /**
+   * Actions in the store.
+   */
+  entries: [Action, Meta][]
+}

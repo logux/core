@@ -13,7 +13,7 @@ class TestLog extends Log {
   }
 
   entries () {
-    return this.store.created
+    return this.store.entries
   }
 
   actions () {
