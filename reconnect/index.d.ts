@@ -28,10 +28,14 @@ type ReconnectOptions = {
  */
 export class Reconnect extends Connection {
   /**
-   * @param connection The connection to be reconnectable.
-   * @param options Reconnection options.
+   * Reconnection options.
    */
-  constructor (connection: Connection, options?: ReconnectOptions)
+  options: ReconnectOptions
+
+  /**
+   * Fails attempts since the last connected state.
+   */
+  attempts: number
 
   /**
    * Should we reconnect connection on next connection break.
@@ -46,8 +50,24 @@ export class Reconnect extends Connection {
   reconnecting: boolean
 
   /**
+   * Are we in the middle of connecting.
+   */
+  connecting: boolean
+
+  /**
+   * Wrapped connection.
+   */
+  connection: Connection
+
+  /**
+   * @param connection The connection to be reconnectable.
+   * @param options Reconnection options.
+   */
+  constructor (connection: Connection, options?: ReconnectOptions)
+
+  /**
    * Unbind all listeners and disconnect. Use it if you will not need
    * this class anymore.
    */
-  destroy (): void
+  destroy: () => void
 }
