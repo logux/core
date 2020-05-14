@@ -1,5 +1,12 @@
-export { Log, ID, Action, AnyAction, Meta, Store } from './log'
-export { BaseNode, Connection, TokenGenerator } from './base-node'
+export {
+  BaseNode,
+  Connection,
+  TokenGenerator,
+  NodeOptions,
+  NodeState,
+  Message
+} from './base-node'
+export { Log, ID, Action, AnyAction, Meta, LogStore, Page } from './log'
 export { LoguxError, LoguxErrorOptions } from './logux-error'
 export { ServerConnection } from './server-connection'
 export { eachStoreCheck } from './each-store-check'

@@ -1,5 +1,5 @@
 import { TestLog } from '../test-log'
-import { Store } from '../log'
+import { LogStore } from '../log'
 
 type TestLogOptions = {
   /**
@@ -9,7 +9,7 @@ type TestLogOptions = {
   /**
    * Store for log. Will use {@link MemoryStore} by default.
    */
-  store: Store
+  store: LogStore
 }
 
 /**
@@ -49,7 +49,7 @@ export class TestTime {
    *
    * @param opts Log options.
    */
-  static getLog (opts: TestLogOptions): TestLog
+  static getLog (opts?: TestLogOptions): TestLog
 
   constructor ()
 
@@ -71,5 +71,5 @@ export class TestTime {
    *
    * @param opts Log options.
    */
-  nextLog (opts: TestLogOptions): TestLog
+  nextLog (opts?: TestLogOptions): TestLog
 }

@@ -15,13 +15,21 @@ interface Mapper {
   (action: Action, meta: Meta): Promise<[Action, Meta]>
 }
 
+type EmptyHeaders = {
+  [key: string]: undefined
+}
+
 export interface TokenGenerator {
   (): string | Promise<string>
 }
 
-type NodeState = 'disconnected' | 'connecting' | 'sending' | 'synchronized'
+export type NodeState =
+  | 'disconnected'
+  | 'connecting'
+  | 'sending'
+  | 'synchronized'
 
-type Message =
+export type Message =
   | ['error', keyof LoguxErrorOptions, any?]
   | ['connect', number, string, number, object?]
   | ['connected', number, string, [number, number], object?]
@@ -59,22 +67,19 @@ export abstract class Connection {
    * * `disconnect`: connection was closed by any side.
    * * `message`: message was receive from remote node.
    * * `error`: error during connection, sending or receiving.
-   * * `headers`: headers was receive from remote node.
    *
    * @param event Event name.
    * @param listener Event listener.
    * @returns Unbind listener from event.
    */
   on (
-    event:
-      | 'connecting'
-      | 'connect  '
-      | 'disconnect'
-      | 'message'
-      | 'error  '
-      | 'headers',
+    event: 'connecting' | 'connect' | 'disconnect',
     listener: () => void
   ): Unsubscribe
+
+  on (event: 'error', listener: (error: Error) => void): Unsubscribe
+  on (event: 'message', listener: (msg: Message) => void): Unsubscribe
+  on (event: 'disconnect', listener: (reason: string) => void): Unsubscribe
 
   /**
    * Start connection. Connection should be in disconnected state
@@ -93,9 +98,14 @@ export abstract class Connection {
    * @param reason Disconnection reason.
    */
   disconnect (reason?: 'error' | 'timeout' | 'destroy'): void
+
+  /**
+   * Optional method to disconnect and unbind all even listeners.
+   */
+  destroy?: () => void
 }
 
-type NodeOptions<H> = {
+export type NodeOptions<H extends object = {}> = {
   /**
    * Client credentials. For example, access token.
    */
@@ -155,7 +165,7 @@ type NodeOptions<H> = {
  * @template M Meta’s type.
  * @template H Remote headers type.
  */
-export class BaseNode<M extends Meta = Meta, H extends object = {}> {
+export class BaseNode<H extends object = {}, L extends Log = Log<Meta>> {
   /**
    * @param nodeId Unique current machine name.
    * @param log Logux log instance to be synchronized.
@@ -164,7 +174,7 @@ export class BaseNode<M extends Meta = Meta, H extends object = {}> {
    */
   constructor (
     nodeId: string,
-    log: Log,
+    log: L,
     connection: Connection,
     options?: NodeOptions<H>
   )
@@ -218,7 +228,7 @@ export class BaseNode<M extends Meta = Meta, H extends object = {}> {
    * node.log.add({ type: 'error', message })
    * ```
    */
-  remoteHeaders: H | {}
+  remoteHeaders: H | EmptyHeaders
 
   /**
    * Minimum version of Logux protocol, which is supported.
@@ -252,7 +262,7 @@ export class BaseNode<M extends Meta = Meta, H extends object = {}> {
   /**
    * Log for synchronization.
    */
-  log: Log<M>
+  log: L
 
   /**
    * Connection used to communicate to remote node.
@@ -310,6 +320,16 @@ export class BaseNode<M extends Meta = Meta, H extends object = {}> {
   state: NodeState
 
   /**
+   * Promise for node data initial loadiging.
+   */
+  initializing: Promise<void>
+
+  /**
+   * Time difference between nodes.
+   */
+  timeFix: number
+
+  /**
    * Subscribe for synchronization events. It implements nanoevents API.
    * Supported events:
    *
@@ -319,6 +339,7 @@ export class BaseNode<M extends Meta = Meta, H extends object = {}> {
    * * `error`: synchronization error was raised.
    * * `clientError`: when error was sent to remote node.
    * * `debug`: when debug information received from remote node.
+   * * `headers`: headers was receive from remote node.
    *
    * ```js
    * node.on('clientError', error => {
@@ -331,9 +352,21 @@ export class BaseNode<M extends Meta = Meta, H extends object = {}> {
    * @returns Unbind listener from event.
    */
   on (
-    event: 'state' | 'connect' | 'error' | 'clientError' | 'debug',
+    event: 'state' | 'connect' | 'debug' | 'headers',
     listener: () => void
   ): Unsubscribe
+
+  on (
+    event: 'error' | 'clientError',
+    listener: (error: Error) => void
+  ): Unsubscribe
+
+  on (
+    event: 'debug',
+    listener: (type: 'error', data: string) => void
+  ): Unsubscribe
+
+  on (event: 'headers', listener: (headers: H) => void): Unsubscribe
 
   /**
    * Disable throwing a error on error message and create error listener.

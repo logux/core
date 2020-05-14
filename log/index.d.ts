@@ -103,7 +103,7 @@ type LastSynced = {
   sent: number
 }
 
-type Page = {
+export type Page = {
   /**
    * Pagination page.
    */
@@ -125,7 +125,7 @@ type GetOptions = {
 /**
  *  Every Store class should provide 8 standard methods.
  */
-export abstract class Store {
+export abstract class LogStore {
   /**
    * Add action to store. Action always will have `type` property.
    *
@@ -219,11 +219,12 @@ export abstract class Store {
   setLastSynced (values: LastSynced): Promise<void>
 }
 
-type LogOptions = {
+type LogOptions<S extends LogStore = LogStore> = {
   /**
    * Store for log.
    */
-  store: Store
+  store: S
+
   /**
    * Unique current machine name.
    */
@@ -247,11 +248,16 @@ type LogOptions = {
  *
  * @template M Meta’s type.
  */
-export class Log<M extends Meta = Meta> {
+export class Log<M extends Meta = Meta, S extends LogStore = LogStore> {
   /**
    * @param opts Log options.
    */
-  constructor (opts: LogOptions)
+  constructor (opts: LogOptions<S>)
+
+  /**
+   * Log store.
+   */
+  store: S
 
   /**
    * Unique node ID. It is used in action IDs.
@@ -342,6 +348,7 @@ export class Log<M extends Meta = Meta> {
    * @param callback Function will be executed on every action.
    */
   each (opts: GetOptions, callback: ActionIterator<M>): Promise<void>
+  each (callback: ActionIterator<M>): Promise<void>
 
   /**
    * Change action metadata. You will remove action by setting `reasons: []`.
@@ -372,7 +379,7 @@ export class Log<M extends Meta = Meta> {
    * @param criteria Criteria to select action for reason removing.
    * @returns Promise when cleaning will be finished.
    */
-  removeReason (reason: string, criteria: Criteria): Promise<void>
+  removeReason (reason: string, criteria?: Criteria): Promise<void>
 
   /**
    * Does log already has action with this ID.
