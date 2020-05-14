@@ -1,4 +1,8 @@
-import { Store } from '../log'
+import { LogStore } from '../log'
+
+interface storeCreator {
+  (): LogStore
+}
 
 /**
  * Pass all common tests for Logux store to callback.
@@ -14,5 +18,8 @@ import { Store } from '../log'
  * @param test Callback to create tests in your test framework.
  */
 export function eachStoreCheck (
-  test: (name: string, creator: () => Store) => void
+  test: (
+    name: string,
+    testCreator: (storeCreator: storeCreator) => () => void
+  ) => void
 ): void
