@@ -22,36 +22,38 @@ class TestPair extends LocalPair {
     this.rightNode = undefined
     this.clear()
 
-    this.left.on('connect', () => {
-      this.leftEvents.push(['connect'])
-      if (this.waiting) this.waiting('left')
-    })
-    this.right.on('connect', () => {
-      this.rightEvents.push(['connect'])
-      if (this.waiting) this.waiting('right')
-    })
+    this.unbind = [
+      this.left.on('connect', () => {
+        this.leftEvents.push(['connect'])
+        if (this.waiting) this.waiting('left')
+      }),
+      this.right.on('connect', () => {
+        this.rightEvents.push(['connect'])
+        if (this.waiting) this.waiting('right')
+      }),
 
-    this.left.on('message', msg => {
-      let cloned = clone(msg)
-      this.rightSent.push(cloned)
-      this.leftEvents.push(['message', cloned])
-      if (this.waiting) this.waiting('left')
-    })
-    this.right.on('message', msg => {
-      let cloned = clone(msg)
-      this.leftSent.push(cloned)
-      this.rightEvents.push(['message', cloned])
-      if (this.waiting) this.waiting('right')
-    })
+      this.left.on('message', msg => {
+        let cloned = clone(msg)
+        this.rightSent.push(cloned)
+        this.leftEvents.push(['message', cloned])
+        if (this.waiting) this.waiting('left')
+      }),
+      this.right.on('message', msg => {
+        let cloned = clone(msg)
+        this.leftSent.push(cloned)
+        this.rightEvents.push(['message', cloned])
+        if (this.waiting) this.waiting('right')
+      }),
 
-    this.left.on('disconnect', reason => {
-      this.leftEvents.push(['disconnect', reason])
-      if (this.waiting) this.waiting('left')
-    })
-    this.right.on('disconnect', () => {
-      this.rightEvents.push(['disconnect'])
-      if (this.waiting) this.waiting('right')
-    })
+      this.left.on('disconnect', reason => {
+        this.leftEvents.push(['disconnect', reason])
+        if (this.waiting) this.waiting('left')
+      }),
+      this.right.on('disconnect', () => {
+        this.rightEvents.push(['disconnect'])
+        if (this.waiting) this.waiting('right')
+      })
+    ]
   }
 
   clear () {

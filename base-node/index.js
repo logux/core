@@ -74,28 +74,19 @@ class BaseNode {
     this.timeouts = []
     this.throwsError = true
 
-    this.unbind = []
-    this.unbind.push(
+    this.unbind = [
       log.on('add', (action, meta) => {
         this.onAdd(action, meta)
-      })
-    )
-    this.unbind.push(
+      }),
       connection.on('connecting', () => {
         this.onConnecting()
-      })
-    )
-    this.unbind.push(
+      }),
       connection.on('connect', () => {
         this.onConnect()
-      })
-    )
-    this.unbind.push(
+      }),
       connection.on('message', message => {
         this.onMessage(message)
-      })
-    )
-    this.unbind.push(
+      }),
       connection.on('error', error => {
         if (error.message === 'Wrong message format') {
           this.sendError(new LoguxError('wrong-format', error.received))
@@ -103,13 +94,11 @@ class BaseNode {
         } else {
           this.error(error)
         }
-      })
-    )
-    this.unbind.push(
+      }),
       connection.on('disconnect', () => {
         this.onDisconnect()
       })
-    )
+    ]
 
     this.initialized = false
     this.lastAddedCache = 0

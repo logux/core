@@ -19,35 +19,27 @@ class Reconnect {
     this.connecting = false
     this.attempts = 0
 
-    this.unbind = []
-
-    this.unbind.push(
+    this.unbind = [
       this.connection.on('message', msg => {
         if (msg[0] === 'error' && FATAL_ERRORS.includes(msg[1])) {
           this.reconnecting = false
         }
-      })
-    )
-    this.unbind.push(
+      }),
       this.connection.on('connecting', () => {
         this.connecting = true
-      })
-    )
-    this.unbind.push(
+      }),
       this.connection.on('connect', () => {
         this.attempts = 0
         this.connecting = false
-      })
-    )
-    this.unbind.push(
+      }),
       this.connection.on('disconnect', () => {
         this.connecting = false
         if (this.reconnecting) this.reconnect()
-      })
-    )
-    this.unbind.push(() => {
-      clearTimeout(this.timer)
-    })
+      }),
+      () => {
+        clearTimeout(this.timer)
+      }
+    ]
 
     let visibility = () => {
       if (this.reconnecting && !this.connected && !this.connecting) {
