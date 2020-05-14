@@ -44,12 +44,12 @@ class Log {
     if (typeof meta.reasons === 'undefined') {
       meta.reasons = []
     } else if (!Array.isArray(meta.reasons)) {
-      meta.reasons = [meta.reasons]
+      throw new Error('Expected "reasons" to be an array of strings')
     }
 
     for (let reason of meta.reasons) {
       if (typeof reason !== 'string') {
-        throw new Error('Expected "reasons" to be strings')
+        throw new Error('Expected "reasons" to be an array of strings')
       }
     }
 
