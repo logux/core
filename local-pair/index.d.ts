@@ -1,5 +1,9 @@
 import { Connection } from '../base-node'
 
+export class LocalConnection extends Connection {
+  other (): LocalConnection
+}
+
 /**
  * Two paired loopback connections.
  *
@@ -28,7 +32,7 @@ export class LocalPair {
    * new ClientNode('client, log1, pair.left)
    * ```
    */
-  left: Connection
+  left: LocalConnection
 
   /**
    * Second connection. Will be connected to `right` one after `connect()`.
@@ -37,5 +41,5 @@ export class LocalPair {
    * new ServerNode('server, log2, pair.right)
    * ```
    */
-  right: Connection
+  right: LocalConnection
 }
