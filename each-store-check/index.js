@@ -338,24 +338,20 @@ function eachStoreCheck (test) {
 
   test('cleans whole store if implemented', factory => async () => {
     let store = factory()
-    if (typeof store.clean === 'undefined') {
-      await Promise.resolve()
-    } else {
-      await Promise.all([
-        store.add({ type: 'A' }, { id: '1', time: 1 }),
-        store.add({ type: 'B' }, { id: '2', time: 2 }),
-        store.add({ type: 'C' }, { id: '3', time: 3 }),
-        store.add({ type: 'D' }, { id: '4', time: 4 }),
-        store.add({ type: 'E' }, { id: '5', time: 5 })
-      ])
-      await store.clean()
-      let another = factory()
-      await Promise.all([
-        checkBoth(another, []),
-        checkLastAdded(another, 0),
-        checkLastSynced(another, 0, 0)
-      ])
-    }
+    await Promise.all([
+      store.add({ type: 'A' }, { id: '1', time: 1 }),
+      store.add({ type: 'B' }, { id: '2', time: 2 }),
+      store.add({ type: 'C' }, { id: '3', time: 3 }),
+      store.add({ type: 'D' }, { id: '4', time: 4 }),
+      store.add({ type: 'E' }, { id: '5', time: 5 })
+    ])
+    await store.clean()
+    let another = factory()
+    await Promise.all([
+      checkBoth(another, []),
+      checkLastAdded(another, 0),
+      checkLastSynced(another, 0, 0)
+    ])
   })
 }
 
