@@ -1,13 +1,13 @@
 let { createNanoEvents } = require('nanoevents')
 
 class WsConnection {
-  constructor (url, WS, opts) {
+  constructor (url, Class, opts) {
     this.connected = false
     this.emitter = createNanoEvents()
-    if (WS) {
-      this.WS = WS
+    if (Class) {
+      this.Class = Class
     } else if (typeof WebSocket !== 'undefined') {
-      this.WS = WebSocket
+      this.Class = WebSocket
     } else {
       throw new Error('No WebSocket support')
     }
@@ -31,7 +31,7 @@ class WsConnection {
       let data
       try {
         data = JSON.parse(event.data)
-      } catch (e) {
+      } catch {
         this.error(event.data)
         return
       }
@@ -43,7 +43,7 @@ class WsConnection {
 
   connect () {
     this.emitter.emit('connecting')
-    this.init(new this.WS(this.url, undefined, this.opts))
+    this.init(new this.Class(this.url, undefined, this.opts))
 
     return new Promise(resolve => {
       this.ws.onopen = () => {
