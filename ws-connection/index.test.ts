@@ -61,12 +61,10 @@ class FakeWebSocket {
   }
 }
 
-type WebSocketClass = typeof FakeWebSocket
-
 declare global {
   namespace NodeJS {
     interface Global {
-      WebSocket: WebSocketClass
+      WebSocket: any
     }
   }
 }

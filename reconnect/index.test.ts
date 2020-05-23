@@ -1,4 +1,3 @@
-import { createNanoEvents } from 'nanoevents'
 import { delay } from 'nanodelay'
 
 import { Reconnect, TestPair, Message } from '..'
@@ -6,13 +5,9 @@ import { Reconnect, TestPair, Message } from '..'
 declare global {
   namespace NodeJS {
     interface Global {
-      window: object
-      document: {
-        hidden: boolean
-      }
-      navigator: {
-        onLine: boolean
-      }
+      window: any
+      document: any
+      navigator: any
     }
   }
 }
