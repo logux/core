@@ -23,26 +23,14 @@ function privateMethods (obj: object): any {
   return obj
 }
 
-type WithEmitter = {
-  emitter: Emitter
+function emit (obj: any, event: string, ...args: any) {
+  obj.emitter.emit(event, ...args)
 }
 
-function hasEmitter (obj: object): obj is WithEmitter {
-  return 'emitter' in obj
-}
-
-function emit (obj: object, event: string, ...args: any) {
-  if (hasEmitter(obj)) {
-    obj.emitter.emit(event, ...args)
-  }
-}
-
-function listeners (obj: object) {
+function listeners (obj: any) {
   let count = 0
-  if (hasEmitter(obj)) {
-    for (let i in obj.emitter.events) {
-      count += obj.emitter.events[i]?.length ?? 0
-    }
+  for (let i in obj.emitter.events) {
+    count += obj.emitter.events[i]?.length ?? 0
   }
   return count
 }
