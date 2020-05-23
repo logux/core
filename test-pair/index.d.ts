@@ -1,5 +1,5 @@
+import { BaseNode, Message } from '../base-node'
 import { LocalPair } from '../local-pair'
-import { BaseNode } from '../base-node'
 import { TestLog } from '../test-log'
 
 /**
@@ -53,7 +53,7 @@ export class TestPair extends LocalPair {
    * pair.leftSent //=> [msg]
    * ```
    */
-  leftSent: string[][]
+  leftSent: Message[]
 
   /**
    * Sent messages from `right` connection.
@@ -63,7 +63,7 @@ export class TestPair extends LocalPair {
    * pair.rightSent //=> [msg]
    * ```
    */
-  rightSent: string[][]
+  rightSent: Message[]
 
   /**
    * Emitted events from `left` connection.
