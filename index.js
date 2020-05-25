@@ -11,6 +11,7 @@ let { Reconnect } = require('./reconnect')
 let { TestTime } = require('./test-time')
 let { BaseNode } = require('./base-node')
 let { TestPair } = require('./test-pair')
+let { parseId } = require('./parse-id')
 let { Log } = require('./log')
 
 module.exports = {
@@ -27,5 +28,6 @@ module.exports = {
   TestTime,
   BaseNode,
   TestPair,
+  parseId,
   Log
 }
