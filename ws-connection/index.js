@@ -21,10 +21,7 @@ class WsConnection {
     }
 
     ws.onclose = () => {
-      if (this.ws) {
-        this.connected = false
-        this.emitter.emit('disconnect')
-      }
+      this.onclose()
     }
 
     ws.onmessage = event => {
@@ -42,6 +39,8 @@ class WsConnection {
   }
 
   connect () {
+    if (this.ws) return Promise.resolve()
+
     this.emitter.emit('connecting')
     this.init(new this.Class(this.url, undefined, this.opts))
 
@@ -56,9 +55,9 @@ class WsConnection {
 
   disconnect () {
     if (this.ws) {
-      this.ws.onclose()
+      this.ws.onclose = undefined
       this.ws.close()
-      this.ws = undefined
+      this.onclose()
     }
   }
 
@@ -78,6 +77,14 @@ class WsConnection {
     let err = new Error('Wrong message format')
     err.received = message
     this.emitter.emit('error', err)
+  }
+
+  onclose () {
+    if (this.ws) {
+      this.connected = false
+      this.emitter.emit('disconnect')
+      this.ws = undefined
+    }
   }
 }
 

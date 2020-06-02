@@ -48,9 +48,7 @@ class FakeWebSocket {
         this.onerror({ error: data })
       }
     } else if (name === 'close') {
-      if (typeof this.onclose === 'undefined') {
-        throw new Error(`No ${name} event listener`)
-      } else {
+      if (typeof this.onclose !== 'undefined') {
         this.onclose()
       }
     }
@@ -275,4 +273,20 @@ it('does not send to closed socket', async () => {
   connection.ws.readyState = 2
   connection.send(['ping', 1])
   expect(errors).toEqual(['WS was closed'])
+})
+
+it('ignores double connect call', async () => {
+  global.WebSocket = FakeWebSocket
+  let connection = new WsConnection('ws://locahost')
+
+  let connected = 0
+  connection.on('connecting', () => {
+    connected += 1
+  })
+
+  await connection.connect()
+  await connection.connect()
+
+  expect(connection.connected).toBe(true)
+  expect(connected).toEqual(1)
 })
