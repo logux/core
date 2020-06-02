@@ -145,6 +145,13 @@ class BaseNode {
     this.endTimeout()
   }
 
+  setLocalHeaders (headers) {
+    this.localHeaders = headers
+    if (this.connected) {
+      this.sendHeaders(headers)
+    }
+  }
+
   send (msg) {
     if (!this.connected) return
     this.delayPing()
@@ -355,13 +362,6 @@ class BaseNode {
   duilianMessage (line) {
     if (DUILIANS[line]) {
       this.send(['duilian', DUILIANS[line]])
-    }
-  }
-
-  setLocalHeaders (headers) {
-    this.localHeaders = headers
-    if (this.connected) {
-      this.sendHeaders(headers)
     }
   }
 }
