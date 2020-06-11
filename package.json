@@ -82,7 +82,18 @@
     "rules": {
       "@typescript-eslint/no-explicit-any": "off",
       "no-invalid-this": "off"
-    }
+    },
+    "overrides": [
+      {
+        "files": [
+          "server-connection/*.ts",
+          "ws-connection/*.ts"
+        ],
+        "rules": {
+          "import/order": "off"
+        }
+      }
+    ]
   },
   "eslintIgnore": [
     "**/errors.ts"
