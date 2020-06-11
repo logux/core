@@ -46,7 +46,7 @@ class BaseNode {
     this.remoteSubprotocol = undefined
 
     this.minProtocol = 3
-    this.localProtocol = 3
+    this.localProtocol = 4
     this.localNodeId = nodeId
 
     this.log = log
