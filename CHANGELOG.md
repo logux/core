@@ -1,6 +1,19 @@
 # Change Log
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## 0.6 ᐁ
+* Use WebSocket Protocol version 4.
+* Remove `reasons: string` support. It must be always an array.
+* Add `parseId()` helper.
+* Add headers (by Ivan Menshykov).
+* Add `MemoryStore#entries`.
+* Allow to pass `undefined` to `isFirstOlder()`.
+* Return unbind function from `Node#catch`.
+* Rename `WsConnection#WS` to `WsConnection#Class`.
+* Rename `Store` type to `LogStore`.
+* Fix WebSocket connectivity.
+* Improve types (by Nikolay Govorov).
+
 ## 0.5.3
 * Fix types.
 
