@@ -1,9 +1,5 @@
 import { LogStore } from '../log'
 
-interface storeCreator {
-  (): LogStore
-}
-
 /**
  * Pass all common tests for Logux store to callback.
  *
@@ -20,6 +16,6 @@ interface storeCreator {
 export function eachStoreCheck (
   test: (
     name: string,
-    testCreator: (storeCreator: storeCreator) => () => void
+    testCreator: (storeCreator: () => LogStore) => () => void
   ) => void
 ): void
