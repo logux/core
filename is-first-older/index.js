@@ -1,8 +1,3 @@
-function split (id) {
-  let index = id.indexOf(' ')
-  return [id.slice(0, index), id.slice(index + 1)]
-}
-
 function isFirstOlder (firstMeta, secondMeta) {
   if (firstMeta && !secondMeta) {
     return false
@@ -16,17 +11,30 @@ function isFirstOlder (firstMeta, secondMeta) {
     return true
   }
 
-  let first = split(firstMeta.id)
-  let second = split(secondMeta.id)
-  if (first[1] > second[1]) {
+  let first = firstMeta.id.split(' ')
+  let second = secondMeta.id.split(' ')
+
+  let firstNode = first[1]
+  let secondNode = second[1]
+  if (firstNode > secondNode) {
     return false
-  } else if (first[1] < second[1]) {
+  } else if (firstNode < secondNode) {
     return true
   }
 
-  if (first[0] > second[0]) {
+  let firstCounter = parseInt(first[2])
+  let secondCounter = parseInt(second[2])
+  if (firstCounter > secondCounter) {
     return false
-  } else if (first[0] < second[0]) {
+  } else if (firstCounter < secondCounter) {
+    return true
+  }
+
+  let firstNodeTime = parseInt(first[0])
+  let secondNodeTime = parseInt(second[0])
+  if (firstNodeTime > secondNodeTime) {
+    return false
+  } else if (firstNodeTime < secondNodeTime) {
     return true
   }
 

@@ -19,8 +19,8 @@ it('compares entries by real time', () => {
 })
 
 it('compares entries by other ID parts', () => {
-  let a = createMeta('1 a 1', 1)
-  let b = createMeta('1 a 2', 1)
+  let a = createMeta('1 a 9', 1)
+  let b = createMeta('1 a 10', 1)
   expect(isFirstOlder(a, b)).toBe(true)
   expect(isFirstOlder(b, a)).toBe(false)
 })
