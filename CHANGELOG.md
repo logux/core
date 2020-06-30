@@ -1,6 +1,9 @@
 # Change Log
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## 0.6.1
+* Fix counters comparison in `isFirstOlder`.
+
 ## 0.6 ᐁ
 * Use WebSocket Protocol version 4.
 * Remove `reasons: string` support. It must be always an array.
