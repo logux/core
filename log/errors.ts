@@ -1,4 +1,4 @@
-import { Log, MemoryStore } from '..'
+import { Log, MemoryStore } from '../index.js'
 
 let log = new Log({ nodeId: 'test1', store: new MemoryStore() })
 

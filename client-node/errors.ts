@@ -1,4 +1,4 @@
-import { Log, Meta, MemoryStore, ClientNode, LocalPair } from '..'
+import { Log, Meta, MemoryStore, ClientNode, LocalPair } from '../index.js'
 
 type MyMeta = Meta & {
   extra: number
