@@ -1,4 +1,4 @@
-import { LogStore, Action, Meta } from '../log'
+import { LogStore, Action, Meta } from '../log/index.js'
 
 /**
  * Simple memory-based log store.

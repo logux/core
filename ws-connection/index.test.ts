@@ -1,4 +1,4 @@
-import { WsConnection, Message } from '..'
+import { WsConnection, Message } from '../index.js'
 import WebSocket = require('ws')
 
 class FakeWebSocket {

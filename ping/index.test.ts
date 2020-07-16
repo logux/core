@@ -8,7 +8,7 @@ import {
   TestLog,
   TestPair,
   NodeOptions
-} from '..'
+} from '../index.js'
 
 let node: BaseNode<{}, TestLog> | undefined
 

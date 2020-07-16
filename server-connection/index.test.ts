@@ -1,4 +1,4 @@
-import { ServerConnection, Message } from '..'
+import { ServerConnection, Message } from '../index.js'
 import WebSocket = require('ws')
 
 function privateMethods (obj: object): any {

@@ -1,4 +1,4 @@
-import { TestPair, Message } from '..'
+import { TestPair, Message } from '../index.js'
 
 it('tracks events', async () => {
   let pair = new TestPair()

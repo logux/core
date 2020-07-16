@@ -1,5 +1,5 @@
-import { LoguxErrorOptions } from '.'
-import { LoguxError } from '..'
+import { LoguxErrorOptions } from './index.js'
+import { LoguxError } from '../index.js'
 
 function catchError<T extends keyof LoguxErrorOptions> (
   type: T,

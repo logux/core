@@ -1,5 +1,5 @@
-import { TestLog } from '../test-log'
-import { LogStore } from '../log'
+import { LogStore } from '../log/index.js'
+import { TestLog } from '../test-log/index.js'
 
 type TestLogOptions = {
   /**

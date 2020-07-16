@@ -1,4 +1,10 @@
-import { ServerNode, LoguxError, TestTime, TestPair, TestLog } from '..'
+import {
+  ServerNode,
+  LoguxError,
+  TestTime,
+  TestPair,
+  TestLog
+} from '../index.js'
 
 let node: ServerNode<{}, TestLog>
 

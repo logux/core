@@ -1,6 +1,6 @@
 import { delay } from 'nanodelay'
 
-import { Reconnect, TestPair, Message } from '..'
+import { Reconnect, TestPair, Message } from '../index.js'
 
 declare global {
   namespace NodeJS {

@@ -1,6 +1,6 @@
-import { BaseNode, Message } from '../base-node'
-import { LocalPair } from '../local-pair'
-import { TestLog } from '../test-log'
+import { BaseNode, Message } from '../base-node/index.js'
+import { LocalPair } from '../local-pair/index.js'
+import { TestLog } from '../test-log/index.js'
 
 /**
  * Two paired loopback connections with events tracking

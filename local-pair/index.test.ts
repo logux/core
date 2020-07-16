@@ -1,4 +1,4 @@
-import { LocalPair, Connection, Message } from '..'
+import { LocalPair, Connection, Message } from '../index.js'
 
 type Event =
   | ['connect']

@@ -1,4 +1,4 @@
-import { MemoryStore, Log, Action, Meta, Page } from '..'
+import { MemoryStore, Log, Action, Meta, Page } from '../index.js'
 
 function createLog () {
   return new Log({

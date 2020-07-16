@@ -1,4 +1,4 @@
-import { Connection } from '../base-node'
+import { Connection } from '../base-node/index.js'
 
 export class LocalConnection extends Connection {
   other (): LocalConnection

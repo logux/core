@@ -1,4 +1,4 @@
-import { Connection } from '../base-node'
+import { Connection } from '../base-node/index.js'
 
 import WebSocket = require('ws')
 

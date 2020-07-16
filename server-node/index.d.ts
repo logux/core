@@ -1,5 +1,5 @@
-import { BaseNode } from '../base-node'
-import { Log, Meta } from '../log'
+import { Log, Meta } from '../log/index.js'
+import { BaseNode } from '../base-node/index.js'
 
 /**
  * Server node in synchronization pair.

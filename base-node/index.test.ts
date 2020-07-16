@@ -1,7 +1,12 @@
-import { Emitter } from 'nanoevents'
 import { delay } from 'nanodelay'
 
-import { BaseNode, TestTime, TestPair, NodeOptions, NodeState } from '..'
+import {
+  BaseNode,
+  TestTime,
+  TestPair,
+  NodeOptions,
+  NodeState
+} from '../index.js'
 
 function createNode (opts?: NodeOptions, pair = new TestPair()) {
   let log = TestTime.getLog()

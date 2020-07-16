@@ -5,19 +5,27 @@ export {
   NodeOptions,
   NodeState,
   Message
-} from './base-node'
-export { Log, ID, Action, AnyAction, Meta, LogStore, Page } from './log'
-export { LoguxError, LoguxErrorOptions } from './logux-error'
-export { ServerConnection } from './server-connection'
-export { eachStoreCheck } from './each-store-check'
-export { isFirstOlder } from './is-first-older'
-export { WsConnection } from './ws-connection'
-export { MemoryStore } from './memory-store'
-export { ClientNode } from './client-node'
-export { ServerNode } from './server-node'
-export { LocalPair } from './local-pair'
-export { Reconnect } from './reconnect'
-export { TestPair } from './test-pair'
-export { TestTime } from './test-time'
-export { parseId } from './parse-id'
-export { TestLog } from './test-log'
+} from './base-node/index.js'
+export {
+  Log,
+  ID,
+  Action,
+  AnyAction,
+  Meta,
+  LogStore,
+  Page
+} from './log/index.js'
+export { LoguxError, LoguxErrorOptions } from './logux-error/index.js'
+export { ServerConnection } from './server-connection/index.js'
+export { eachStoreCheck } from './each-store-check/index.js'
+export { isFirstOlder } from './is-first-older/index.js'
+export { WsConnection } from './ws-connection/index.js'
+export { MemoryStore } from './memory-store/index.js'
+export { ClientNode } from './client-node/index.js'
+export { ServerNode } from './server-node/index.js'
+export { LocalPair } from './local-pair/index.js'
+export { Reconnect } from './reconnect/index.js'
+export { TestPair } from './test-pair/index.js'
+export { TestTime } from './test-time/index.js'
+export { parseId } from './parse-id/index.js'
+export { TestLog } from './test-log/index.js'

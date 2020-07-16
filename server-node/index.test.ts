@@ -1,6 +1,6 @@
 import { delay } from 'nanodelay'
 
-import { ServerNode, TestTime, TestPair } from '..'
+import { ServerNode, TestTime, TestPair } from '../index.js'
 
 let node: ServerNode
 afterEach(() => {

@@ -1,4 +1,4 @@
-import { LoguxError } from '..'
+import { LoguxError } from '../index.js'
 
 new LoguxError('timeout', 10, true)
 new LoguxError('wrong-protocol', { used: '1.0.0', supported: '1.1.0' })

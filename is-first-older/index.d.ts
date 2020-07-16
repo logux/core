@@ -1,4 +1,4 @@
-import { Meta } from '..'
+import { Meta } from '../index.js'
 
 /**
  * Compare time, when log entries were created.

@@ -1,4 +1,4 @@
-import { Log, Action, Meta } from '../log'
+import { Log, Action, Meta } from '../log/index.js'
 
 /**
  * Log to be used in tests. It already has memory store, node ID,

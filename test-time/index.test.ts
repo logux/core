@@ -1,4 +1,4 @@
-import { MemoryStore, TestTime } from '..'
+import { MemoryStore, TestTime } from '../index.js'
 
 it('creates test log', () => {
   let log = TestTime.getLog()

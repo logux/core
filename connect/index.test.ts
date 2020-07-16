@@ -7,7 +7,7 @@ import {
   LoguxError,
   TestTime,
   TestPair
-} from '..'
+} from '../index.js'
 
 let fakeNode = new BaseNode('id', TestTime.getLog(), new TestPair().left)
 const PROTOCOL = fakeNode.localProtocol
