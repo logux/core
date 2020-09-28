@@ -86,7 +86,7 @@ class MemoryStore {
     return entry
   }
 
-  async get (opts) {
+  async get (opts = {}) {
     let entries
     if (opts.order === 'created') {
       entries = this.entries
