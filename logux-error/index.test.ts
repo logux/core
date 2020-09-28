@@ -17,6 +17,7 @@ function catchError<T extends keyof LoguxErrorOptions> (
 
 it('does not crash if captureStackTrace does not exist', () => {
   let captureStackTrace = global.Error.captureStackTrace
+  // @ts-expect-error
   delete global.Error.captureStackTrace
   catchError('wrong-credentials')
   global.Error.captureStackTrace = captureStackTrace
