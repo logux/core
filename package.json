@@ -30,7 +30,6 @@
   "devDependencies": {
     "@logux/eslint-config": "^40.0.5",
     "@logux/sharec-config": "^0.7.4",
-    "@types/jest": "^26.0.14",
     "@types/ws": "^7.2.7",
     "@typescript-eslint/eslint-plugin": "^4.4.0",
     "@typescript-eslint/parser": "^4.4.0",
