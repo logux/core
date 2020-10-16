@@ -1,7 +1,6 @@
 yarn-error.log
 yarn.lock
 
-test/
 **/*.test.ts
 **/types.ts
 **/errors.ts

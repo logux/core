@@ -29,10 +29,10 @@
   },
   "devDependencies": {
     "@logux/eslint-config": "^40.0.5",
-    "@logux/sharec-config": "^0.7.4",
+    "@logux/sharec-config": "^0.7.6",
     "@types/ws": "^7.2.7",
-    "@typescript-eslint/eslint-plugin": "^4.4.0",
-    "@typescript-eslint/parser": "^4.4.0",
+    "@typescript-eslint/eslint-plugin": "^4.4.1",
+    "@typescript-eslint/parser": "^4.4.1",
     "check-dts": "^0.3.3",
     "dual-publish": "^0.11.0",
     "eslint": "^7.11.0",
@@ -48,7 +48,7 @@
     "eslint-plugin-standard": "^4.0.1",
     "eslint-plugin-unicorn": "^22.0.0",
     "husky": "^4.3.0",
-    "jest": "^26.5.2",
+    "jest": "^26.5.3",
     "jest-ci": "^0.1.1",
     "lint-staged": "^10.4.0",
     "nanodelay": "^1.0.3",
@@ -120,6 +120,6 @@
   },
   "sharec": {
     "config": "@logux/sharec-config",
-    "version": "0.7.4"
+    "version": "0.7.6"
   }
 }
