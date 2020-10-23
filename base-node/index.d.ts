@@ -37,7 +37,7 @@ export type Message =
   | ['connected', number, string, [number, number], object?]
   | ['ping', number]
   | ['pong', number]
-  | ['sync', number, ...(Action | CompressedMeta)[]]
+  | ['sync', number, ...(AnyAction | CompressedMeta)[]]
   | ['synced', number]
   | ['debug', 'error', string]
   | ['headers', object]
