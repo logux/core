@@ -1,7 +1,7 @@
 import { Unsubscribe } from 'nanoevents'
 
 import { LoguxError, LoguxErrorOptions } from '../logux-error/index.js'
-import { Log, Action, Meta } from '../log/index.js'
+import { Log, Action, AnyAction, Meta } from '../log/index.js'
 
 interface Authentificator<H> {
   (nodeId: string, token: string, headers: H | {}): Promise<boolean>
@@ -12,7 +12,7 @@ interface Filter {
 }
 
 interface Mapper {
-  (action: Action, meta: Meta): Promise<[Action, Meta]>
+  (action: Action, meta: Meta): Promise<[AnyAction, Meta]>
 }
 
 type EmptyHeaders = {

@@ -6,7 +6,15 @@ export {
   NodeState,
   Message
 } from './base-node/index.js'
-export { Log, ID, Action, Meta, LogStore, Page } from './log/index.js'
+export {
+  Log,
+  ID,
+  Action,
+  AnyAction,
+  Meta,
+  LogStore,
+  Page
+} from './log/index.js'
 export { LoguxError, LoguxErrorOptions } from './logux-error/index.js'
 export { ServerConnection } from './server-connection/index.js'
 export { eachStoreCheck } from './each-store-check/index.js'

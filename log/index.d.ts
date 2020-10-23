@@ -9,8 +9,8 @@ import { Unsubscribe } from 'nanoevents'
  */
 export type ID = string
 
-interface ActionListener<M extends Meta, T extends string> {
-  (action: Action<T>, meta: M): void
+interface ActionListener<A extends Action, M extends Meta> {
+  (action: A, meta: M): void
 }
 
 interface ActionIterator<M extends Meta> {
@@ -51,12 +51,15 @@ export type Meta = {
   [extra: string]: any
 }
 
-export type Action<T extends string = string> = {
+export type Action = {
   /**
    * Action type name.
    */
-  type: T
+  type: string
+}
 
+export type AnyAction = {
+  type: string
   [extra: string]: any
 }
 
@@ -130,7 +133,7 @@ export abstract class LogStore {
    * @returns Promise with `meta` for new action or `false` if action with
    *          same `meta.id` was already in store.
    */
-  add (action: Action, meta: Meta): Promise<Meta | false>
+  add (action: AnyAction, meta: Meta): Promise<Meta | false>
 
   /**
    * Return a Promise with first page. Page object has `entries` property
@@ -182,7 +185,7 @@ export abstract class LogStore {
   removeReason (
     reason: string,
     criteria: Criteria,
-    callback: ActionListener<Meta, string>
+    callback: ActionListener<Action, Meta>
   ): Promise<void>
 
   /**
@@ -278,7 +281,7 @@ export class Log<M extends Meta = Meta, S extends LogStore = LogStore> {
    * @returns Promise with `meta` if action was added to log or `false`
    *          if action was already in log.
    */
-  add (action: Action, meta?: Partial<M>): Promise<M | false>
+  add (action: AnyAction, meta?: Partial<M>): Promise<M | false>
 
   /**
    * Add listener for adding action with specific type.
@@ -298,9 +301,9 @@ export class Log<M extends Meta = Meta, S extends LogStore = LogStore> {
    * @param event
    * @returns Unbind listener from event.
    */
-  type<T extends string> (
+  type<A extends Action = Action, T extends string = A['type']> (
     type: T,
-    listener: ActionListener<M, T>,
+    listener: ActionListener<A, M>,
     event?: 'preadd' | 'add' | 'clean'
   ): Unsubscribe
 
@@ -328,7 +331,7 @@ export class Log<M extends Meta = Meta, S extends LogStore = LogStore> {
    */
   on (
     event: 'preadd' | 'add' | 'clean',
-    listener: ActionListener<M, string>
+    listener: ActionListener<Action, M>
   ): Unsubscribe
 
   /**
