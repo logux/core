@@ -4,7 +4,8 @@ export {
   TokenGenerator,
   NodeOptions,
   NodeState,
-  Message
+  Message,
+  CompressedMeta
 } from './base-node/index.js'
 export {
   Log,
