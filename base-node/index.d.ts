@@ -35,8 +35,7 @@ export type Message =
   | ['connected', number, string, [number, number], object?]
   | ['ping', number]
   | ['pong', number]
-  // Inaccurate type until https://github.com/microsoft/TypeScript/issues/26113
-  | ['sync', number, object, object]
+  | ['sync', number, ...(Action | Meta)[]]
   | ['synced', number]
   | ['debug', 'error', string]
   | ['headers', object]
