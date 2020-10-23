@@ -29,13 +29,15 @@ export type NodeState =
   | 'sending'
   | 'synchronized'
 
+export type CompressedMeta = { time: number; id: [number, string, number] }
+
 export type Message =
   | ['error', keyof LoguxErrorOptions, any?]
   | ['connect', number, string, number, object?]
   | ['connected', number, string, [number, number], object?]
   | ['ping', number]
   | ['pong', number]
-  | ['sync', number, ...(Action | Meta)[]]
+  | ['sync', number, ...(Action | CompressedMeta)[]]
   | ['synced', number]
   | ['debug', 'error', string]
   | ['headers', object]
