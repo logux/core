@@ -453,3 +453,70 @@ it('ensures `reasons` to be array of string values', async () => {
   }
   expect(err2.message).toEqual('Expected "reasons" to be an array of strings')
 })
+
+it('has type listeners', async () => {
+  let events: string[] = []
+  let log = createLog()
+
+  let unsibscribeA = log.type('A', (action, meta) => {
+    expect(typeof meta.id).toEqual('string')
+    events.push(`A: ${action.type}`)
+  })
+
+  log.type(
+    'B',
+    (action, meta) => {
+      expect(typeof meta.id).toEqual('string')
+      events.push(`B add: ${action.type}`)
+    },
+    'add'
+  )
+
+  log.type(
+    'C',
+    (action, meta) => {
+      expect(typeof meta.id).toEqual('string')
+      events.push(`C preadd: ${action.type}`)
+    },
+    'preadd'
+  )
+
+  log.type(
+    'A',
+    (action, meta) => {
+      expect(typeof meta.id).toEqual('string')
+      events.push(`A clean: ${action.type}`)
+    },
+    'clean'
+  )
+
+  log.on('add', (action, meta) => {
+    events.push(`add: ${action.type}`)
+  })
+
+  await log.add({ type: 'A' })
+  await log.add({ type: 'A' }, { reasons: ['test'] })
+  await log.add({ type: 'A' }, { id: '0 test 0', reasons: ['test', 'test2'] })
+  await log.add({ type: 'B' })
+  await log.add({ type: 'C' })
+  await log.add({ type: 'D' })
+  await log.removeReason('test')
+  await log.changeMeta('0 test 0', { reasons: [] })
+
+  expect(events).toEqual([
+    'A: A',
+    'add: A',
+    'A clean: A',
+    'A: A',
+    'add: A',
+    'A: A',
+    'add: A',
+    'B add: B',
+    'add: B',
+    'C preadd: C',
+    'add: C',
+    'add: D',
+    'A clean: A',
+    'A clean: A'
+  ])
+})
