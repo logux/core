@@ -26,6 +26,10 @@ class Log {
     return this.emitter.on(event, listener)
   }
 
+  type (type, listener, event = 'add') {
+    return this.emitter.on(`${event}-${type}`, listener)
+  }
+
   async add (action, meta = {}) {
     if (typeof action.type === 'undefined') {
       throw new Error('Expected "type" in action')
@@ -53,6 +57,7 @@ class Log {
       }
     }
 
+    this.emitter.emit(`preadd-${action.type}`, action, meta)
     this.emitter.emit('preadd', action, meta)
 
     if (meta.keepLast) {
@@ -61,7 +66,9 @@ class Log {
     }
 
     if (meta.reasons.length === 0 && newId) {
+      this.emitter.emit(`add-${action.type}`, action, meta)
       this.emitter.emit('add', action, meta)
+      this.emitter.emit(`clean-${action.type}`, action, meta)
       this.emitter.emit('clean', action, meta)
       return meta
     } else if (meta.reasons.length === 0) {
@@ -69,7 +76,9 @@ class Log {
       if (action2) {
         return false
       } else {
+        this.emitter.emit(`add-${action.type}`, action, meta)
         this.emitter.emit('add', action, meta)
+        this.emitter.emit(`clean-${action.type}`, action, meta)
         this.emitter.emit('clean', action, meta)
         return meta
       }
@@ -78,6 +87,7 @@ class Log {
       if (addedMeta === false) {
         return false
       } else {
+        this.emitter.emit(`add-${action.type}`, action, meta)
         this.emitter.emit('add', action, addedMeta)
         return addedMeta
       }
@@ -135,6 +145,7 @@ class Log {
       let entry = await this.store.remove(id)
       if (entry) {
         for (let k in diff) entry[1][k] = diff[k]
+        this.emitter.emit(`clean-${entry[0].type}`, entry[0], entry[1])
         this.emitter.emit('clean', entry[0], entry[1])
       }
       return !!entry
@@ -145,6 +156,7 @@ class Log {
 
   removeReason (reason, criteria = {}) {
     return this.store.removeReason(reason, criteria, (action, meta) => {
+      this.emitter.emit(`clean-${action.type}`, action, meta)
       this.emitter.emit('clean', action, meta)
     })
   }

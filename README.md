@@ -59,12 +59,10 @@ let node = new ClientNode('client:test', time.nextLog(), pair.left)
 import { isFirstOlder } from '@logux/core'
 
 let lastRename
-log.on('add', (action, meta) => {
-  if (action.type === 'RENAME') {
-    if (isFirstOlder(lastRename, meta)) {
-      changeName(action.name)
-      lastRename = meta
-    }
+log.type('RENAME', (action, meta) => {
+  if (isFirstOlder(lastRename, meta)) {
+    changeName(action.name)
+    lastRename = meta
   }
 })
 ```
