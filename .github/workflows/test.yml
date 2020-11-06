@@ -7,7 +7,7 @@ env:
 
 jobs:
   full:
-    name: Full with latest Node.js
+    name: Full in Node.js
     runs-on: ubuntu-latest
     steps:
       - name: Checkout the repository
@@ -26,7 +26,7 @@ jobs:
     strategy:
       matrix:
         node-version: [12, 14]
-    name: Short with Node.js ${{ matrix.node-version }}
+    name: Short in Node.js ${{ matrix.node-version }}
     steps:
       - name: Checkout the repository
         uses: actions/checkout@v2
