@@ -15,7 +15,7 @@ jobs:
       - name: Install Node.js
         uses: actions/setup-node@v1
         with:
-          node-version: 'node'
+          node-version: latest
       - name: Install dependencies
         run: yarn install
       - name: Run all tests
