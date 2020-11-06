@@ -1,6 +1,8 @@
 name: Test
 
-on: [push, pull_request]
+on:
+  push:
+  pull_request:
 
 env:
   FORCE_COLOR: 2
@@ -17,7 +19,7 @@ jobs:
         with:
           node-version: 15
       - name: Install dependencies
-        run: yarn install
+        run: yarn install --frozen-lockfile
       - name: Run all tests
         run: yarn test
 
@@ -35,6 +37,6 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
       - name: Install dependencies
-        run: yarn install
+        run: yarn install --frozen-lockfile
       - name: Run code tests
         run: npx jest
