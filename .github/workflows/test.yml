@@ -1,0 +1,40 @@
+name: Test
+
+on: [push, pull_request]
+
+env:
+  FORCE_COLOR: 2
+
+jobs:
+  full:
+    name: Full with latest Node.js
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout the repository
+        uses: actions/checkout@v2
+      - name: Install Node.js
+        uses: actions/setup-node@v1
+        with:
+          node-version: 'node'
+      - name: Install dependencies
+        run: yarn install
+      - name: Run all tests
+        run: yarn test
+
+  short:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [12, 14]
+    name: Short with Node.js ${{ matrix.node-version }}
+    steps:
+      - name: Checkout the repository
+        uses: actions/checkout@v2
+      - name: Install Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v1
+        with:
+          node-version: ${{ matrix.node-version }}
+      - name: Install dependencies
+        run: yarn install
+      - name: Run code tests
+        run: npx jest
