@@ -1,7 +1,7 @@
 name: Test
-"on":
-  push: null
-  pull_request: null
+on:
+  push:
+  pull_request:
 env:
   FORCE_COLOR: 2
 jobs:
