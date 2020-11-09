@@ -50,7 +50,7 @@
     "lint-staged": "^10.5.1",
     "nanodelay": "^1.0.6",
     "rimraf": "^3.0.2",
-    "ts-jest": "^26.4.3",
+    "ts-jest": "^26.4.4",
     "typescript": "^4.0.5",
     "ws": "^7.4.0",
     "yaspeller": "^7.0.0"
