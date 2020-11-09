@@ -421,5 +421,5 @@ export class BaseNode<H extends object = {}, L extends Log = Log<Meta>> {
    *
    * @param headers The data object will be set as headers for current node.
    */
-  setLocalHeaders (headers: object): void
+  setLocalHeaders (headers: H): void
 }
