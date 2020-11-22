@@ -469,7 +469,7 @@ it('has type listeners', async () => {
       expect(typeof meta.id).toEqual('string')
       events.push(`B add: ${action.type}`)
     },
-    'add'
+    { event: 'add' }
   )
 
   log.type(
@@ -478,7 +478,7 @@ it('has type listeners', async () => {
       expect(typeof meta.id).toEqual('string')
       events.push(`C preadd: ${action.type}`)
     },
-    'preadd'
+    { event: 'preadd' }
   )
 
   log.type(
@@ -487,7 +487,7 @@ it('has type listeners', async () => {
       expect(typeof meta.id).toEqual('string')
       events.push(`A clean: ${action.type}`)
     },
-    'clean'
+    { event: 'clean' }
   )
 
   log.on('add', (action, meta) => {
@@ -502,6 +502,8 @@ it('has type listeners', async () => {
   await log.add({ type: 'D' })
   await log.removeReason('test')
   await log.changeMeta('0 test 0', { reasons: [] })
+  unsibscribeA()
+  await log.add({ type: 'A' })
 
   expect(events).toEqual([
     'A: A',
@@ -517,6 +519,48 @@ it('has type listeners', async () => {
     'add: C',
     'add: D',
     'A clean: A',
+    'A clean: A',
+    'add: A',
     'A clean: A'
+  ])
+})
+
+it('has type and action.id listener', async () => {
+  let events: string[] = []
+  let log = createLog()
+
+  interface A {
+    type: 'A'
+    name: string
+    id: string
+  }
+
+  log.type<A>('A', action => {
+    events.push(`A add all ${action.name}`)
+  })
+  log.type<A>(
+    'A',
+    action => {
+      events.push(`A add ID ${action.name}`)
+    },
+    { id: 'ID' }
+  )
+  log.type<A>(
+    'A',
+    action => {
+      events.push(`A preadd ID ${action.name}`)
+    },
+    { event: 'preadd', id: 'ID' }
+  )
+
+  await log.add({ type: 'A', id: 'ID', name: 'a' })
+  await log.add({ type: 'A', id: 'Other', name: 'b' })
+  await log.add({ type: 'O', id: 'ID', name: 'c' })
+
+  expect(events).toEqual([
+    'A preadd ID a',
+    'A add ID a',
+    'A add all a',
+    'A add all b'
   ])
 })

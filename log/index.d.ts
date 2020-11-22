@@ -287,6 +287,9 @@ export class Log<M extends Meta = Meta, S extends LogStore = LogStore> {
    * Add listener for adding action with specific type.
    * Works faster than `on('add', cb)` with `if`.
    *
+   * Setting `opts.id` will filter events ponly from actions with specific
+   * `action.id`.
+   *
    * ```js
    * const unbind = log.type('beep', (action, meta) => {
    *   beep()
@@ -304,7 +307,7 @@ export class Log<M extends Meta = Meta, S extends LogStore = LogStore> {
   type<A extends Action = Action, T extends string = A['type']> (
     type: T,
     listener: ActionListener<A, M>,
-    event?: 'preadd' | 'add' | 'clean'
+    opts?: { id?: string; event?: 'preadd' | 'add' | 'clean' }
   ): Unsubscribe
 
   /**
