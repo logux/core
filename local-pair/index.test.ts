@@ -43,7 +43,7 @@ class Tracker {
   }
 
   wait () {
-    return new Promise(resolve => {
+    return new Promise<void>(resolve => {
       this.waiting = () => {
         delete this.waiting
         resolve()
