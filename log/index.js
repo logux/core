@@ -1,6 +1,6 @@
 let { createNanoEvents } = require('nanoevents')
 
-function emit (emitter, event, action, meta) {
+function actionEvents (emitter, event, action, meta) {
   if (action.id) {
     emitter.emit(`${event}-${action.type}-${action.id}`, action, meta)
   }
@@ -67,7 +67,7 @@ class Log {
       }
     }
 
-    emit(this.emitter, 'preadd', action, meta)
+    actionEvents(this.emitter, 'preadd', action, meta)
 
     if (meta.keepLast) {
       this.removeReason(meta.keepLast, { olderThan: meta })
@@ -75,16 +75,16 @@ class Log {
     }
 
     if (meta.reasons.length === 0 && newId) {
-      emit(this.emitter, 'add', action, meta)
-      emit(this.emitter, 'clean', action, meta)
+      actionEvents(this.emitter, 'add', action, meta)
+      actionEvents(this.emitter, 'clean', action, meta)
       return meta
     } else if (meta.reasons.length === 0) {
       let [action2] = await this.store.byId(meta.id)
       if (action2) {
         return false
       } else {
-        emit(this.emitter, 'add', action, meta)
-        emit(this.emitter, 'clean', action, meta)
+        actionEvents(this.emitter, 'add', action, meta)
+        actionEvents(this.emitter, 'clean', action, meta)
         return meta
       }
     } else {
@@ -92,7 +92,7 @@ class Log {
       if (addedMeta === false) {
         return false
       } else {
-        emit(this.emitter, 'add', action, meta)
+        actionEvents(this.emitter, 'add', action, meta)
         return addedMeta
       }
     }
@@ -149,7 +149,7 @@ class Log {
       let entry = await this.store.remove(id)
       if (entry) {
         for (let k in diff) entry[1][k] = diff[k]
-        emit(this.emitter, 'clean', entry[0], entry[1])
+        actionEvents(this.emitter, 'clean', entry[0], entry[1])
       }
       return !!entry
     } else {
@@ -159,7 +159,7 @@ class Log {
 
   removeReason (reason, criteria = {}) {
     return this.store.removeReason(reason, criteria, (action, meta) => {
-      emit(this.emitter, 'clean', action, meta)
+      actionEvents(this.emitter, 'clean', action, meta)
     })
   }
 
@@ -168,4 +168,4 @@ class Log {
   }
 }
 
-module.exports = { Log }
+module.exports = { Log, actionEvents }

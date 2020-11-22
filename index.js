@@ -1,3 +1,4 @@
+let { Log, actionEvents } = require('./log')
 let { ServerConnection } = require('./server-connection')
 let { eachStoreCheck } = require('./each-store-check')
 let { isFirstOlder } = require('./is-first-older')
@@ -12,11 +13,11 @@ let { TestTime } = require('./test-time')
 let { BaseNode } = require('./base-node')
 let { TestPair } = require('./test-pair')
 let { parseId } = require('./parse-id')
-let { Log } = require('./log')
 
 module.exports = {
   ServerConnection,
   eachStoreCheck,
+  actionEvents,
   isFirstOlder,
   WsConnection,
   MemoryStore,
