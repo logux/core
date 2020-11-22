@@ -1,4 +1,4 @@
-import { Unsubscribe } from 'nanoevents'
+import { Unsubscribe, Emitter } from 'nanoevents'
 
 /**
  * Action unique ID accross all nodes.
@@ -16,6 +16,13 @@ interface ActionListener<A extends Action, M extends Meta> {
 interface ActionIterator<M extends Meta> {
   (action: Action, meta: M): boolean | void
 }
+
+export function actionEvents (
+  emitter: Emitter,
+  event: 'preadd' | 'add' | 'clean',
+  action: Action,
+  meta: Meta
+): void
 
 export type Meta = {
   /**
