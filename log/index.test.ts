@@ -453,3 +453,25 @@ it('ensures `reasons` to be array of string values', async () => {
   }
   expect(err2.message).toEqual('Expected "reasons" to be an array of strings')
 })
+
+it('ensures `indexes` to be array of string values', async () => {
+  let log = createLog()
+
+  let err1
+  try {
+    // @ts-expect-error
+    await log.add({ type: '3' }, { indexes: 'g/1' })
+  } catch (e) {
+    err1 = e
+  }
+  expect(err1.message).toEqual('Expected "indexes" to be an array of strings')
+
+  let err2
+  try {
+    // @ts-expect-error
+    await log.add({ type: '3' }, { indexes: [false, 1] })
+  } catch (e) {
+    err2 = e
+  }
+  expect(err2.message).toEqual('Expected "indexes" to be an array of strings')
+})
