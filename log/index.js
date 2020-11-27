@@ -53,6 +53,18 @@ class Log {
       }
     }
 
+    if (typeof meta.indexes !== 'undefined') {
+      if (!Array.isArray(meta.indexes)) {
+        throw new Error('Expected "indexes" to be an array of strings')
+      }
+
+      for (let index of meta.indexes) {
+        if (typeof index !== 'string') {
+          throw new Error('Expected "indexes" to be an array of strings')
+        }
+      }
+    }
+
     this.emitter.emit('preadd', action, meta)
 
     if (meta.keepLast) {
