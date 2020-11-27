@@ -127,7 +127,7 @@ type GetOptions = {
   order?: 'created' | 'added'
 
   /**
-   * Sort entries by custom index.
+   * Get entries with a custom index.
    */
   index?: string
 }
