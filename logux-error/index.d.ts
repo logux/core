@@ -37,9 +37,9 @@ export class LoguxError<
    * }
    * ```
    */
-  static description<T extends keyof LoguxErrorOptions> (
-    type: T,
-    options?: LoguxErrorOptions[T]
+  static description<K extends keyof LoguxErrorOptions> (
+    type: K,
+    options?: LoguxErrorOptions[K]
   ): string
 
   /**

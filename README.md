@@ -10,7 +10,7 @@ between client, server, and other clients.
 * **[Guide, recipes, and API](https://logux.io/)**
 * **[Chat](https://gitter.im/logux/logux)** for any questions
 * **[Issues](https://github.com/logux/logux/issues)**
-  and **[roadmap](https://github.com/logux/logux/projects/1)**
+  and **[roadmap](https://github.com/orgs/logux/projects/1)**
 * **[Projects](https://logux.io/guide/architecture/parts/)**
   inside Logux ecosystem
 
@@ -59,12 +59,10 @@ let node = new ClientNode('client:test', time.nextLog(), pair.left)
 import { isFirstOlder } from '@logux/core'
 
 let lastRename
-log.on('add', (action, meta) => {
-  if (action.type === 'RENAME') {
-    if (isFirstOlder(lastRename, meta)) {
-      changeName(action.name)
-      lastRename = meta
-    }
+log.type('RENAME', (action, meta) => {
+  if (isFirstOlder(lastRename, meta)) {
+    changeName(action.name)
+    lastRename = meta
   }
 })
 ```

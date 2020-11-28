@@ -7,7 +7,7 @@ function privateMethods (obj: object): any {
 
 function prepareWs () {
   let ws = new WebSocket('ws://example.com/')
-  ws.readyState = ws.OPEN
+  privateMethods(ws)._readyState = ws.OPEN
   return ws
 }
 
@@ -101,7 +101,7 @@ it('does not send to closed socket', () => {
     errors.push(e.message)
   })
 
-  connection.ws.readyState = 2
+  privateMethods(connection.ws)._readyState = 2
 
   connection.send(['ping', 1])
   expect(sent).toEqual([])

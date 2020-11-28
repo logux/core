@@ -1,5 +1,13 @@
 let { createNanoEvents } = require('nanoevents')
 
+function actionEvents (emitter, event, action, meta) {
+  if (action.id) {
+    emitter.emit(`${event}-${action.type}-${action.id}`, action, meta)
+  }
+  emitter.emit(`${event}-${action.type}-`, action, meta)
+  emitter.emit(event, action, meta)
+}
+
 class Log {
   constructor (opts = {}) {
     if (typeof opts.nodeId === 'undefined') {
@@ -24,6 +32,12 @@ class Log {
 
   on (event, listener) {
     return this.emitter.on(event, listener)
+  }
+
+  type (type, listener, opts = {}) {
+    let event = opts.event || 'add'
+    let id = opts.id || ''
+    return this.emitter.on(`${event}-${type}-${id}`, listener)
   }
 
   async add (action, meta = {}) {
@@ -65,7 +79,7 @@ class Log {
       }
     }
 
-    this.emitter.emit('preadd', action, meta)
+    actionEvents(this.emitter, 'preadd', action, meta)
 
     if (meta.keepLast) {
       this.removeReason(meta.keepLast, { olderThan: meta })
@@ -73,16 +87,16 @@ class Log {
     }
 
     if (meta.reasons.length === 0 && newId) {
-      this.emitter.emit('add', action, meta)
-      this.emitter.emit('clean', action, meta)
+      actionEvents(this.emitter, 'add', action, meta)
+      actionEvents(this.emitter, 'clean', action, meta)
       return meta
     } else if (meta.reasons.length === 0) {
       let [action2] = await this.store.byId(meta.id)
       if (action2) {
         return false
       } else {
-        this.emitter.emit('add', action, meta)
-        this.emitter.emit('clean', action, meta)
+        actionEvents(this.emitter, 'add', action, meta)
+        actionEvents(this.emitter, 'clean', action, meta)
         return meta
       }
     } else {
@@ -90,7 +104,7 @@ class Log {
       if (addedMeta === false) {
         return false
       } else {
-        this.emitter.emit('add', action, addedMeta)
+        actionEvents(this.emitter, 'add', action, meta)
         return addedMeta
       }
     }
@@ -147,7 +161,7 @@ class Log {
       let entry = await this.store.remove(id)
       if (entry) {
         for (let k in diff) entry[1][k] = diff[k]
-        this.emitter.emit('clean', entry[0], entry[1])
+        actionEvents(this.emitter, 'clean', entry[0], entry[1])
       }
       return !!entry
     } else {
@@ -157,7 +171,7 @@ class Log {
 
   removeReason (reason, criteria = {}) {
     return this.store.removeReason(reason, criteria, (action, meta) => {
-      this.emitter.emit('clean', action, meta)
+      actionEvents(this.emitter, 'clean', action, meta)
     })
   }
 
@@ -166,4 +180,4 @@ class Log {
   }
 }
 
-module.exports = { Log }
+module.exports = { Log, actionEvents }

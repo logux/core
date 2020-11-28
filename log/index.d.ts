@@ -1,4 +1,4 @@
-import { Unsubscribe } from 'nanoevents'
+import { Unsubscribe, Emitter } from 'nanoevents'
 
 /**
  * Action unique ID accross all nodes.
@@ -9,13 +9,20 @@ import { Unsubscribe } from 'nanoevents'
  */
 export type ID = string
 
-interface ActionListener<M extends Meta> {
-  (action: Action, meta: M): void
+interface ActionListener<A extends Action, M extends Meta> {
+  (action: A, meta: M): void
 }
 
 interface ActionIterator<M extends Meta> {
   (action: Action, meta: M): boolean | void
 }
+
+export function actionEvents (
+  emitter: Emitter,
+  event: 'preadd' | 'add' | 'clean',
+  action: Action,
+  meta: Meta
+): void
 
 export type Meta = {
   /**
@@ -61,11 +68,10 @@ export type Action = {
    * Action type name.
    */
   type: string
-
-  [extra: string]: any
 }
 
-export type AnyAction = Action & {
+export type AnyAction = {
+  type: string
   [extra: string]: any
 }
 
@@ -144,7 +150,7 @@ export abstract class LogStore {
    * @returns Promise with `meta` for new action or `false` if action with
    *          same `meta.id` was already in store.
    */
-  add (action: Action, meta: Meta): Promise<Meta | false>
+  add (action: AnyAction, meta: Meta): Promise<Meta | false>
 
   /**
    * Return a Promise with first page. Page object has `entries` property
@@ -196,7 +202,7 @@ export abstract class LogStore {
   removeReason (
     reason: string,
     criteria: Criteria,
-    callback: ActionListener<Meta>
+    callback: ActionListener<Action, Meta>
   ): Promise<void>
 
   /**
@@ -292,7 +298,34 @@ export class Log<M extends Meta = Meta, S extends LogStore = LogStore> {
    * @returns Promise with `meta` if action was added to log or `false`
    *          if action was already in log.
    */
-  add (action: Action, meta?: Partial<M>): Promise<M | false>
+  add (action: AnyAction, meta?: Partial<M>): Promise<M | false>
+
+  /**
+   * Add listener for adding action with specific type.
+   * Works faster than `on('add', cb)` with `if`.
+   *
+   * Setting `opts.id` will filter events ponly from actions with specific
+   * `action.id`.
+   *
+   * ```js
+   * const unbind = log.type('beep', (action, meta) => {
+   *   beep()
+   * })
+   * function disableBeeps () {
+   *   unbind()
+   * }
+   * ```
+   *
+   * @param type Action’s type.
+   * @param ActionListener The listener function.
+   * @param event
+   * @returns Unbind listener from event.
+   */
+  type<A extends Action = Action, T extends string = A['type']> (
+    type: T,
+    listener: ActionListener<A, M>,
+    opts?: { id?: string; event?: 'preadd' | 'add' | 'clean' }
+  ): Unsubscribe
 
   /**
    * Subscribe for log events. It implements nanoevents API. Supported events:
@@ -302,13 +335,14 @@ export class Log<M extends Meta = Meta, S extends LogStore = LogStore> {
    * * `add`: when new action was added to log.
    * * `clean`: when action was cleaned from store.
    *
+   * Note, that `Log#type()` will work faster than `on` event with `if`.
+   *
    * ```js
-   * const unbind = log.on('add', (action, meta) => {
-   *   if (action.type === 'beep') beep()
+   * log.on('preadd', (action, meta) => {
+   *   if (action.type === 'beep') {
+   *     meta.reasons.push('test')
+   *   }
    * })
-   * function disableBeeps () {
-   *   unbind()
-   * }
    * ```
    *
    * @param event The event name.
@@ -317,7 +351,7 @@ export class Log<M extends Meta = Meta, S extends LogStore = LogStore> {
    */
   on (
     event: 'preadd' | 'add' | 'clean',
-    listener: ActionListener<M>
+    listener: ActionListener<Action, M>
   ): Unsubscribe
 
   /**

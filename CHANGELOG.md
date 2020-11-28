@@ -1,6 +1,9 @@
 # Change Log
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## 0.6.2
+* Allow to call `MemoryStore#get()` without options (by Eduard Aksamitov).
+
 ## 0.6.1
 * Fix counters comparison in `isFirstOlder`.
 

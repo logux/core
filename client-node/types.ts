@@ -13,6 +13,8 @@ let pair = new LocalPair()
 
 let client = new ClientNode<Headers, Log<MyMeta>>('client', log, pair.left)
 
+client.setLocalHeaders({ lang: 'ru' })
+
 client.log.add({ type: 'A' }, { extra: 1 })
 
 function sayHi (lang: string) {

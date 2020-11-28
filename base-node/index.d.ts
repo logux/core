@@ -1,7 +1,7 @@
 import { Unsubscribe } from 'nanoevents'
 
 import { LoguxError, LoguxErrorOptions } from '../logux-error/index.js'
-import { Log, Action, Meta } from '../log/index.js'
+import { Log, Action, AnyAction, Meta } from '../log/index.js'
 
 interface Authentificator<H> {
   (nodeId: string, token: string, headers: H | {}): Promise<boolean>
@@ -12,7 +12,7 @@ interface Filter {
 }
 
 interface Mapper {
-  (action: Action, meta: Meta): Promise<[Action, Meta]>
+  (action: Action, meta: Meta): Promise<[AnyAction, Meta]>
 }
 
 type EmptyHeaders = {
@@ -29,14 +29,15 @@ export type NodeState =
   | 'sending'
   | 'synchronized'
 
+export type CompressedMeta = { time: number; id: [number, string, number] }
+
 export type Message =
   | ['error', keyof LoguxErrorOptions, any?]
   | ['connect', number, string, number, object?]
   | ['connected', number, string, [number, number], object?]
   | ['ping', number]
   | ['pong', number]
-  // Inaccurate type until https://github.com/microsoft/TypeScript/issues/26113
-  | ['sync', number, object, object]
+  | ['sync', number, ...(AnyAction | CompressedMeta)[]]
   | ['synced', number]
   | ['debug', 'error', string]
   | ['headers', object]
@@ -420,5 +421,5 @@ export class BaseNode<H extends object = {}, L extends Log = Log<Meta>> {
    *
    * @param headers The data object will be set as headers for current node.
    */
-  setLocalHeaders (headers: object): void
+  setLocalHeaders (headers: H): void
 }
