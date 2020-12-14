@@ -152,7 +152,13 @@ class Log {
 
   async changeMeta (id, diff) {
     for (let k in diff) {
-      if (k === 'id' || k === 'added' || k === 'time' || k === 'subprotocol') {
+      if (
+        k === 'id' ||
+        k === 'added' ||
+        k === 'time' ||
+        k === 'subprotocol' ||
+        k === 'indexes'
+      ) {
         throw new Error('Meta "' + k + '" is read-only')
       }
     }
