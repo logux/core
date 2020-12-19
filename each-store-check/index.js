@@ -150,16 +150,13 @@ function eachStoreCheck (test) {
 
   test('removes reasons and actions without reason', factory => async () => {
     let store = factory()
-    let removed = []
     await Promise.all([
       store.add({ type: '1' }, { id: '1 n 0', time: 1, reasons: ['a'] }),
       store.add({ type: '2' }, { id: '2 n 0', time: 2, reasons: ['a'] }),
       store.add({ type: '3' }, { id: '3 n 0', time: 3, reasons: ['a', 'b'] }),
       store.add({ type: '4' }, { id: '4 n 0', time: 4, reasons: ['b'] })
     ])
-    await store.removeReason('a', {}, (action, meta) => {
-      removed.push([action, meta])
-    })
+    await store.removeReason('a', {}, () => {})
     await checkBoth(store, [
       [{ type: '3' }, { added: 3, id: '3 n 0', time: 3, reasons: ['b'] }],
       [{ type: '4' }, { added: 4, id: '4 n 0', time: 4, reasons: ['b'] }]
