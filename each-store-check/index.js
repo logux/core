@@ -175,6 +175,27 @@ function eachStoreCheck (test) {
     ])
   })
 
+  test('removes entry with indexes', factory => async () => {
+    let store = factory()
+    await Promise.all([
+      store.add({ type: '1' }, { id: '1 node1 0', time: 1 }),
+      store.add(
+        { type: '2' },
+        { id: '1 node1 1', time: 2, indexes: ['a', 'b'] }
+      ),
+      store.add({ type: '3' }, { id: '1 node1 2', time: 3, indexes: ['b'] })
+    ])
+    await store.remove('1 node1 1')
+    await checkBoth(store, [
+      [{ type: '1' }, { id: '1 node1 0', time: 1, added: 1 }],
+      [{ type: '3' }, { id: '1 node1 2', time: 3, added: 3, indexes: ['b'] }]
+    ])
+    await checkIndex(store, 'a', [])
+    await checkIndex(store, 'b', [
+      [{ type: '3' }, { id: '1 node1 2', time: 3, added: 3, indexes: ['b'] }]
+    ])
+  })
+
   test('removes reasons and actions without reason', factory => async () => {
     let store = factory()
     await Promise.all([
