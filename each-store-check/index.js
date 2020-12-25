@@ -211,6 +211,28 @@ function eachStoreCheck (test) {
     ])
   })
 
+  test('removes reason from indexes', factory => async () => {
+    let store = factory()
+    await Promise.all([
+      store.add(
+        { type: '1' },
+        { id: '1 n 0', time: 1, reasons: ['a'], indexes: ['a', 'b'] }
+      ),
+      store.add(
+        { type: '2' },
+        { id: '2 n 0', time: 2, reasons: ['b'], indexes: ['b'] }
+      )
+    ])
+    await store.removeReason('a', {}, () => {})
+    await checkIndex(store, 'a', [])
+    await checkIndex(store, 'b', [
+      [
+        { type: '2' },
+        { added: 2, id: '2 n 0', time: 2, reasons: ['b'], indexes: ['b'] }
+      ]
+    ])
+  })
+
   test('removes reason by time', factory => async () => {
     let store = factory()
     await Promise.all([
