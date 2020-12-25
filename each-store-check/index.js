@@ -81,6 +81,23 @@ function eachStoreCheck (test) {
     ])
   })
 
+  test('indexed entries sorted', factory => async () => {
+    let store = factory()
+    await Promise.all([
+      store.add({ type: '1' }, { id: '1 node1 0', time: 2, indexes: ['a'] }),
+      store.add({ type: '2' }, { id: '1 node1 1', time: 1, indexes: ['a'] }),
+      store.add({ type: '3' }, { id: '1 node1 2', time: 3 })
+    ])
+    await check(store, { index: 'a', order: 'created' }, [
+      [{ type: '2' }, { added: 2, id: '1 node1 1', time: 1, indexes: ['a'] }],
+      [{ type: '1' }, { added: 1, id: '1 node1 0', time: 2, indexes: ['a'] }]
+    ])
+    await check(store, { index: 'a', order: 'added' }, [
+      [{ type: '1' }, { added: 1, id: '1 node1 0', time: 2, indexes: ['a'] }],
+      [{ type: '2' }, { added: 2, id: '1 node1 1', time: 1, indexes: ['a'] }]
+    ])
+  })
+
   test('returns latest added', factory => async () => {
     let store = factory()
     await store.add({ type: 'A' }, { id: '1 n 0', time: 1 })
