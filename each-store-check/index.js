@@ -92,11 +92,14 @@ function eachStoreCheck (test) {
 
   test('changes meta', factory => async () => {
     let store = factory()
-    await store.add({}, { id: '1 n 0', time: 1, a: 1 })
+    await store.add({}, { id: '1 n 0', time: 1, a: 1, indexes: ['a'] })
     let result = await store.changeMeta('1 n 0', { a: 2, b: 2 })
     assert.strictEqual(result, true)
     await checkBoth(store, [
-      [{}, { id: '1 n 0', time: 1, added: 1, a: 2, b: 2 }]
+      [{}, { id: '1 n 0', time: 1, added: 1, a: 2, b: 2, indexes: ['a'] }]
+    ])
+    await checkIndex(store, 'a', [
+      [{}, { id: '1 n 0', time: 1, added: 1, a: 2, b: 2, indexes: ['a'] }]
     ])
   })
 
