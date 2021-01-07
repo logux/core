@@ -164,7 +164,7 @@ it('disables iteration on false', async () => {
 it('supports multi-pages stores', async () => {
   let store = new MemoryStore()
   let meta: Meta = { id: '1 0 0', added: 0, time: 0, reasons: [] }
-  store.get = async (opts?: object): Promise<Page> => {
+  let get: (opts?: object) => Promise<Page> = async () => {
     return {
       entries: [[{ type: 'a' }, meta]],
       async next (): Promise<Page> {
@@ -172,6 +172,7 @@ it('supports multi-pages stores', async () => {
       }
     }
   }
+  store.get = get
   let log = new Log({ nodeId: 'test', store })
 
   let actions: Action[] = []
@@ -490,7 +491,7 @@ it('has type listeners', async () => {
     { event: 'clean' }
   )
 
-  log.on('add', (action, meta) => {
+  log.on('add', action => {
     events.push(`add: ${action.type}`)
   })
 
