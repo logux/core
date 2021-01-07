@@ -111,5 +111,5 @@ export class TestPair extends LocalPair {
    * @param receiver Wait for specific receiver event.
    * @returns Promise until next event.
    */
-  wait (receiver?: 'left' | 'right'): Promise<void>
+  wait (receiver?: 'left' | 'right'): Promise<this>
 }
