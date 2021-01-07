@@ -29,7 +29,10 @@ export type NodeState =
   | 'sending'
   | 'synchronized'
 
-export type CompressedMeta = { time: number; id: [number, string, number] }
+export type CompressedMeta = {
+  time: number
+  id: [number, string, number] | number
+}
 
 export type Message =
   | ['error', keyof LoguxErrorOptions, any?]
