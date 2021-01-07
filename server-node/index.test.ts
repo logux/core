@@ -69,7 +69,7 @@ it('loads only last added from store', async () => {
 it('supports connection before initializing', async () => {
   let log = TestTime.getLog()
 
-  let returnLastAdded = (lastAdded: number): void => {
+  let returnLastAdded: (added: number) => void = () => {
     throw new Error('getLastAdded was not called')
   }
   log.store.getLastAdded = () =>

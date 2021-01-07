@@ -39,13 +39,14 @@ it('saves last added from ping', async () => {
 it('does not connect before initializing', async () => {
   let log = TestTime.getLog()
 
-  let returnLastAdded = (added: number): void => {
+  let returnLastAdded: (added: number) => void = () => {
     throw new Error('getLastAdded was not called')
   }
-  log.store.getLastAdded = () =>
-    new Promise(resolve => {
+  log.store.getLastAdded = () => {
+    return new Promise(resolve => {
       returnLastAdded = resolve
     })
+  }
 
   let pair = new TestPair()
   node = new ClientNode('client', log, pair.left, { fixTime: false })

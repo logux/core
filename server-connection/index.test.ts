@@ -48,10 +48,6 @@ it('emits error on wrong format', () => {
 })
 
 it('closes WebSocket', () => {
-  type FakeWebSocket = {
-    onclose?(): void
-    close(): void
-  }
   let ws = prepareWs()
   jest.spyOn(ws, 'close').mockImplementation(() => {
     ws.emit('close')
