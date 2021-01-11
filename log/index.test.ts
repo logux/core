@@ -481,7 +481,7 @@ it('ensures `indexes` to be array of string values', async () => {
   let err1
   try {
     // @ts-expect-error
-    await log.add({ type: '3' }, { indexes: 'g/1' })
+    await log.add({ type: '3' }, { indexes: 'a' })
   } catch (e) {
     err1 = e
   }
