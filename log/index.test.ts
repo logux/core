@@ -148,6 +148,22 @@ it('iterates by added order', async () => {
   expect(actions).toEqual([{ type: 'C' }, { type: 'B' }, { type: 'A' }])
 })
 
+it('iterates by index', async () => {
+  let log = await logWith([
+    [{ type: 'A' }, { id: '3 n 0', reasons: ['test'], indexes: ['g/0'] }],
+    [
+      { type: 'B' },
+      { id: '2 n 0', reasons: ['test'], indexes: ['g/0', 'g/1'] }
+    ],
+    [{ type: 'C' }, { id: '1 n 0', reasons: ['test'], indexes: ['g/1'] }]
+  ])
+  let actions: Action[] = []
+  await log.each({ index: 'g/1' }, action => {
+    actions.push(action)
+  })
+  expect(actions).toEqual([{ type: 'C' }, { type: 'B' }])
+})
+
 it('disables iteration on false', async () => {
   let log = await logWith([
     [{ type: 'A' }, { reasons: ['test'] }],
