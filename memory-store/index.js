@@ -1,10 +1,47 @@
 let { isFirstOlder } = require('../is-first-older')
 
+function checkIndex (store, index) {
+  if (!store.indexes[index]) {
+    store.indexes[index] = { added: [], entries: [] }
+  }
+}
+
+function forEachIndex (meta, cb) {
+  let indexes = meta.indexes
+  if (isDefined(indexes) && indexes.length > 0) {
+    for (let index of indexes) {
+      cb(index)
+    }
+  }
+}
+
 function insert (store, entry) {
   store.lastAdded += 1
   entry[1].added = store.lastAdded
   store.added.push(entry)
+  forEachIndex(entry[1], index => {
+    checkIndex(store, index)
+    store.indexes[index].added.push(entry)
+  })
   return Promise.resolve(entry[1])
+}
+
+function eject (store, meta) {
+  let added = meta.added
+  let m = 0
+  let n = store.added.length - 1
+  while (m <= n) {
+    let i = (n + m) >> 1
+    let otherAdded = store.added[i][1].added
+    if (otherAdded < added) {
+      m = i + 1
+    } else if (otherAdded > added) {
+      n = i - 1
+    } else {
+      store.added.splice(i, 1)
+      break
+    }
+  }
 }
 
 function find (list, id) {
@@ -24,6 +61,7 @@ class MemoryStore {
   constructor () {
     this.entries = []
     this.added = []
+    this.indexes = {}
     this.lastReceived = 0
     this.lastAdded = 0
     this.lastSent = 0
@@ -39,11 +77,21 @@ class MemoryStore {
       if (id === otherMeta.id) {
         return false
       } else if (!isFirstOlder(otherMeta, meta)) {
+        forEachIndex(meta, index => {
+          checkIndex(this, index)
+          let indexList = this.indexes[index].entries
+          let j = indexList.findIndex(item => !isFirstOlder(item[1], meta))
+          indexList.splice(j, 0, entry)
+        })
         list.splice(i, 0, entry)
         return insert(this, entry)
       }
     }
 
+    forEachIndex(meta, index => {
+      checkIndex(this, index)
+      this.indexes[index].entries.push(entry)
+    })
     list.push(entry)
     return insert(this, entry)
   }
@@ -65,33 +113,32 @@ class MemoryStore {
     }
 
     let entry = [this.entries[created][0], this.entries[created][1]]
+    forEachIndex(entry[1], index => {
+      let entries = this.indexes[index].entries
+      let indexed = find(entries, id)
+      if (indexed !== -1) entries.splice(indexed, 1)
+    })
     this.entries.splice(created, 1)
 
-    let added = entry[1].added
-    let m = 0
-    let n = this.added.length - 1
-    while (m <= n) {
-      let i = (n + m) >> 1
-      let otherAdded = this.added[i][1].added
-      if (otherAdded < added) {
-        m = i + 1
-      } else if (otherAdded > added) {
-        n = i - 1
-      } else {
-        this.added.splice(i, 1)
-        break
-      }
-    }
+    forEachIndex(entry[1], index => {
+      eject(this.indexes[index], entry[1])
+    })
+    eject(this, entry[1])
 
     return entry
   }
 
   async get (opts = {}) {
+    let index = opts.index
+    let store = this
     let entries
+    if (index) {
+      store = this.indexes[index] || { added: [], entries: [] }
+    }
     if (opts.order === 'created') {
-      entries = this.entries
+      entries = store.entries
     } else {
-      entries = this.added
+      entries = store.added
     }
     return { entries: entries.slice(0) }
   }
@@ -147,19 +194,30 @@ class MemoryStore {
         meta.reasons.splice(reasonPos, 1)
         if (meta.reasons.length === 0) {
           callback(action, meta)
-          removed.push(meta.added)
+          removed.push(meta)
           return false
         } else {
           return true
         }
       })
-      this.added = this.added.filter(i => !removed.includes(i[1].added))
+
+      let removedAdded = removed.map(m => m.added)
+      let removing = i => !removedAdded.includes(i[1].added)
+      this.added = this.added.filter(removing)
+
+      for (let meta of removed) {
+        forEachIndex(meta, i => {
+          this.indexes[i].entries = this.indexes[i].entries.filter(removing)
+          this.indexes[i].added = this.indexes[i].added.filter(removing)
+        })
+      }
     }
   }
 
   async clean () {
     this.entries = []
     this.added = []
+    this.indexes = {}
     this.lastReceived = 0
     this.lastAdded = 0
     this.lastSent = 0
