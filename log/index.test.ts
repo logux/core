@@ -239,7 +239,7 @@ it('always generates biggest ID', () => {
 it('changes meta', async () => {
   let log = await logWith([
     [{ type: 'A' }, { reasons: ['t'], id: '1 node 0' }],
-    [{ type: 'B' }, { reasons: ['t'], id: '2 node 0', a: 1 }]
+    [{ type: 'B' }, { reasons: ['t'], id: '2 node 0', a: 1, indexes: ['a'] }]
   ])
   let result = await log.changeMeta('2 node 0', { a: 2, b: 2 })
   expect(result).toBe(true)
@@ -247,7 +247,15 @@ it('changes meta', async () => {
     [{ type: 'A' }, { id: '1 node 0', time: 1, added: 1, reasons: ['t'] }],
     [
       { type: 'B' },
-      { id: '2 node 0', time: 2, added: 2, reasons: ['t'], a: 2, b: 2 }
+      {
+        id: '2 node 0',
+        time: 2,
+        added: 2,
+        reasons: ['t'],
+        a: 2,
+        b: 2,
+        indexes: ['a']
+      }
     ]
   ])
 })
