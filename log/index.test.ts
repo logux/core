@@ -150,15 +150,12 @@ it('iterates by added order', async () => {
 
 it('iterates by index', async () => {
   let log = await logWith([
-    [{ type: 'A' }, { id: '3 n 0', reasons: ['test'], indexes: ['g/0'] }],
-    [
-      { type: 'B' },
-      { id: '2 n 0', reasons: ['test'], indexes: ['g/0', 'g/1'] }
-    ],
-    [{ type: 'C' }, { id: '1 n 0', reasons: ['test'], indexes: ['g/1'] }]
+    [{ type: 'A' }, { id: '3 n 0', reasons: ['test'], indexes: ['a'] }],
+    [{ type: 'B' }, { id: '2 n 0', reasons: ['test'], indexes: ['a', 'b'] }],
+    [{ type: 'C' }, { id: '1 n 0', reasons: ['test'], indexes: ['b'] }]
   ])
   let actions: Action[] = []
-  await log.each({ index: 'g/1' }, action => {
+  await log.each({ index: 'b' }, action => {
     actions.push(action)
   })
   expect(actions).toEqual([{ type: 'C' }, { type: 'B' }])
