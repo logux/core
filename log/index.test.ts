@@ -252,9 +252,9 @@ it('changes meta', async () => {
   ])
 })
 
-it('does not allow to change ID or added', async () => {
+it('does not allow to change ID, added or indexes', async () => {
   let log = createLog()
-  for (let key of ['id', 'added', 'time', 'subprotocol']) {
+  for (let key of ['id', 'added', 'time', 'subprotocol', 'indexes']) {
     let err
     try {
       await log.changeMeta('1 n 0', { [key]: true })
