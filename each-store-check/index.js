@@ -403,6 +403,20 @@ function eachStoreCheck (test) {
     ])
   })
 
+  test('sorts actions with same time and index', factory => async () => {
+    let store = factory()
+    await Promise.all([
+      store.add({ type: 'B' }, { id: '2 a 0', time: 1, indexes: ['a'] }),
+      store.add({ type: 'C' }, { id: '3 a 0', time: 1, indexes: ['a'] }),
+      store.add({ type: 'A' }, { id: '1 a 0', time: 1, indexes: ['a'] })
+    ])
+    await check(store, { index: 'a', order: 'created' }, [
+      [{ type: 'A' }, { added: 3, id: '1 a 0', time: 1, indexes: ['a'] }],
+      [{ type: 'B' }, { added: 1, id: '2 a 0', time: 1, indexes: ['a'] }],
+      [{ type: 'C' }, { added: 2, id: '3 a 0', time: 1, indexes: ['a'] }]
+    ])
+  })
+
   test('cleans whole store if implemented', factory => async () => {
     let store = factory()
     await Promise.all([
