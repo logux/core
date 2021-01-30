@@ -10,14 +10,16 @@ function actionEvents (emitter, event, action, meta) {
 
 class Log {
   constructor (opts = {}) {
-    if (typeof opts.nodeId === 'undefined') {
-      throw new Error('Expected node ID')
-    }
-    if (typeof opts.store !== 'object') {
-      throw new Error('Expected store')
-    }
-    if (opts.nodeId.includes(' ')) {
-      throw new Error('Space is prohibited in node ID')
+    if (process.env.NODE_ENV !== 'production') {
+      if (typeof opts.nodeId === 'undefined') {
+        throw new Error('Expected node ID')
+      }
+      if (typeof opts.store !== 'object') {
+        throw new Error('Expected store')
+      }
+      if (opts.nodeId.includes(' ')) {
+        throw new Error('Space is prohibited in node ID')
+      }
     }
 
     this.nodeId = opts.nodeId
@@ -57,24 +59,28 @@ class Log {
 
     if (typeof meta.reasons === 'undefined') {
       meta.reasons = []
-    } else if (!Array.isArray(meta.reasons)) {
-      throw new Error('Expected "reasons" to be an array of strings')
     }
 
-    for (let reason of meta.reasons) {
-      if (typeof reason !== 'string') {
+    if (process.env.NODE_ENV !== 'production') {
+      if (!Array.isArray(meta.reasons)) {
         throw new Error('Expected "reasons" to be an array of strings')
       }
-    }
 
-    if (typeof meta.indexes !== 'undefined') {
-      if (!Array.isArray(meta.indexes)) {
-        throw new Error('Expected "indexes" to be an array of strings')
+      for (let reason of meta.reasons) {
+        if (typeof reason !== 'string') {
+          throw new Error('Expected "reasons" to be an array of strings')
+        }
       }
 
-      for (let index of meta.indexes) {
-        if (typeof index !== 'string') {
+      if (typeof meta.indexes !== 'undefined') {
+        if (!Array.isArray(meta.indexes)) {
           throw new Error('Expected "indexes" to be an array of strings')
+        }
+
+        for (let index of meta.indexes) {
+          if (typeof index !== 'string') {
+            throw new Error('Expected "indexes" to be an array of strings')
+          }
         }
       }
     }
