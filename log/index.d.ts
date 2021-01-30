@@ -56,7 +56,7 @@ export type Meta = {
   keepLast?: string
 
   /**
-   * Indexes by which the action should be sorted in the log.
+   * Indexes for action quick extraction.
    */
   indexes?: string[]
 
