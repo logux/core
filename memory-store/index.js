@@ -28,17 +28,17 @@ function insert (store, entry) {
 
 function eject (store, meta) {
   let added = meta.added
-  let m = 0
-  let n = store.added.length - 1
-  while (m <= n) {
-    let i = (n + m) >> 1
-    let otherAdded = store.added[i][1].added
+  let start = 0
+  let end = store.added.length - 1
+  while (start <= end) {
+    let middle = (end + start) >> 1
+    let otherAdded = store.added[middle][1].added
     if (otherAdded < added) {
-      m = i + 1
+      start = middle + 1
     } else if (otherAdded > added) {
-      n = i - 1
+      end = middle - 1
     } else {
-      store.added.splice(i, 1)
+      store.added.splice(middle, 1)
       break
     }
   }
