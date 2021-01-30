@@ -55,6 +55,11 @@ export type Meta = {
    */
   keepLast?: string
 
+  /**
+   * Indexes by which the action should be sorted in the log.
+   */
+  indexes?: string[]
+
   [extra: string]: any
 }
 
@@ -126,6 +131,11 @@ type GetOptions = {
    * Sort entries by created time or when they was added to current log.
    */
   order?: 'created' | 'added'
+
+  /**
+   * Get entries with a custom index.
+   */
+  index?: string
 }
 
 /**

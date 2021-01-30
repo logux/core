@@ -148,6 +148,19 @@ it('iterates by added order', async () => {
   expect(actions).toEqual([{ type: 'C' }, { type: 'B' }, { type: 'A' }])
 })
 
+it('iterates by index', async () => {
+  let log = await logWith([
+    [{ type: 'A' }, { id: '3 n 0', reasons: ['test'], indexes: ['a'] }],
+    [{ type: 'B' }, { id: '2 n 0', reasons: ['test'], indexes: ['a', 'b'] }],
+    [{ type: 'C' }, { id: '1 n 0', reasons: ['test'], indexes: ['b'] }]
+  ])
+  let actions: Action[] = []
+  await log.each({ index: 'b' }, action => {
+    actions.push(action)
+  })
+  expect(actions).toEqual([{ type: 'C' }, { type: 'B' }])
+})
+
 it('disables iteration on false', async () => {
   let log = await logWith([
     [{ type: 'A' }, { reasons: ['test'] }],
@@ -240,7 +253,7 @@ it('always generates biggest ID', () => {
 it('changes meta', async () => {
   let log = await logWith([
     [{ type: 'A' }, { reasons: ['t'], id: '1 node 0' }],
-    [{ type: 'B' }, { reasons: ['t'], id: '2 node 0', a: 1 }]
+    [{ type: 'B' }, { reasons: ['t'], id: '2 node 0', a: 1, indexes: ['a'] }]
   ])
   let result = await log.changeMeta('2 node 0', { a: 2, b: 2 })
   expect(result).toBe(true)
@@ -248,14 +261,22 @@ it('changes meta', async () => {
     [{ type: 'A' }, { id: '1 node 0', time: 1, added: 1, reasons: ['t'] }],
     [
       { type: 'B' },
-      { id: '2 node 0', time: 2, added: 2, reasons: ['t'], a: 2, b: 2 }
+      {
+        id: '2 node 0',
+        time: 2,
+        added: 2,
+        reasons: ['t'],
+        a: 2,
+        b: 2,
+        indexes: ['a']
+      }
     ]
   ])
 })
 
-it('does not allow to change ID or added', async () => {
+it('does not allow to change ID, added or indexes', async () => {
   let log = createLog()
-  for (let key of ['id', 'added', 'time', 'subprotocol']) {
+  for (let key of ['id', 'added', 'time', 'subprotocol', 'indexes']) {
     let err
     try {
       await log.changeMeta('1 n 0', { [key]: true })
@@ -453,6 +474,28 @@ it('ensures `reasons` to be array of string values', async () => {
     err2 = e
   }
   expect(err2.message).toEqual('Expected "reasons" to be an array of strings')
+})
+
+it('ensures `indexes` to be array of string values', async () => {
+  let log = createLog()
+
+  let err1
+  try {
+    // @ts-expect-error
+    await log.add({ type: '3' }, { indexes: 'a' })
+  } catch (e) {
+    err1 = e
+  }
+  expect(err1.message).toEqual('Expected "indexes" to be an array of strings')
+
+  let err2
+  try {
+    // @ts-expect-error
+    await log.add({ type: '3' }, { indexes: [false, 1] })
+  } catch (e) {
+    err2 = e
+  }
+  expect(err2.message).toEqual('Expected "indexes" to be an array of strings')
 })
 
 it('has type listeners', async () => {
