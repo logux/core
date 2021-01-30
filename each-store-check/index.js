@@ -1,4 +1,4 @@
-let assert = require('assert')
+import assert from 'assert'
 
 async function all (request, list) {
   if (!list) list = []
@@ -39,7 +39,7 @@ async function checkLastSynced (store, expectedSent, expectedRecieved) {
   })
 }
 
-function eachStoreCheck (test) {
+export function eachStoreCheck (test) {
   test('is empty in the beginning', factory => async () => {
     let store = factory()
     await Promise.all([checkLastAdded(store, 0), checkLastSynced(store, 0, 0)])
@@ -436,5 +436,3 @@ function eachStoreCheck (test) {
     ])
   })
 }
-
-module.exports = { eachStoreCheck }

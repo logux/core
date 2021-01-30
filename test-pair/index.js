@@ -1,4 +1,4 @@
-let { LocalPair } = require('../local-pair')
+import { LocalPair } from '../local-pair/index.js'
 
 function clone (obj) {
   if (Array.isArray(obj)) {
@@ -14,7 +14,7 @@ function clone (obj) {
   }
 }
 
-class TestPair extends LocalPair {
+export class TestPair extends LocalPair {
   constructor (delay) {
     super(delay)
 
@@ -74,5 +74,3 @@ class TestPair extends LocalPair {
     })
   }
 }
-
-module.exports = { TestPair }

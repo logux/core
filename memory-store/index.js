@@ -1,4 +1,4 @@
-let { isFirstOlder } = require('../is-first-older')
+import { isFirstOlder } from '../is-first-older/index.js'
 
 function checkIndex (store, index) {
   if (!store.indexes[index]) {
@@ -57,7 +57,7 @@ function isDefined (value) {
   return typeof value !== 'undefined'
 }
 
-class MemoryStore {
+export class MemoryStore {
   constructor () {
     this.entries = []
     this.added = []
@@ -243,5 +243,3 @@ class MemoryStore {
     }
   }
 }
-
-module.exports = { MemoryStore }

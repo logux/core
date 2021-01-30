@@ -1,4 +1,4 @@
-let { LoguxError } = require('../logux-error')
+import { LoguxError } from '../logux-error/index.js'
 
 function isNumber (value) {
   return typeof value === 'number'
@@ -117,7 +117,7 @@ function wrongFormat (node, msg) {
   return false
 }
 
-function validate (node, msg) {
+export function validate (node, msg) {
   if (!isArray(msg)) return wrongFormat(node, msg)
 
   let name = msg[0]
@@ -136,5 +136,3 @@ function validate (node, msg) {
     return true
   }
 }
-
-module.exports = { validate }

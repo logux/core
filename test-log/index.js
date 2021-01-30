@@ -1,7 +1,7 @@
-let { MemoryStore } = require('../memory-store')
-let { Log } = require('../log')
+import { MemoryStore } from '../memory-store/index.js'
+import { Log } from '../log/index.js'
 
-class TestLog extends Log {
+export class TestLog extends Log {
   constructor (time, id, opts = {}) {
     if (!opts.store) opts.store = new MemoryStore()
     if (typeof opts.nodeId === 'undefined') {
@@ -25,5 +25,3 @@ class TestLog extends Log {
     return this.time.lastTime + ' ' + this.nodeId + ' 0'
   }
 }
-
-module.exports = { TestLog }

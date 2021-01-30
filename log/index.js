@@ -1,6 +1,6 @@
-let { createNanoEvents } = require('nanoevents')
+import { createNanoEvents } from 'nanoevents'
 
-function actionEvents (emitter, event, action, meta) {
+export function actionEvents (emitter, event, action, meta) {
   if (action.id) {
     emitter.emit(`${event}-${action.type}-${action.id}`, action, meta)
   }
@@ -8,7 +8,7 @@ function actionEvents (emitter, event, action, meta) {
   emitter.emit(event, action, meta)
 }
 
-class Log {
+export class Log {
   constructor (opts = {}) {
     if (process.env.NODE_ENV !== 'production') {
       if (typeof opts.nodeId === 'undefined') {
@@ -191,5 +191,3 @@ class Log {
     return this.store.byId(id)
   }
 }
-
-module.exports = { Log, actionEvents }

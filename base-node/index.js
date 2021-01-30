@@ -1,17 +1,17 @@
-let { createNanoEvents } = require('nanoevents')
+import { createNanoEvents } from 'nanoevents'
 
-let {
+import {
   sendConnect,
   sendConnected,
   connectMessage,
   connectedMessage
-} = require('../connect')
-let { sendSync, sendSynced, syncMessage, syncedMessage } = require('../sync')
-let { sendPing, pingMessage, pongMessage } = require('../ping')
-let { sendDebug, debugMessage } = require('../debug')
-let { sendError, errorMessage } = require('../error')
-let { sendHeaders, headersMessage } = require('../headers')
-let { LoguxError } = require('../logux-error')
+} from '../connect'
+import { sendSync, sendSynced, syncMessage, syncedMessage } from '../sync'
+import { sendPing, pingMessage, pongMessage } from '../ping'
+import { sendHeaders, headersMessage } from '../headers'
+import { sendDebug, debugMessage } from '../debug'
+import { sendError, errorMessage } from '../error'
+import { LoguxError } from '../logux-error'
 
 const NOT_TO_THROW = {
   'wrong-subprotocol': true,
@@ -39,7 +39,7 @@ async function syncMappedEvent (node, action, meta) {
   }
 }
 
-class BaseNode {
+export class BaseNode {
   constructor (nodeId, log, connection, options = {}) {
     this.remoteNodeId = undefined
     this.remoteProtocol = undefined
@@ -392,5 +392,3 @@ BaseNode.prototype.headersMessage = headersMessage
 const DUILIANS = {
   金木水火土: '板城烧锅酒'
 }
-
-module.exports = { BaseNode }

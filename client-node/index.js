@@ -1,4 +1,4 @@
-let { BaseNode } = require('../base-node')
+import { BaseNode } from '../base-node/index'
 
 const DEFAULT_OPTIONS = {
   fixTime: true,
@@ -6,7 +6,7 @@ const DEFAULT_OPTIONS = {
   ping: 5000
 }
 
-class ClientNode extends BaseNode {
+export class ClientNode extends BaseNode {
   constructor (nodeId, log, connection, options = {}) {
     options = { ...DEFAULT_OPTIONS, ...options }
     super(nodeId, log, connection, options)
@@ -21,5 +21,3 @@ class ClientNode extends BaseNode {
     }
   }
 }
-
-module.exports = { ClientNode }
