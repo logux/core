@@ -7,15 +7,22 @@ async function all (request, list) {
   return page.next ? all(page.next(), list) : list
 }
 
-async function check (store, order, list) {
-  let entries = await all(store.get({ order }))
+async function check (store, opts, list) {
+  let entries = await all(store.get(opts))
   assert.deepStrictEqual(entries, list)
 }
 
 async function checkBoth (store, entries) {
   await Promise.all([
-    check(store, 'created', entries),
-    check(store, 'added', entries)
+    check(store, { order: 'created' }, entries),
+    check(store, { order: 'added' }, entries)
+  ])
+}
+
+async function checkIndex (store, index, entries) {
+  await Promise.all([
+    check(store, { index, order: 'created' }, entries),
+    check(store, { index, order: 'added' }, entries)
   ])
 }
 
@@ -60,17 +67,34 @@ function eachStoreCheck (test) {
       store.add({ type: '3' }, { id: '1 b 1', time: 2 }),
       store.add({ type: '4' }, { id: '3 b 0', time: 2 })
     ])
-    await check(store, 'created', [
+    await check(store, { order: 'created' }, [
       [{ type: '1' }, { added: 1, id: '1 a 0', time: 1 }],
       [{ type: '4' }, { added: 4, id: '3 b 0', time: 2 }],
       [{ type: '3' }, { added: 3, id: '1 b 1', time: 2 }],
       [{ type: '2' }, { added: 2, id: '1 c 0', time: 2 }]
     ])
-    await check(store, 'added', [
+    await check(store, { order: 'added' }, [
       [{ type: '1' }, { added: 1, id: '1 a 0', time: 1 }],
       [{ type: '2' }, { added: 2, id: '1 c 0', time: 2 }],
       [{ type: '3' }, { added: 3, id: '1 b 1', time: 2 }],
       [{ type: '4' }, { added: 4, id: '3 b 0', time: 2 }]
+    ])
+  })
+
+  test('indexed entries sorted', factory => async () => {
+    let store = factory()
+    await Promise.all([
+      store.add({ type: '1' }, { id: '1 node1 0', time: 2, indexes: ['a'] }),
+      store.add({ type: '2' }, { id: '1 node1 1', time: 1, indexes: ['a'] }),
+      store.add({ type: '3' }, { id: '1 node1 2', time: 3 })
+    ])
+    await check(store, { index: 'a', order: 'created' }, [
+      [{ type: '2' }, { added: 2, id: '1 node1 1', time: 1, indexes: ['a'] }],
+      [{ type: '1' }, { added: 1, id: '1 node1 0', time: 2, indexes: ['a'] }]
+    ])
+    await check(store, { index: 'a', order: 'added' }, [
+      [{ type: '1' }, { added: 1, id: '1 node1 0', time: 2, indexes: ['a'] }],
+      [{ type: '2' }, { added: 2, id: '1 node1 1', time: 1, indexes: ['a'] }]
     ])
   })
 
@@ -85,11 +109,14 @@ function eachStoreCheck (test) {
 
   test('changes meta', factory => async () => {
     let store = factory()
-    await store.add({}, { id: '1 n 0', time: 1, a: 1 })
+    await store.add({}, { id: '1 n 0', time: 1, a: 1, indexes: ['a'] })
     let result = await store.changeMeta('1 n 0', { a: 2, b: 2 })
     assert.strictEqual(result, true)
     await checkBoth(store, [
-      [{}, { id: '1 n 0', time: 1, added: 1, a: 2, b: 2 }]
+      [{}, { id: '1 n 0', time: 1, added: 1, a: 2, b: 2, indexes: ['a'] }]
+    ])
+    await checkIndex(store, 'a', [
+      [{}, { id: '1 n 0', time: 1, added: 1, a: 2, b: 2, indexes: ['a'] }]
     ])
   })
 
@@ -143,26 +170,66 @@ function eachStoreCheck (test) {
     await store.add({ type: 'A' }, { id: '1 n 0', time: 1, added: 1 })
     let result = await store.remove('2 n 0')
     assert.strictEqual(result, false)
-    await check(store, 'created', [
+    await check(store, { order: 'created' }, [
       [{ type: 'A' }, { id: '1 n 0', time: 1, added: 1 }]
+    ])
+  })
+
+  test('removes entry with indexes', factory => async () => {
+    let store = factory()
+    await Promise.all([
+      store.add({ type: '1' }, { id: '1 node1 0', time: 1 }),
+      store.add(
+        { type: '2' },
+        { id: '1 node1 1', time: 2, indexes: ['a', 'b'] }
+      ),
+      store.add({ type: '3' }, { id: '1 node1 2', time: 3, indexes: ['b'] })
+    ])
+    await store.remove('1 node1 1')
+    await checkBoth(store, [
+      [{ type: '1' }, { id: '1 node1 0', time: 1, added: 1 }],
+      [{ type: '3' }, { id: '1 node1 2', time: 3, added: 3, indexes: ['b'] }]
+    ])
+    await checkIndex(store, 'a', [])
+    await checkIndex(store, 'b', [
+      [{ type: '3' }, { id: '1 node1 2', time: 3, added: 3, indexes: ['b'] }]
     ])
   })
 
   test('removes reasons and actions without reason', factory => async () => {
     let store = factory()
-    let removed = []
     await Promise.all([
       store.add({ type: '1' }, { id: '1 n 0', time: 1, reasons: ['a'] }),
       store.add({ type: '2' }, { id: '2 n 0', time: 2, reasons: ['a'] }),
       store.add({ type: '3' }, { id: '3 n 0', time: 3, reasons: ['a', 'b'] }),
       store.add({ type: '4' }, { id: '4 n 0', time: 4, reasons: ['b'] })
     ])
-    await store.removeReason('a', {}, (action, meta) => {
-      removed.push([action, meta])
-    })
+    await store.removeReason('a', {}, () => {})
     await checkBoth(store, [
       [{ type: '3' }, { added: 3, id: '3 n 0', time: 3, reasons: ['b'] }],
       [{ type: '4' }, { added: 4, id: '4 n 0', time: 4, reasons: ['b'] }]
+    ])
+  })
+
+  test('removes reason from indexes', factory => async () => {
+    let store = factory()
+    await Promise.all([
+      store.add(
+        { type: '1' },
+        { id: '1 n 0', time: 1, reasons: ['a'], indexes: ['a', 'b'] }
+      ),
+      store.add(
+        { type: '2' },
+        { id: '2 n 0', time: 2, reasons: ['b'], indexes: ['b'] }
+      )
+    ])
+    await store.removeReason('a', {}, () => {})
+    await checkIndex(store, 'a', [])
+    await checkIndex(store, 'b', [
+      [
+        { type: '2' },
+        { added: 2, id: '2 n 0', time: 2, reasons: ['b'], indexes: ['b'] }
+      ]
     ])
   })
 
@@ -329,10 +396,24 @@ function eachStoreCheck (test) {
       store.add({ type: 'C' }, { id: '3 a 0', time: 1 }),
       store.add({ type: 'A' }, { id: '1 a 0', time: 1 })
     ])
-    await check(store, 'created', [
+    await check(store, { order: 'created' }, [
       [{ type: 'A' }, { added: 3, id: '1 a 0', time: 1 }],
       [{ type: 'B' }, { added: 1, id: '2 a 0', time: 1 }],
       [{ type: 'C' }, { added: 2, id: '3 a 0', time: 1 }]
+    ])
+  })
+
+  test('sorts actions with same time and index', factory => async () => {
+    let store = factory()
+    await Promise.all([
+      store.add({ type: 'B' }, { id: '2 a 0', time: 1, indexes: ['a'] }),
+      store.add({ type: 'C' }, { id: '3 a 0', time: 1, indexes: ['a'] }),
+      store.add({ type: 'A' }, { id: '1 a 0', time: 1, indexes: ['a'] })
+    ])
+    await check(store, { index: 'a', order: 'created' }, [
+      [{ type: 'A' }, { added: 3, id: '1 a 0', time: 1, indexes: ['a'] }],
+      [{ type: 'B' }, { added: 1, id: '2 a 0', time: 1, indexes: ['a'] }],
+      [{ type: 'C' }, { added: 2, id: '3 a 0', time: 1, indexes: ['a'] }]
     ])
   })
 
@@ -340,17 +421,18 @@ function eachStoreCheck (test) {
     let store = factory()
     await Promise.all([
       store.add({ type: 'A' }, { id: '1', time: 1 }),
-      store.add({ type: 'B' }, { id: '2', time: 2 }),
+      store.add({ type: 'B' }, { id: '2', time: 2, indexes: ['a'] }),
       store.add({ type: 'C' }, { id: '3', time: 3 }),
-      store.add({ type: 'D' }, { id: '4', time: 4 }),
-      store.add({ type: 'E' }, { id: '5', time: 5 })
+      store.add({ type: 'D' }, { id: '4', time: 4, indexes: ['a'] }),
+      store.add({ type: 'E' }, { id: '5', time: 5, indexes: ['a', 'b'] })
     ])
     await store.clean()
-    let another = factory()
     await Promise.all([
-      checkBoth(another, []),
-      checkLastAdded(another, 0),
-      checkLastSynced(another, 0, 0)
+      checkBoth(store, []),
+      checkIndex(store, 'a', []),
+      checkIndex(store, 'b', []),
+      checkLastAdded(store, 0),
+      checkLastSynced(store, 0, 0)
     ])
   })
 }
