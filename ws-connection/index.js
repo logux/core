@@ -1,6 +1,6 @@
-let { createNanoEvents } = require('nanoevents')
+import { createNanoEvents } from 'nanoevents'
 
-class WsConnection {
+export class WsConnection {
   constructor (url, Class, opts) {
     this.connected = false
     this.emitter = createNanoEvents()
@@ -87,5 +87,3 @@ class WsConnection {
     }
   }
 }
-
-module.exports = { WsConnection }

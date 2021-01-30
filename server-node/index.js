@@ -1,12 +1,12 @@
-let { BaseNode } = require('../base-node')
-let { validate } = require('../validate')
+import { BaseNode } from '../base-node/index.js'
+import { validate } from '../validate/index.js'
 
 const DEFAULT_OPTIONS = {
   timeout: 20000,
   ping: 10000
 }
 
-class ServerNode extends BaseNode {
+export class ServerNode extends BaseNode {
   constructor (nodeId, log, connection, options = {}) {
     options = { ...DEFAULT_OPTIONS, ...options }
     super(nodeId, log, connection, options)
@@ -51,5 +51,3 @@ class ServerNode extends BaseNode {
     if (this.connection.connected) this.onConnect()
   }
 }
-
-module.exports = { ServerNode }

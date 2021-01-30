@@ -1,4 +1,4 @@
-let { createNanoEvents } = require('nanoevents')
+import { createNanoEvents } from 'nanoevents'
 
 class LocalConnection {
   constructor (pair, type) {
@@ -64,12 +64,10 @@ class LocalConnection {
   }
 }
 
-class LocalPair {
+export class LocalPair {
   constructor (delay = 1) {
     this.delay = delay
     this.left = new LocalConnection(this, 'left')
     this.right = new LocalConnection(this, 'right')
   }
 }
-
-module.exports = { LocalPair }

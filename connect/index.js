@@ -1,4 +1,4 @@
-let { LoguxError } = require('../logux-error')
+import { LoguxError } from '../logux-error/index.js'
 
 async function auth (node, nodeId, token, callback) {
   if (!node.options.auth) {
@@ -61,7 +61,7 @@ function emitEvent (node) {
   return true
 }
 
-async function sendConnect () {
+export async function sendConnect () {
   let message = [
     'connect',
     this.localProtocol,
@@ -92,7 +92,7 @@ async function sendConnect () {
   this.send(message)
 }
 
-async function sendConnected (start, end) {
+export async function sendConnected (start, end) {
   let message = [
     'connected',
     this.localProtocol,
@@ -120,7 +120,7 @@ async function sendConnected (start, end) {
   this.send(message)
 }
 
-function connectMessage (ver, nodeId, synced, options) {
+export function connectMessage (ver, nodeId, synced, options) {
   let start = this.now()
   if (!options) options = {}
 
@@ -141,7 +141,7 @@ function connectMessage (ver, nodeId, synced, options) {
   })
 }
 
-function connectedMessage (ver, nodeId, time, options) {
+export function connectedMessage (ver, nodeId, time, options) {
   if (!options) options = {}
 
   this.endTimeout()
@@ -167,11 +167,4 @@ function connectedMessage (ver, nodeId, time, options) {
   auth(this, nodeId, options.token, () => {
     this.syncSince(this.lastSent)
   })
-}
-
-module.exports = {
-  sendConnect,
-  sendConnected,
-  connectMessage,
-  connectedMessage
 }

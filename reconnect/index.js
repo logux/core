@@ -10,7 +10,7 @@ const FATAL_ERRORS = [
   'wrong-credentials'
 ]
 
-class Reconnect {
+export class Reconnect {
   constructor (connection, options = {}) {
     this.connection = connection
     this.options = { ...DEFAULT_OPTIONS, ...options }
@@ -132,5 +132,3 @@ class Reconnect {
     return this.connection.emitter
   }
 }
-
-module.exports = { Reconnect }

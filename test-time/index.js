@@ -1,6 +1,6 @@
-let { TestLog } = require('../test-log')
+import { TestLog } from '../test-log/index.js'
 
-class TestTime {
+export class TestTime {
   static getLog (opts) {
     let time = new TestTime()
     return time.nextLog(opts)
@@ -16,5 +16,3 @@ class TestTime {
     return new TestLog(this, this.lastId, opts)
   }
 }
-
-module.exports = { TestTime }

@@ -1,4 +1,4 @@
-class LoguxError extends Error {
+export class LoguxError extends Error {
   static describe (type, options) {
     if (type === 'timeout') {
       return 'A timeout was reached (' + options + ' ms)'
@@ -47,5 +47,3 @@ class LoguxError extends Error {
     }
   }
 }
-
-module.exports = { LoguxError }

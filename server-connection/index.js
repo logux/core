@@ -1,6 +1,6 @@
-let { WsConnection } = require('../ws-connection')
+import { WsConnection } from '../ws-connection/index.js'
 
-class ServerConnection extends WsConnection {
+export class ServerConnection extends WsConnection {
   constructor (ws) {
     super(undefined, true)
     this.connected = true
@@ -14,5 +14,3 @@ class ServerConnection extends WsConnection {
     )
   }
 }
-
-module.exports = { ServerConnection }

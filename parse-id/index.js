@@ -1,4 +1,4 @@
-function parseId (nodeId) {
+export function parseId (nodeId) {
   if (nodeId.includes(' ')) nodeId = nodeId.split(' ')[1]
   let parts = nodeId.split(':')
   if (parts.length === 1) {
@@ -8,5 +8,3 @@ function parseId (nodeId) {
     return { nodeId, userId, clientId: parts[0] + ':' + parts[1] }
   }
 }
-
-module.exports = { parseId }
