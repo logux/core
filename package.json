@@ -66,8 +66,11 @@
     "*.ts": "eslint --fix"
   },
   "jest": {
-    "preset": "ts-jest/presets/default-esm",
     "testEnvironment": "node",
+    "extensionsToTreatAsEsm": [".ts"],
+    "transform": {
+      "^.+\\.tsx?$": "ts-jest"
+    },
     "globals": {
       "ts-jest": {
         "useESM": true
