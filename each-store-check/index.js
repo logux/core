@@ -427,12 +427,14 @@ export function eachStoreCheck (test) {
       store.add({ type: 'E' }, { id: '5', time: 5, indexes: ['a', 'b'] })
     ])
     await store.clean()
+
+    let store2 = factory()
     await Promise.all([
-      checkBoth(store, []),
-      checkIndex(store, 'a', []),
-      checkIndex(store, 'b', []),
-      checkLastAdded(store, 0),
-      checkLastSynced(store, 0, 0)
+      checkBoth(store2, []),
+      checkIndex(store2, 'a', []),
+      checkIndex(store2, 'b', []),
+      checkLastAdded(store2, 0),
+      checkLastSynced(store2, 0, 0)
     ])
   })
 }
