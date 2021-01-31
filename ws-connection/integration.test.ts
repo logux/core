@@ -1,7 +1,7 @@
 import { delay } from 'nanodelay'
 
 import { ServerConnection, WsConnection, Message } from '../index.js'
-import WebSocket = require('ws')
+import WebSocket from 'ws'
 
 let wss: WebSocket.Server
 afterEach(() => {

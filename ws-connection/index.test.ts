@@ -1,5 +1,7 @@
+import WebSocket from 'ws'
+import { jest } from '@jest/globals'
+
 import { WsConnection, Message } from '../index.js'
-import WebSocket = require('ws')
 
 class FakeWebSocket {
   opts: object

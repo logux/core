@@ -1,4 +1,5 @@
 import { delay } from 'nanodelay'
+import { jest } from '@jest/globals'
 
 import { Reconnect, TestPair, Message } from '../index.js'
 
@@ -113,7 +114,8 @@ it('proxies connection methods', () => {
     connected: false,
     disconnect () {
       this.connected = false
-    }
+    },
+    destroy () {}
   }
   let recon = new Reconnect(con)
   expect(recon.connected).toBe(false)

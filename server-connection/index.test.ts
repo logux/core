@@ -1,5 +1,6 @@
 import { ServerConnection, Message } from '../index.js'
-import WebSocket = require('ws')
+import { jest } from '@jest/globals'
+import WebSocket from 'ws'
 
 function privateMethods (obj: object): any {
   return obj
