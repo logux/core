@@ -104,9 +104,9 @@ export abstract class Connection {
   disconnect (reason?: 'error' | 'timeout' | 'destroy'): void
 
   /**
-   * Optional method to disconnect and unbind all even listeners.
+   * Disconnect and unbind all even listeners.
    */
-  destroy?: () => void
+  destroy: () => void
 }
 
 export type NodeOptions<H extends object = {}> = {
