@@ -1,4 +1,4 @@
-import { BaseNode } from '../base-node/index'
+import { BaseNode } from '../base-node/index.js'
 
 const DEFAULT_OPTIONS = {
   fixTime: true,

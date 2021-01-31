@@ -5,13 +5,18 @@ import {
   sendConnected,
   connectMessage,
   connectedMessage
-} from '../connect'
-import { sendSync, sendSynced, syncMessage, syncedMessage } from '../sync'
-import { sendPing, pingMessage, pongMessage } from '../ping'
-import { sendHeaders, headersMessage } from '../headers'
-import { sendDebug, debugMessage } from '../debug'
-import { sendError, errorMessage } from '../error'
-import { LoguxError } from '../logux-error'
+} from '../connect/index.js'
+import {
+  syncedMessage,
+  syncMessage,
+  sendSynced,
+  sendSync
+} from '../sync/index.js'
+import { sendPing, pingMessage, pongMessage } from '../ping/index.js'
+import { sendHeaders, headersMessage } from '../headers/index.js'
+import { sendDebug, debugMessage } from '../debug/index.js'
+import { sendError, errorMessage } from '../error/index.js'
+import { LoguxError } from '../logux-error/index.js'
 
 const NOT_TO_THROW = {
   'wrong-subprotocol': true,
