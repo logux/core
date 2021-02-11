@@ -1,8 +1,8 @@
 {
   "compilerOptions": {
     "target": "es2018",
-    "module": "ESNext",
-    "moduleResolution": "Node",
+    "module": "esnext",
+    "moduleResolution": "node",
     "esModuleInterop": true,
     "allowJs": true,
     "strict": true,
