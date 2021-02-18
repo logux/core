@@ -53,3 +53,14 @@ it('creates log with test shortcuts', () => {
     [{ type: 'A' }, { id: '1 test1 0', time: 1, added: 1, reasons: ['t'] }]
   ])
 })
+
+it('keeps actions on request', async () => {
+  let log = TestTime.getLog()
+
+  await log.add({ type: 'a' })
+  expect(log.actions()).toEqual([])
+
+  log.keepActions()
+  await log.add({ type: 'b' })
+  expect(log.actions()).toEqual([{ type: 'b' }])
+})

@@ -46,4 +46,16 @@ export class TestLog<M extends Meta = Meta> extends Log<M> {
    * ```
    */
   actions (): Action[]
+
+  /**
+   * Keep actions without `meta.reasons` in the log by setting `test` reason
+   * during adding to the log.
+   *
+   * ```js
+   * log.keepActions()
+   * log.add({ type: 'test' })
+   * log.actions() //=> [{ type: 'test' }]
+   * ```
+   */
+  keepActions (): void
 }
