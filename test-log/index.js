@@ -24,4 +24,10 @@ export class TestLog extends Log {
     this.time.lastTime += 1
     return this.time.lastTime + ' ' + this.nodeId + ' 0'
   }
+
+  keepActions () {
+    this.on('preadd', (action, meta) => {
+      meta.reasons.push('test')
+    })
+  }
 }
