@@ -362,7 +362,7 @@ export class BaseNode<H extends object = {}, L extends Log = Log<Meta>> {
 
   on (
     event: 'error' | 'clientError',
-    listener: (error: Error) => void
+    listener: (error: Error | LoguxError) => void
   ): Unsubscribe
 
   on (
