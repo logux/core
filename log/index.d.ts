@@ -298,7 +298,10 @@ export class Log<M extends Meta = Meta, S extends LogStore = LogStore> {
    * @returns Promise with `meta` if action was added to log or `false`
    *          if action was already in log.
    */
-  add(action: AnyAction, meta?: Partial<M>): Promise<M | false>
+  add<A extends Action = AnyAction>(
+    action: A,
+    meta?: Partial<M>
+  ): Promise<M | false>
 
   /**
    * Add listener for adding action with specific type.
