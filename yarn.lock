@@ -529,10 +529,10 @@
   dependencies:
     globals "^13.8.0"
 
-"@logux/sharec-config@^0.10.0":
-  version "0.10.0"
-  resolved "https://registry.yarnpkg.com/@logux/sharec-config/-/sharec-config-0.10.0.tgz#f8e7c9d1f6e8df319c308ca1735d646198432961"
-  integrity sha512-GKjBV+vN83aFQxbmVxCL173Z2Oaw6LteZ7QDPghU1bxcgqw/LXMPso+pnSNhpp1nOgzdWoh0GrhTquH0K0/7uA==
+"@logux/sharec-config@^0.10.1":
+  version "0.10.1"
+  resolved "https://registry.yarnpkg.com/@logux/sharec-config/-/sharec-config-0.10.1.tgz#89518a684f1683f19965d7a574bd6f09c78ebb8b"
+  integrity sha512-6tCM6f/3qBUxDEnyfQIob81EXH8Q3zk0Tkk7KoADG9SAdR10bCBPIf2TJ0RRI9slOPCP2EsPOaEVyalKxXhvdA==
   dependencies:
     sharec "^2.9.0"
 

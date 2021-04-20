@@ -30,7 +30,7 @@
   "devDependencies": {
     "@babel/core": "^7.13.16",
     "@logux/eslint-config": "^45.2.3",
-    "@logux/sharec-config": "^0.10.0",
+    "@logux/sharec-config": "^0.10.1",
     "@types/jest": "^26.0.22",
     "@types/ws": "^7.4.1",
     "@typescript-eslint/eslint-plugin": "^4.22.0",
@@ -142,6 +142,6 @@
   },
   "sharec": {
     "config": "@logux/sharec-config",
-    "version": "0.10.0"
+    "version": "0.10.1"
   }
 }
