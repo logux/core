@@ -22,15 +22,15 @@
   "type": "module",
   "types": "./index.d.ts",
   "engines": {
-    "node": "^12.0.0 || >=14.0.0"
+    "node": "^12.0.0 || ^14.0.0 || >=16.0.0"
   },
   "dependencies": {
     "nanoevents": "^5.1.13"
   },
   "devDependencies": {
-    "@babel/core": "^7.13.15",
-    "@logux/eslint-config": "^45.2.2",
-    "@logux/sharec-config": "^0.9.0",
+    "@babel/core": "^7.13.16",
+    "@logux/eslint-config": "^45.2.3",
+    "@logux/sharec-config": "^0.10.0",
     "@types/jest": "^26.0.22",
     "@types/ws": "^7.4.1",
     "@typescript-eslint/eslint-plugin": "^4.22.0",
@@ -44,7 +44,7 @@
     "eslint-plugin-prefer-let": "^1.1.0",
     "eslint-plugin-promise": "^5.1.0",
     "eslint-plugin-security": "^1.4.0",
-    "eslint-plugin-unicorn": "^29.0.0",
+    "eslint-plugin-unicorn": "^30.0.0",
     "jest": "^27.0.0-next.2",
     "lint-staged": "^10.5.4",
     "nanodelay": "^1.0.8",
@@ -53,7 +53,7 @@
     "simple-git-hooks": "^2.3.1",
     "ts-jest": "^27.0.0-next.4",
     "typescript": "^4.2.4",
-    "ws": "^7.4.4",
+    "ws": "^7.4.5",
     "yaspeller": "^7.0.0"
   },
   "simple-git-hooks": {
@@ -142,6 +142,6 @@
   },
   "sharec": {
     "config": "@logux/sharec-config",
-    "version": "0.9.0"
+    "version": "0.10.0"
   }
 }
