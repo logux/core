@@ -3,8 +3,8 @@ import { Unsubscribe } from 'nanoevents'
 import { LoguxError, LoguxErrorOptions } from '../logux-error/index.js'
 import { Log, Action, AnyAction, Meta } from '../log/index.js'
 
-interface Authentificator<H> {
-  (nodeId: string, token: string, headers: H | {}): Promise<boolean>
+interface Authentificator<Headers> {
+  (nodeId: string, token: string, headers: Headers | {}): Promise<boolean>
 }
 
 interface Filter {
@@ -109,7 +109,7 @@ export abstract class Connection {
   destroy: () => void
 }
 
-export interface NodeOptions<H extends object = {}> {
+export interface NodeOptions<Headers extends object = {}> {
   /**
    * Client credentials. For example, access token.
    */
@@ -118,7 +118,7 @@ export interface NodeOptions<H extends object = {}> {
   /**
    * Function to check client credentials.
    */
-  auth?: Authentificator<H>
+  auth?: Authentificator<Headers>
 
   /**
    * Detect difference between client and server and fix time
@@ -165,11 +165,11 @@ export interface NodeOptions<H extends object = {}> {
 /**
  * Base methods for synchronization nodes. Client and server nodes
  * are based on this module.
- *
- * @template M Meta’s type.
- * @template H Remote headers type.
  */
-export class BaseNode<H extends object = {}, L extends Log = Log<Meta>> {
+export class BaseNode<
+  Headers extends object = {},
+  NodeLog extends Log = Log<Meta>
+> {
   /**
    * @param nodeId Unique current machine name.
    * @param log Logux log instance to be synchronized.
@@ -178,9 +178,9 @@ export class BaseNode<H extends object = {}, L extends Log = Log<Meta>> {
    */
   constructor(
     nodeId: string,
-    log: L,
+    log: NodeLog,
     connection: Connection,
-    options?: NodeOptions<H>
+    options?: NodeOptions<Headers>
   )
 
   /**
@@ -232,7 +232,7 @@ export class BaseNode<H extends object = {}, L extends Log = Log<Meta>> {
    * node.log.add({ type: 'error', message })
    * ```
    */
-  remoteHeaders: H | EmptyHeaders
+  remoteHeaders: Headers | EmptyHeaders
 
   /**
    * Minimum version of Logux protocol, which is supported.
@@ -266,7 +266,7 @@ export class BaseNode<H extends object = {}, L extends Log = Log<Meta>> {
   /**
    * Log for synchronization.
    */
-  log: L
+  log: NodeLog
 
   /**
    * Connection used to communicate to remote node.
@@ -276,7 +276,7 @@ export class BaseNode<H extends object = {}, L extends Log = Log<Meta>> {
   /**
    * Synchronization options.
    */
-  options: NodeOptions<H>
+  options: NodeOptions<Headers>
 
   /**
    * Is synchronization in process.
@@ -370,7 +370,7 @@ export class BaseNode<H extends object = {}, L extends Log = Log<Meta>> {
     listener: (type: 'error', data: string) => void
   ): Unsubscribe
 
-  on(event: 'headers', listener: (headers: H) => void): Unsubscribe
+  on(event: 'headers', listener: (headers: Headers) => void): Unsubscribe
 
   /**
    * Disable throwing a error on error message and create error listener.
@@ -424,5 +424,5 @@ export class BaseNode<H extends object = {}, L extends Log = Log<Meta>> {
    *
    * @param headers The data object will be set as headers for current node.
    */
-  setLocalHeaders(headers: H): void
+  setLocalHeaders(headers: Headers): void
 }

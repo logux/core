@@ -14,10 +14,8 @@ import { BaseNode } from '../base-node/index.js'
  *   const node = new ServerNode('server' + id, log, connection)
  * })
  * ```
- *
- * @template M Meta’s type.
  */
 export class ServerNode<
-  H extends object = {},
-  L extends Log = Log<Meta>
-> extends BaseNode<H, L> {}
+  Headers extends object = {},
+  NodeLog extends Log = Log<Meta>
+> extends BaseNode<Headers, NodeLog> {}

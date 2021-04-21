@@ -23,7 +23,7 @@ export interface LoguxErrorOptions {
  * ```
  */
 export class LoguxError<
-  T extends keyof LoguxErrorOptions = keyof LoguxErrorOptions
+  ErrorType extends keyof LoguxErrorOptions = keyof LoguxErrorOptions
 > extends Error {
   /**
    * Return a error description by it code.
@@ -37,9 +37,9 @@ export class LoguxError<
    * }
    * ```
    */
-  static description<K extends keyof LoguxErrorOptions>(
-    type: K,
-    options?: LoguxErrorOptions[K]
+  static description<Type extends keyof LoguxErrorOptions>(
+    type: Type,
+    options?: LoguxErrorOptions[Type]
   ): string
 
   /**
@@ -47,7 +47,11 @@ export class LoguxError<
    * @param options The error option.
    * @param received Was error received from remote node.
    */
-  constructor(type: T, options?: LoguxErrorOptions[T], received?: boolean)
+  constructor(
+    type: ErrorType,
+    options?: LoguxErrorOptions[ErrorType],
+    received?: boolean
+  )
 
   /**
    * Always equal to `LoguxError`. The best way to check error class.
@@ -77,7 +81,7 @@ export class LoguxError<
    * }
    * ```
    */
-  type: T
+  type: ErrorType
 
   /**
    * Error options depends on error type.
@@ -88,7 +92,7 @@ export class LoguxError<
    * }
    * ```
    */
-  options: LoguxErrorOptions[T]
+  options: LoguxErrorOptions[ErrorType]
 
   /**
    * Human-readable error description.

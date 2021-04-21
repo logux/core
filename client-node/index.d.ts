@@ -12,10 +12,8 @@ import { BaseNode } from '../base-node/index.js'
  * const connection = new BrowserConnection(url)
  * const node = new ClientNode(nodeId, log, connection)
  * ```
- *
- * @template M Meta’s type.
  */
 export class ClientNode<
-  H extends object = {},
-  L extends Log = Log<Meta>
-> extends BaseNode<H, L> {}
+  Headers extends object = {},
+  NodeLog extends Log = Log<Meta>
+> extends BaseNode<Headers, NodeLog> {}

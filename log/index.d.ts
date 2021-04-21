@@ -9,12 +9,12 @@ import { Unsubscribe, Emitter } from 'nanoevents'
  */
 export type ID = string
 
-interface ActionListener<A extends Action, M extends Meta> {
-  (action: A, meta: M): void
+interface ActionListener<ListenerAction extends Action, LogMeta extends Meta> {
+  (action: ListenerAction, meta: LogMeta): void
 }
 
-interface ActionIterator<M extends Meta> {
-  (action: Action, meta: M): boolean | void
+interface ActionIterator<LogMeta extends Meta> {
+  (action: Action, meta: LogMeta): boolean | void
 }
 
 export function actionEvents(
@@ -235,11 +235,11 @@ export abstract class LogStore {
   setLastSynced(values: LastSynced): Promise<void>
 }
 
-interface LogOptions<S extends LogStore = LogStore> {
+interface LogOptions<Store extends LogStore = LogStore> {
   /**
    * Store for log.
    */
-  store: S
+  store: Store
 
   /**
    * Unique current machine name.
@@ -261,19 +261,20 @@ interface LogOptions<S extends LogStore = LogStore> {
  * log.on('add', beeper)
  * log.add({ type: 'beep' })
  * ```
- *
- * @template M Meta’s type.
  */
-export class Log<M extends Meta = Meta, S extends LogStore = LogStore> {
+export class Log<
+  LogMeta extends Meta = Meta,
+  Store extends LogStore = LogStore
+> {
   /**
    * @param opts Log options.
    */
-  constructor(opts: LogOptions<S>)
+  constructor(opts: LogOptions<Store>)
 
   /**
    * Log store.
    */
-  store: S
+  store: Store
 
   /**
    * Unique node ID. It is used in action IDs.
@@ -298,10 +299,10 @@ export class Log<M extends Meta = Meta, S extends LogStore = LogStore> {
    * @returns Promise with `meta` if action was added to log or `false`
    *          if action was already in log.
    */
-  add<A extends Action = AnyAction>(
-    action: A,
-    meta?: Partial<M>
-  ): Promise<M | false>
+  add<NewAction extends Action = AnyAction>(
+    action: NewAction,
+    meta?: Partial<LogMeta>
+  ): Promise<LogMeta | false>
 
   /**
    * Add listener for adding action with specific type.
@@ -324,9 +325,12 @@ export class Log<M extends Meta = Meta, S extends LogStore = LogStore> {
    * @param event
    * @returns Unbind listener from event.
    */
-  type<A extends Action = Action, T extends string = A['type']>(
-    type: T,
-    listener: ActionListener<A, M>,
+  type<
+    NewAction extends Action = Action,
+    Type extends string = NewAction['type']
+  >(
+    type: Type,
+    listener: ActionListener<NewAction, LogMeta>,
     opts?: { id?: string; event?: 'preadd' | 'add' | 'clean' }
   ): Unsubscribe
 
@@ -354,7 +358,7 @@ export class Log<M extends Meta = Meta, S extends LogStore = LogStore> {
    */
   on(
     event: 'preadd' | 'add' | 'clean',
-    listener: ActionListener<Action, M>
+    listener: ActionListener<Action, LogMeta>
   ): Unsubscribe
 
   /**
@@ -388,14 +392,14 @@ export class Log<M extends Meta = Meta, S extends LogStore = LogStore> {
    * @param callback Function will be executed on every action.
    * @returns When iteration will be finished by iterator or end of actions.
    */
-  each(callback: ActionIterator<M>): Promise<void>
+  each(callback: ActionIterator<LogMeta>): Promise<void>
 
   /**
    * @param opts Iterator options.
    * @param callback Function will be executed on every action.
    */
-  each(opts: GetOptions, callback: ActionIterator<M>): Promise<void>
-  each(callback: ActionIterator<M>): Promise<void>
+  each(opts: GetOptions, callback: ActionIterator<LogMeta>): Promise<void>
+  each(callback: ActionIterator<LogMeta>): Promise<void>
 
   /**
    * Change action metadata. You will remove action by setting `reasons: []`.
@@ -410,7 +414,7 @@ export class Log<M extends Meta = Meta, S extends LogStore = LogStore> {
    * @returns Promise with `true` if metadata was changed or `false`
    *          on unknown ID.
    */
-  changeMeta(id: ID, diff: Partial<M>): Promise<boolean>
+  changeMeta(id: ID, diff: Partial<LogMeta>): Promise<boolean>
 
   /**
    * Remove reason tag from action’s metadata and remove actions without reason
@@ -441,5 +445,5 @@ export class Log<M extends Meta = Meta, S extends LogStore = LogStore> {
    * @param id Action ID.
    * @returns Promise with array of action and metadata.
    */
-  byId(id: ID): Promise<[Action, M] | [null, null]>
+  byId(id: ID): Promise<[Action, LogMeta] | [null, null]>
 }

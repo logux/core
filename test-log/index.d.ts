@@ -20,7 +20,7 @@ import { Log, Action, Meta } from '../log/index.js'
  * })
  * ```
  */
-export class TestLog<M extends Meta = Meta> extends Log<M> {
+export class TestLog<LogMeta extends Meta = Meta> extends Log<LogMeta> {
   /**
    * Return all entries (with metadata) inside log, sorted by created time.
    *
