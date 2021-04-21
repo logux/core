@@ -1,6 +1,6 @@
 import { Connection } from '../base-node/index.js'
 
-type ReconnectOptions = {
+interface ReconnectOptions {
   /**
    * Minimum delay between reconnecting.
    */

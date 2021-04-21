@@ -1,7 +1,7 @@
 import { LogStore } from '../log/index.js'
 import { TestLog } from '../test-log/index.js'
 
-type TestLogOptions = {
+interface TestLogOptions {
   /**
    * Unique log name.
    */

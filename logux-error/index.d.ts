@@ -1,9 +1,9 @@
-type Versions = {
+interface Versions {
   supported: string
   used: string
 }
 
-export type LoguxErrorOptions = {
+export interface LoguxErrorOptions {
   'timeout': number
   'bruteforce': void
   'wrong-format': string

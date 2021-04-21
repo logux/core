@@ -24,7 +24,7 @@ export function actionEvents(
   meta: Meta
 ): void
 
-export type Meta = {
+export interface Meta {
   /**
    * Sequence number of action in current log. Log fills it.
    */
@@ -63,19 +63,19 @@ export type Meta = {
   [extra: string]: any
 }
 
-export type Action = {
+export interface Action {
   /**
    * Action type name.
    */
   type: string
 }
 
-export type AnyAction = {
+export interface AnyAction {
   type: string
   [extra: string]: any
 }
 
-type Criteria = {
+interface Criteria {
   /**
    * Remove reason only for actions with bigger `added`.
    */
@@ -102,7 +102,7 @@ type Criteria = {
   id?: ID
 }
 
-type LastSynced = {
+interface LastSynced {
   /**
    * The `added` value of latest received event.
    */
@@ -114,7 +114,7 @@ type LastSynced = {
   sent: number
 }
 
-export type Page = {
+export interface Page {
   /**
    * Pagination page.
    */
@@ -126,7 +126,7 @@ export type Page = {
   next?(): Promise<Page>
 }
 
-type GetOptions = {
+interface GetOptions {
   /**
    * Sort entries by created time or when they was added to current log.
    */
@@ -235,7 +235,7 @@ export abstract class LogStore {
   setLastSynced(values: LastSynced): Promise<void>
 }
 
-type LogOptions<S extends LogStore = LogStore> = {
+interface LogOptions<S extends LogStore = LogStore> {
   /**
    * Store for log.
    */

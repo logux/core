@@ -1,4 +1,4 @@
-type IDComponents = {
+interface IDComponents {
   clientId: string
   nodeId: string
   userId: string | undefined

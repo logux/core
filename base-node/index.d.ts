@@ -15,7 +15,7 @@ interface Mapper {
   (action: Action, meta: Meta): Promise<[AnyAction, Meta]>
 }
 
-type EmptyHeaders = {
+interface EmptyHeaders {
   [key: string]: undefined
 }
 
@@ -29,7 +29,7 @@ export type NodeState =
   | 'sending'
   | 'synchronized'
 
-export type CompressedMeta = {
+export interface CompressedMeta {
   time: number
   id: [number, string, number] | number
 }
@@ -109,7 +109,7 @@ export abstract class Connection {
   destroy: () => void
 }
 
-export type NodeOptions<H extends object = {}> = {
+export interface NodeOptions<H extends object = {}> {
   /**
    * Client credentials. For example, access token.
    */
