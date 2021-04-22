@@ -7,11 +7,11 @@ interface Authentificator<Headers> {
   (nodeId: string, token: string, headers: Headers | {}): Promise<boolean>
 }
 
-interface Filter {
+interface LogFilter {
   (action: Action, meta: Meta): Promise<boolean>
 }
 
-interface Mapper {
+interface LogMapper {
   (action: Action, meta: Meta): Promise<[AnyAction, Meta]>
 }
 
@@ -144,22 +144,22 @@ export interface NodeOptions<Headers extends object = {}> {
   /**
    * Function to filter actions from remote node. Best place for access control.
    */
-  inFilter?: Filter
+  inFilter?: LogFilter
 
   /**
    * Map function to change remote node’s action before put it to current log.
    */
-  inMap?: Mapper
+  inMap?: LogMapper
 
   /**
    * Filter function to select actions to synchronization.
    */
-  outFilter?: Filter
+  outFilter?: LogFilter
 
   /**
    * Map function to change action before sending it to remote client.
    */
-  outMap?: Mapper
+  outMap?: LogMapper
 }
 
 /**
