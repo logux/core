@@ -1,4 +1,4 @@
-import { MemoryStore, Log, Action, Meta, Page } from '../index.js'
+import { MemoryStore, Log, Action, Meta, LogPage } from '../index.js'
 
 function createLog(): Log<Meta, MemoryStore> {
   return new Log({
@@ -179,10 +179,10 @@ it('disables iteration on false', async () => {
 it('supports multi-pages stores', async () => {
   let store = new MemoryStore()
   let meta: Meta = { id: '1 0 0', added: 0, time: 0, reasons: [] }
-  let get: (opts?: object) => Promise<Page> = async () => {
+  let get: (opts?: object) => Promise<LogPage> = async () => {
     return {
       entries: [[{ type: 'a' }, meta]],
-      async next(): Promise<Page> {
+      async next(): Promise<LogPage> {
         return { entries: [[{ type: 'b' }, meta]] }
       }
     }

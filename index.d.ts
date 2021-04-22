@@ -11,9 +11,9 @@ export {
   actionEvents,
   AnyAction,
   LogStore,
+  LogPage,
   Action,
   Meta,
-  Page,
   Log,
   ID
 } from './log/index.js'
