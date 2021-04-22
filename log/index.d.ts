@@ -114,7 +114,7 @@ interface LastSynced {
   sent: number
 }
 
-export interface Page {
+export interface LogPage {
   /**
    * Pagination page.
    */
@@ -123,7 +123,7 @@ export interface Page {
   /**
    * Next page loader.
    */
-  next?(): Promise<Page>
+  next?(): Promise<LogPage>
 }
 
 interface GetOptions {
@@ -163,7 +163,7 @@ export abstract class LogStore {
    * @param opts Query options.
    * @returns Promise with first page.
    */
-  get(opts?: GetOptions): Promise<Page>
+  get(opts?: GetOptions): Promise<LogPage>
 
   /**
    * Remove action from store.
