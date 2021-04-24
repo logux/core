@@ -32,7 +32,7 @@
   },
   "devDependencies": {
     "@babel/core": "^7.13.16",
-    "@logux/eslint-config": "^45.4.0",
+    "@logux/eslint-config": "^45.4.1",
     "@logux/sharec-config": "^0.10.1",
     "@types/jest": "^26.0.22",
     "@types/ws": "^7.4.1",
