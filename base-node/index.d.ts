@@ -3,7 +3,7 @@ import { Unsubscribe } from 'nanoevents'
 import { LoguxError, LoguxErrorOptions } from '../logux-error/index.js'
 import { Log, Action, AnyAction, Meta } from '../log/index.js'
 
-interface Authentificator<Headers> {
+interface Authentificator<Headers extends object> {
   (nodeId: string, token: string, headers: Headers | {}): Promise<boolean>
 }
 
