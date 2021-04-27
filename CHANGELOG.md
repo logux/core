@@ -1,6 +1,16 @@
 # Change Log
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## 0.7 क
+* Moved project to ESM-only type. Applications must use ESM too.
+* Dropped Node.js 10 support.
+* Added `Log#type()`.
+* Added `index` to log entries (by Eduard Aksamitov).
+* Added `TestLog#keepActions()`.
+* Allowed to specify action type in `Log#add()` call.
+* Made `destroy` as mandatory method of `Connection`.
+* Fixed types performance by replacing `type` to `interface`.
+
 ## 0.6.2
 * Allow to call `MemoryStore#get()` without options (by Eduard Aksamitov).
 

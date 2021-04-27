@@ -1,6 +1,6 @@
 {
   "name": "@logux/core",
-  "version": "0.6.2",
+  "version": "0.7.0",
   "description": "Logux core components",
   "keywords": [
     "logux",
@@ -134,7 +134,8 @@
       "io",
       "ES",
       "TypeDoc",
-      "roadmap"
+      "roadmap",
+      "ESM"
     ]
   },
   "sharec": {
