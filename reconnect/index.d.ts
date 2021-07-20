@@ -2,12 +2,12 @@ import { Connection } from '../base-node/index.js'
 
 interface ReconnectOptions {
   /**
-   * Minimum delay between reconnecting.
+   * Minimum delay between re-connecting.
    */
   minDelay?: number
 
   /**
-   * Maximum delay between reconnecting.
+   * Maximum delay between re-connecting.
    */
   maxDelay?: number
 
@@ -18,7 +18,7 @@ interface ReconnectOptions {
 }
 
 /**
- * Wrapper for Connection for reconnecting it on every disconnect.
+ * Wrapper for Connection for re-connecting it on every disconnect.
  *
  * ```js
  * import { ClientNode, Reconnect } from '@logux/core'
@@ -28,7 +28,7 @@ interface ReconnectOptions {
  */
 export class Reconnect extends Connection {
   /**
-   * Reconnection options.
+   * Re-connection options.
    */
   options: ReconnectOptions
 
@@ -38,7 +38,7 @@ export class Reconnect extends Connection {
   attempts: number
 
   /**
-   * Should we reconnect connection on next connection break.
+   * Should we re-connect connection on next connection break.
    * Next `connect` call will set to `true`.
    *
    * ```js
@@ -60,8 +60,8 @@ export class Reconnect extends Connection {
   connection: Connection
 
   /**
-   * @param connection The connection to be reconnectable.
-   * @param options Reconnection options.
+   * @param connection The connection to be re-connectable.
+   * @param options Re-connection options.
    */
   constructor(connection: Connection, options?: ReconnectOptions)
 
