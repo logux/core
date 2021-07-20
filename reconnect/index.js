@@ -119,7 +119,7 @@ export class Reconnect {
   nextDelay() {
     let base = this.options.minDelay * 2 ** this.attempts
     let rand = Math.random()
-    let deviation = Math.floor(rand * 0.5 * base)
+    let deviation = rand * 0.5 * base
     if (Math.floor(rand * 10) === 1) deviation = -deviation
     return Math.min(base + deviation, this.options.maxDelay) || 0
   }
