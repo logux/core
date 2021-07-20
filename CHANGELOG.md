@@ -1,6 +1,9 @@
 # Change Log
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## 0.7.1
+* Fixed re-connection delay to avoid backoff better.
+
 ## 0.7 क
 * Moved project to ESM-only type. Applications must use ESM too.
 * Dropped Node.js 10 support.
