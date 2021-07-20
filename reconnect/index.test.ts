@@ -3,16 +3,6 @@ import { jest } from '@jest/globals'
 
 import { Reconnect, TestPair, Message } from '../index.js'
 
-declare global {
-  namespace NodeJS {
-    interface Global {
-      window: any
-      document: any
-      navigator: any
-    }
-  }
-}
-
 let listeners: { [key: string]: () => void } = {}
 const listenerMethods = {
   addEventListener(name: string, callback: () => void): void {
@@ -25,23 +15,38 @@ const listenerMethods = {
   }
 }
 
-beforeEach(() => {
-  listeners = {}
-  global.window = {
-    ...listenerMethods
-  }
-  global.document = {
-    hidden: false,
-    ...listenerMethods
-  }
-  global.navigator = {
-    onLine: true
-  }
-})
+function setHidden(value: boolean): void {
+  // @ts-expect-error
+  global.document.hidden = value
+  listeners.visibilitychange()
+}
+
+function setOnLine(value: boolean, event: 'resume' | 'online'): void {
+  // @ts-expect-error
+  global.navigator.onLine = value
+  listeners[event]()
+}
 
 function privateMethods(obj: object): any {
   return obj
 }
+
+beforeEach(() => {
+  listeners = {}
+  // @ts-expect-error
+  global.window = {
+    ...listenerMethods
+  }
+  // @ts-expect-error
+  global.document = {
+    hidden: false,
+    ...listenerMethods
+  }
+  // @ts-expect-error
+  global.navigator = {
+    onLine: true
+  }
+})
 
 it('saves connection and options', () => {
   let pair = new TestPair()
@@ -302,12 +307,11 @@ it('listens for window events', async () => {
   await pair.wait()
   expect(recon.connected).toBe(false)
 
-  global.document.hidden = true
+  setHidden(true)
   listeners.visibilitychange()
   expect(recon.connecting).toBe(false)
 
-  global.document.hidden = false
-  listeners.visibilitychange()
+  setHidden(false)
   await pair.wait()
   expect(recon.connected).toBe(true)
 
@@ -315,20 +319,17 @@ it('listens for window events', async () => {
   expect(recon.connecting).toBe(false)
   expect(recon.connected).toBe(false)
 
-  global.navigator.onLine = false
-  listeners.resume()
+  setOnLine(false, 'resume')
   expect(recon.connecting).toBe(false)
 
-  global.navigator.onLine = true
-  listeners.resume()
+  setOnLine(true, 'resume')
   await delay(10)
   expect(recon.connected).toBe(true)
   pair.right.disconnect()
   await pair.wait()
   expect(pair.right.connected).toBe(false)
 
-  global.navigator.onLine = true
-  listeners.online()
+  setOnLine(true, 'online')
   await pair.wait()
   expect(pair.right.connected).toBe(true)
 

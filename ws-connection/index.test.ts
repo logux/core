@@ -61,21 +61,18 @@ class FakeWebSocket {
   }
 }
 
-declare global {
-  namespace NodeJS {
-    interface Global {
-      WebSocket: any
-    }
-  }
-}
-
-afterEach(() => {
-  delete global.WebSocket
-})
-
 function privateMethods(obj: object): any {
   return obj
 }
+
+function setWebSocket(ws: object | undefined): void {
+  // @ts-expect-error
+  global.WebSocket = ws
+}
+
+afterEach(() => {
+  setWebSocket(undefined)
+})
 
 function emit(
   ws: WebSocket | undefined,
@@ -95,7 +92,7 @@ it('throws a error on lack of WebSocket support', () => {
 })
 
 it('emits error on wrong format', async () => {
-  global.WebSocket = FakeWebSocket
+  setWebSocket(FakeWebSocket)
   let connection = new WsConnection('ws://locahost')
   let error: Error | undefined
   connection.on('error', err => {
@@ -111,7 +108,7 @@ it('emits error on wrong format', async () => {
 })
 
 it('emits error on error', async () => {
-  global.WebSocket = FakeWebSocket
+  setWebSocket(FakeWebSocket)
   let connection = new WsConnection('ws://locahost')
   let error: Error | undefined
   connection.on('error', err => {
@@ -128,7 +125,7 @@ it('emits error on error', async () => {
 })
 
 it('emits connection states', async () => {
-  global.WebSocket = FakeWebSocket
+  setWebSocket(FakeWebSocket)
   let connection = new WsConnection('ws://locahost')
 
   let states: string[] = []
@@ -171,7 +168,7 @@ it('emits connection states', async () => {
 })
 
 it('closes WebSocket', async () => {
-  global.WebSocket = FakeWebSocket
+  setWebSocket(FakeWebSocket)
   let connection = new WsConnection('ws://locahost')
 
   await connection.connect()
@@ -188,7 +185,7 @@ it('closes WebSocket', async () => {
 })
 
 it('close WebSocket 2 times', async () => {
-  global.WebSocket = FakeWebSocket
+  setWebSocket(FakeWebSocket)
   let connection = new WsConnection('ws://locahost')
 
   await connection.connect()
@@ -206,7 +203,7 @@ it('close WebSocket 2 times', async () => {
 })
 
 it('receives messages', async () => {
-  global.WebSocket = FakeWebSocket
+  setWebSocket(FakeWebSocket)
   let connection = new WsConnection('ws://locahost')
 
   let received: Message[] = []
@@ -221,7 +218,7 @@ it('receives messages', async () => {
 })
 
 it('sends messages', async () => {
-  global.WebSocket = FakeWebSocket
+  setWebSocket(FakeWebSocket)
   let connection = new WsConnection<FakeWebSocket>('ws://locahost')
 
   await connection.connect()
@@ -263,7 +260,7 @@ it('passes extra option for WebSocket', async () => {
 })
 
 it('does not send to closed socket', async () => {
-  global.WebSocket = FakeWebSocket
+  setWebSocket(FakeWebSocket)
   let connection = new WsConnection<FakeWebSocket>('ws://locahost')
 
   let errors: string[] = []
@@ -282,7 +279,7 @@ it('does not send to closed socket', async () => {
 })
 
 it('ignores double connect call', async () => {
-  global.WebSocket = FakeWebSocket
+  setWebSocket(FakeWebSocket)
   let connection = new WsConnection('ws://locahost')
 
   let connected = 0
