@@ -30,7 +30,7 @@ it('emits connection states', () => {
   expect(states).toEqual([])
   expect(connection.connected).toBe(true)
 
-  connection.ws.emit('close')
+  connection.ws.emit('close', 500, 'message')
   expect(states).toEqual(['disconnect'])
   expect(connection.connected).toBe(false)
 })
