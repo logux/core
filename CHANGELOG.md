@@ -1,6 +1,9 @@
 # Change Log
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## 0.7.2
+* Marked `meta` as read-only in non-`preadd` callbacks.
+
 ## 0.7.1
 * Fixed re-connection delay to avoid backoff better.
 
