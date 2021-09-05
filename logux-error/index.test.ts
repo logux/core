@@ -6,11 +6,11 @@ function catchError<T extends keyof LoguxErrorOptions>(
   opts?: LoguxErrorOptions[T],
   received?: boolean
 ): LoguxError {
-  let error
+  let error: LoguxError
   try {
     throw new LoguxError(type, opts, received)
   } catch (e) {
-    error = e
+    error = e as LoguxError
   }
   return error
 }

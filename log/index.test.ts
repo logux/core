@@ -28,6 +28,15 @@ async function logWith(
   return log
 }
 
+async function getError(cb: () => Promise<any>): Promise<string> {
+  try {
+    await cb()
+  } catch (e) {
+    if (e instanceof Error) return e.message
+  }
+  throw new Error('Error was not thrown')
+}
+
 let originNow = Date.now
 afterEach(() => {
   Date.now = originNow
@@ -55,14 +64,8 @@ it('checks node ID', () => {
 
 it('requires type for action', async () => {
   let log = createLog()
-  let err
-  try {
-    // @ts-expect-error
-    await log.add({ a: 1 })
-  } catch (e) {
-    err = e
-  }
-  expect(err.message).toContain('"type" in action')
+  // @ts-expect-error
+  expect(await getError(() => log.add({ a: 1 }))).toContain('"type" in action')
 })
 
 it('sends new entries to listeners', async () => {
@@ -279,13 +282,9 @@ it('changes meta', async () => {
 it('does not allow to change ID, added or indexes', async () => {
   let log = createLog()
   for (let key of ['id', 'added', 'time', 'subprotocol', 'indexes']) {
-    let err
-    try {
-      await log.changeMeta('1 n 0', { [key]: true })
-    } catch (e) {
-      err = e
-    }
-    expect(err.message).toContain(`"${key}" is read-only`)
+    expect(
+      await getError(() => log.changeMeta('1 n 0', { [key]: true }))
+    ).toContain(`"${key}" is read-only`)
   }
 })
 
@@ -459,45 +458,29 @@ it('ensures `reasons` to be array of string values', async () => {
   if (meta1 === false) throw new Error('Action was no found')
   expect(meta1.reasons).toEqual([])
 
-  let err1
-  try {
-    // @ts-expect-error
-    await log.add({ type: '3' }, { reasons: 1 })
-  } catch (e) {
-    err1 = e
-  }
-  expect(err1.message).toEqual('Expected "reasons" to be an array of strings')
+  // @ts-expect-error
+  expect(await getError(() => log.add({ type: '3' }, { reasons: 1 }))).toEqual(
+    'Expected "reasons" to be an array of strings'
+  )
 
-  let err2
-  try {
+  expect(
     // @ts-expect-error
-    await log.add({ type: '3' }, { reasons: [false, 1] })
-  } catch (e) {
-    err2 = e
-  }
-  expect(err2.message).toEqual('Expected "reasons" to be an array of strings')
+    await getError(() => log.add({ type: '3' }, { reasons: [false, 1] }))
+  ).toEqual('Expected "reasons" to be an array of strings')
 })
 
 it('ensures `indexes` to be array of string values', async () => {
   let log = createLog()
 
-  let err1
-  try {
+  expect(
     // @ts-expect-error
-    await log.add({ type: '3' }, { indexes: 'a' })
-  } catch (e) {
-    err1 = e
-  }
-  expect(err1.message).toEqual('Expected "indexes" to be an array of strings')
+    await getError(() => log.add({ type: '3' }, { indexes: 'a' }))
+  ).toEqual('Expected "indexes" to be an array of strings')
 
-  let err2
-  try {
+  expect(
     // @ts-expect-error
-    await log.add({ type: '3' }, { indexes: [false, 1] })
-  } catch (e) {
-    err2 = e
-  }
-  expect(err2.message).toEqual('Expected "indexes" to be an array of strings')
+    await getError(() => log.add({ type: '3' }, { indexes: [false, 1] }))
+  ).toEqual('Expected "indexes" to be an array of strings')
 })
 
 it('has type listeners', async () => {
