@@ -9,12 +9,19 @@ import { Unsubscribe, Emitter } from 'nanoevents'
  */
 export type ID = string
 
-interface ActionListener<ListenerAction extends Action, LogMeta extends Meta> {
+interface PreaddListener<ListenerAction extends Action, LogMeta extends Meta> {
+  (action: ListenerAction, meta: LogMeta): void
+}
+
+interface ReadonlyListener<
+  ListenerAction extends Action,
+  LogMeta extends Meta
+> {
   (action: ListenerAction, meta: LogMeta): void
 }
 
 interface ActionIterator<LogMeta extends Meta> {
-  (action: Action, meta: LogMeta): boolean | void
+  (action: Action, meta: Readonly<LogMeta>): boolean | void
 }
 
 export function actionEvents(
@@ -202,7 +209,7 @@ export abstract class LogStore {
   removeReason(
     reason: string,
     criteria: Criteria,
-    callback: ActionListener<Action, Meta>
+    callback: ReadonlyListener<Action, Meta>
   ): Promise<void>
 
   /**
@@ -321,7 +328,7 @@ export class Log<
    * ```
    *
    * @param type Action’s type.
-   * @param ActionListener The listener function.
+   * @param listener The listener function.
    * @param event
    * @returns Unbind listener from event.
    */
@@ -330,8 +337,16 @@ export class Log<
     Type extends string = NewAction['type']
   >(
     type: Type,
-    listener: ActionListener<NewAction, LogMeta>,
-    opts?: { id?: string; event?: 'preadd' | 'add' | 'clean' }
+    listener: ReadonlyListener<NewAction, LogMeta>,
+    opts?: { id?: string; event?: 'add' | 'clean' }
+  ): Unsubscribe
+  type<
+    NewAction extends Action = Action,
+    Type extends string = NewAction['type']
+  >(
+    type: Type,
+    listener: PreaddListener<NewAction, LogMeta>,
+    opts: { id?: string; event: 'preadd' }
   ): Unsubscribe
 
   /**
@@ -357,9 +372,10 @@ export class Log<
    * @returns Unbind listener from event.
    */
   on(
-    event: 'preadd' | 'add' | 'clean',
-    listener: ActionListener<Action, LogMeta>
+    event: 'add' | 'clean',
+    listener: ReadonlyListener<Action, LogMeta>
   ): Unsubscribe
+  on(event: 'preadd', listener: PreaddListener<Action, LogMeta>): Unsubscribe
 
   /**
    * Generate next unique action ID.
