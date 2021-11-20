@@ -1333,10 +1333,10 @@ nanospinner@^0.4.0:
   dependencies:
     picocolors "^1.0.0"
 
-nanospy@^0.1.0:
-  version "0.1.0"
-  resolved "https://registry.yarnpkg.com/nanospy/-/nanospy-0.1.0.tgz#e65c9edbb3b62675d1907742ce88f52bd3e0b19e"
-  integrity sha512-TpUJ0d0mGKo8qeaYwKu80GWEVQ+dA93Sh2UKFeud7Fq/C281DON1BGAQHQ2qUOgAeE2g3jEpSxudWwouq8f1xA==
+nanospy@^0.2.0:
+  version "0.2.0"
+  resolved "https://registry.yarnpkg.com/nanospy/-/nanospy-0.2.0.tgz#57fcbaa65f388dfa21d6d46a81532427fee20593"
+  integrity sha512-1ZtW8MBfNXkv2QDSYESZAEGUhAZ8yH3pPpC5e2dtmezmgO7N2GwPtTYwHQXuV1L/hGknYHF1sy/4WJyjQ/1bqw==
 
 natural-compare@^1.4.0:
   version "1.4.0"

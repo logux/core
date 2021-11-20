@@ -47,7 +47,7 @@
     "eslint-plugin-prefer-let": "^3.0.1",
     "eslint-plugin-promise": "^5.1.1",
     "nanodelay": "^2.0.2",
-    "nanospy": "^0.1.0",
+    "nanospy": "^0.2.0",
     "tsm": "^2.1.4",
     "typescript": "^4.5.2",
     "uvu": "^0.5.2",
