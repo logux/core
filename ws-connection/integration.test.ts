@@ -1,10 +1,12 @@
+import { equal, is } from 'uvu/assert'
 import { delay } from 'nanodelay'
+import { test } from 'uvu'
 
 import { ServerConnection, WsConnection, Message } from '../index.js'
 import WebSocket from 'ws'
 
 let wss: WebSocket.Server
-afterEach(() => {
+test.after.each(() => {
   wss.close()
 })
 
@@ -21,7 +23,7 @@ function connect(
   })
 }
 
-it('works in real protocol', async () => {
+test('works in real protocol', async () => {
   wss = new WebSocket.Server({ port: 8081 })
 
   let client = new WsConnection('ws://0.0.0.0:8081', WebSocket)
@@ -38,19 +40,21 @@ it('works in real protocol', async () => {
   })
 
   await delay(100)
-  expect(server.connected).toBe(true)
-  expect(client.connected).toBe(true)
+  is(server.connected, true)
+  is(client.connected, true)
 
   client.send(['ping', 1])
   await delay(100)
-  expect(serverReceived).toEqual([['ping', 1]])
+  equal(serverReceived, [['ping', 1]])
 
   server.send(['pong', 1])
   await delay(100)
-  expect(clientReceived).toEqual([['pong', 1]])
+  equal(clientReceived, [['pong', 1]])
 
   server.disconnect()
   await delay(100)
-  expect(server.connected).toBe(false)
-  expect(client.connected).toBe(false)
+  is(server.connected, false)
+  is(client.connected, false)
 })
+
+test.run()

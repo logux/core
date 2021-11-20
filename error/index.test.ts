@@ -1,3 +1,6 @@
+import { equal, is, throws } from 'uvu/assert'
+import { test } from 'uvu'
+
 import {
   ServerNode,
   LoguxError,
@@ -8,7 +11,7 @@ import {
 
 let node: ServerNode<{}, TestLog>
 
-afterEach(() => {
+test.after.each(() => {
   node.destroy()
 })
 
@@ -22,69 +25,65 @@ function createNode(): ServerNode<{}, TestLog> {
 }
 
 async function createTest(): Promise<TestPair> {
-  let test = new TestPair()
-  node = new ServerNode('server', TestTime.getLog(), test.left)
-  test.leftNode = node
-  await test.left.connect()
-  return test
+  let pair = new TestPair()
+  node = new ServerNode('server', TestTime.getLog(), pair.left)
+  pair.leftNode = node
+  await pair.left.connect()
+  return pair
 }
 
-it('sends error on wrong message format', async () => {
+test('sends error on wrong message format', async () => {
   let wrongs = [1, { hi: 1 }, [], [1]]
   await Promise.all(
     wrongs.map(async msg => {
-      let test = await createTest()
+      let pair = await createTest()
       // @ts-expect-error
-      test.right.send(msg)
-      await test.wait('right')
-      expect(test.left.connected).toBe(false)
-      expect(test.leftSent).toEqual([
-        ['error', 'wrong-format', JSON.stringify(msg)]
-      ])
+      pair.right.send(msg)
+      await pair.wait('right')
+      is(pair.left.connected, false)
+      equal(pair.leftSent, [['error', 'wrong-format', JSON.stringify(msg)]])
     })
   )
 })
 
-it('sends error on wrong error parameters', async () => {
+test('sends error on wrong error parameters', async () => {
   let wrongs = [['error'], ['error', 1], ['error', {}]]
   await Promise.all(
     wrongs.map(async msg => {
-      let test = await createTest()
+      let pair = await createTest()
       // @ts-expect-error
-      test.right.send(msg)
-      await test.wait('right')
-      expect(test.left.connected).toBe(false)
-      expect(test.leftSent).toEqual([
-        ['error', 'wrong-format', JSON.stringify(msg)]
-      ])
+      pair.right.send(msg)
+      await pair.wait('right')
+      is(pair.left.connected, false)
+      equal(pair.leftSent, [['error', 'wrong-format', JSON.stringify(msg)]])
     })
   )
 })
 
-it('sends error on unknown message type', async () => {
-  let test = await createTest()
+test('sends error on unknown message type', async () => {
+  let pair = await createTest()
   // @ts-expect-error
-  test.right.send(['test'])
-  await test.wait('right')
-  expect(test.left.connected).toBe(false)
-  expect(test.leftSent).toEqual([['error', 'unknown-message', 'test']])
+  pair.right.send(['test'])
+  await pair.wait('right')
+  is(pair.left.connected, false)
+  equal(pair.leftSent, [['error', 'unknown-message', 'test']])
 })
 
-it('throws a error on error message by default', () => {
+test('throws a error on error message by default', () => {
   node = createNode()
-  expect(() => {
+  throws(() => {
     privateMethods(node).onMessage(['error', 'wrong-format', '1'])
-  }).toThrow(new LoguxError('wrong-format', '1', true))
+  }, new LoguxError('wrong-format', '1', true))
 })
 
-it('does not throw errors which are not relevant to code', () => {
+test('does not throw errors which are not relevant to code', () => {
   node = createNode()
   privateMethods(node).onMessage(['error', 'timeout', '1'])
   privateMethods(node).onMessage(['error', 'wrong-protocol', {}])
   privateMethods(node).onMessage(['error', 'wrong-subprotocol', {}])
 })
 
-it('disables throwing a error on listener', () => {
+test('disables throwing a error on listener', () => {
   node = createNode()
 
   let errors: Error[] = []
@@ -93,17 +92,19 @@ it('disables throwing a error on listener', () => {
   })
 
   privateMethods(node).onMessage(['error', 'wrong-format', '2'])
-  expect(errors).toEqual([new LoguxError('wrong-format', '2', true)])
+  equal(errors, [new LoguxError('wrong-format', '2', true)])
 })
 
-it('emits a event on error sending', async () => {
-  let test = await createTest()
+test('emits a event on error sending', async () => {
+  let pair = await createTest()
   let errors: Error[] = []
-  test.leftNode.on('clientError', err => {
+  pair.leftNode.on('clientError', err => {
     errors.push(err)
   })
 
   let error = new LoguxError('timeout', 10)
-  privateMethods(test.leftNode).sendError(error)
-  expect(errors).toEqual([error])
+  privateMethods(pair.leftNode).sendError(error)
+  equal(errors, [error])
 })
+
+test.run()

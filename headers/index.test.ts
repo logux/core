@@ -1,8 +1,11 @@
+import { equal, is } from 'uvu/assert'
+import { test } from 'uvu'
+
 import { ServerNode, TestTime, TestPair, TestLog } from '../index.js'
 
 let node: ServerNode<{}, TestLog>
 
-afterEach(() => {
+test.after.each(() => {
   node.destroy()
 })
 
@@ -19,20 +22,20 @@ async function createTestPair(): Promise<TestPair> {
   return pair
 }
 
-it('emits a headers on header messages', async () => {
-  let test = await createTestPair()
+test('emits a headers on header messages', async () => {
+  let pair = await createTestPair()
 
   let headers = {}
-  test.leftNode.on('headers', data => {
+  pair.leftNode.on('headers', data => {
     headers = data
   })
 
-  privateMethods(test.leftNode).onMessage(['headers', { test: 'test' }])
+  privateMethods(pair.leftNode).onMessage(['headers', { test: 'test' }])
 
-  expect(headers).toEqual({ test: 'test' })
+  equal(headers, { test: 'test' })
 })
 
-it('checks types', async () => {
+test('checks types', async () => {
   let wrongs = [
     ['headers'],
     ['headers', true],
@@ -43,15 +46,15 @@ it('checks types', async () => {
   ]
   await Promise.all(
     wrongs.map(async msg => {
-      let test = await createTestPair()
+      let pair = await createTestPair()
       // @ts-expect-error
-      test.right.send(msg)
-      await test.wait('right')
-      expect(test.leftNode.connected).toBe(false)
-      expect(test.leftSent).toEqual([
-        ['error', 'wrong-format', JSON.stringify(msg)]
-      ])
-      test.leftNode.destroy()
+      pair.right.send(msg)
+      await pair.wait('right')
+      is(pair.leftNode.connected, false)
+      equal(pair.leftSent, [['error', 'wrong-format', JSON.stringify(msg)]])
+      pair.leftNode.destroy()
     })
   )
 })
+
+test.run()

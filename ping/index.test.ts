@@ -1,4 +1,6 @@
+import { equal, ok, throws, type, is } from 'uvu/assert'
 import { delay } from 'nanodelay'
+import { test } from 'uvu'
 
 import {
   ServerNode,
@@ -12,7 +14,7 @@ import {
 
 let node: BaseNode<{}, TestLog> | undefined
 
-afterEach(() => {
+test.after.each(() => {
   node?.destroy()
 })
 
@@ -22,126 +24,126 @@ function privateMethods(obj: object): any {
 
 async function createTest(opts: NodeOptions): Promise<TestPair> {
   let log = TestTime.getLog()
-  let test = new TestPair()
+  let pair = new TestPair()
   await log.add({ type: 'test' }, { reasons: ['test'] })
   privateMethods(log.store).lastSent = 1
-  node = new ClientNode('client', log, test.left, opts)
-  test.leftNode = node
-  await test.left.connect()
-  await test.wait()
-  let protocol = test.leftNode.localProtocol
-  test.right.send(['connected', protocol, 'server', [0, 0]])
-  test.clear()
-  return test
+  node = new ClientNode('client', log, pair.left, opts)
+  pair.leftNode = node
+  await pair.left.connect()
+  await pair.wait()
+  let protocol = pair.leftNode.localProtocol
+  pair.right.send(['connected', protocol, 'server', [0, 0]])
+  pair.clear()
+  return pair
 }
 
-it('throws on ping and no timeout options', () => {
+test('throws on ping and no timeout options', () => {
   let pair = new TestPair()
   let log = TestTime.getLog()
-  expect(() => {
+  throws(() => {
     new ClientNode('client', log, pair.left, { ping: 1000, timeout: 0 })
-  }).toThrow(/set timeout option/)
+  }, /set timeout option/)
 })
 
-it('answers pong on ping', async () => {
-  let test = await createTest({ fixTime: false })
-  test.right.send(['ping', 1])
-  await test.wait('right')
-  expect(test.leftSent).toEqual([['pong', 1]])
+test('answers pong on ping', async () => {
+  let pair = await createTest({ fixTime: false })
+  pair.right.send(['ping', 1])
+  await pair.wait('right')
+  equal(pair.leftSent, [['pong', 1]])
 })
 
-it('sends ping on idle connection', async () => {
+test('sends ping on idle connection', async () => {
   let error: Error | undefined
-  let test = await createTest({
+  let pair = await createTest({
     ping: 300,
     timeout: 100,
     fixTime: false
   })
-  test.leftNode.catch(err => {
+  pair.leftNode.catch(err => {
     error = err
   })
   await delay(250)
-  privateMethods(test.right).send(['duilian', ''])
+  privateMethods(pair.right).send(['duilian', ''])
   await delay(250)
-  privateMethods(test.leftNode).send(['duilian', ''])
+  privateMethods(pair.leftNode).send(['duilian', ''])
   await delay(250)
-  expect(error).toBeUndefined()
-  expect(test.leftSent).toEqual([['duilian', '']])
+  type(error, 'undefined')
+  equal(pair.leftSent, [['duilian', '']])
   await delay(100)
-  expect(error).toBeUndefined()
-  expect(test.leftSent).toEqual([
+  type(error, 'undefined')
+  equal(pair.leftSent, [
     ['duilian', ''],
     ['ping', 1]
   ])
-  test.right.send(['pong', 1])
+  pair.right.send(['pong', 1])
   await delay(250)
-  expect(error).toBeUndefined()
-  expect(test.leftSent).toEqual([
+  type(error, 'undefined')
+  equal(pair.leftSent, [
     ['duilian', ''],
     ['ping', 1]
   ])
   await delay(100)
-  expect(error).toBeUndefined()
-  expect(test.leftSent).toEqual([
+  type(error, 'undefined')
+  equal(pair.leftSent, [
     ['duilian', ''],
     ['ping', 1],
     ['ping', 1]
   ])
   await delay(250)
   if (typeof error === 'undefined') throw new Error('Error was not sent')
-  expect(error.message).toContain('timeout')
-  expect(test.leftSent).toEqual([
+  ok(error.message.includes('timeout'))
+  equal(pair.leftSent, [
     ['duilian', ''],
     ['ping', 1],
     ['ping', 1]
   ])
-  expect(test.leftEvents[3]).toEqual(['disconnect', 'timeout'])
+  equal(pair.leftEvents[3], ['disconnect', 'timeout'])
 })
 
-it('does not ping before authentication', async () => {
+test('does not ping before authentication', async () => {
   let log = TestTime.getLog()
-  let test = new TestPair()
-  test.leftNode = new ClientNode('client', log, test.left, {
+  let pair = new TestPair()
+  pair.leftNode = new ClientNode('client', log, pair.left, {
     ping: 100,
     timeout: 300,
     fixTime: false
   })
-  test.leftNode.catch(() => true)
-  await test.left.connect()
-  await test.wait()
-  test.clear()
+  pair.leftNode.catch(() => true)
+  await pair.left.connect()
+  await pair.wait()
+  pair.clear()
   await delay(250)
-  expect(test.leftSent).toEqual([])
+  equal(pair.leftSent, [])
 })
 
-it('sends only one ping if timeout is bigger than ping', async () => {
-  let test = await createTest({
+test('sends only one ping if timeout is bigger than ping', async () => {
+  let pair = await createTest({
     ping: 100,
     timeout: 300,
     fixTime: false
   })
   await delay(250)
-  expect(test.leftSent).toEqual([['ping', 1]])
+  equal(pair.leftSent, [['ping', 1]])
 })
 
-it('do not try clear timeout if it does not set', async () => {
-  let test = await createTest({
+test('do not try clear timeout if it does not set', async () => {
+  let pair = await createTest({
     ping: undefined
   })
   await delay(250)
-  privateMethods(test.leftNode).sendPing()
-  expect(test.leftSent).toEqual([])
+  privateMethods(pair.leftNode).sendPing()
+  equal(pair.leftSent, [])
 })
 
-it('do not send ping if not connected', async () => {
-  let test = await createTest({ fixTime: false })
-  test.right.send(['ping', 1])
-  test.left.disconnect()
-  await test.wait('right')
-  expect(test.leftSent).toEqual([])
+test('do not send ping if not connected', async () => {
+  let pair = await createTest({ fixTime: false })
+  pair.right.send(['ping', 1])
+  pair.left.disconnect()
+  await pair.wait('right')
+  equal(pair.leftSent, [])
 })
 
-it('checks types', async () => {
+test('checks types', async () => {
   let wrongs = [
     ['ping'],
     ['ping', 'abc'],
@@ -152,17 +154,17 @@ it('checks types', async () => {
   ]
   await Promise.all(
     wrongs.map(async msg => {
-      let test = new TestPair()
+      let pair = new TestPair()
       let log = TestTime.getLog()
-      test.leftNode = new ServerNode('server', log, test.left)
-      await test.left.connect()
+      pair.leftNode = new ServerNode('server', log, pair.left)
+      await pair.left.connect()
       // @ts-expect-error
-      test.right.send(msg)
-      await test.wait('right')
-      expect(test.leftNode.connected).toBe(false)
-      expect(test.leftSent).toEqual([
-        ['error', 'wrong-format', JSON.stringify(msg)]
-      ])
+      pair.right.send(msg)
+      await pair.wait('right')
+      is(pair.leftNode.connected, false)
+      equal(pair.leftSent, [['error', 'wrong-format', JSON.stringify(msg)]])
     })
   )
 })
+
+test.run()

@@ -1,16 +1,19 @@
+import { equal, is } from 'uvu/assert'
+import { test } from 'uvu'
+
 import { ServerNode, TestTime, TestPair, TestLog } from '../index.js'
 
 let node: ServerNode<{}, TestLog>
 
 async function createTest(): Promise<TestPair> {
-  let test = new TestPair()
-  node = new ServerNode('server', TestTime.getLog(), test.left)
-  test.leftNode = node
-  await test.left.connect()
-  return test
+  let pair = new TestPair()
+  node = new ServerNode('server', TestTime.getLog(), pair.left)
+  pair.leftNode = node
+  await pair.left.connect()
+  return pair
 }
 
-afterEach(() => {
+test.after.each(() => {
   node.destroy()
 })
 
@@ -18,14 +21,14 @@ function privateMethods(obj: object): any {
   return obj
 }
 
-it('sends debug messages', async () => {
-  let test = await createTest()
-  privateMethods(test.leftNode).sendDebug('testType', 'testData')
-  await test.wait('right')
-  expect(test.leftSent).toEqual([['debug', 'testType', 'testData']])
+test('sends debug messages', async () => {
+  let pair = await createTest()
+  privateMethods(pair.leftNode).sendDebug('testType', 'testData')
+  await pair.wait('right')
+  equal(pair.leftSent, [['debug', 'testType', 'testData']])
 })
 
-it('emits a debug on debug error messages', () => {
+test('emits a debug on debug error messages', () => {
   let pair = new TestPair()
   node = new ServerNode('server', TestTime.getLog(), pair.left)
 
@@ -36,10 +39,10 @@ it('emits a debug on debug error messages', () => {
 
   privateMethods(node).onMessage(['debug', 'error', 'testData'])
 
-  expect(debugs).toEqual([['error', 'testData']])
+  equal(debugs, [['error', 'testData']])
 })
 
-it('checks types', async () => {
+test('checks types', async () => {
   let wrongs = [
     ['debug'],
     ['debug', 0],
@@ -51,14 +54,14 @@ it('checks types', async () => {
   ]
   await Promise.all(
     wrongs.map(async msg => {
-      let test = await createTest()
+      let pair = await createTest()
       // @ts-expect-error
-      test.right.send(msg)
-      await test.wait('right')
-      expect(test.leftNode.connected).toBe(false)
-      expect(test.leftSent).toEqual([
-        ['error', 'wrong-format', JSON.stringify(msg)]
-      ])
+      pair.right.send(msg)
+      await pair.wait('right')
+      is(pair.leftNode.connected, false)
+      equal(pair.leftSent, [['error', 'wrong-format', JSON.stringify(msg)]])
     })
   )
 })
+
+test.run()

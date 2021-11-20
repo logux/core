@@ -1,3 +1,6 @@
+import { equal, is, ok } from 'uvu/assert'
+import { test } from 'uvu'
+
 import { LoguxErrorOptions } from './index.js'
 import { LoguxError } from '../index.js'
 
@@ -15,7 +18,7 @@ function catchError<T extends keyof LoguxErrorOptions>(
   return error
 }
 
-it('does not crash if captureStackTrace does not exist', () => {
+test('does not crash if captureStackTrace does not exist', () => {
   let captureStackTrace = global.Error.captureStackTrace
   // @ts-expect-error
   delete global.Error.captureStackTrace
@@ -23,49 +26,51 @@ it('does not crash if captureStackTrace does not exist', () => {
   global.Error.captureStackTrace = captureStackTrace
 })
 
-it('has stack trace', () => {
+test('has stack trace', () => {
   let error = catchError('wrong-credentials')
-  expect(error.stack).toContain('index.test.ts')
+  ok(error.stack.includes('index.test.ts'))
 })
 
-it('has class name', () => {
+test('has class name', () => {
   let error = catchError('wrong-credentials')
-  expect(error.name).toEqual('LoguxError')
+  equal(error.name, 'LoguxError')
 })
 
-it('has error description', () => {
+test('has error description', () => {
   let error = catchError('wrong-credentials')
-  expect(error.description).toEqual('Wrong credentials')
+  equal(error.description, 'Wrong credentials')
 })
 
-it('has received', () => {
+test('has received', () => {
   let own = catchError('timeout', 10)
-  expect(own.received).toBe(false)
+  is(own.received, false)
   let received = catchError('timeout', 10, true)
-  expect(received.received).toBe(true)
+  is(received.received, true)
 })
 
-it('stringifies', () => {
+test('stringifies', () => {
   let error = catchError('timeout', 10, true)
-  expect(String(error)).toContain(
-    'LoguxError: Logux received timeout error (A timeout was reached (10 ms))'
+  ok(
+    String(error).includes(
+      'LoguxError: Logux received timeout error (A timeout was reached (10 ms))'
+    )
   )
 })
 
-it('stringifies local unknown error', () => {
+test('stringifies local unknown error', () => {
   let error = catchError('timeout', 10)
-  expect(error.toString()).toContain(
-    'LoguxError: A timeout was reached (10 ms)'
+  ok(error.toString().includes('LoguxError: A timeout was reached (10 ms)'))
+})
+
+test('stringifies bruteforce error', () => {
+  ok(
+    catchError('bruteforce')
+      .toString()
+      .includes('LoguxError: Too many wrong authentication attempts')
   )
 })
 
-it('stringifies bruteforce error', () => {
-  expect(catchError('bruteforce').toString()).toContain(
-    'LoguxError: Too many wrong authentication attempts'
-  )
-})
-
-it('stringifies subprotocol error', () => {
+test('stringifies subprotocol error', () => {
   let error = catchError(
     'wrong-subprotocol',
     {
@@ -74,19 +79,27 @@ it('stringifies subprotocol error', () => {
     },
     true
   )
-  expect(error.toString()).toContain(
-    'LoguxError: Logux received wrong-subprotocol error ' +
-      '(Only 2.x application subprotocols are supported, but you use 1.0)'
+  ok(
+    error
+      .toString()
+      .includes(
+        'LoguxError: Logux received wrong-subprotocol error ' +
+          '(Only 2.x application subprotocols are supported, but you use 1.0)'
+      )
   )
 })
 
-it('returns description by error type', () => {
-  expect(catchError('wrong-format', '{}').toString()).toContain(
-    'LoguxError: Wrong message format in {}'
+test('returns description by error type', () => {
+  ok(
+    catchError('wrong-format', '{}')
+      .toString()
+      .includes('LoguxError: Wrong message format in {}')
   )
 })
 
-it('returns description by unknown type', () => {
+test('returns description by unknown type', () => {
   // @ts-expect-error
-  expect(catchError('unknown').toString()).toContain('LoguxError: unknown')
+  ok(catchError('unknown').toString().includes('LoguxError: unknown'))
 })
+
+test.run()

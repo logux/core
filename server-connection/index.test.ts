@@ -1,6 +1,8 @@
 import { ServerConnection, Message } from '../index.js'
-import { jest } from '@jest/globals'
+import { equal, is, throws } from 'uvu/assert'
+import { spyOn, resetSpies } from 'nanospy'
 import WebSocket from 'ws'
+import { test } from 'uvu'
 
 function privateMethods(obj: object): any {
   return obj
@@ -12,14 +14,18 @@ function prepareWs(): WebSocket {
   return ws
 }
 
-it('throws on connect method call', () => {
-  let connection = new ServerConnection(prepareWs())
-  expect(() => {
-    connection.connect()
-  }).toThrow(/reconnect/)
+test.after.each(() => {
+  resetSpies()
 })
 
-it('emits connection states', () => {
+test('throws on connect method call', () => {
+  let connection = new ServerConnection(prepareWs())
+  throws(() => {
+    connection.connect()
+  }, /reconnect/)
+})
+
+test('emits connection states', () => {
   let connection = new ServerConnection(prepareWs())
 
   let states: string[] = []
@@ -27,15 +33,15 @@ it('emits connection states', () => {
     states.push('disconnect')
   })
 
-  expect(states).toEqual([])
-  expect(connection.connected).toBe(true)
+  equal(states, [])
+  is(connection.connected, true)
 
   connection.ws.emit('close', 500, 'message')
-  expect(states).toEqual(['disconnect'])
-  expect(connection.connected).toBe(false)
+  equal(states, ['disconnect'])
+  is(connection.connected, false)
 })
 
-it('emits error on wrong format', () => {
+test('emits error on wrong format', () => {
   let connection = new ServerConnection(prepareWs())
   let error: Error | undefined
   connection.on('error', err => {
@@ -44,23 +50,23 @@ it('emits error on wrong format', () => {
 
   connection.ws.emit('message', '{')
   if (typeof error === 'undefined') throw new Error('Error was no set')
-  expect(error.message).toEqual('Wrong message format')
-  expect(privateMethods(error).received).toEqual('{')
+  equal(error.message, 'Wrong message format')
+  equal(privateMethods(error).received, '{')
 })
 
-it('closes WebSocket', () => {
+test('closes WebSocket', () => {
   let ws = prepareWs()
-  jest.spyOn(ws, 'close').mockImplementation(() => {
+  let close = spyOn(ws, 'close', () => {
     ws.emit('close')
   })
   let connection = new ServerConnection(ws)
 
   connection.disconnect()
-  expect(ws.close).toHaveBeenCalledTimes(1)
-  expect(connection.connected).toBe(false)
+  equal(close.callCount, 1)
+  is(connection.connected, false)
 })
 
-it('receives messages', () => {
+test('receives messages', () => {
   let connection = new ServerConnection(prepareWs())
 
   let received: Message[] = []
@@ -69,10 +75,10 @@ it('receives messages', () => {
   })
 
   connection.ws.emit('message', '["ping",1]')
-  expect(received).toEqual([['ping', 1]])
+  equal(received, [['ping', 1]])
 })
 
-it('sends messages', () => {
+test('sends messages', () => {
   let sent: string[] = []
   let ws = prepareWs()
   ws.send = (msg: string) => {
@@ -81,10 +87,10 @@ it('sends messages', () => {
   let connection = new ServerConnection(ws)
 
   connection.send(['ping', 1])
-  expect(sent).toEqual(['["ping",1]'])
+  equal(sent, ['["ping",1]'])
 })
 
-it('does not send to closed socket', () => {
+test('does not send to closed socket', () => {
   let sent: string[] = []
   let ws = prepareWs()
   ws.send = (msg: string) => {
@@ -101,6 +107,8 @@ it('does not send to closed socket', () => {
   privateMethods(connection.ws)._readyState = 2
 
   connection.send(['ping', 1])
-  expect(sent).toEqual([])
-  expect(errors).toEqual(['WS was closed'])
+  equal(sent, [])
+  equal(errors, ['WS was closed'])
 })
+
+test.run()

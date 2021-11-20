@@ -1,10 +1,12 @@
+import { equal, is, type } from 'uvu/assert'
 import { delay } from 'nanodelay'
+import { test } from 'uvu'
 
 import { ClientNode, ServerNode, TestTime, TestPair } from '../index.js'
 
 let destroyable: TestPair
 
-afterEach(() => {
+test.after.each(() => {
   destroyable.leftNode.destroy()
   destroyable.rightNode.destroy()
 })
@@ -17,9 +19,9 @@ function createPair(): TestPair {
   let time = new TestTime()
   let log1 = time.nextLog()
   let log2 = time.nextLog()
-  let test = new TestPair()
+  let pair = new TestPair()
 
-  destroyable = test
+  destroyable = pair
 
   log1.on('preadd', (action, meta) => {
     meta.reasons = ['t']
@@ -28,61 +30,61 @@ function createPair(): TestPair {
     meta.reasons = ['t']
   })
 
-  test.leftNode = new ClientNode('client', log1, test.left, { fixTime: false })
-  test.rightNode = new ServerNode('server', log2, test.right)
+  pair.leftNode = new ClientNode('client', log1, pair.left, { fixTime: false })
+  pair.rightNode = new ServerNode('server', log2, pair.right)
 
-  return test
+  return pair
 }
 
 async function createTest(
-  before?: (test: TestPair) => void
+  before?: (testPair: TestPair) => void
 ): Promise<TestPair> {
-  let test = createPair()
-  before?.(test)
-  test.left.connect()
-  await test.leftNode.waitFor('synchronized')
-  test.clear()
-  privateMethods(test.leftNode).baseTime = 0
-  privateMethods(test.rightNode).baseTime = 0
-  return test
+  let pair = createPair()
+  before?.(pair)
+  pair.left.connect()
+  await pair.leftNode.waitFor('synchronized')
+  pair.clear()
+  privateMethods(pair.leftNode).baseTime = 0
+  privateMethods(pair.rightNode).baseTime = 0
+  return pair
 }
 
-it('sends sync messages', async () => {
+test('sends sync messages', async () => {
   let actionA = { type: 'a' }
   let actionB = { type: 'b' }
-  let test = await createTest()
-  test.leftNode.log.add(actionA)
-  await test.wait('left')
-  expect(test.leftSent).toEqual([
+  let pair = await createTest()
+  pair.leftNode.log.add(actionA)
+  await pair.wait('left')
+  equal(pair.leftSent, [
     ['sync', 1, actionA, { id: [1, 'test1', 0], time: 1, reasons: ['t'] }]
   ])
-  expect(test.rightSent).toEqual([['synced', 1]])
+  equal(pair.rightSent, [['synced', 1]])
 
-  test.rightNode.log.add(actionB)
-  await test.wait('right')
-  expect(test.leftSent).toEqual([
+  pair.rightNode.log.add(actionB)
+  await pair.wait('right')
+  equal(pair.leftSent, [
     ['sync', 1, actionA, { id: [1, 'test1', 0], time: 1, reasons: ['t'] }],
     ['synced', 2]
   ])
-  expect(test.rightSent).toEqual([
+  equal(pair.rightSent, [
     ['synced', 1],
     ['sync', 2, actionB, { id: [2, 'test2', 0], time: 2, reasons: ['t'] }]
   ])
 })
 
-it('uses last added on non-added action', async () => {
-  let test = await createTest()
-  test.leftNode.log.on('preadd', (action, meta) => {
+test('uses last added on non-added action', async () => {
+  let pair = await createTest()
+  pair.leftNode.log.on('preadd', (action, meta) => {
     meta.reasons = []
   })
-  test.leftNode.log.add({ type: 'a' })
-  await test.wait('left')
-  expect(test.leftSent).toEqual([
+  pair.leftNode.log.add({ type: 'a' })
+  await pair.wait('left')
+  equal(pair.leftSent, [
     ['sync', 0, { type: 'a' }, { id: [1, 'test1', 0], time: 1, reasons: [] }]
   ])
 })
 
-it('checks sync types', async () => {
+test('checks sync types', async () => {
   let wrongs = [
     ['sync'],
     ['sync', 0, { type: 'a' }],
@@ -101,53 +103,51 @@ it('checks sync types', async () => {
   ]
   await Promise.all(
     wrongs.map(async msg => {
-      let test = await createTest()
-      test.leftNode.catch(() => true)
+      let pair = await createTest()
+      pair.leftNode.catch(() => true)
       // @ts-expect-error
-      test.leftNode.send(msg)
-      await test.wait('left')
-      expect(test.rightNode.connected).toBe(false)
-      expect(test.rightSent).toEqual([
-        ['error', 'wrong-format', JSON.stringify(msg)]
-      ])
+      pair.leftNode.send(msg)
+      await pair.wait('left')
+      is(pair.rightNode.connected, false)
+      equal(pair.rightSent, [['error', 'wrong-format', JSON.stringify(msg)]])
     })
   )
 })
 
-it('synchronizes actions', async () => {
-  let test = await createTest()
-  test.leftNode.log.add({ type: 'a' })
-  await test.wait('left')
-  expect(test.leftNode.log.actions()).toEqual([{ type: 'a' }])
-  expect(test.leftNode.log.actions()).toEqual(test.rightNode.log.actions())
-  test.rightNode.log.add({ type: 'b' })
-  await test.wait('right')
-  expect(test.leftNode.log.actions()).toEqual([{ type: 'a' }, { type: 'b' }])
-  expect(test.leftNode.log.actions()).toEqual(test.rightNode.log.actions())
+test('synchronizes actions', async () => {
+  let pair = await createTest()
+  pair.leftNode.log.add({ type: 'a' })
+  await pair.wait('left')
+  equal(pair.leftNode.log.actions(), [{ type: 'a' }])
+  equal(pair.leftNode.log.actions(), pair.rightNode.log.actions())
+  pair.rightNode.log.add({ type: 'b' })
+  await pair.wait('right')
+  equal(pair.leftNode.log.actions(), [{ type: 'a' }, { type: 'b' }])
+  equal(pair.leftNode.log.actions(), pair.rightNode.log.actions())
 })
 
-it('remembers synced added', async () => {
-  let test = await createTest()
-  expect(test.leftNode.lastSent).toBe(0)
-  expect(test.leftNode.lastReceived).toBe(0)
-  test.leftNode.log.add({ type: 'a' })
-  await test.wait('left')
-  expect(test.leftNode.lastSent).toBe(1)
-  expect(test.leftNode.lastReceived).toBe(0)
-  test.rightNode.log.add({ type: 'b' })
-  await test.wait('right')
-  expect(test.leftNode.lastSent).toBe(1)
-  expect(test.leftNode.lastReceived).toBe(2)
-  expect(privateMethods(test.leftNode.log.store).lastSent).toBe(1)
-  expect(privateMethods(test.leftNode.log.store).lastReceived).toBe(2)
+test('remembers synced added', async () => {
+  let pair = await createTest()
+  equal(pair.leftNode.lastSent, 0)
+  equal(pair.leftNode.lastReceived, 0)
+  pair.leftNode.log.add({ type: 'a' })
+  await pair.wait('left')
+  equal(pair.leftNode.lastSent, 1)
+  equal(pair.leftNode.lastReceived, 0)
+  pair.rightNode.log.add({ type: 'b' })
+  await pair.wait('right')
+  equal(pair.leftNode.lastSent, 1)
+  equal(pair.leftNode.lastReceived, 2)
+  equal(privateMethods(pair.leftNode.log.store).lastSent, 1)
+  equal(privateMethods(pair.leftNode.log.store).lastReceived, 2)
 })
 
-it('filters output actions', async () => {
-  let test = await createTest(async created => {
+test('filters output actions', async () => {
+  let pair = await createTest(async created => {
     created.leftNode.options.outFilter = async (action, meta) => {
-      expect(meta.id).toBeDefined()
-      expect(meta.time).toBeDefined()
-      expect(meta.added).toBeDefined()
+      type(meta.id, 'string')
+      type(meta.time, 'number')
+      type(meta.added, 'number')
       return action.type === 'b'
     }
     await Promise.all([
@@ -155,113 +155,113 @@ it('filters output actions', async () => {
       created.leftNode.log.add({ type: 'b' })
     ])
   })
-  expect(test.rightNode.log.actions()).toEqual([{ type: 'b' }])
+  equal(pair.rightNode.log.actions(), [{ type: 'b' }])
   await Promise.all([
-    test.leftNode.log.add({ type: 'a' }),
-    test.leftNode.log.add({ type: 'b' })
+    pair.leftNode.log.add({ type: 'a' }),
+    pair.leftNode.log.add({ type: 'b' })
   ])
-  await test.leftNode.waitFor('synchronized')
-  expect(test.rightNode.log.actions()).toEqual([{ type: 'b' }, { type: 'b' }])
+  await pair.leftNode.waitFor('synchronized')
+  equal(pair.rightNode.log.actions(), [{ type: 'b' }, { type: 'b' }])
 })
 
-it('maps output actions', async () => {
-  let test = await createTest()
-  test.leftNode.options.outMap = async (action, meta) => {
-    expect(meta.id).toBeDefined()
-    expect(meta.time).toBeDefined()
-    expect(meta.added).toBeDefined()
+test('maps output actions', async () => {
+  let pair = await createTest()
+  pair.leftNode.options.outMap = async (action, meta) => {
+    type(meta.id, 'string')
+    type(meta.time, 'number')
+    type(meta.added, 'number')
     return [{ type: action.type + '1' }, meta]
   }
-  test.leftNode.log.add({ type: 'a' })
-  await test.wait('left')
-  expect(test.leftNode.log.actions()).toEqual([{ type: 'a' }])
-  expect(test.rightNode.log.actions()).toEqual([{ type: 'a1' }])
+  pair.leftNode.log.add({ type: 'a' })
+  await pair.wait('left')
+  equal(pair.leftNode.log.actions(), [{ type: 'a' }])
+  equal(pair.rightNode.log.actions(), [{ type: 'a1' }])
 })
 
-it('uses output filter before map', async () => {
+test('uses output filter before map', async () => {
   let calls: string[] = []
-  let test = await createTest()
-  test.leftNode.options.outMap = async (action, meta) => {
+  let pair = await createTest()
+  pair.leftNode.options.outMap = async (action, meta) => {
     calls.push('map')
     return [action, meta]
   }
-  test.leftNode.options.outFilter = async () => {
+  pair.leftNode.options.outFilter = async () => {
     calls.push('filter')
     return true
   }
-  test.leftNode.log.add({ type: 'a' })
-  await test.wait('left')
-  expect(calls).toEqual(['filter', 'map'])
+  pair.leftNode.log.add({ type: 'a' })
+  await pair.wait('left')
+  equal(calls, ['filter', 'map'])
 })
 
-it('filters input actions', async () => {
-  let test = await createTest(created => {
+test('filters input actions', async () => {
+  let pair = await createTest(created => {
     created.rightNode.options.inFilter = async (action, meta) => {
-      expect(meta.id).toBeDefined()
-      expect(meta.time).toBeDefined()
+      type(meta.id, 'string')
+      type(meta.time, 'number')
       return action.type !== 'c'
     }
     created.leftNode.log.add({ type: 'a' })
     created.leftNode.log.add({ type: 'b' })
     created.leftNode.log.add({ type: 'c' })
   })
-  expect(test.leftNode.log.actions()).toEqual([
+  equal(pair.leftNode.log.actions(), [
     { type: 'a' },
     { type: 'b' },
     { type: 'c' }
   ])
-  expect(test.rightNode.log.actions()).toEqual([{ type: 'a' }, { type: 'b' }])
+  equal(pair.rightNode.log.actions(), [{ type: 'a' }, { type: 'b' }])
 })
 
-it('maps input actions', async () => {
-  let test = await createTest()
-  test.rightNode.options.inMap = async (action, meta) => {
-    expect(meta.id).toBeDefined()
-    expect(meta.time).toBeDefined()
+test('maps input actions', async () => {
+  let pair = await createTest()
+  pair.rightNode.options.inMap = async (action, meta) => {
+    type(meta.id, 'string')
+    type(meta.time, 'number')
     return [{ type: action.type + '1' }, meta]
   }
-  test.leftNode.log.add({ type: 'a' })
-  await test.wait('left')
-  expect(test.leftNode.log.actions()).toEqual([{ type: 'a' }])
-  expect(test.rightNode.log.actions()).toEqual([{ type: 'a1' }])
+  pair.leftNode.log.add({ type: 'a' })
+  await pair.wait('left')
+  equal(pair.leftNode.log.actions(), [{ type: 'a' }])
+  equal(pair.rightNode.log.actions(), [{ type: 'a1' }])
 })
 
-it('uses input map before filter', async () => {
+test('uses input map before filter', async () => {
   let calls: string[] = []
-  let test = await createTest()
-  test.rightNode.options.inMap = async (action, meta) => {
+  let pair = await createTest()
+  pair.rightNode.options.inMap = async (action, meta) => {
     calls.push('map')
     return [action, meta]
   }
-  test.rightNode.options.inFilter = async () => {
+  pair.rightNode.options.inFilter = async () => {
     calls.push('filter')
     return true
   }
-  test.leftNode.log.add({ type: 'a' })
-  await test.wait('left')
-  expect(calls).toEqual(['map', 'filter'])
+  pair.leftNode.log.add({ type: 'a' })
+  await pair.wait('left')
+  equal(calls, ['map', 'filter'])
 })
 
-it('reports errors during initial output filter', async () => {
+test('reports errors during initial output filter', async () => {
   let error = new Error('test')
   let catched: Error[] = []
-  let test = createPair()
-  test.rightNode.log.add({ type: 'a' })
-  test.rightNode.catch(e => {
+  let pair = createPair()
+  pair.rightNode.log.add({ type: 'a' })
+  pair.rightNode.catch(e => {
     catched.push(e)
   })
-  test.rightNode.options.outFilter = async () => {
+  pair.rightNode.options.outFilter = async () => {
     throw error
   }
-  test.left.connect()
+  pair.left.connect()
   await delay(50)
-  expect(catched).toEqual([error])
+  equal(catched, [error])
 })
 
-it('reports errors during output filter', async () => {
+test('reports errors during output filter', async () => {
   let error = new Error('test')
   let catched: Error[] = []
-  let test = await createTest(created => {
+  let pair = await createTest(created => {
     created.rightNode.catch(e => {
       catched.push(e)
     })
@@ -269,31 +269,31 @@ it('reports errors during output filter', async () => {
       throw error
     }
   })
-  test.rightNode.log.add({ type: 'a' })
+  pair.rightNode.log.add({ type: 'a' })
   await delay(50)
-  expect(catched).toEqual([error])
+  equal(catched, [error])
 })
 
-it('reports errors during initial output map', async () => {
+test('reports errors during initial output map', async () => {
   let error = new Error('test')
   let catched: Error[] = []
-  let test = createPair()
-  test.rightNode.log.add({ type: 'a' })
-  test.rightNode.catch(e => {
+  let pair = createPair()
+  pair.rightNode.log.add({ type: 'a' })
+  pair.rightNode.catch(e => {
     catched.push(e)
   })
-  test.rightNode.options.outMap = async () => {
+  pair.rightNode.options.outMap = async () => {
     throw error
   }
-  test.left.connect()
+  pair.left.connect()
   await delay(50)
-  expect(catched).toEqual([error])
+  equal(catched, [error])
 })
 
-it('reports errors during output map', async () => {
+test('reports errors during output map', async () => {
   let error = new Error('test')
   let catched: Error[] = []
-  let test = await createTest(created => {
+  let pair = await createTest(created => {
     created.rightNode.catch(e => {
       catched.push(e)
     })
@@ -301,48 +301,48 @@ it('reports errors during output map', async () => {
       throw error
     }
   })
-  test.rightNode.log.add({ type: 'a' })
+  pair.rightNode.log.add({ type: 'a' })
   await delay(50)
-  expect(catched).toEqual([error])
+  equal(catched, [error])
 })
 
-it('reports errors during input filter', async () => {
+test('reports errors during input filter', async () => {
   let error = new Error('test')
   let catched: Error[] = []
-  let test = await createTest()
-  test.rightNode.catch(e => {
+  let pair = await createTest()
+  pair.rightNode.catch(e => {
     catched.push(e)
   })
-  test.rightNode.options.inFilter = async () => {
+  pair.rightNode.options.inFilter = async () => {
     throw error
   }
-  test.leftNode.log.add({ type: 'a' })
+  pair.leftNode.log.add({ type: 'a' })
   await delay(50)
-  expect(catched).toEqual([error])
+  equal(catched, [error])
 })
 
-it('reports errors during input map', async () => {
+test('reports errors during input map', async () => {
   let error = new Error('test')
   let catched: Error[] = []
-  let test = await createTest()
-  test.rightNode.catch(e => {
+  let pair = await createTest()
+  pair.rightNode.catch(e => {
     catched.push(e)
   })
-  test.rightNode.options.inMap = async () => {
+  pair.rightNode.options.inMap = async () => {
     throw error
   }
-  test.leftNode.log.add({ type: 'a' })
+  pair.leftNode.log.add({ type: 'a' })
   await delay(50)
-  expect(catched).toEqual([error])
+  equal(catched, [error])
 })
 
-it('compresses time', async () => {
-  let test = await createTest()
-  privateMethods(test.leftNode).baseTime = 100
-  privateMethods(test.rightNode).baseTime = 100
-  await test.leftNode.log.add({ type: 'a' }, { id: '1 test1 0', time: 1 })
-  await test.leftNode.waitFor('synchronized')
-  expect(test.leftSent).toEqual([
+test('compresses time', async () => {
+  let pair = await createTest()
+  privateMethods(pair.leftNode).baseTime = 100
+  privateMethods(pair.rightNode).baseTime = 100
+  await pair.leftNode.log.add({ type: 'a' }, { id: '1 test1 0', time: 1 })
+  await pair.leftNode.waitFor('synchronized')
+  equal(pair.leftSent, [
     [
       'sync',
       1,
@@ -350,152 +350,152 @@ it('compresses time', async () => {
       { id: [-99, 'test1', 0], time: -99, reasons: ['t'] }
     ]
   ])
-  expect(test.rightNode.log.entries()).toEqual([
+  equal(pair.rightNode.log.entries(), [
     [{ type: 'a' }, { id: '1 test1 0', time: 1, added: 1, reasons: ['t'] }]
   ])
 })
 
-it('compresses IDs', async () => {
-  let test = await createTest()
+test('compresses IDs', async () => {
+  let pair = await createTest()
   await Promise.all([
-    test.leftNode.log.add({ type: 'a' }, { id: '1 client 0', time: 1 }),
-    test.leftNode.log.add({ type: 'a' }, { id: '1 client 1', time: 1 }),
-    test.leftNode.log.add({ type: 'a' }, { id: '1 o 0', time: 1 })
+    pair.leftNode.log.add({ type: 'a' }, { id: '1 client 0', time: 1 }),
+    pair.leftNode.log.add({ type: 'a' }, { id: '1 client 1', time: 1 }),
+    pair.leftNode.log.add({ type: 'a' }, { id: '1 o 0', time: 1 })
   ])
-  await test.leftNode.waitFor('synchronized')
-  expect(test.leftSent).toEqual([
+  await pair.leftNode.waitFor('synchronized')
+  equal(pair.leftSent, [
     ['sync', 1, { type: 'a' }, { id: 1, time: 1, reasons: ['t'] }],
     ['sync', 2, { type: 'a' }, { id: [1, 1], time: 1, reasons: ['t'] }],
     ['sync', 3, { type: 'a' }, { id: [1, 'o', 0], time: 1, reasons: ['t'] }]
   ])
-  expect(test.rightNode.log.entries()).toEqual([
+  equal(pair.rightNode.log.entries(), [
     [{ type: 'a' }, { id: '1 client 0', time: 1, added: 1, reasons: ['t'] }],
     [{ type: 'a' }, { id: '1 client 1', time: 1, added: 2, reasons: ['t'] }],
     [{ type: 'a' }, { id: '1 o 0', time: 1, added: 3, reasons: ['t'] }]
   ])
 })
 
-it('synchronizes any meta fields', async () => {
+test('synchronizes any meta fields', async () => {
   let a = { type: 'a' }
-  let test = await createTest()
-  await test.leftNode.log.add(a, { id: '1 test1 0', time: 1, one: 1 })
-  await test.leftNode.waitFor('synchronized')
-  expect(test.leftSent).toEqual([
+  let pair = await createTest()
+  await pair.leftNode.log.add(a, { id: '1 test1 0', time: 1, one: 1 })
+  await pair.leftNode.waitFor('synchronized')
+  equal(pair.leftSent, [
     ['sync', 1, a, { id: [1, 'test1', 0], time: 1, one: 1, reasons: ['t'] }]
   ])
-  expect(test.rightNode.log.entries()).toEqual([
+  equal(pair.rightNode.log.entries(), [
     [a, { id: '1 test1 0', time: 1, added: 1, one: 1, reasons: ['t'] }]
   ])
 })
 
-it('fixes created time', async () => {
-  let test = await createTest()
-  test.leftNode.timeFix = 10
+test('fixes created time', async () => {
+  let pair = await createTest()
+  pair.leftNode.timeFix = 10
   await Promise.all([
-    test.leftNode.log.add({ type: 'a' }, { id: '11 test1 0', time: 11 }),
-    test.rightNode.log.add({ type: 'b' }, { id: '2 test2 0', time: 2 })
+    pair.leftNode.log.add({ type: 'a' }, { id: '11 test1 0', time: 11 }),
+    pair.rightNode.log.add({ type: 'b' }, { id: '2 test2 0', time: 2 })
   ])
-  await test.leftNode.waitFor('synchronized')
-  expect(test.leftNode.log.entries()).toEqual([
+  await pair.leftNode.waitFor('synchronized')
+  equal(pair.leftNode.log.entries(), [
     [{ type: 'a' }, { id: '11 test1 0', time: 11, added: 1, reasons: ['t'] }],
     [{ type: 'b' }, { id: '2 test2 0', time: 12, added: 2, reasons: ['t'] }]
   ])
-  expect(test.rightNode.log.entries()).toEqual([
+  equal(pair.rightNode.log.entries(), [
     [{ type: 'a' }, { id: '11 test1 0', time: 1, added: 2, reasons: ['t'] }],
     [{ type: 'b' }, { id: '2 test2 0', time: 2, added: 1, reasons: ['t'] }]
   ])
 })
 
-it('supports multiple actions in sync', async () => {
-  let test = await createTest()
-  privateMethods(test.rightNode).sendSync(2, [
+test('supports multiple actions in sync', async () => {
+  let pair = await createTest()
+  privateMethods(pair.rightNode).sendSync(2, [
     [{ type: 'b' }, { id: '2 test2 0', time: 2, added: 2 }],
     [{ type: 'a' }, { id: '1 test2 0', time: 1, added: 1 }]
   ])
-  await test.wait('right')
-  expect(test.leftNode.lastReceived).toBe(2)
-  expect(test.leftNode.log.entries()).toEqual([
+  await pair.wait('right')
+  equal(pair.leftNode.lastReceived, 2)
+  equal(pair.leftNode.log.entries(), [
     [{ type: 'a' }, { id: '1 test2 0', time: 1, added: 1, reasons: ['t'] }],
     [{ type: 'b' }, { id: '2 test2 0', time: 2, added: 2, reasons: ['t'] }]
   ])
 })
 
-it('starts and ends timeout', async () => {
-  let test = await createTest()
-  privateMethods(test.leftNode).sendSync(1, [
+test('starts and ends timeout', async () => {
+  let pair = await createTest()
+  privateMethods(pair.leftNode).sendSync(1, [
     [{ type: 'a' }, { id: '1 test2 0', time: 1, added: 1 }]
   ])
-  privateMethods(test.leftNode).sendSync(2, [
+  privateMethods(pair.leftNode).sendSync(2, [
     [{ type: 'a' }, { id: '2 test2 0', time: 2, added: 1 }]
   ])
-  expect(privateMethods(test.leftNode).timeouts).toHaveLength(2)
+  equal(privateMethods(pair.leftNode).timeouts.length, 2)
 
-  privateMethods(test.leftNode).syncedMessage(1)
-  expect(privateMethods(test.leftNode).timeouts).toHaveLength(1)
+  privateMethods(pair.leftNode).syncedMessage(1)
+  equal(privateMethods(pair.leftNode).timeouts.length, 1)
 
-  privateMethods(test.leftNode).syncedMessage(2)
-  expect(privateMethods(test.leftNode).timeouts).toHaveLength(0)
+  privateMethods(pair.leftNode).syncedMessage(2)
+  equal(privateMethods(pair.leftNode).timeouts.length, 0)
 })
 
-it('should nothing happend if syncedMessage of empty syncing', async () => {
-  let test = await createTest()
-  expect(privateMethods(test.leftNode).timeouts).toHaveLength(0)
+test('should nothing happend if syncedMessage of empty syncing', async () => {
+  let pair = await createTest()
+  equal(privateMethods(pair.leftNode).timeouts.length, 0)
 
-  privateMethods(test.leftNode).syncedMessage(1)
-  expect(privateMethods(test.leftNode).timeouts).toHaveLength(0)
+  privateMethods(pair.leftNode).syncedMessage(1)
+  equal(privateMethods(pair.leftNode).timeouts.length, 0)
 })
 
-it('uses always latest added', async () => {
-  let test = await createTest()
-  test.leftNode.log.on('preadd', (action, meta) => {
+test('uses always latest added', async () => {
+  let pair = await createTest()
+  pair.leftNode.log.on('preadd', (action, meta) => {
     meta.reasons = action.type === 'a' ? ['t'] : []
   })
-  privateMethods(test.rightNode).send = () => {}
-  test.leftNode.log.add({ type: 'a' })
+  privateMethods(pair.rightNode).send = () => {}
+  pair.leftNode.log.add({ type: 'a' })
   await delay(1)
-  test.leftNode.log.add({ type: 'b' })
+  pair.leftNode.log.add({ type: 'b' })
   await delay(1)
-  expect(test.leftSent[1][1]).toEqual(1)
+  equal(pair.leftSent[1][1], 1)
 })
 
-it('changes multiple actions in map', async () => {
-  let test = await createTest(created => {
+test('changes multiple actions in map', async () => {
+  let pair = await createTest(created => {
     created.leftNode.options.outMap = async (action, meta) => {
       return [{ type: action.type.toUpperCase() }, meta]
     }
     created.leftNode.log.add({ type: 'a' })
     created.leftNode.log.add({ type: 'b' })
   })
-  await test.leftNode.waitFor('synchronized')
-  expect(test.rightNode.lastReceived).toBe(2)
-  expect(test.rightNode.log.actions()).toEqual([{ type: 'A' }, { type: 'B' }])
+  await pair.leftNode.waitFor('synchronized')
+  equal(pair.rightNode.lastReceived, 2)
+  equal(pair.rightNode.log.actions(), [{ type: 'A' }, { type: 'B' }])
 })
 
-it('synchronizes actions on connect', async () => {
+test('synchronizes actions on connect', async () => {
   let added: string[] = []
-  let test = await createTest()
-  test.leftNode.log.on('add', action => {
+  let pair = await createTest()
+  pair.leftNode.log.on('add', action => {
     added.push(action.type)
   })
   await Promise.all([
-    test.leftNode.log.add({ type: 'a' }),
-    test.rightNode.log.add({ type: 'b' })
+    pair.leftNode.log.add({ type: 'a' }),
+    pair.rightNode.log.add({ type: 'b' })
   ])
-  await test.leftNode.waitFor('synchronized')
-  test.left.disconnect()
-  await test.wait('right')
-  expect(test.leftNode.lastSent).toBe(1)
-  expect(test.leftNode.lastReceived).toBe(1)
+  await pair.leftNode.waitFor('synchronized')
+  pair.left.disconnect()
+  await pair.wait('right')
+  equal(pair.leftNode.lastSent, 1)
+  equal(pair.leftNode.lastReceived, 1)
   await Promise.all([
-    test.leftNode.log.add({ type: 'c' }),
-    test.leftNode.log.add({ type: 'd' }),
-    test.rightNode.log.add({ type: 'e' }),
-    test.rightNode.log.add({ type: 'f' })
+    pair.leftNode.log.add({ type: 'c' }),
+    pair.leftNode.log.add({ type: 'd' }),
+    pair.rightNode.log.add({ type: 'e' }),
+    pair.rightNode.log.add({ type: 'f' })
   ])
-  await test.left.connect()
-  test.rightNode = new ServerNode('server2', test.rightNode.log, test.right)
-  await test.leftNode.waitFor('synchronized')
-  expect(test.leftNode.log.actions()).toEqual([
+  await pair.left.connect()
+  pair.rightNode = new ServerNode('server2', pair.rightNode.log, pair.right)
+  await pair.leftNode.waitFor('synchronized')
+  equal(pair.leftNode.log.actions(), [
     { type: 'a' },
     { type: 'b' },
     { type: 'c' },
@@ -503,6 +503,8 @@ it('synchronizes actions on connect', async () => {
     { type: 'e' },
     { type: 'f' }
   ])
-  expect(test.leftNode.log.actions()).toEqual(test.rightNode.log.actions())
-  expect(added).toEqual(['a', 'b', 'c', 'd', 'e', 'f'])
+  equal(pair.leftNode.log.actions(), pair.rightNode.log.actions())
+  equal(added, ['a', 'b', 'c', 'd', 'e', 'f'])
 })
+
+test.run()

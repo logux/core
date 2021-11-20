@@ -1,5 +1,7 @@
+import { equal, is, not, ok, type } from 'uvu/assert'
+import { spyOn, resetSpies } from 'nanospy'
 import { delay } from 'nanodelay'
-import { jest } from '@jest/globals'
+import { test } from 'uvu'
 
 import { Reconnect, TestPair, Message } from '../index.js'
 
@@ -31,7 +33,7 @@ function privateMethods(obj: object): any {
   return obj
 }
 
-beforeEach(() => {
+test.before.each(() => {
   listeners = {}
   // @ts-expect-error
   global.window = {
@@ -48,62 +50,66 @@ beforeEach(() => {
   }
 })
 
-it('saves connection and options', () => {
+test.after.each(() => {
+  resetSpies()
+})
+
+test('saves connection and options', () => {
   let pair = new TestPair()
   let recon = new Reconnect(pair.left, { attempts: 1 })
-  expect(recon.connection).toBe(pair.left)
-  expect(recon.options.attempts).toEqual(1)
+  is(recon.connection, pair.left)
+  equal(recon.options.attempts, 1)
 })
 
-it('uses default options', () => {
+test('uses default options', () => {
   let pair = new TestPair()
   let recon = new Reconnect(pair.left)
-  expect(typeof recon.options.minDelay).toEqual('number')
+  type(recon.options.minDelay, 'number')
 })
 
-it('enables reconnecting on connect', () => {
+test('enables reconnecting on connect', () => {
   let pair = new TestPair()
   let recon = new Reconnect(pair.left)
-  expect(recon.reconnecting).toBe(false)
+  is(recon.reconnecting, false)
 
   recon.connect()
-  expect(recon.reconnecting).toBe(true)
+  is(recon.reconnecting, true)
 })
 
-it('enables reconnecting if connection was already connected', async () => {
+test('enables reconnecting if connection was already connected', async () => {
   let pair = new TestPair()
   await pair.left.connect()
   let recon = new Reconnect(pair.left)
-  expect(recon.reconnecting).toBe(true)
+  is(recon.reconnecting, true)
 })
 
-it('disables reconnecting on destroy and empty disconnect', async () => {
+test('disables reconnecting on destroy and empty disconnect', async () => {
   let pair = new TestPair()
   let recon = new Reconnect(pair.left)
 
   await recon.connect()
   recon.disconnect('destroy')
-  expect(recon.reconnecting).toBe(false)
-  expect(pair.leftEvents).toEqual([['connect'], ['disconnect', 'destroy']])
+  is(recon.reconnecting, false)
+  equal(pair.leftEvents, [['connect'], ['disconnect', 'destroy']])
   await recon.connect()
   recon.disconnect()
-  expect(recon.reconnecting).toBe(false)
+  is(recon.reconnecting, false)
 })
 
-it('reconnects on timeout and error disconnect', async () => {
+test('reconnects on timeout and error disconnect', async () => {
   let pair = new TestPair()
   await pair.left.connect()
   let recon = new Reconnect(pair.left)
 
   recon.disconnect('timeout')
-  expect(recon.reconnecting).toBe(true)
+  is(recon.reconnecting, true)
   await pair.left.connect()
 
   recon.disconnect('error')
-  expect(recon.reconnecting).toBe(true)
+  is(recon.reconnecting, true)
 })
 
-it('proxies connection methods', () => {
+test('proxies connection methods', () => {
   let sent: Message[] = []
   let con = {
     on() {
@@ -123,20 +129,20 @@ it('proxies connection methods', () => {
     destroy() {}
   }
   let recon = new Reconnect(con)
-  expect(recon.connected).toBe(false)
-  expect(privateMethods(recon).emitter).toBe(con.emitter)
+  is(recon.connected, false)
+  is(privateMethods(recon).emitter, con.emitter)
 
   recon.connect()
-  expect(recon.connected).toBe(true)
+  is(recon.connected, true)
 
   recon.send(['ping', 1])
-  expect(sent).toEqual([['ping', 1]])
+  equal(sent, [['ping', 1]])
 
   recon.disconnect()
-  expect(recon.connected).toBe(false)
+  is(recon.connected, false)
 })
 
-it('proxies connection events', async () => {
+test('proxies connection events', async () => {
   let pair = new TestPair()
   let recon = new Reconnect(pair.left)
 
@@ -153,70 +159,68 @@ it('proxies connection events', async () => {
   unbind()
   pair.right.send(['ping', 3])
   await pair.wait()
-  expect(received).toEqual([
+  equal(received, [
     ['ping', 1],
     ['ping', 2]
   ])
 })
 
-it('disables reconnection on protocol error', async () => {
+test('disables reconnection on protocol error', async () => {
   let pair = new TestPair()
   let recon = new Reconnect(pair.left)
   await recon.connect()
   pair.right.send(['error', 'wrong-protocol'])
   pair.right.disconnect()
   await pair.wait()
-  expect(recon.reconnecting).toBe(false)
+  is(recon.reconnecting, false)
 })
 
-it('disables reconnection on authentication error', async () => {
+test('disables reconnection on authentication error', async () => {
   let pair = new TestPair()
   let recon = new Reconnect(pair.left)
   await recon.connect()
   pair.right.send(['error', 'wrong-credentials'])
   pair.right.disconnect()
   await pair.wait()
-  expect(recon.reconnecting).toBe(false)
+  is(recon.reconnecting, false)
 })
 
-it('disables reconnection on subprotocol error', async () => {
+test('disables reconnection on subprotocol error', async () => {
   let pair = new TestPair()
   let recon = new Reconnect(pair.left)
   await recon.connect()
   pair.right.send(['error', 'wrong-subprotocol'])
   pair.right.disconnect()
   await pair.wait()
-  expect(recon.reconnecting).toBe(false)
+  is(recon.reconnecting, false)
 })
 
-it('disconnects and unbind listeners on destory', async () => {
+test('disconnects and unbind listeners on destroy', async () => {
   let pair = new TestPair()
   let origin = privateMethods(pair.left).emitter.events.connect.length
 
   let recon = new Reconnect(pair.left)
-  expect(privateMethods(pair.left).emitter.events.connect).not.toHaveLength(
-    origin
-  )
+  not.equal(privateMethods(pair.left).emitter.events.connect.length, origin)
 
   await recon.connect()
   recon.destroy()
   await pair.wait()
-  expect(privateMethods(pair.left).emitter.events.connect).toHaveLength(origin)
-  expect(pair.right.connected).toBe(false)
+  equal(privateMethods(pair.left).emitter.events.connect.length, origin)
+  is(pair.right.connected, false)
 })
 
-it('reconnects automatically with delay', async () => {
+test('reconnects automatically with delay', async () => {
   let pair = new TestPair()
   let recon = new Reconnect(pair.left, { minDelay: 50, maxDelay: 50 })
   await recon.connect()
   pair.right.disconnect()
   await pair.wait()
-  expect(pair.right.connected).toBe(false)
+  is(pair.right.connected, false)
   await delay(70)
-  expect(pair.right.connected).toBe(true)
+  is(pair.right.connected, true)
 })
 
-it('allows to disable reconnecting', async () => {
+test('allows to disable reconnecting', async () => {
   let pair = new TestPair()
   let recon = new Reconnect(pair.left)
   await recon.connect()
@@ -224,10 +228,10 @@ it('allows to disable reconnecting', async () => {
   pair.right.disconnect()
   await pair.wait()
   await delay(1)
-  expect(pair.right.connected).toBe(false)
+  is(pair.right.connected, false)
 })
 
-it('has maximum reconnection attempts', async () => {
+test('has maximum reconnection attempts', async () => {
   let pair = new TestPair()
   let connects = 0
   pair.left.connect = () => {
@@ -245,31 +249,31 @@ it('has maximum reconnection attempts', async () => {
   recon.connect()
 
   await delay(10)
-  expect(recon.reconnecting).toBe(false)
-  expect(connects).toBe(3)
+  is(recon.reconnecting, false)
+  equal(connects, 3)
 })
 
-it('tracks connecting state', () => {
+test('tracks connecting state', () => {
   let pair = new TestPair()
   let recon = new Reconnect(pair.left, {
     minDelay: 1000,
     maxDelay: 5000
   })
 
-  expect(recon.connecting).toBe(false)
+  is(recon.connecting, false)
 
   privateMethods(pair.left).emitter.emit('connecting')
-  expect(recon.connecting).toBe(true)
+  is(recon.connecting, true)
 
   privateMethods(pair.left).emitter.emit('disconnect')
-  expect(recon.connecting).toBe(false)
+  is(recon.connecting, false)
 
   privateMethods(pair.left).emitter.emit('connecting')
   privateMethods(pair.left).emitter.emit('connect')
-  expect(recon.connecting).toBe(false)
+  is(recon.connecting, false)
 })
 
-it('has dynamic delay', () => {
+test('has dynamic delay', () => {
   let pair = new TestPair()
   let recon = new Reconnect(pair.left, {
     minDelay: 1000,
@@ -279,7 +283,7 @@ it('has dynamic delay', () => {
   function attemptsIsAround(attempt: number, ms: number): void {
     recon.attempts = attempt
     let time = privateMethods(recon).nextDelay()
-    expect(Math.abs(time - ms)).toBeLessThan(1000)
+    ok(Math.abs(time - ms) < 1000)
   }
 
   attemptsIsAround(0, 1000)
@@ -290,7 +294,7 @@ it('has dynamic delay', () => {
   function attemptsIs(attempt: number, ms: number): void {
     recon.attempts = attempt
     let time = privateMethods(recon).nextDelay()
-    expect(time).toEqual(ms)
+    equal(time, ms)
   }
 
   for (let i = 4; i < 100; i++) {
@@ -298,54 +302,56 @@ it('has dynamic delay', () => {
   }
 })
 
-it('listens for window events', async () => {
+test('listens for window events', async () => {
   let pair = new TestPair()
   let recon = new Reconnect(pair.left)
 
   await recon.connect()
   pair.right.disconnect()
   await pair.wait()
-  expect(recon.connected).toBe(false)
+  is(recon.connected, false)
 
   setHidden(true)
   listeners.visibilitychange()
-  expect(recon.connecting).toBe(false)
+  is(recon.connecting, false)
 
   setHidden(false)
   await pair.wait()
-  expect(recon.connected).toBe(true)
+  is(recon.connected, true)
 
   listeners.freeze()
-  expect(recon.connecting).toBe(false)
-  expect(recon.connected).toBe(false)
+  is(recon.connecting, false)
+  is(recon.connected, false)
 
   setOnLine(false, 'resume')
-  expect(recon.connecting).toBe(false)
+  is(recon.connecting, false)
 
   setOnLine(true, 'resume')
   await delay(10)
-  expect(recon.connected).toBe(true)
+  is(recon.connected, true)
   pair.right.disconnect()
   await pair.wait()
-  expect(pair.right.connected).toBe(false)
+  is(recon.connected, false)
 
   setOnLine(true, 'online')
   await pair.wait()
-  expect(pair.right.connected).toBe(true)
+  is(recon.connected, true)
 
   recon.destroy()
-  expect(Object.keys(listeners)).toHaveLength(0)
+  equal(Object.keys(listeners), [])
 })
 
-it('does connect on online if client was not connected', async () => {
+test('does connect on online if client was not connected', async () => {
   let pair = new TestPair()
   new Reconnect(pair.left)
 
-  let connect = jest.spyOn(Reconnect.prototype, 'connect')
+  let connect = spyOn(Reconnect.prototype, 'connect')
 
   listeners.visibilitychange()
-  expect(connect).toHaveBeenCalledTimes(0)
+  equal(connect.callCount, 0)
 
   listeners.online()
-  expect(connect).toHaveBeenCalledTimes(0)
+  equal(connect.callCount, 0)
 })
+
+test.run()

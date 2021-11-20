@@ -1,3 +1,6 @@
+import { equal, is, ok, throws } from 'uvu/assert'
+import { test } from 'uvu'
+
 import { LocalPair, Connection, Message } from '../index.js'
 
 type Event =
@@ -52,82 +55,80 @@ class Tracker {
   }
 }
 
-it('has right link between connections', () => {
+test('has right link between connections', () => {
   let pair = new LocalPair()
-  expect(pair.left.other()).toBe(pair.right)
-  expect(pair.right.other()).toBe(pair.left)
+  is(pair.left.other(), pair.right)
+  is(pair.right.other(), pair.left)
 })
 
-it('throws a error on disconnection in disconnected state', () => {
+test('throws a error on disconnection in disconnected state', () => {
   let pair = new LocalPair()
-  expect(() => {
+  throws(() => {
     pair.left.disconnect()
-  }).toThrow(/already finished/)
+  }, /already finished/)
 })
 
-it('throws a error on message in disconnected state', () => {
+test('throws a error on message in disconnected state', () => {
   let pair = new LocalPair()
-  expect(() => {
+  throws(() => {
     pair.left.send(['ping', 1])
-  }).toThrow(/started before sending/)
+  }, /started before sending/)
 })
 
-it('throws a error on connection in connected state', async () => {
+test('throws a error on connection in connected state', async () => {
   let pair = new LocalPair()
   await pair.left.connect()
-  expect(() => {
+  throws(() => {
     pair.left.connect()
-  }).toThrow(/already established/)
+  }, /already established/)
 })
 
-it('sends a connect event', async () => {
+test('sends a connect event', async () => {
   let tracker = new Tracker()
-  expect(tracker.left).toEqual([])
+  equal(tracker.left, [])
 
   let connecting = tracker.pair.left.connect()
-  expect(tracker.left).toEqual([['connecting']])
-  expect(tracker.right).toEqual([])
+  equal(tracker.left, [['connecting']])
+  equal(tracker.right, [])
 
   await connecting
-  expect(tracker.left).toEqual([['connecting'], ['connect']])
-  expect(tracker.right).toEqual([['connect']])
+  equal(tracker.left, [['connecting'], ['connect']])
+  equal(tracker.right, [['connect']])
 })
 
-it('sends a disconnect event', async () => {
+test('sends a disconnect event', async () => {
   let tracker = new Tracker()
   await tracker.pair.left.connect()
   tracker.pair.right.disconnect('error')
-  expect(tracker.left).toEqual([['connecting'], ['connect']])
-  expect(tracker.right).toEqual([['connect'], ['disconnect', 'error']])
+  equal(tracker.left, [['connecting'], ['connect']])
+  equal(tracker.right, [['connect'], ['disconnect', 'error']])
   await tracker.wait()
-  expect(tracker.left).toEqual([
-    ['connecting'],
-    ['connect'],
-    ['disconnect', undefined]
-  ])
-  expect(tracker.right).toEqual([['connect'], ['disconnect', 'error']])
+  equal(tracker.left, [['connecting'], ['connect'], ['disconnect', undefined]])
+  equal(tracker.right, [['connect'], ['disconnect', 'error']])
 })
 
-it('sends a message event', async () => {
+test('sends a message event', async () => {
   let tracker = new Tracker()
   await tracker.pair.left.connect()
   tracker.pair.left.send(['ping', 1])
-  expect(tracker.right).toEqual([['connect']])
+  equal(tracker.right, [['connect']])
   await tracker.wait()
-  expect(tracker.left).toEqual([['connecting'], ['connect']])
-  expect(tracker.right).toEqual([['connect'], ['message', ['ping', 1]]])
+  equal(tracker.left, [['connecting'], ['connect']])
+  equal(tracker.right, [['connect'], ['message', ['ping', 1]]])
 })
 
-it('emulates delay', async () => {
+test('emulates delay', async () => {
   let tracker = new Tracker(50)
-  expect(tracker.pair.delay).toEqual(50)
+  equal(tracker.pair.delay, 50)
 
   let prevTime = Date.now()
   await tracker.pair.left.connect()
-  expect(Date.now() - prevTime).toBeGreaterThanOrEqual(48)
+  ok(Date.now() - prevTime >= 48)
 
   prevTime = Date.now()
   tracker.pair.left.send(['ping', 1])
   await tracker.wait()
-  expect(Date.now() - prevTime).toBeGreaterThanOrEqual(48)
+  ok(Date.now() - prevTime >= 48)
 })
+
+test.run()

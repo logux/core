@@ -1,49 +1,54 @@
+import { equal } from 'uvu/assert'
+import { test } from 'uvu'
+
 import { parseId } from '../index.js'
 
-it('parses node ID', () => {
-  expect(parseId('10:client:uuid')).toEqual({
+test('parses node ID', () => {
+  equal(parseId('10:client:uuid'), {
     nodeId: '10:client:uuid',
     clientId: '10:client',
     userId: '10'
   })
 })
 
-it('parses action ID', () => {
-  expect(parseId('1 10:client:uuid 0')).toEqual({
+test('parses action ID', () => {
+  equal(parseId('1 10:client:uuid 0'), {
     nodeId: '10:client:uuid',
     clientId: '10:client',
     userId: '10'
   })
 })
 
-it('parses node ID without client', () => {
-  expect(parseId('10:uuid')).toEqual({
+test('parses node ID without client', () => {
+  equal(parseId('10:uuid'), {
     nodeId: '10:uuid',
     clientId: '10:uuid',
     userId: '10'
   })
 })
 
-it('parses node ID without client and user', () => {
-  expect(parseId('uuid')).toEqual({
+test('parses node ID without client and user', () => {
+  equal(parseId('uuid'), {
     nodeId: 'uuid',
     clientId: 'uuid',
     userId: undefined
   })
 })
 
-it('parses node ID with false user', () => {
-  expect(parseId('false:client:uuid')).toEqual({
+test('parses node ID with false user', () => {
+  equal(parseId('false:client:uuid'), {
     nodeId: 'false:client:uuid',
     clientId: 'false:client',
     userId: 'false'
   })
 })
 
-it('parses node ID with multiple colon', () => {
-  expect(parseId('10:client:uuid:more')).toEqual({
+test('parses node ID with multiple colon', () => {
+  equal(parseId('10:client:uuid:more'), {
     nodeId: '10:client:uuid:more',
     clientId: '10:client',
     userId: '10'
   })
 })
+
+test.run()

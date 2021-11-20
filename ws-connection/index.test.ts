@@ -1,5 +1,7 @@
+import { spyOn, resetSpies } from 'nanospy'
+import { equal, is, throws } from 'uvu/assert'
 import WebSocket from 'ws'
-import { jest } from '@jest/globals'
+import { test } from 'uvu'
 
 import { WsConnection, Message } from '../index.js'
 
@@ -70,7 +72,8 @@ function setWebSocket(ws: object | undefined): void {
   global.WebSocket = ws
 }
 
-afterEach(() => {
+test.after.each(() => {
+  resetSpies()
   setWebSocket(undefined)
 })
 
@@ -85,13 +88,13 @@ function emit(
   ws.emit(name, data)
 }
 
-it('throws a error on lack of WebSocket support', () => {
-  expect(() => {
+test('throws a error on lack of WebSocket support', () => {
+  throws(() => {
     new WsConnection('ws://locahost')
-  }).toThrow(/WebSocket/)
+  }, /WebSocket/)
 })
 
-it('emits error on wrong format', async () => {
+test('emits error on wrong format', async () => {
   setWebSocket(FakeWebSocket)
   let connection = new WsConnection('ws://locahost')
   let error: Error | undefined
@@ -103,11 +106,11 @@ it('emits error on wrong format', async () => {
 
   emit(connection.ws, 'message', '{')
   if (typeof error === 'undefined') throw new Error('Error was not sent')
-  expect(error.message).toEqual('Wrong message format')
-  expect(privateMethods(error).received).toEqual('{')
+  equal(error.message, 'Wrong message format')
+  equal(privateMethods(error).received, '{')
 })
 
-it('emits error on error', async () => {
+test('emits error on error', async () => {
   setWebSocket(FakeWebSocket)
   let connection = new WsConnection('ws://locahost')
   let error: Error | undefined
@@ -119,12 +122,12 @@ it('emits error on error', async () => {
 
   emit(connection.ws, 'error', new Error('test'))
   if (typeof error === 'undefined') throw new Error('Error was not sent')
-  expect(error.message).toEqual('test')
+  equal(error.message, 'test')
   emit(connection.ws, 'error')
-  expect(error.message).toEqual('WS Error')
+  equal(error.message, 'WS Error')
 })
 
-it('emits connection states', async () => {
+test('emits connection states', async () => {
   setWebSocket(FakeWebSocket)
   let connection = new WsConnection('ws://locahost')
 
@@ -139,35 +142,35 @@ it('emits connection states', async () => {
     states.push('disconnect')
   })
 
-  expect(states).toEqual([])
-  expect(connection.connected).toBe(false)
+  equal(states, [])
+  is(connection.connected, false)
 
   let connecting = connection.connect()
 
-  expect(states).toEqual(['connecting'])
-  expect(connection.connected).toBe(false)
+  equal(states, ['connecting'])
+  is(connection.connected, false)
 
   await connecting
-  expect(states).toEqual(['connecting', 'connect'])
-  expect(connection.connected).toBe(true)
+  equal(states, ['connecting', 'connect'])
+  is(connection.connected, true)
 
   emit(connection.ws, 'close')
-  expect(states).toEqual(['connecting', 'connect', 'disconnect'])
-  expect(connection.connected).toBe(false)
+  equal(states, ['connecting', 'connect', 'disconnect'])
+  is(connection.connected, false)
 
   connection.connect()
   emit(connection.ws, 'close')
-  expect(states).toEqual([
+  equal(states, [
     'connecting',
     'connect',
     'disconnect',
     'connecting',
     'disconnect'
   ])
-  expect(connection.connected).toBe(false)
+  is(connection.connected, false)
 })
 
-it('closes WebSocket', async () => {
+test('closes WebSocket', async () => {
   setWebSocket(FakeWebSocket)
   let connection = new WsConnection('ws://locahost')
 
@@ -177,14 +180,14 @@ it('closes WebSocket', async () => {
   }
 
   let ws = connection.ws
-  jest.spyOn(ws, 'close')
+  let close = spyOn(ws, 'close')
 
   connection.disconnect()
-  expect(ws.close).toHaveBeenCalledTimes(1)
-  expect(connection.connected).toBe(false)
+  equal(close.callCount, 1)
+  is(connection.connected, false)
 })
 
-it('close WebSocket 2 times', async () => {
+test('close WebSocket 2 times', async () => {
   setWebSocket(FakeWebSocket)
   let connection = new WsConnection('ws://locahost')
 
@@ -194,15 +197,15 @@ it('close WebSocket 2 times', async () => {
   }
 
   let ws = connection.ws
-  jest.spyOn(ws, 'close')
+  let close = spyOn(ws, 'close')
 
   connection.disconnect()
   connection.disconnect()
-  expect(ws.close).toHaveBeenCalledTimes(1)
-  expect(connection.connected).toBe(false)
+  equal(close.callCount, 1)
+  is(connection.connected, false)
 })
 
-it('receives messages', async () => {
+test('receives messages', async () => {
   setWebSocket(FakeWebSocket)
   let connection = new WsConnection('ws://locahost')
 
@@ -214,10 +217,10 @@ it('receives messages', async () => {
   await connection.connect()
 
   emit(connection.ws, 'message', '["ping",1]')
-  expect(received).toEqual([['ping', 1]])
+  equal(received, [['ping', 1]])
 })
 
-it('sends messages', async () => {
+test('sends messages', async () => {
   setWebSocket(FakeWebSocket)
   let connection = new WsConnection<FakeWebSocket>('ws://locahost')
 
@@ -227,10 +230,10 @@ it('sends messages', async () => {
   }
 
   connection.send(['ping', 1])
-  expect(connection.ws.sent).toEqual(['["ping",1]'])
+  equal(connection.ws.sent, ['["ping",1]'])
 })
 
-it('uses custom WebSocket implementation', async () => {
+test('uses custom WebSocket implementation', async () => {
   let connection = new WsConnection<FakeWebSocket>(
     'ws://locahost',
     FakeWebSocket
@@ -242,10 +245,10 @@ it('uses custom WebSocket implementation', async () => {
   }
 
   connection.send(['ping', 1])
-  expect(connection.ws.sent).toEqual(['["ping",1]'])
+  equal(connection.ws.sent, ['["ping",1]'])
 })
 
-it('passes extra option for WebSocket', async () => {
+test('passes extra option for WebSocket', async () => {
   let connection = new WsConnection<FakeWebSocket>(
     'ws://locahost',
     FakeWebSocket,
@@ -256,10 +259,10 @@ it('passes extra option for WebSocket', async () => {
     throw new Error('WebSocket was not created')
   }
 
-  expect(connection.ws.opts).toEqual({ a: 1 })
+  equal(connection.ws.opts, { a: 1 })
 })
 
-it('does not send to closed socket', async () => {
+test('does not send to closed socket', async () => {
   setWebSocket(FakeWebSocket)
   let connection = new WsConnection<FakeWebSocket>('ws://locahost')
 
@@ -275,10 +278,10 @@ it('does not send to closed socket', async () => {
 
   connection.ws.readyState = 2
   connection.send(['ping', 1])
-  expect(errors).toEqual(['WS was closed'])
+  equal(errors, ['WS was closed'])
 })
 
-it('ignores double connect call', async () => {
+test('ignores double connect call', async () => {
   setWebSocket(FakeWebSocket)
   let connection = new WsConnection('ws://locahost')
 
@@ -290,6 +293,8 @@ it('ignores double connect call', async () => {
   await connection.connect()
   await connection.connect()
 
-  expect(connection.connected).toBe(true)
-  expect(connected).toEqual(1)
+  is(connection.connected, true)
+  equal(connected, 1)
 })
+
+test.run()

@@ -1,26 +1,29 @@
+import { equal, is } from 'uvu/assert'
+import { test } from 'uvu'
+
 import { TestPair, Message } from '../index.js'
 
-it('tracks events', async () => {
+test('tracks events', async () => {
   let pair = new TestPair()
-  expect(pair.leftEvents).toEqual([])
-  expect(pair.rightEvents).toEqual([])
+  equal(pair.leftEvents, [])
+  equal(pair.rightEvents, [])
 
   pair.left.connect()
   await pair.wait()
-  expect(pair.leftEvents).toEqual([['connect']])
-  expect(pair.rightEvents).toEqual([['connect']])
+  equal(pair.leftEvents, [['connect']])
+  equal(pair.rightEvents, [['connect']])
 
   pair.left.send(['ping', 1])
-  expect(pair.rightEvents).toEqual([['connect']])
+  equal(pair.rightEvents, [['connect']])
 
   await pair.wait()
-  expect(pair.rightEvents).toEqual([['connect'], ['message', ['ping', 1]]])
+  equal(pair.rightEvents, [['connect'], ['message', ['ping', 1]]])
 
   pair.left.disconnect('timeout')
-  expect(pair.leftEvents).toEqual([['connect'], ['disconnect', 'timeout']])
-  expect(pair.rightEvents).toEqual([['connect'], ['message', ['ping', 1]]])
+  equal(pair.leftEvents, [['connect'], ['disconnect', 'timeout']])
+  equal(pair.rightEvents, [['connect'], ['message', ['ping', 1]]])
   await pair.wait()
-  expect(pair.rightEvents).toEqual([
+  equal(pair.rightEvents, [
     ['connect'],
     ['message', ['ping', 1]],
     ['disconnect']
@@ -28,7 +31,7 @@ it('tracks events', async () => {
 
   pair.right.connect()
   await pair.wait()
-  expect(pair.rightEvents).toEqual([
+  equal(pair.rightEvents, [
     ['connect'],
     ['message', ['ping', 1]],
     ['disconnect'],
@@ -36,53 +39,53 @@ it('tracks events', async () => {
   ])
 })
 
-it('tracks messages', async () => {
+test('tracks messages', async () => {
   let pair = new TestPair()
   await pair.left.connect()
   pair.right.send(['ping', 1])
-  expect(pair.rightSent).toEqual([])
-  expect(pair.leftSent).toEqual([])
+  equal(pair.rightSent, [])
+  equal(pair.leftSent, [])
   await pair.wait()
-  expect(pair.rightSent).toEqual([['ping', 1]])
+  equal(pair.rightSent, [['ping', 1]])
   pair.left.send(['pong', 1])
-  expect(pair.leftSent).toEqual([])
+  equal(pair.leftSent, [])
   await pair.wait()
-  expect(pair.leftSent).toEqual([['pong', 1]])
-  expect(pair.rightSent).toEqual([['ping', 1]])
+  equal(pair.leftSent, [['pong', 1]])
+  equal(pair.rightSent, [['ping', 1]])
 })
 
-it('clears tracked data', async () => {
+test('clears tracked data', async () => {
   let pair = new TestPair()
   await pair.left.connect()
   pair.left.send(['ping', 1])
   await pair.wait()
   pair.clear()
-  expect(pair.leftSent).toEqual([])
-  expect(pair.rightSent).toEqual([])
-  expect(pair.leftEvents).toEqual([])
-  expect(pair.rightEvents).toEqual([])
+  equal(pair.leftSent, [])
+  equal(pair.rightSent, [])
+  equal(pair.leftEvents, [])
+  equal(pair.rightEvents, [])
 })
 
-it('clones messages', async () => {
+test('clones messages', async () => {
   let pair = new TestPair()
   let msg: Message = ['ping', 1]
   await pair.left.connect()
   pair.left.send(msg)
   await pair.wait()
   msg[1] = 2
-  expect(pair.leftSent).toEqual([['ping', 1]])
-  expect(pair.rightEvents).toEqual([['connect'], ['message', ['ping', 1]]])
+  equal(pair.leftSent, [['ping', 1]])
+  equal(pair.rightEvents, [['connect'], ['message', ['ping', 1]]])
 })
 
-it('returns self in wait()', async () => {
+test('returns self in wait()', async () => {
   let pair = new TestPair()
   await pair.left.connect()
   pair.left.send(['ping', 1])
-  let test = await pair.wait()
-  expect(test).toBe(pair)
+  let testPair = await pair.wait()
+  is(testPair, pair)
 })
 
-it('filters events in wait()', async () => {
+test('filters events in wait()', async () => {
   let pair = new TestPair()
   await pair.left.connect()
   pair.left.send(['ping', 1])
@@ -90,21 +93,23 @@ it('filters events in wait()', async () => {
     pair.right.send(['pong', 1])
   }, 1)
   await pair.wait()
-  expect(pair.rightSent).toEqual([])
+  equal(pair.rightSent, [])
   await pair.wait()
-  expect(pair.rightSent).toEqual([['pong', 1]])
+  equal(pair.rightSent, [['pong', 1]])
   pair.left.send(['ping', 2])
   setTimeout(() => {
     pair.right.send(['pong', 2])
   }, 1)
   await pair.wait('left')
-  expect(pair.rightSent).toEqual([
+  equal(pair.rightSent, [
     ['pong', 1],
     ['pong', 2]
   ])
 })
 
-it('passes delay', () => {
+test('passes delay', () => {
   let pair = new TestPair(50)
-  expect(pair.delay).toEqual(50)
+  equal(pair.delay, 50)
 })
+
+test.run()
