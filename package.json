@@ -12,7 +12,7 @@
     "distributed systems"
   ],
   "scripts": {
-    "test": "node --experimental-vm-modules node_modules/.bin/jest --coverage && eslint . && check-dts && yaspeller *.md"
+    "test": "node --experimental-vm-modules node_modules/.bin/jest --coverage && eslint . && check-dts"
   },
   "author": "Andrey Sitnik <andrey@sitnik.ru>",
   "license": "MIT",
@@ -29,40 +29,28 @@
     "node": "^12.0.0 || ^14.0.0 || >=16.0.0"
   },
   "dependencies": {
-    "nanoevents": "^6.0.1"
+    "nanoevents": "^6.0.2"
   },
   "devDependencies": {
-    "@babel/core": "^7.15.5",
-    "@logux/eslint-config": "^45.4.7",
-    "@logux/sharec-config": "^0.11.0",
-    "@types/jest": "^27.0.1",
-    "@types/ws": "^7.4.7",
-    "@typescript-eslint/eslint-plugin": "^4.30.0",
-    "@typescript-eslint/parser": "^4.30.0",
-    "check-dts": "^0.5.5",
-    "clean-publish": "^2.2.0",
-    "eslint": "^7.32.0",
+    "@logux/eslint-config": "^46.1.0",
+    "@types/jest": "^27.0.3",
+    "@types/ws": "^8.2.0",
+    "@typescript-eslint/eslint-plugin": "^5.4.0",
+    "@typescript-eslint/parser": "^5.4.0",
+    "check-dts": "^0.6.4",
+    "clean-publish": "^3.4.3",
+    "eslint": "^8.2.0",
     "eslint-config-standard": "^16.0.3",
-    "eslint-plugin-import": "^2.24.2",
-    "eslint-plugin-jest": "^24.4.0",
+    "eslint-plugin-import": "^2.25.3",
     "eslint-plugin-node": "^11.1.0",
-    "eslint-plugin-prefer-let": "^1.1.0",
-    "eslint-plugin-promise": "^5.1.0",
-    "eslint-plugin-security": "^1.4.0",
-    "eslint-plugin-unicorn": "^35.0.0",
-    "jest": "^27.1.0",
-    "lint-staged": "^11.1.2",
-    "nanodelay": "^2.0.1",
-    "prettier": "^2.3.2",
+    "eslint-plugin-prefer-let": "^3.0.1",
+    "eslint-plugin-promise": "^5.1.1",
+    "jest": "^27.3.1",
+    "nanodelay": "^2.0.2",
     "rimraf": "^3.0.2",
-    "simple-git-hooks": "^2.6.1",
-    "ts-jest": "^27.0.5",
-    "typescript": "^4.4.2",
-    "ws": "^8.2.1",
-    "yaspeller": "^7.0.0"
-  },
-  "simple-git-hooks": {
-    "pre-commit": "npx lint-staged"
+    "ts-jest": "^27.0.7",
+    "typescript": "^4.5.2",
+    "ws": "^8.2.3"
   },
   "prettier": {
     "arrowParens": "avoid",
@@ -71,17 +59,6 @@
     "semi": false,
     "singleQuote": true,
     "trailingComma": "none"
-  },
-  "lint-staged": {
-    "*.md": "yaspeller",
-    "*.js": [
-      "prettier --write",
-      "eslint --fix"
-    ],
-    "*.ts": [
-      "prettier --write",
-      "eslint --fix"
-    ]
   },
   "jest": {
     "preset": "ts-jest/presets/default-esm",
@@ -118,30 +95,5 @@
   },
   "eslintIgnore": [
     "**/errors.ts"
-  ],
-  "yaspeller": {
-    "lang": "en",
-    "ignoreCapitalization": true,
-    "ignoreText": [
-      " \\(by [^)]+\\).",
-      "\\d+\\.\\d+ \\W"
-    ],
-    "dictionary": [
-      "Versioning",
-      "JSDoc",
-      "js",
-      "logux",
-      "GraphQL",
-      "WebSocket",
-      "io",
-      "ES",
-      "TypeDoc",
-      "roadmap",
-      "ESM"
-    ]
-  },
-  "sharec": {
-    "config": "@logux/sharec-config",
-    "version": "0.11.0"
-  }
+  ]
 }
