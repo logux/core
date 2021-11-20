@@ -1,5 +1,5 @@
 import { equal, is, not, ok, type } from 'uvu/assert'
-import { spyOn, resetSpies } from 'nanospy'
+import { spyOn, restoreAll } from 'nanospy'
 import { delay } from 'nanodelay'
 import { test } from 'uvu'
 
@@ -51,7 +51,7 @@ test.before.each(() => {
 })
 
 test.after.each(() => {
-  resetSpies()
+  restoreAll()
 })
 
 test('saves connection and options', () => {

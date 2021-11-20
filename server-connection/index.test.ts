@@ -1,6 +1,6 @@
 import { ServerConnection, Message } from '../index.js'
 import { equal, is, throws } from 'uvu/assert'
-import { spyOn, resetSpies } from 'nanospy'
+import { spyOn, restoreAll } from 'nanospy'
 import WebSocket from 'ws'
 import { test } from 'uvu'
 
@@ -15,7 +15,7 @@ function prepareWs(): WebSocket {
 }
 
 test.after.each(() => {
-  resetSpies()
+  restoreAll()
 })
 
 test('throws on connect method call', () => {

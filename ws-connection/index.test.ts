@@ -1,4 +1,4 @@
-import { spyOn, resetSpies } from 'nanospy'
+import { spyOn, restoreAll } from 'nanospy'
 import { equal, is, throws } from 'uvu/assert'
 import WebSocket from 'ws'
 import { test } from 'uvu'
@@ -73,7 +73,7 @@ function setWebSocket(ws: object | undefined): void {
 }
 
 test.after.each(() => {
-  resetSpies()
+  restoreAll()
   setWebSocket(undefined)
 })
 
