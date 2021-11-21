@@ -90,13 +90,13 @@ function emit(
 
 test('throws a error on lack of WebSocket support', () => {
   throws(() => {
-    new WsConnection('ws://locahost')
+    new WsConnection('ws://localhost')
   }, /WebSocket/)
 })
 
 test('emits error on wrong format', async () => {
   setWebSocket(FakeWebSocket)
-  let connection = new WsConnection('ws://locahost')
+  let connection = new WsConnection('ws://localhost')
   let error: Error | undefined
   connection.on('error', err => {
     error = err
@@ -112,7 +112,7 @@ test('emits error on wrong format', async () => {
 
 test('emits error on error', async () => {
   setWebSocket(FakeWebSocket)
-  let connection = new WsConnection('ws://locahost')
+  let connection = new WsConnection('ws://localhost')
   let error: Error | undefined
   connection.on('error', err => {
     error = err
@@ -129,7 +129,7 @@ test('emits error on error', async () => {
 
 test('emits connection states', async () => {
   setWebSocket(FakeWebSocket)
-  let connection = new WsConnection('ws://locahost')
+  let connection = new WsConnection('ws://localhost')
 
   let states: string[] = []
   connection.on('connecting', () => {
@@ -172,7 +172,7 @@ test('emits connection states', async () => {
 
 test('closes WebSocket', async () => {
   setWebSocket(FakeWebSocket)
-  let connection = new WsConnection('ws://locahost')
+  let connection = new WsConnection('ws://localhost')
 
   await connection.connect()
   if (typeof connection.ws === 'undefined') {
@@ -189,7 +189,7 @@ test('closes WebSocket', async () => {
 
 test('close WebSocket 2 times', async () => {
   setWebSocket(FakeWebSocket)
-  let connection = new WsConnection('ws://locahost')
+  let connection = new WsConnection('ws://localhost')
 
   await connection.connect()
   if (typeof connection.ws === 'undefined') {
@@ -207,7 +207,7 @@ test('close WebSocket 2 times', async () => {
 
 test('receives messages', async () => {
   setWebSocket(FakeWebSocket)
-  let connection = new WsConnection('ws://locahost')
+  let connection = new WsConnection('ws://localhost')
 
   let received: Message[] = []
   connection.on('message', msg => {
@@ -222,7 +222,7 @@ test('receives messages', async () => {
 
 test('sends messages', async () => {
   setWebSocket(FakeWebSocket)
-  let connection = new WsConnection<FakeWebSocket>('ws://locahost')
+  let connection = new WsConnection<FakeWebSocket>('ws://localhost')
 
   await connection.connect()
   if (typeof connection.ws === 'undefined') {
@@ -235,7 +235,7 @@ test('sends messages', async () => {
 
 test('uses custom WebSocket implementation', async () => {
   let connection = new WsConnection<FakeWebSocket>(
-    'ws://locahost',
+    'ws://localhost',
     FakeWebSocket
   )
 
@@ -250,7 +250,7 @@ test('uses custom WebSocket implementation', async () => {
 
 test('passes extra option for WebSocket', async () => {
   let connection = new WsConnection<FakeWebSocket>(
-    'ws://locahost',
+    'ws://localhost',
     FakeWebSocket,
     { a: 1 }
   )
@@ -264,7 +264,7 @@ test('passes extra option for WebSocket', async () => {
 
 test('does not send to closed socket', async () => {
   setWebSocket(FakeWebSocket)
-  let connection = new WsConnection<FakeWebSocket>('ws://locahost')
+  let connection = new WsConnection<FakeWebSocket>('ws://localhost')
 
   let errors: string[] = []
   connection.on('error', e => {
@@ -283,7 +283,7 @@ test('does not send to closed socket', async () => {
 
 test('ignores double connect call', async () => {
   setWebSocket(FakeWebSocket)
-  let connection = new WsConnection('ws://locahost')
+  let connection = new WsConnection('ws://localhost')
 
   let connected = 0
   connection.on('connecting', () => {
