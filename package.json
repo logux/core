@@ -40,18 +40,18 @@
     "c8": "^7.10.0",
     "check-dts": "^0.6.4",
     "clean-publish": "^3.4.3",
-    "eslint": "^8.2.0",
+    "eslint": "^8.3.0",
     "eslint-config-standard": "^16.0.3",
     "eslint-plugin-import": "^2.25.3",
     "eslint-plugin-node": "^11.1.0",
     "eslint-plugin-prefer-let": "^3.0.1",
     "eslint-plugin-promise": "^5.1.1",
     "nanodelay": "^2.0.2",
-    "nanospy": "^0.2.0",
+    "nanospy": "^0.4.0",
     "tsm": "^2.1.4",
     "typescript": "^4.5.2",
     "uvu": "^0.5.2",
-    "ws": "^8.2.3"
+    "ws": "^8.3.0"
   },
   "prettier": {
     "arrowParens": "avoid",
