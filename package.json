@@ -13,7 +13,7 @@
   ],
   "scripts": {
     "unit": "tsm node_modules/uvu/bin.js . '\\.test\\.(ts|js)$'",
-    "test": "c8 yarn unit && eslint . && check-dts"
+    "test": "c8 pnpm unit && eslint . && check-dts"
   },
   "author": "Andrey Sitnik <andrey@sitnik.ru>",
   "license": "MIT",
