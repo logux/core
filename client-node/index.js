@@ -2,8 +2,8 @@ import { BaseNode } from '../base-node/index.js'
 
 const DEFAULT_OPTIONS = {
   fixTime: true,
-  timeout: 20000,
-  ping: 5000
+  timeout: 70000,
+  ping: 10000
 }
 
 export class ClientNode extends BaseNode {

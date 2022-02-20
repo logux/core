@@ -2,8 +2,8 @@ import { BaseNode } from '../base-node/index.js'
 import { validate } from '../validate/index.js'
 
 const DEFAULT_OPTIONS = {
-  timeout: 20000,
-  ping: 10000
+  timeout: 70000,
+  ping: 20000
 }
 
 export class ServerNode extends BaseNode {
