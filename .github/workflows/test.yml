@@ -1,7 +1,5 @@
 name: Test
-on:
-  push:
-  pull_request:
+on: push
 jobs:
   full:
     name: Node.js 17 Full
