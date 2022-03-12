@@ -5,7 +5,7 @@ let log = new Log({ nodeId: 'test1', store: new MemoryStore() })
 // THROWS '{ name: string; }' is not assignable to parameter of type 'Action'
 log.add({ name: 'Kate' })
 
-// THROWS Type 'number' is not assignable to type 'string | undefined
+// THROWS 'number' is not assignable to type 'string'
 log.add({ type: 'user/add', name: 'Kate' }, { id: 1 })
 
 type RenameAction = Action & {
