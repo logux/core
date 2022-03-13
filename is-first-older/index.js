@@ -5,6 +5,13 @@ export function isFirstOlder(firstMeta, secondMeta) {
     return true
   }
 
+  if (typeof firstMeta === 'string') {
+    firstMeta = { id: firstMeta, time: parseInt(firstMeta) }
+  }
+  if (typeof secondMeta === 'string') {
+    secondMeta = { id: secondMeta, time: parseInt(secondMeta) }
+  }
+
   if (firstMeta.time > secondMeta.time) {
     return false
   } else if (firstMeta.time < secondMeta.time) {

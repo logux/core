@@ -17,6 +17,6 @@ import { Meta } from '../index.js'
  * @param secondMeta Other action’s metadata.
  */
 export function isFirstOlder(
-  firstMeta: Meta | undefined,
-  secondMeta: Meta | undefined
+  firstMeta: Meta | string | undefined,
+  secondMeta: Meta | string | undefined
 ): boolean
