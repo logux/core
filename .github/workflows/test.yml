@@ -6,19 +6,19 @@ on:
   pull_request:
 jobs:
   full:
-    name: Node.js 17 Full
+    name: Node.js Latest Full
     runs-on: ubuntu-latest
     steps:
       - name: Checkout the repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       - name: Install pnpm
         uses: pnpm/action-setup@v2
         with:
           version: latest
       - name: Install Node.js
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v3
         with:
-          node-version: 17
+          node-version: 18
           cache: pnpm
       - name: Install dependencies
         run: pnpm install --frozen-lockfile --ignore-scripts
@@ -33,20 +33,41 @@ jobs:
         node-version:
           - 16
           - 14
-          - 12
     name: Node.js ${{ matrix.node-version }} Quick
     steps:
       - name: Checkout the repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       - name: Install pnpm
         uses: pnpm/action-setup@v2
         with:
           version: latest
       - name: Install Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.node-version }}
           cache: pnpm
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile --ignore-scripts
+      - name: Run unit tests
+        run: pnpm unit
+        env:
+          FORCE_COLOR: 2
+  old:
+    runs-on: ubuntu-latest
+    name: Node.js 12 Quick
+    steps:
+      - name: Checkout the repository
+        uses: actions/checkout@v3
+      - name: Install pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 6
+        env:
+          ACTIONS_ALLOW_UNSECURE_COMMANDS: true
+      - name: Install Node.js 12
+        uses: actions/setup-node@v3
+        with:
+          node-version: 12
       - name: Install dependencies
         run: pnpm install --frozen-lockfile --ignore-scripts
       - name: Run unit tests
