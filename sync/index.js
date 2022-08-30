@@ -39,8 +39,8 @@ export function sendSynced(added) {
 
 export async function syncMessage(added, ...data) {
   for (let i = 0; i < data.length - 1; i += 2) {
-    const action = data[i]
-    const meta = data[i + 1]
+    let action = data[i]
+    let meta = data[i + 1]
 
     if (typeof meta.id === 'number') {
       meta.id = meta.id + this.baseTime + ' ' + this.remoteNodeId + ' ' + 0
