@@ -38,8 +38,6 @@ export function sendSynced(added) {
 }
 
 export async function syncMessage(added, ...data) {
-  let promises = []
-
   for (let i = 0; i < data.length - 1; i += 2) {
     let action = data[i]
     let meta = data[i + 1]
@@ -70,7 +68,7 @@ export async function syncMessage(added, ...data) {
         })
     }
 
-    process
+    await process
       .then(filtered => {
         if (filtered && this.options.inFilter) {
           return this.options
@@ -90,11 +88,8 @@ export async function syncMessage(added, ...data) {
         if (this.received) this.received[changed[1].id] = true
         return this.log.add(changed[0], changed[1])
       })
-
-    promises.push(process)
   }
 
-  await Promise.all(promises)
   this.setLastReceived(added)
   this.sendSynced(added)
 }
