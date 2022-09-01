@@ -183,6 +183,7 @@ export class BaseNode {
     if (this.pingTimeout) clearTimeout(this.pingTimeout)
     this.authenticated = false
     this.connected = false
+    this.syncing = 0
     this.setState('disconnected')
   }
 
