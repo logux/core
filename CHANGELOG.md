@@ -1,6 +1,12 @@
 # Change Log
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## 0.8 Ա
+* Dropped Node.js 12 support.
+* Add string-based time to `isFirstOlder()`.
+* Fixed action syncing order (by Tyler Han).
+* Fixed behavior on disconnection in the middle of syncing (by Tyler Han).
+
 ## 0.7.3
 * Increased ping timeout to solve Chrome background tab issue.
 
