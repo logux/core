@@ -1,4 +1,44 @@
-import assert from 'assert'
+/* c8 ignore start */
+function ok(value) {
+  if (!value) {
+    throw new Error('Expected value to be truthy, but got false')
+  }
+}
+
+function deepEqual(a, b) {
+  if (a === b) {
+    return true
+  } else if (Array.isArray(a) && Array.isArray(b)) {
+    if (a.length !== b.length) {
+      return false
+    } else {
+      for (let i = 0; i < a.length; i++) {
+        if (!deepEqual(a[i], b[i])) return false
+      }
+      return true
+    }
+  } else if (typeof a === 'object' && typeof b === 'object') {
+    if (Object.keys(a).length !== Object.keys(b).length) {
+      return false
+    } else {
+      for (let i in a) {
+        if (!deepEqual(a[i], b[i])) return false
+      }
+      return true
+    }
+  } else {
+    return false
+  }
+}
+
+function equal(a, b) {
+  if (!deepEqual(a, b)) {
+    throw new Error(
+      `Expected ${JSON.stringify(a)} to equal ${JSON.stringify(b)}`
+    )
+  }
+}
+/* c8 ignore stop */
 
 async function all(request, list) {
   if (!list) list = []
@@ -9,7 +49,7 @@ async function all(request, list) {
 
 async function check(store, opts, list) {
   let entries = await all(store.get(opts))
-  assert.deepStrictEqual(entries, list)
+  equal(entries, list)
 }
 
 async function checkBoth(store, entries) {
@@ -28,12 +68,12 @@ async function checkIndex(store, index, entries) {
 
 async function checkLastAdded(store, expected) {
   let lastAdded = await store.getLastAdded()
-  assert.strictEqual(lastAdded, expected)
+  equal(lastAdded, expected)
 }
 
 async function checkLastSynced(store, expectedSent, expectedRecieved) {
   let lastSynced = await store.getLastSynced()
-  assert.deepStrictEqual(lastSynced, {
+  equal(lastSynced, {
     sent: expectedSent,
     received: expectedRecieved
   })
@@ -102,7 +142,7 @@ export function eachStoreCheck(test) {
     let store = factory()
     await store.add({ type: 'A' }, { id: '1 n 0', time: 1 })
     let added = await store.getLastAdded()
-    assert.ok(added)
+    ok(added)
     await store.add({ type: 'A' }, { id: '1 n 0' })
     await checkLastAdded(store, 1)
   })
@@ -111,7 +151,7 @@ export function eachStoreCheck(test) {
     let store = factory()
     await store.add({}, { id: '1 n 0', time: 1, a: 1, indexes: ['a'] })
     let result = await store.changeMeta('1 n 0', { a: 2, b: 2 })
-    assert.strictEqual(result, true)
+    equal(result, true)
     await checkBoth(store, [
       [{}, { id: '1 n 0', time: 1, added: 1, a: 2, b: 2, indexes: ['a'] }]
     ])
@@ -123,7 +163,7 @@ export function eachStoreCheck(test) {
   test('resolves to false on unknown ID in changeMeta', factory => async () => {
     let store = factory()
     let result = await store.changeMeta('1 n 0', { a: 1 })
-    assert.strictEqual(result, false)
+    equal(result, false)
   })
 
   test('removes entries', factory => async () => {
@@ -138,10 +178,7 @@ export function eachStoreCheck(test) {
       store.add({ type: '6' }, { id: '4 node1 0', time: 4 })
     ])
     let result = await store.remove('1 node1 1')
-    assert.deepStrictEqual(result, [
-      { type: '2' },
-      { id: '1 node1 1', time: 2, added: 2 }
-    ])
+    equal(result, [{ type: '2' }, { id: '1 node1 1', time: 2, added: 2 }])
     await checkBoth(store, [
       [{ type: '1' }, { id: '1 node1 0', time: 1, added: 1 }],
       [{ type: '3' }, { id: '1 node1 2', time: 2, added: 3 }],
@@ -169,7 +206,7 @@ export function eachStoreCheck(test) {
     let store = factory()
     await store.add({ type: 'A' }, { id: '1 n 0', time: 1, added: 1 })
     let result = await store.remove('2 n 0')
-    assert.strictEqual(result, false)
+    equal(result, false)
     await check(store, { order: 'created' }, [
       [{ type: 'A' }, { id: '1 n 0', time: 1, added: 1 }]
     ])
@@ -345,7 +382,7 @@ export function eachStoreCheck(test) {
       store.removeReason('c', { id: '3 n 0' }, push),
       store.removeReason('a', { id: '4 n 0' }, push)
     ])
-    assert.deepStrictEqual(removed, ['1'])
+    equal(removed, ['1'])
     await checkBoth(store, [
       [{ type: '2' }, { added: 2, id: '2 n 0', time: 2, reasons: ['a'] }],
       [{ type: '3' }, { added: 3, id: '3 n 0', time: 3, reasons: ['a'] }]
@@ -362,22 +399,22 @@ export function eachStoreCheck(test) {
       store.add({ type: 'E' }, { id: '2 node 0', time: 2 })
     ])
     let [action1, meta1] = await store.byId('1 node 0')
-    assert.deepStrictEqual(action1, { type: 'A' })
-    assert.deepStrictEqual(meta1.time, 1)
+    equal(action1, { type: 'A' })
+    equal(meta1.time, 1)
     let [action2] = await store.byId('1 node 2')
-    assert.deepStrictEqual(action2, { type: 'C' })
+    equal(action2, { type: 'C' })
     let [action3, meta3] = await store.byId('2 node 1')
-    assert.deepStrictEqual(action3, null)
-    assert.deepStrictEqual(meta3, null)
+    equal(action3, null)
+    equal(meta3, null)
   })
 
   test('ignores entries with same ID', factory => async () => {
     let store = factory()
     let id = '1 a 1'
     let meta1 = await store.add({ a: 1 }, { id, time: 1 })
-    assert.deepStrictEqual(meta1, { id, time: 1, added: 1 })
+    equal(meta1, { id, time: 1, added: 1 })
     let meta2 = await store.add({ a: 2 }, { id, time: 2 })
-    assert.ok(!meta2)
+    ok(!meta2)
     await checkBoth(store, [[{ a: 1 }, { id, time: 1, added: 1 }]])
   })
 
