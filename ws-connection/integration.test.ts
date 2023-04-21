@@ -3,7 +3,7 @@ import { delay } from 'nanodelay'
 import { test } from 'uvu'
 
 import { ServerConnection, WsConnection, Message } from '../index.js'
-import WebSocket from 'ws'
+import WebSocket, { WebSocketServer } from 'ws'
 
 let wss: WebSocket.Server
 test.after.each(() => {
@@ -24,7 +24,7 @@ function connect(
 }
 
 test('works in real protocol', async () => {
-  wss = new WebSocket.Server({ port: 8081 })
+  wss = new WebSocketServer({ port: 8081 })
 
   let client = new WsConnection('ws://0.0.0.0:8081', WebSocket)
   let clientReceived: Message[] = []
