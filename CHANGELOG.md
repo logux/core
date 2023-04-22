@@ -1,6 +1,9 @@
 # Change Log
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## 0.8.1
+* Removed Node.js dependencies to simplify bundling.
+
 ## 0.8 Ա
 * Dropped Node.js 12 support.
 * Add string-based time to `isFirstOlder()`.
