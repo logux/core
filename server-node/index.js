@@ -8,8 +8,11 @@ const DEFAULT_OPTIONS = {
 
 export class ServerNode extends BaseNode {
   constructor(nodeId, log, connection, options = {}) {
-    options = { ...DEFAULT_OPTIONS, ...options }
-    super(nodeId, log, connection, options)
+    super(nodeId, log, connection, {
+      ...options,
+      timeout: options.timeout ?? DEFAULT_OPTIONS.timeout,
+      ping: options.ping ?? DEFAULT_OPTIONS.ping
+    })
 
     if (this.options.fixTime) {
       throw new Error(
