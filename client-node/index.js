@@ -8,11 +8,12 @@ const DEFAULT_OPTIONS = {
 
 export class ClientNode extends BaseNode {
   constructor(nodeId, log, connection, options = {}) {
-    options = { ...options }
-    options.fixTime ??= DEFAULT_OPTIONS.fixTime
-    options.timeout ??= DEFAULT_OPTIONS.timeout
-    options.ping ??= DEFAULT_OPTIONS.ping
-    super(nodeId, log, connection, options)
+    super(nodeId, log, connection, {
+      ...options,
+      fixTime: options.fixTime ?? DEFAULT_OPTIONS.fixTime,
+      timeout: options.timeout ?? DEFAULT_OPTIONS.timeout,
+      ping: options.ping ?? DEFAULT_OPTIONS.ping
+    })
   }
 
   onConnect() {
