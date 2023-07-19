@@ -1,7 +1,7 @@
 const DEFAULT_OPTIONS = {
-  minDelay: 1000,
+  attempts: Infinity,
   maxDelay: 5000,
-  attempts: Infinity
+  minDelay: 1000
 }
 
 const FATAL_ERRORS = [
@@ -12,12 +12,12 @@ const FATAL_ERRORS = [
 
 export class Reconnect {
   constructor(connection, {
-    minDelay = DEFAULT_OPTIONS.minDelay,
+    attempts = DEFAULT_OPTIONS.attempts,
     maxDelay = DEFAULT_OPTIONS.maxDelay,
-    attempts = DEFAULT_OPTIONS.attempts
+    minDelay = DEFAULT_OPTIONS.minDelay
   } = {}) {
     this.connection = connection
-    this.options = { minDelay, maxDelay, attempts }
+    this.options = { attempts, maxDelay, minDelay }
 
     this.reconnecting = connection.connected
     this.connecting = false
@@ -85,6 +85,15 @@ export class Reconnect {
     return this.connection.connect()
   }
 
+  get connected() {
+    return this.connection.connected
+  }
+
+  destroy() {
+    for (let i of this.unbind) i()
+    this.disconnect('destroy')
+  }
+
   disconnect(reason) {
     if (reason !== 'timeout' && reason !== 'error' && reason !== 'freeze') {
       this.reconnecting = false
@@ -92,9 +101,20 @@ export class Reconnect {
     return this.connection.disconnect(reason)
   }
 
-  destroy() {
-    for (let i of this.unbind) i()
-    this.disconnect('destroy')
+  get emitter() {
+    return this.connection.emitter
+  }
+
+  nextDelay() {
+    let base = this.options.minDelay * 2 ** this.attempts
+    let rand = Math.random()
+    let deviation = rand * 0.5 * base
+    if (Math.floor(rand * 10) === 1) deviation = -deviation
+    return Math.min(base + deviation, this.options.maxDelay) || 0
+  }
+
+  on(...args) {
+    return this.connection.on(...args)
   }
 
   reconnect() {
@@ -114,25 +134,5 @@ export class Reconnect {
 
   send(...args) {
     return this.connection.send(...args)
-  }
-
-  on(...args) {
-    return this.connection.on(...args)
-  }
-
-  nextDelay() {
-    let base = this.options.minDelay * 2 ** this.attempts
-    let rand = Math.random()
-    let deviation = rand * 0.5 * base
-    if (Math.floor(rand * 10) === 1) deviation = -deviation
-    return Math.min(base + deviation, this.options.maxDelay) || 0
-  }
-
-  get connected() {
-    return this.connection.connected
-  }
-
-  get emitter() {
-    return this.connection.emitter
   }
 }

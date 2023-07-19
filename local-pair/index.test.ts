@@ -1,7 +1,7 @@
-import { equal, is, ok, throws } from 'uvu/assert'
 import { test } from 'uvu'
+import { equal, is, ok, throws } from 'uvu/assert'
 
-import { LocalPair, Connection, Message } from '../index.js'
+import { type Connection, LocalPair, type Message } from '../index.js'
 
 type Event =
   | ['connect']
@@ -31,13 +31,13 @@ function track(tracker: Tracker, connection: Connection): Event[] {
 }
 
 class Tracker {
-  pair: LocalPair
-
-  waiting?: () => void
-
   left: Event[]
 
+  pair: LocalPair
+
   right: Event[]
+
+  waiting?: () => void
 
   constructor(delay?: number) {
     this.pair = new LocalPair(delay)

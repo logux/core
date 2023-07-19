@@ -1,15 +1,15 @@
-import { equal, ok, throws, type, is } from 'uvu/assert'
 import { delay } from 'nanodelay'
 import { test } from 'uvu'
+import { equal, is, ok, throws, type } from 'uvu/assert'
 
 import {
-  ServerNode,
+  type BaseNode,
   ClientNode,
-  BaseNode,
-  TestTime,
-  TestLog,
+  type NodeOptions,
+  ServerNode,
+  type TestLog,
   TestPair,
-  NodeOptions
+  TestTime
 } from '../index.js'
 
 let node: BaseNode<{}, TestLog> | undefined
@@ -55,9 +55,9 @@ test('answers pong on ping', async () => {
 test('sends ping on idle connection', async () => {
   let error: Error | undefined
   let pair = await createTest({
+    fixTime: false,
     ping: 300,
-    timeout: 100,
-    fixTime: false
+    timeout: 100
   })
   pair.leftNode.catch(err => {
     error = err
@@ -104,9 +104,9 @@ test('does not ping before authentication', async () => {
   let log = TestTime.getLog()
   let pair = new TestPair()
   pair.leftNode = new ClientNode('client', log, pair.left, {
+    fixTime: false,
     ping: 100,
-    timeout: 300,
-    fixTime: false
+    timeout: 300
   })
   pair.leftNode.catch(() => true)
   await pair.left.connect()
@@ -118,9 +118,9 @@ test('does not ping before authentication', async () => {
 
 test('sends only one ping if timeout is bigger than ping', async () => {
   let pair = await createTest({
+    fixTime: false,
     ping: 100,
-    timeout: 300,
-    fixTime: false
+    timeout: 300
   })
   await delay(250)
   equal(pair.leftSent, [['ping', 1]])

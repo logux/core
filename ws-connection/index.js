@@ -15,29 +15,6 @@ export class WsConnection {
     this.opts = opts
   }
 
-  init(ws) {
-    ws.onerror = event => {
-      this.emitter.emit('error', event.error || new Error('WS Error'))
-    }
-
-    ws.onclose = () => {
-      this.onclose()
-    }
-
-    ws.onmessage = event => {
-      let data
-      try {
-        data = JSON.parse(event.data)
-      } catch {
-        this.error(event.data)
-        return
-      }
-      this.emitter.emit('message', data)
-    }
-
-    this.ws = ws
-  }
-
   connect() {
     if (this.ws) return Promise.resolve()
 
@@ -61,22 +38,37 @@ export class WsConnection {
     }
   }
 
-  on(event, listener) {
-    return this.emitter.on(event, listener)
-  }
-
-  send(message) {
-    if (this.ws && this.ws.readyState === this.ws.OPEN) {
-      this.ws.send(JSON.stringify(message))
-    } else {
-      this.emitter.emit('error', new Error('WS was closed'))
-    }
-  }
-
   error(message) {
     let err = new Error('Wrong message format')
     err.received = message
     this.emitter.emit('error', err)
+  }
+
+  init(ws) {
+    ws.onerror = event => {
+      this.emitter.emit('error', event.error || new Error('WS Error'))
+    }
+
+    ws.onclose = () => {
+      this.onclose()
+    }
+
+    ws.onmessage = event => {
+      let data
+      try {
+        data = JSON.parse(event.data)
+      } catch {
+        this.error(event.data)
+        return
+      }
+      this.emitter.emit('message', data)
+    }
+
+    this.ws = ws
+  }
+
+  on(event, listener) {
+    return this.emitter.on(event, listener)
   }
 
   onclose() {
@@ -84,6 +76,14 @@ export class WsConnection {
       this.connected = false
       this.emitter.emit('disconnect')
       this.ws = undefined
+    }
+  }
+
+  send(message) {
+    if (this.ws && this.ws.readyState === this.ws.OPEN) {
+      this.ws.send(JSON.stringify(message))
+    } else {
+      this.emitter.emit('error', new Error('WS was closed'))
     }
   }
 }

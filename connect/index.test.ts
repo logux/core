@@ -1,14 +1,14 @@
-import { equal, is, ok, throws, not } from 'uvu/assert'
 import { delay } from 'nanodelay'
 import { test } from 'uvu'
+import { equal, is, not, ok, throws } from 'uvu/assert'
 
 import {
   BaseNode,
-  ServerNode,
   ClientNode,
   LoguxError,
-  TestTime,
-  TestPair
+  ServerNode,
+  TestPair,
+  TestTime
 } from '../index.js'
 
 let fakeNode = new BaseNode('id', TestTime.getLog(), new TestPair().left)

@@ -1,4 +1,26 @@
 export class LoguxError extends Error {
+  constructor(type, options, received) {
+    super(type)
+    this.name = 'LoguxError'
+    this.type = type
+    this.options = options
+    this.description = LoguxError.describe(type, options)
+    this.received = !!received
+
+    if (received) {
+      this.message = 'Logux received ' + this.type + ' error'
+      if (this.description !== this.type) {
+        this.message += ' (' + this.description + ')'
+      }
+    } else {
+      this.message = this.description
+    }
+
+    if (Error.captureStackTrace) {
+      Error.captureStackTrace(this, LoguxError)
+    }
+  }
+
   static describe(type, options) {
     if (type === 'timeout') {
       return 'A timeout was reached (' + options + ' ms)'
@@ -22,28 +44,6 @@ export class LoguxError extends Error {
       return 'Wrong credentials'
     } else {
       return type
-    }
-  }
-
-  constructor(type, options, received) {
-    super(type)
-    this.name = 'LoguxError'
-    this.type = type
-    this.options = options
-    this.description = LoguxError.describe(type, options)
-    this.received = !!received
-
-    if (received) {
-      this.message = 'Logux received ' + this.type + ' error'
-      if (this.description !== this.type) {
-        this.message += ' (' + this.description + ')'
-      }
-    } else {
-      this.message = this.description
-    }
-
-    if (Error.captureStackTrace) {
-      Error.captureStackTrace(this, LoguxError)
     }
   }
 }

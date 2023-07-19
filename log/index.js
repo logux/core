@@ -32,16 +32,6 @@ export class Log {
     this.emitter = createNanoEvents()
   }
 
-  on(event, listener) {
-    return this.emitter.on(event, listener)
-  }
-
-  type(type, listener, opts = {}) {
-    let event = opts.event || 'add'
-    let id = opts.id || ''
-    return this.emitter.on(`${event}-${type}-${id}`, listener)
-  }
-
   async add(action, meta = {}) {
     if (typeof action.type === 'undefined') {
       throw new Error('Expected "type" in action')
@@ -116,16 +106,33 @@ export class Log {
     }
   }
 
-  generateId() {
-    let now = Date.now()
-    if (now <= this.lastTime) {
-      now = this.lastTime
-      this.sequence += 1
-    } else {
-      this.lastTime = now
-      this.sequence = 0
+  byId(id) {
+    return this.store.byId(id)
+  }
+
+  async changeMeta(id, diff) {
+    for (let k in diff) {
+      if (
+        k === 'id' ||
+        k === 'added' ||
+        k === 'time' ||
+        k === 'subprotocol' ||
+        k === 'indexes'
+      ) {
+        throw new Error('Meta "' + k + '" is read-only')
+      }
     }
-    return now + ' ' + this.nodeId + ' ' + this.sequence
+
+    if (diff.reasons && diff.reasons.length === 0) {
+      let entry = await this.store.remove(id)
+      if (entry) {
+        for (let k in diff) entry[1][k] = diff[k]
+        actionEvents(this.emitter, 'clean', entry[0], entry[1])
+      }
+      return !!entry
+    } else {
+      return this.store.changeMeta(id, diff)
+    }
   }
 
   each(opts, callback) {
@@ -156,29 +163,20 @@ export class Log {
     })
   }
 
-  async changeMeta(id, diff) {
-    for (let k in diff) {
-      if (
-        k === 'id' ||
-        k === 'added' ||
-        k === 'time' ||
-        k === 'subprotocol' ||
-        k === 'indexes'
-      ) {
-        throw new Error('Meta "' + k + '" is read-only')
-      }
-    }
-
-    if (diff.reasons && diff.reasons.length === 0) {
-      let entry = await this.store.remove(id)
-      if (entry) {
-        for (let k in diff) entry[1][k] = diff[k]
-        actionEvents(this.emitter, 'clean', entry[0], entry[1])
-      }
-      return !!entry
+  generateId() {
+    let now = Date.now()
+    if (now <= this.lastTime) {
+      now = this.lastTime
+      this.sequence += 1
     } else {
-      return this.store.changeMeta(id, diff)
+      this.lastTime = now
+      this.sequence = 0
     }
+    return now + ' ' + this.nodeId + ' ' + this.sequence
+  }
+
+  on(event, listener) {
+    return this.emitter.on(event, listener)
   }
 
   removeReason(reason, criteria = {}) {
@@ -187,7 +185,9 @@ export class Log {
     })
   }
 
-  byId(id) {
-    return this.store.byId(id)
+  type(type, listener, opts = {}) {
+    let event = opts.event || 'add'
+    let id = opts.id || ''
+    return this.emitter.on(`${event}-${type}-${id}`, listener)
   }
 }

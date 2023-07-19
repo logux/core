@@ -2,16 +2,16 @@ import { BaseNode } from '../base-node/index.js'
 import { validate } from '../validate/index.js'
 
 const DEFAULT_OPTIONS = {
-  timeout: 70000,
-  ping: 20000
+  ping: 20000,
+  timeout: 70000
 }
 
 export class ServerNode extends BaseNode {
   constructor(nodeId, log, connection, options = {}) {
     super(nodeId, log, connection, {
       ...options,
-      timeout: options.timeout ?? DEFAULT_OPTIONS.timeout,
-      ping: options.ping ?? DEFAULT_OPTIONS.ping
+      ping: options.ping ?? DEFAULT_OPTIONS.ping,
+      timeout: options.timeout ?? DEFAULT_OPTIONS.timeout
     })
 
     if (this.options.fixTime) {
@@ -21,6 +21,19 @@ export class ServerNode extends BaseNode {
     }
 
     this.state = 'connecting'
+  }
+
+  async connectMessage(...args) {
+    await this.initializing
+    super.connectMessage(...args)
+    this.endTimeout()
+  }
+
+  async initialize() {
+    let added = await this.log.store.getLastAdded()
+    this.initialized = true
+    this.lastAddedCache = added
+    if (this.connection.connected) this.onConnect()
   }
 
   onConnect() {
@@ -39,18 +52,5 @@ export class ServerNode extends BaseNode {
     if (validate(this, msg)) {
       super.onMessage(msg)
     }
-  }
-
-  async connectMessage(...args) {
-    await this.initializing
-    super.connectMessage(...args)
-    this.endTimeout()
-  }
-
-  async initialize() {
-    let added = await this.log.store.getLastAdded()
-    this.initialized = true
-    this.lastAddedCache = added
-    if (this.connection.connected) this.onConnect()
   }
 }

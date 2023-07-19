@@ -1,6 +1,6 @@
-import { BaseNode, Message } from '../base-node/index.js'
+import type { BaseNode, Message } from '../base-node/index.js'
 import { LocalPair } from '../local-pair/index.js'
-import { TestLog } from '../test-log/index.js'
+import type { TestLog } from '../test-log/index.js'
 
 /**
  * Two paired loopback connections with events tracking
@@ -20,6 +20,16 @@ import { TestLog } from '../test-log/index.js'
  */
 export class TestPair extends LocalPair {
   /**
+   * Emitted events from `left` connection.
+   *
+   * ```js
+   * await pair.left.connect()
+   * pair.leftEvents //=> [['connect']]
+   * ```
+   */
+  leftEvents: string[][]
+
+  /**
    * Node instance used in this test, connected with `left`.
    *
    * ```js
@@ -31,6 +41,26 @@ export class TestPair extends LocalPair {
    * ```
    */
   leftNode: BaseNode<{}, TestLog>
+
+  /**
+   * Sent messages from `left` connection.
+   *
+   * ```js
+   * await pair.left.send(msg)
+   * pair.leftSent //=> [msg]
+   * ```
+   */
+  leftSent: Message[]
+
+  /**
+   * Emitted events from `right` connection.
+   *
+   * ```js
+   * await pair.right.connect()
+   * pair.rightEvents //=> [['connect']]
+   * ```
+   */
+  rightEvents: string[][]
 
   /**
    * Node instance used in this test, connected with `right`.
@@ -46,16 +76,6 @@ export class TestPair extends LocalPair {
   rightNode: BaseNode<{}, TestLog>
 
   /**
-   * Sent messages from `left` connection.
-   *
-   * ```js
-   * await pair.left.send(msg)
-   * pair.leftSent //=> [msg]
-   * ```
-   */
-  leftSent: Message[]
-
-  /**
    * Sent messages from `right` connection.
    *
    * ```js
@@ -64,26 +84,6 @@ export class TestPair extends LocalPair {
    * ```
    */
   rightSent: Message[]
-
-  /**
-   * Emitted events from `left` connection.
-   *
-   * ```js
-   * await pair.left.connect()
-   * pair.leftEvents //=> [['connect']]
-   * ```
-   */
-  leftEvents: string[][]
-
-  /**
-   * Emitted events from `right` connection.
-   *
-   * ```js
-   * await pair.right.connect()
-   * pair.rightEvents //=> [['connect']]
-   * ```
-   */
-  rightEvents: string[][]
 
   /**
    * Clear all connections events and messages to test only last events.

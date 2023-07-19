@@ -1,24 +1,24 @@
-import { spyOn, restoreAll } from 'nanospy'
-import { equal, is, throws } from 'uvu/assert'
-import WebSocket from 'ws'
+import { restoreAll, spyOn } from 'nanospy'
 import { test } from 'uvu'
+import { equal, is, throws } from 'uvu/assert'
+import type WebSocket from 'ws'
 
-import { WsConnection, Message } from '../index.js'
+import { type Message, WsConnection } from '../index.js'
 
 class FakeWebSocket {
-  opts: object
-
-  sent: string[]
-
-  readyState?: number
-
-  onopen?: () => void
-
-  onmessage?: (event: object) => void
+  onclose?: () => void
 
   onerror?: (event: object) => void
 
-  onclose?: () => void
+  onmessage?: (event: object) => void
+
+  onopen?: () => void
+
+  opts: object
+
+  readyState?: number
+
+  sent: string[]
 
   constructor(url: string, protocols: string, opts: object) {
     this.opts = opts
@@ -28,11 +28,11 @@ class FakeWebSocket {
     }, 1)
   }
 
-  send(msg: string): void {
-    this.sent.push(msg)
+  close(): void {
+    this.emit('close')
   }
 
-  emit(name: string, data?: string | Error): void {
+  emit(name: string, data?: Error | string): void {
     if (name === 'open') {
       if (typeof this.onopen === 'undefined') {
         throw new Error(`No ${name} event listener`)
@@ -58,8 +58,8 @@ class FakeWebSocket {
     }
   }
 
-  close(): void {
-    this.emit('close')
+  send(msg: string): void {
+    this.sent.push(msg)
   }
 }
 
@@ -78,9 +78,9 @@ test.after.each(() => {
 })
 
 function emit(
-  ws: WebSocket | undefined,
+  ws: undefined | WebSocket,
   name: string,
-  data?: string | Error
+  data?: Error | string
 ): void {
   if (typeof ws === 'undefined') {
     throw new Error('WebSocket was not created')

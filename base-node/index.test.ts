@@ -1,16 +1,16 @@
-import { equal, is, not, ok, throws, type } from 'uvu/assert'
 import { delay } from 'nanodelay'
 import { spyOn } from 'nanospy'
 import { test } from 'uvu'
+import { equal, is, not, ok, throws, type } from 'uvu/assert'
 
 import {
   BaseNode,
-  TestTime,
+  type NodeOptions,
+  type NodeState,
+  type TestLog,
   TestPair,
-  NodeOptions,
-  NodeState
+  TestTime
 } from '../index.js'
-import { TestLog } from '../test-log/index.js'
 
 function createNode(
   opts?: NodeOptions,
@@ -183,7 +183,7 @@ test('loads lastSent, lastReceived and lastAdded from store', async () => {
   let pair = new TestPair()
   let node
 
-  log.store.setLastSynced({ sent: 1, received: 2 })
+  log.store.setLastSynced({ received: 2, sent: 1 })
   await log.add({ type: 'a' }, { reasons: ['test'] })
   node = new BaseNode('client', log, pair.left)
   await node.initializing

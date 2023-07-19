@@ -1,8 +1,8 @@
-import { equal, is, type } from 'uvu/assert'
 import { delay } from 'nanodelay'
 import { test } from 'uvu'
+import { equal, is, type } from 'uvu/assert'
 
-import { ClientNode, ServerNode, TestTime, TestPair } from '../index.js'
+import { ClientNode, ServerNode, TestPair, TestTime } from '../index.js'
 
 let destroyable: TestPair
 
@@ -56,19 +56,19 @@ test('sends sync messages', async () => {
   pair.leftNode.log.add(actionA)
   await pair.wait('left')
   equal(pair.leftSent, [
-    ['sync', 1, actionA, { id: [1, 'test1', 0], time: 1, reasons: ['t'] }]
+    ['sync', 1, actionA, { id: [1, 'test1', 0], reasons: ['t'], time: 1 }]
   ])
   equal(pair.rightSent, [['synced', 1]])
 
   pair.rightNode.log.add(actionB)
   await pair.wait('right')
   equal(pair.leftSent, [
-    ['sync', 1, actionA, { id: [1, 'test1', 0], time: 1, reasons: ['t'] }],
+    ['sync', 1, actionA, { id: [1, 'test1', 0], reasons: ['t'], time: 1 }],
     ['synced', 2]
   ])
   equal(pair.rightSent, [
     ['synced', 1],
-    ['sync', 2, actionB, { id: [2, 'test2', 0], time: 2, reasons: ['t'] }]
+    ['sync', 2, actionB, { id: [2, 'test2', 0], reasons: ['t'], time: 2 }]
   ])
 })
 
@@ -80,7 +80,7 @@ test('uses last added on non-added action', async () => {
   pair.leftNode.log.add({ type: 'a' })
   await pair.wait('left')
   equal(pair.leftSent, [
-    ['sync', 0, { type: 'a' }, { id: [1, 'test1', 0], time: 1, reasons: [] }]
+    ['sync', 0, { type: 'a' }, { id: [1, 'test1', 0], reasons: [], time: 1 }]
   ])
 })
 
@@ -347,11 +347,11 @@ test('compresses time', async () => {
       'sync',
       1,
       { type: 'a' },
-      { id: [-99, 'test1', 0], time: -99, reasons: ['t'] }
+      { id: [-99, 'test1', 0], reasons: ['t'], time: -99 }
     ]
   ])
   equal(pair.rightNode.log.entries(), [
-    [{ type: 'a' }, { id: '1 test1 0', time: 1, added: 1, reasons: ['t'] }]
+    [{ type: 'a' }, { added: 1, id: '1 test1 0', reasons: ['t'], time: 1 }]
   ])
 })
 
@@ -364,27 +364,27 @@ test('compresses IDs', async () => {
   ])
   await pair.leftNode.waitFor('synchronized')
   equal(pair.leftSent, [
-    ['sync', 1, { type: 'a' }, { id: 1, time: 1, reasons: ['t'] }],
-    ['sync', 2, { type: 'a' }, { id: [1, 1], time: 1, reasons: ['t'] }],
-    ['sync', 3, { type: 'a' }, { id: [1, 'o', 0], time: 1, reasons: ['t'] }]
+    ['sync', 1, { type: 'a' }, { id: 1, reasons: ['t'], time: 1 }],
+    ['sync', 2, { type: 'a' }, { id: [1, 1], reasons: ['t'], time: 1 }],
+    ['sync', 3, { type: 'a' }, { id: [1, 'o', 0], reasons: ['t'], time: 1 }]
   ])
   equal(pair.rightNode.log.entries(), [
-    [{ type: 'a' }, { id: '1 client 0', time: 1, added: 1, reasons: ['t'] }],
-    [{ type: 'a' }, { id: '1 client 1', time: 1, added: 2, reasons: ['t'] }],
-    [{ type: 'a' }, { id: '1 o 0', time: 1, added: 3, reasons: ['t'] }]
+    [{ type: 'a' }, { added: 1, id: '1 client 0', reasons: ['t'], time: 1 }],
+    [{ type: 'a' }, { added: 2, id: '1 client 1', reasons: ['t'], time: 1 }],
+    [{ type: 'a' }, { added: 3, id: '1 o 0', reasons: ['t'], time: 1 }]
   ])
 })
 
 test('synchronizes any meta fields', async () => {
   let a = { type: 'a' }
   let pair = await createTest()
-  await pair.leftNode.log.add(a, { id: '1 test1 0', time: 1, one: 1 })
+  await pair.leftNode.log.add(a, { id: '1 test1 0', one: 1, time: 1 })
   await pair.leftNode.waitFor('synchronized')
   equal(pair.leftSent, [
-    ['sync', 1, a, { id: [1, 'test1', 0], time: 1, one: 1, reasons: ['t'] }]
+    ['sync', 1, a, { id: [1, 'test1', 0], one: 1, reasons: ['t'], time: 1 }]
   ])
   equal(pair.rightNode.log.entries(), [
-    [a, { id: '1 test1 0', time: 1, added: 1, one: 1, reasons: ['t'] }]
+    [a, { added: 1, id: '1 test1 0', one: 1, reasons: ['t'], time: 1 }]
   ])
 })
 
@@ -397,36 +397,36 @@ test('fixes created time', async () => {
   ])
   await pair.leftNode.waitFor('synchronized')
   equal(pair.leftNode.log.entries(), [
-    [{ type: 'a' }, { id: '11 test1 0', time: 11, added: 1, reasons: ['t'] }],
-    [{ type: 'b' }, { id: '2 test2 0', time: 12, added: 2, reasons: ['t'] }]
+    [{ type: 'a' }, { added: 1, id: '11 test1 0', reasons: ['t'], time: 11 }],
+    [{ type: 'b' }, { added: 2, id: '2 test2 0', reasons: ['t'], time: 12 }]
   ])
   equal(pair.rightNode.log.entries(), [
-    [{ type: 'a' }, { id: '11 test1 0', time: 1, added: 2, reasons: ['t'] }],
-    [{ type: 'b' }, { id: '2 test2 0', time: 2, added: 1, reasons: ['t'] }]
+    [{ type: 'a' }, { added: 2, id: '11 test1 0', reasons: ['t'], time: 1 }],
+    [{ type: 'b' }, { added: 1, id: '2 test2 0', reasons: ['t'], time: 2 }]
   ])
 })
 
 test('supports multiple actions in sync', async () => {
   let pair = await createTest()
   privateMethods(pair.rightNode).sendSync(2, [
-    [{ type: 'b' }, { id: '2 test2 0', time: 2, added: 2 }],
-    [{ type: 'a' }, { id: '1 test2 0', time: 1, added: 1 }]
+    [{ type: 'b' }, { added: 2, id: '2 test2 0', time: 2 }],
+    [{ type: 'a' }, { added: 1, id: '1 test2 0', time: 1 }]
   ])
   await pair.wait('right')
   equal(pair.leftNode.lastReceived, 2)
   equal(pair.leftNode.log.entries(), [
-    [{ type: 'a' }, { id: '1 test2 0', time: 1, added: 1, reasons: ['t'] }],
-    [{ type: 'b' }, { id: '2 test2 0', time: 2, added: 2, reasons: ['t'] }]
+    [{ type: 'a' }, { added: 1, id: '1 test2 0', reasons: ['t'], time: 1 }],
+    [{ type: 'b' }, { added: 2, id: '2 test2 0', reasons: ['t'], time: 2 }]
   ])
 })
 
 test('starts and ends timeout', async () => {
   let pair = await createTest()
   privateMethods(pair.leftNode).sendSync(1, [
-    [{ type: 'a' }, { id: '1 test2 0', time: 1, added: 1 }]
+    [{ type: 'a' }, { added: 1, id: '1 test2 0', time: 1 }]
   ])
   privateMethods(pair.leftNode).sendSync(2, [
-    [{ type: 'a' }, { id: '2 test2 0', time: 2, added: 1 }]
+    [{ type: 'a' }, { added: 1, id: '2 test2 0', time: 2 }]
   ])
   equal(privateMethods(pair.leftNode).timeouts.length, 2)
 

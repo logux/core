@@ -16,11 +16,6 @@ export class LocalConnection extends Connection {
  */
 export class LocalPair {
   /**
-   * @param delay Delay for connection and send events. Default is `1`.
-   */
-  constructor(delay?: number)
-
-  /**
    * Delay for connection and send events to emulate real connection latency.
    */
   delay: number
@@ -42,4 +37,9 @@ export class LocalPair {
    * ```
    */
   right: LocalConnection
+
+  /**
+   * @param delay Delay for connection and send events. Default is `1`.
+   */
+  constructor(delay?: number)
 }

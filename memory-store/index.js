@@ -106,6 +106,52 @@ export class MemoryStore {
     }
   }
 
+  async changeMeta(id, diff) {
+    let index = find(this.entries, id)
+    if (index === -1) {
+      return false
+    } else {
+      let meta = this.entries[index][1]
+      for (let key in diff) meta[key] = diff[key]
+      return true
+    }
+  }
+
+  async clean() {
+    this.entries = []
+    this.added = []
+    this.indexes = {}
+    this.lastReceived = 0
+    this.lastAdded = 0
+    this.lastSent = 0
+  }
+
+  async get(opts = {}) {
+    let index = opts.index
+    let store = this
+    let entries
+    if (index) {
+      store = this.indexes[index] || { added: [], entries: [] }
+    }
+    if (opts.order === 'created') {
+      entries = store.entries
+    } else {
+      entries = store.added
+    }
+    return { entries: entries.slice(0) }
+  }
+
+  async getLastAdded() {
+    return this.lastAdded
+  }
+
+  async getLastSynced() {
+    return {
+      received: this.lastReceived,
+      sent: this.lastSent
+    }
+  }
+
   async remove(id, created) {
     if (typeof created === 'undefined') {
       created = find(this.entries, id)
@@ -126,32 +172,6 @@ export class MemoryStore {
     eject(this, entry[1])
 
     return entry
-  }
-
-  async get(opts = {}) {
-    let index = opts.index
-    let store = this
-    let entries
-    if (index) {
-      store = this.indexes[index] || { added: [], entries: [] }
-    }
-    if (opts.order === 'created') {
-      entries = store.entries
-    } else {
-      entries = store.added
-    }
-    return { entries: entries.slice(0) }
-  }
-
-  async changeMeta(id, diff) {
-    let index = find(this.entries, id)
-    if (index === -1) {
-      return false
-    } else {
-      let meta = this.entries[index][1]
-      for (let key in diff) meta[key] = diff[key]
-      return true
-    }
   }
 
   async removeReason(reason, criteria, callback) {
@@ -211,26 +231,6 @@ export class MemoryStore {
           this.indexes[i].added = this.indexes[i].added.filter(removing)
         })
       }
-    }
-  }
-
-  async clean() {
-    this.entries = []
-    this.added = []
-    this.indexes = {}
-    this.lastReceived = 0
-    this.lastAdded = 0
-    this.lastSent = 0
-  }
-
-  async getLastAdded() {
-    return this.lastAdded
-  }
-
-  async getLastSynced() {
-    return {
-      received: this.lastReceived,
-      sent: this.lastSent
     }
   }
 

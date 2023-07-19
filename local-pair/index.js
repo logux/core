@@ -8,18 +8,6 @@ class LocalConnection {
     this.pair = pair
   }
 
-  other() {
-    if (this.type === 'left') {
-      return this.pair.right
-    } else {
-      return this.pair.left
-    }
-  }
-
-  on(event, listener) {
-    return this.emitter.on(event, listener)
-  }
-
   connect() {
     if (this.connected) {
       throw new Error('Connection already established')
@@ -50,6 +38,18 @@ class LocalConnection {
           resolve()
         }, 1)
       })
+    }
+  }
+
+  on(event, listener) {
+    return this.emitter.on(event, listener)
+  }
+
+  other() {
+    if (this.type === 'left') {
+      return this.pair.right
+    } else {
+      return this.pair.left
     }
   }
 

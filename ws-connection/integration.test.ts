@@ -1,9 +1,9 @@
-import { equal, is } from 'uvu/assert'
 import { delay } from 'nanodelay'
 import { test } from 'uvu'
-
-import { ServerConnection, WsConnection, Message } from '../index.js'
+import { equal, is } from 'uvu/assert'
 import WebSocket, { WebSocketServer } from 'ws'
+
+import { type Message, ServerConnection, WsConnection } from '../index.js'
 
 let wss: WebSocket.Server
 test.after.each(() => {

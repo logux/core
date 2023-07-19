@@ -1,5 +1,5 @@
-import { LogStore } from '../log/index.js'
-import { TestLog } from '../test-log/index.js'
+import type { LogStore } from '../log/index.js'
+import type { TestLog } from '../test-log/index.js'
 
 interface TestLogOptions {
   /**
@@ -38,6 +38,13 @@ interface TestLogOptions {
  */
 export class TestTime {
   /**
+   * Last letd number in log’s `nodeId`.
+   */
+  lastId: number
+
+  constructor()
+
+  /**
    * Shortcut to create time and generate single log.
    * Use it only if you need one log in test.
    *
@@ -50,13 +57,6 @@ export class TestTime {
    * @param opts Log options.
    */
   static getLog(opts?: TestLogOptions): TestLog
-
-  constructor()
-
-  /**
-   * Last letd number in log’s `nodeId`.
-   */
-  lastId: number
 
   /**
    * Return next test log in same time.

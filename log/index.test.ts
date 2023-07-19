@@ -1,7 +1,13 @@
-import { equal, is, not, ok, throws, type } from 'uvu/assert'
 import { test } from 'uvu'
+import { equal, is, not, ok, throws, type } from 'uvu/assert'
 
-import { MemoryStore, Log, Action, Meta, LogPage } from '../index.js'
+import {
+  type Action,
+  Log,
+  type LogPage,
+  MemoryStore,
+  type Meta
+} from '../index.js'
 
 function createLog(): Log<Meta, MemoryStore> {
   return new Log({
@@ -137,9 +143,9 @@ test('iterates through added entries', async () => {
     entries.push([action, meta])
   })
   equal(entries, [
-    [{ type: 'A' }, { id: '3 n 0', time: 3, added: 1, reasons: ['test'] }],
-    [{ type: 'B' }, { id: '2 n 0', time: 2, added: 2, reasons: ['test'] }],
-    [{ type: 'C' }, { id: '1 n 0', time: 1, added: 3, reasons: ['test'] }]
+    [{ type: 'A' }, { added: 1, id: '3 n 0', reasons: ['test'], time: 3 }],
+    [{ type: 'B' }, { added: 2, id: '2 n 0', reasons: ['test'], time: 2 }],
+    [{ type: 'C' }, { added: 3, id: '1 n 0', reasons: ['test'], time: 1 }]
   ])
 })
 
@@ -158,9 +164,9 @@ test('iterates by added order', async () => {
 
 test('iterates by index', async () => {
   let log = await logWith([
-    [{ type: 'A' }, { id: '3 n 0', reasons: ['test'], indexes: ['a'] }],
-    [{ type: 'B' }, { id: '2 n 0', reasons: ['test'], indexes: ['a', 'b'] }],
-    [{ type: 'C' }, { id: '1 n 0', reasons: ['test'], indexes: ['b'] }]
+    [{ type: 'A' }, { id: '3 n 0', indexes: ['a'], reasons: ['test'] }],
+    [{ type: 'B' }, { id: '2 n 0', indexes: ['a', 'b'], reasons: ['test'] }],
+    [{ type: 'C' }, { id: '1 n 0', indexes: ['b'], reasons: ['test'] }]
   ])
   let actions: Action[] = []
   await log.each({ index: 'b' }, action => {
@@ -184,7 +190,7 @@ test('disables iteration on false', async () => {
 
 test('supports multi-pages stores', async () => {
   let store = new MemoryStore()
-  let meta: Meta = { id: '1 0 0', added: 0, time: 0, reasons: [] }
+  let meta: Meta = { added: 0, id: '1 0 0', reasons: [], time: 0 }
   let get: (opts?: object) => Promise<LogPage> = async () => {
     return {
       entries: [[{ type: 'a' }, meta]],
@@ -210,17 +216,17 @@ test('copies time from ID', async () => {
   checkEntries(log, [
     [
       { type: 'TIMED' },
-      { id: '100 n 0', time: 100, added: 1, reasons: ['test'] }
+      { added: 1, id: '100 n 0', reasons: ['test'], time: 100 }
     ]
   ])
 })
 
 test('keeps existed ID, time and reasons', async () => {
   let log = await logWith([
-    [{ type: 'TIMED' }, { id: '100 n 0', time: 1, reasons: ['a'] }]
+    [{ type: 'TIMED' }, { id: '100 n 0', reasons: ['a'], time: 1 }]
   ])
   checkEntries(log, [
-    [{ type: 'TIMED' }, { id: '100 n 0', time: 1, added: 1, reasons: ['a'] }]
+    [{ type: 'TIMED' }, { added: 1, id: '100 n 0', reasons: ['a'], time: 1 }]
   ])
 })
 
@@ -260,23 +266,23 @@ test('always generates biggest ID', () => {
 
 test('changes meta', async () => {
   let log = await logWith([
-    [{ type: 'A' }, { reasons: ['t'], id: '1 node 0' }],
-    [{ type: 'B' }, { reasons: ['t'], id: '2 node 0', a: 1, indexes: ['a'] }]
+    [{ type: 'A' }, { id: '1 node 0', reasons: ['t'] }],
+    [{ type: 'B' }, { a: 1, id: '2 node 0', indexes: ['a'], reasons: ['t'] }]
   ])
   let result = await log.changeMeta('2 node 0', { a: 2, b: 2 })
   is(result, true)
   checkEntries(log, [
-    [{ type: 'A' }, { id: '1 node 0', time: 1, added: 1, reasons: ['t'] }],
+    [{ type: 'A' }, { added: 1, id: '1 node 0', reasons: ['t'], time: 1 }],
     [
       { type: 'B' },
       {
-        id: '2 node 0',
-        time: 2,
-        added: 2,
-        reasons: ['t'],
         a: 2,
+        added: 2,
         b: 2,
-        indexes: ['a']
+        id: '2 node 0',
+        indexes: ['a'],
+        reasons: ['t'],
+        time: 2
       }
     ]
   ])
@@ -295,28 +301,28 @@ test('does not allow to change ID, added or indexes', async () => {
 
 test('removes action on setting entry reasons', async () => {
   let log = await logWith([
-    [{ type: 'A' }, { reasons: ['test'], id: '1 n 0' }],
-    [{ type: 'B' }, { reasons: ['test'], id: '2 n 0' }]
+    [{ type: 'A' }, { id: '1 n 0', reasons: ['test'] }],
+    [{ type: 'B' }, { id: '2 n 0', reasons: ['test'] }]
   ])
   let cleaned: [Action, Meta][] = []
   log.on('clean', (action, meta) => {
     cleaned.push([action, meta])
   })
 
-  let result1 = await log.changeMeta('2 n 0', { reasons: [], a: 1 })
+  let result1 = await log.changeMeta('2 n 0', { a: 1, reasons: [] })
   is(result1, true)
   equal(cleaned, [
-    [{ type: 'B' }, { id: '2 n 0', time: 2, added: 2, reasons: [], a: 1 }]
+    [{ type: 'B' }, { a: 1, added: 2, id: '2 n 0', reasons: [], time: 2 }]
   ])
   checkEntries(log, [
-    [{ type: 'A' }, { id: '1 n 0', time: 1, added: 1, reasons: ['test'] }]
+    [{ type: 'A' }, { added: 1, id: '1 n 0', reasons: ['test'], time: 1 }]
   ])
   let result2 = await log.changeMeta('3 n 0', { reasons: [] })
   is(result2, false)
 })
 
 test('returns action by ID', async () => {
-  let log = await logWith([[{ type: 'A' }, { reasons: ['test'], id: '1 n 0' }]])
+  let log = await logWith([[{ type: 'A' }, { id: '1 n 0', reasons: ['test'] }]])
 
   let result1 = await log.byId('1 n 0')
   if (result1[0] === null) throw new Error('Action was no found')
@@ -425,7 +431,7 @@ test('fires preadd event', async () => {
 
   await log.add({ type: 'A' }, { id: '1 n 0' })
   checkEntries(log, [
-    [{ type: 'A' }, { id: '1 n 0', time: 1, added: 1, reasons: ['test'] }]
+    [{ type: 'A' }, { added: 1, id: '1 n 0', reasons: ['test'], time: 1 }]
   ])
   equal(preadd, ['A'])
   equal(add, ['A'])
@@ -568,9 +574,9 @@ test('has type and action.id listener', async () => {
   let log = createLog()
 
   interface A {
-    type: 'A'
-    name: string
     id: string
+    name: string
+    type: 'A'
   }
 
   log.type<A>('A', action => {
@@ -591,9 +597,9 @@ test('has type and action.id listener', async () => {
     { event: 'preadd', id: 'ID' }
   )
 
-  await log.add({ type: 'A', id: 'ID', name: 'a' })
-  await log.add({ type: 'A', id: 'Other', name: 'b' })
-  await log.add({ type: 'O', id: 'ID', name: 'c' })
+  await log.add({ id: 'ID', name: 'a', type: 'A' })
+  await log.add({ id: 'Other', name: 'b', type: 'A' })
+  await log.add({ id: 'ID', name: 'c', type: 'O' })
 
   equal(events, ['A preadd ID a', 'A add ID a', 'A add all a', 'A add all b'])
 })

@@ -1,8 +1,7 @@
-import { equal, is, ok } from 'uvu/assert'
 import { test } from 'uvu'
+import { equal, is, ok } from 'uvu/assert'
 
-import { LoguxErrorOptions } from './index.js'
-import { LoguxError } from '../index.js'
+import { LoguxError, type LoguxErrorOptions } from '../index.js'
 
 function catchError<T extends keyof LoguxErrorOptions>(
   type: T,

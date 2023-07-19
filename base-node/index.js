@@ -1,27 +1,27 @@
 import { createNanoEvents } from 'nanoevents'
 
 import {
-  sendConnect,
-  sendConnected,
+  connectedMessage,
   connectMessage,
-  connectedMessage
+  sendConnect,
+  sendConnected
 } from '../connect/index.js'
-import {
-  syncedMessage,
-  syncMessage,
-  sendSynced,
-  sendSync
-} from '../sync/index.js'
-import { sendPing, pingMessage, pongMessage } from '../ping/index.js'
-import { sendHeaders, headersMessage } from '../headers/index.js'
-import { sendDebug, debugMessage } from '../debug/index.js'
-import { sendError, errorMessage } from '../error/index.js'
+import { debugMessage, sendDebug } from '../debug/index.js'
+import { errorMessage, sendError } from '../error/index.js'
+import { headersMessage, sendHeaders } from '../headers/index.js'
 import { LoguxError } from '../logux-error/index.js'
+import { pingMessage, pongMessage, sendPing } from '../ping/index.js'
+import {
+  sendSync,
+  sendSynced,
+  syncedMessage,
+  syncMessage
+} from '../sync/index.js'
 
 const NOT_TO_THROW = {
-  'wrong-subprotocol': true,
+  'timeout': true,
   'wrong-protocol': true,
-  'timeout': true
+  'wrong-subprotocol': true
 }
 
 const BEFORE_AUTH = ['connect', 'connected', 'error', 'debug', 'headers']
@@ -112,10 +112,6 @@ export class BaseNode {
     this.remoteHeaders = {}
   }
 
-  on(event, listener) {
-    return this.emitter.on(event, listener)
-  }
-
   catch(listener) {
     this.throwsError = false
     let unbind = this.on('error', listener)
@@ -125,18 +121,13 @@ export class BaseNode {
     }
   }
 
-  waitFor(state) {
-    if (this.state === state) {
-      return Promise.resolve()
-    }
-    return new Promise(resolve => {
-      let unbind = this.on('state', () => {
-        if (this.state === state) {
-          unbind()
-          resolve()
-        }
-      })
-    })
+  delayPing() {
+    if (!this.options.ping) return
+    if (this.pingTimeout) clearTimeout(this.pingTimeout)
+
+    this.pingTimeout = setTimeout(() => {
+      if (this.connected && this.authenticated) this.sendPing()
+    }, this.options.ping)
   }
 
   destroy() {
@@ -150,53 +141,44 @@ export class BaseNode {
     this.endTimeout()
   }
 
-  setLocalHeaders(headers) {
-    this.localHeaders = headers
-    if (this.connected) {
-      this.sendHeaders(headers)
+  duilianMessage(line) {
+    if (DUILIANS[line]) {
+      this.send(['duilian', DUILIANS[line]])
     }
   }
 
-  send(msg) {
-    if (!this.connected) return
-    this.delayPing()
-    try {
-      this.connection.send(msg)
-    } catch (e) {
-      this.error(e)
+  endTimeout() {
+    if (this.timeouts.length > 0) {
+      clearTimeout(this.timeouts.shift())
     }
   }
 
-  onConnecting() {
-    this.setState('connecting')
-  }
-
-  onConnect() {
-    this.delayPing()
-    this.connected = true
-  }
-
-  onDisconnect() {
-    while (this.timeouts.length > 0) {
-      this.endTimeout()
+  error(err) {
+    this.emitter.emit('error', err)
+    this.connection.disconnect('error')
+    if (this.throwsError) {
+      throw err
     }
-    if (this.pingTimeout) clearTimeout(this.pingTimeout)
-    this.authenticated = false
-    this.connected = false
-    this.syncing = 0
-    this.setState('disconnected')
   }
 
-  onMessage(msg) {
-    this.delayPing()
-    let name = msg[0]
+  async initialize() {
+    let [synced, added] = await Promise.all([
+      this.log.store.getLastSynced(),
+      this.log.store.getLastAdded()
+    ])
+    this.initialized = true
+    this.lastSent = synced.sent
+    this.lastReceived = synced.received
+    this.lastAddedCache = added
+    if (this.connection.connected) this.onConnect()
+  }
 
-    if (!this.authenticated && !BEFORE_AUTH.includes(name)) {
-      this.unauthenticated.push(msg)
-      return
-    }
+  now() {
+    return Date.now()
+  }
 
-    this[name + 'Message'](...msg.slice(1))
+  on(event, listener) {
+    return this.emitter.on(event, listener)
   }
 
   async onAdd(action, meta) {
@@ -222,19 +204,68 @@ export class BaseNode {
     }
   }
 
-  syncError(type, options, received) {
-    let err = new LoguxError(type, options, received)
-    this.emitter.emit('error', err)
-    if (!NOT_TO_THROW[type] && this.throwsError) {
-      throw err
+  onConnect() {
+    this.delayPing()
+    this.connected = true
+  }
+
+  onConnecting() {
+    this.setState('connecting')
+  }
+
+  onDisconnect() {
+    while (this.timeouts.length > 0) {
+      this.endTimeout()
+    }
+    if (this.pingTimeout) clearTimeout(this.pingTimeout)
+    this.authenticated = false
+    this.connected = false
+    this.syncing = 0
+    this.setState('disconnected')
+  }
+
+  onMessage(msg) {
+    this.delayPing()
+    let name = msg[0]
+
+    if (!this.authenticated && !BEFORE_AUTH.includes(name)) {
+      this.unauthenticated.push(msg)
+      return
+    }
+
+    this[name + 'Message'](...msg.slice(1))
+  }
+
+  send(msg) {
+    if (!this.connected) return
+    this.delayPing()
+    try {
+      this.connection.send(msg)
+    } catch (e) {
+      this.error(e)
     }
   }
 
-  error(err) {
-    this.emitter.emit('error', err)
-    this.connection.disconnect('error')
-    if (this.throwsError) {
-      throw err
+  sendDuilian() {
+    this.send(['duilian', Object.keys(DUILIANS)[0]])
+  }
+
+  setLastReceived(value) {
+    if (this.lastReceived < value) this.lastReceived = value
+    this.log.store.setLastSynced({ received: value })
+  }
+
+  setLastSent(value) {
+    if (this.lastSent < value) {
+      this.lastSent = value
+      this.log.store.setLastSynced({ sent: value })
+    }
+  }
+
+  setLocalHeaders(headers) {
+    this.localHeaders = headers
+    if (this.connected) {
+      this.sendHeaders(headers)
     }
   }
 
@@ -257,19 +288,36 @@ export class BaseNode {
     this.timeouts.push(timeout)
   }
 
-  endTimeout() {
-    if (this.timeouts.length > 0) {
-      clearTimeout(this.timeouts.shift())
+  syncError(type, options, received) {
+    let err = new LoguxError(type, options, received)
+    this.emitter.emit('error', err)
+    if (!NOT_TO_THROW[type] && this.throwsError) {
+      throw err
     }
   }
 
-  delayPing() {
-    if (!this.options.ping) return
-    if (this.pingTimeout) clearTimeout(this.pingTimeout)
-
-    this.pingTimeout = setTimeout(() => {
-      if (this.connected && this.authenticated) this.sendPing()
-    }, this.options.ping)
+  async syncSince(lastSynced) {
+    let data = await this.syncSinceQuery(lastSynced)
+    if (!this.connected) return
+    if (data.entries.length > 0) {
+      if (this.options.outMap) {
+        Promise.all(
+          data.entries.map(i => {
+            return this.options.outMap(i[0], i[1])
+          })
+        )
+          .then(changed => {
+            this.sendSync(data.added, changed)
+          })
+          .catch(e => {
+            this.error(e)
+          })
+      } else {
+        this.sendSync(data.added, data.entries)
+      }
+    } else {
+      this.setState('synchronized')
+    }
   }
 
   async syncSinceQuery(lastSynced) {
@@ -309,66 +357,18 @@ export class BaseNode {
     return data
   }
 
-  async syncSince(lastSynced) {
-    let data = await this.syncSinceQuery(lastSynced)
-    if (!this.connected) return
-    if (data.entries.length > 0) {
-      if (this.options.outMap) {
-        Promise.all(
-          data.entries.map(i => {
-            return this.options.outMap(i[0], i[1])
-          })
-        )
-          .then(changed => {
-            this.sendSync(data.added, changed)
-          })
-          .catch(e => {
-            this.error(e)
-          })
-      } else {
-        this.sendSync(data.added, data.entries)
-      }
-    } else {
-      this.setState('synchronized')
+  waitFor(state) {
+    if (this.state === state) {
+      return Promise.resolve()
     }
-  }
-
-  setLastSent(value) {
-    if (this.lastSent < value) {
-      this.lastSent = value
-      this.log.store.setLastSynced({ sent: value })
-    }
-  }
-
-  setLastReceived(value) {
-    if (this.lastReceived < value) this.lastReceived = value
-    this.log.store.setLastSynced({ received: value })
-  }
-
-  now() {
-    return Date.now()
-  }
-
-  async initialize() {
-    let [synced, added] = await Promise.all([
-      this.log.store.getLastSynced(),
-      this.log.store.getLastAdded()
-    ])
-    this.initialized = true
-    this.lastSent = synced.sent
-    this.lastReceived = synced.received
-    this.lastAddedCache = added
-    if (this.connection.connected) this.onConnect()
-  }
-
-  sendDuilian() {
-    this.send(['duilian', Object.keys(DUILIANS)[0]])
-  }
-
-  duilianMessage(line) {
-    if (DUILIANS[line]) {
-      this.send(['duilian', DUILIANS[line]])
-    }
+    return new Promise(resolve => {
+      let unbind = this.on('state', () => {
+        if (this.state === state) {
+          unbind()
+          resolve()
+        }
+      })
+    })
   }
 }
 

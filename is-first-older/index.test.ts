@@ -1,10 +1,10 @@
 import { test } from 'uvu'
 import { is } from 'uvu/assert'
 
-import { isFirstOlder, Meta } from '../index.js'
+import { isFirstOlder, type Meta } from '../index.js'
 
 function createMeta(id: string, time: number): Meta {
-  return { id, time, reasons: [], added: 1 }
+  return { added: 1, id, reasons: [], time }
 }
 
 test('compares entries by time', () => {

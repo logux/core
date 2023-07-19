@@ -1,9 +1,9 @@
-import { equal, is, ok, throws } from 'uvu/assert'
 import { delay } from 'nanodelay'
 import { spyOn } from 'nanospy'
 import { test } from 'uvu'
+import { equal, is, ok, throws } from 'uvu/assert'
 
-import { ServerNode, TestTime, TestPair } from '../index.js'
+import { ServerNode, TestPair, TestTime } from '../index.js'
 
 let node: ServerNode
 test.after.each(() => {
@@ -60,7 +60,7 @@ test('throws on fixTime option', () => {
 test('loads only last added from store', async () => {
   let log = TestTime.getLog()
   let pair = new TestPair()
-  log.store.setLastSynced({ sent: 1, received: 2 })
+  log.store.setLastSynced({ received: 2, sent: 1 })
   await log.add({ type: 'a' }, { reasons: ['test'] })
   node = new ServerNode('server', log, pair.left)
   await node.initializing
@@ -81,7 +81,7 @@ test('supports connection before initializing', async () => {
     })
 
   let pair = new TestPair()
-  node = new ServerNode('server', log, pair.left, { timeout: 50, ping: 50 })
+  node = new ServerNode('server', log, pair.left, { ping: 50, timeout: 50 })
 
   await pair.right.connect()
   pair.right.send(['connect', node.localProtocol, 'client', 0])

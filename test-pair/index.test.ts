@@ -1,7 +1,8 @@
-import { equal, is } from 'uvu/assert'
 import { test } from 'uvu'
+import { equal, is } from 'uvu/assert'
 
-import { TestPair, Message } from '../index.js'
+import type { Message } from '../index.js';
+import { TestPair } from '../index.js'
 
 test('tracks events', async () => {
   let pair = new TestPair()

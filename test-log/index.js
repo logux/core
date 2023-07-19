@@ -1,5 +1,5 @@
-import { MemoryStore } from '../memory-store/index.js'
 import { Log } from '../log/index.js'
+import { MemoryStore } from '../memory-store/index.js'
 
 export class TestLog extends Log {
   constructor(time, id, opts = {}) {
@@ -12,12 +12,12 @@ export class TestLog extends Log {
     this.time = time
   }
 
-  entries() {
-    return this.store.entries
-  }
-
   actions() {
     return this.entries().map(i => i[0])
+  }
+
+  entries() {
+    return this.store.entries
   }
 
   generateId() {

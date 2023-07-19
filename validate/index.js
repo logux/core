@@ -62,6 +62,27 @@ let validators = {
     )
   },
 
+  debug(msg) {
+    return (
+      msg.length === 3 &&
+      isString(msg[1]) &&
+      msg[1] === 'error' &&
+      isString(msg[2])
+    )
+  },
+
+  duilian(msg) {
+    return msg.length === 2 && isString(msg[1])
+  },
+
+  error(msg) {
+    return (msg.length === 2 || msg.length === 3) && isString(msg[1])
+  },
+
+  headers(msg) {
+    return msg.length === 2 && isObject(msg[1])
+  },
+
   ping(msg) {
     return msg.length === 2 && isNumber(msg[1])
   },
@@ -87,27 +108,6 @@ let validators = {
 
   synced(msg) {
     return msg.length === 2 && isNumber(msg[1])
-  },
-
-  error(msg) {
-    return (msg.length === 2 || msg.length === 3) && isString(msg[1])
-  },
-
-  duilian(msg) {
-    return msg.length === 2 && isString(msg[1])
-  },
-
-  debug(msg) {
-    return (
-      msg.length === 3 &&
-      isString(msg[1]) &&
-      msg[1] === 'error' &&
-      isString(msg[2])
-    )
-  },
-
-  headers(msg) {
-    return msg.length === 2 && isObject(msg[1])
   }
 }
 

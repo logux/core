@@ -1,10 +1,10 @@
-import { Unsubscribe } from 'nanoevents'
+import type { Unsubscribe } from 'nanoevents'
 
-import { LoguxError, LoguxErrorOptions } from '../logux-error/index.js'
-import { Log, Action, AnyAction, Meta } from '../log/index.js'
+import type { Action, AnyAction, Log, Meta } from '../log/index.js'
+import type { LoguxError, LoguxErrorOptions } from '../logux-error/index.js'
 
 interface Authentificator<Headers extends object> {
-  (nodeId: string, token: string, headers: Headers | {}): Promise<boolean>
+  (nodeId: string, token: string, headers: {} | Headers): Promise<boolean>
 }
 
 interface LogFilter {
@@ -20,30 +20,30 @@ interface EmptyHeaders {
 }
 
 export interface TokenGenerator {
-  (): string | Promise<string>
+  (): Promise<string> | string
 }
 
 export type NodeState =
-  | 'disconnected'
   | 'connecting'
+  | 'disconnected'
   | 'sending'
   | 'synchronized'
 
 export interface CompressedMeta {
-  time: number
   id: [number, string, number] | number
+  time: number
 }
 
 export type Message =
-  | ['error', keyof LoguxErrorOptions, any?]
   | ['connect', number, string, number, object?]
   | ['connected', number, string, [number, number], object?]
+  | ['debug', 'error', string]
+  | ['error', keyof LoguxErrorOptions, any?]
+  | ['headers', object]
   | ['ping', number]
   | ['pong', number]
   | ['sync', number, ...(AnyAction | CompressedMeta)[]]
   | ['synced', number]
-  | ['debug', 'error', string]
-  | ['headers', object]
 
 /**
  * Abstract interface for connection to synchronize logs over it.
@@ -56,34 +56,9 @@ export abstract class Connection {
   connected: boolean
 
   /**
-   * Send message to connection.
-   *
-   * @param message The message to be sent.
+   * Disconnect and unbind all even listeners.
    */
-  send(message: Message): void
-
-  /**
-   * Subscribe for connection events. It implements nanoevents API.
-   * Supported events:
-   *
-   * * `connecting`: connection establishing was started.
-   * * `connect`: connection was established by any side.
-   * * `disconnect`: connection was closed by any side.
-   * * `message`: message was receive from remote node.
-   * * `error`: error during connection, sending or receiving.
-   *
-   * @param event Event name.
-   * @param listener Event listener.
-   * @returns Unbind listener from event.
-   */
-  on(
-    event: 'connecting' | 'connect' | 'disconnect',
-    listener: () => void
-  ): Unsubscribe
-
-  on(event: 'error', listener: (error: Error) => void): Unsubscribe
-  on(event: 'message', listener: (msg: Message) => void): Unsubscribe
-  on(event: 'disconnect', listener: (reason: string) => void): Unsubscribe
+  destroy: () => void
 
   /**
    * Start connection. Connection should be in disconnected state
@@ -101,20 +76,40 @@ export abstract class Connection {
    *
    * @param reason Disconnection reason.
    */
-  disconnect(reason?: 'error' | 'timeout' | 'destroy'): void
+  disconnect(reason?: 'destroy' | 'error' | 'timeout'): void
+  on(event: 'disconnect', listener: (reason: string) => void): Unsubscribe
+  on(event: 'error', listener: (error: Error) => void): Unsubscribe
 
   /**
-   * Disconnect and unbind all even listeners.
+   * Subscribe for connection events. It implements nanoevents API.
+   * Supported events:
+   *
+   * * `connecting`: connection establishing was started.
+   * * `connect`: connection was established by any side.
+   * * `disconnect`: connection was closed by any side.
+   * * `message`: message was receive from remote node.
+   * * `error`: error during connection, sending or receiving.
+   *
+   * @param event Event name.
+   * @param listener Event listener.
+   * @returns Unbind listener from event.
    */
-  destroy: () => void
+  on(
+    event: 'connect' | 'connecting' | 'disconnect',
+    listener: () => void
+  ): Unsubscribe
+
+  on(event: 'message', listener: (msg: Message) => void): Unsubscribe
+
+  /**
+   * Send message to connection.
+   *
+   * @param message The message to be sent.
+   */
+  send(message: Message): void
 }
 
 export interface NodeOptions<Headers extends object = {}> {
-  /**
-   * Client credentials. For example, access token.
-   */
-  token?: string | TokenGenerator
-
   /**
    * Function to check client credentials.
    */
@@ -125,21 +120,6 @@ export interface NodeOptions<Headers extends object = {}> {
    * in synchronized actions.
    */
   fixTime?: boolean
-
-  /**
-   * Timeout in milliseconds to wait answer before disconnect.
-   */
-  timeout?: number
-
-  /**
-   * Milliseconds since last message to test connection by sending ping.
-   */
-  ping?: number
-
-  /**
-   * Application subprotocol version in SemVer format.
-   */
-  subprotocol?: string
 
   /**
    * Function to filter actions from remote node. Best place for access control.
@@ -160,6 +140,26 @@ export interface NodeOptions<Headers extends object = {}> {
    * Map function to change action before sending it to remote client.
    */
   outMap?: LogMapper
+
+  /**
+   * Milliseconds since last message to test connection by sending ping.
+   */
+  ping?: number
+
+  /**
+   * Application subprotocol version in SemVer format.
+   */
+  subprotocol?: string
+
+  /**
+   * Timeout in milliseconds to wait answer before disconnect.
+   */
+  timeout?: number
+
+  /**
+   * Client credentials. For example, access token.
+   */
+  token?: string | TokenGenerator
 }
 
 /**
@@ -171,17 +171,91 @@ export class BaseNode<
   NodeLog extends Log = Log<Meta>
 > {
   /**
-   * @param nodeId Unique current machine name.
-   * @param log Logux log instance to be synchronized.
-   * @param connection Connection to remote node.
-   * @param options Synchronization options.
+   * Did we finish remote node authentication.
    */
-  constructor(
-    nodeId: string,
-    log: NodeLog,
-    connection: Connection,
-    options?: NodeOptions<Headers>
-  )
+  authenticated: boolean
+
+  /**
+   * Is synchronization in process.
+   *
+   * ```js
+   * node.on('disconnect', () => {
+   *   node.connected //=> false
+   * })
+   */
+  connected: boolean
+
+  /**
+   * Connection used to communicate to remote node.
+   */
+  connection: Connection
+
+  /**
+   * Promise for node data initial loadiging.
+   */
+  initializing: Promise<void>
+
+  /**
+   * Latest remote node’s log `added` time, which was successfully
+   * synchronized. It will be saves in log store.
+   */
+  lastReceived: number
+
+  /**
+   * Latest current log `added` time, which was successfully synchronized.
+   * It will be saves in log store.
+   */
+  lastSent: number
+
+  /**
+   * Unique current machine name.
+   *
+   * ```js
+   * console.log(node.localNodeId + ' is started')
+   * ```
+   */
+  localNodeId: string
+
+  /**
+   * Used Logux protocol.
+   *
+   * ```js
+   * if (tool.node.localProtocol !== 1) {
+   *   throw new Error('Unsupported Logux protocol')
+   * }
+   * ```
+   */
+  localProtocol: number
+
+  /**
+   * Log for synchronization.
+   */
+  log: NodeLog
+
+  /**
+   * Minimum version of Logux protocol, which is supported.
+   *
+   * ```js
+   * console.log(`You need Logux protocol ${node.minProtocol} or higher`)
+   * ```
+   */
+  minProtocol: number
+
+  /**
+   * Synchronization options.
+   */
+  options: NodeOptions<Headers>
+
+  /**
+   * Headers set by remote node.
+   * By default, it is an empty object.
+   *
+   * ```js
+   * let message = I18N_ERRORS[node.remoteHeaders.language || 'en']
+   * node.log.add({ type: 'error', message })
+   * ```
+   */
+  remoteHeaders: EmptyHeaders | Headers
 
   /**
    * Unique name of remote machine.
@@ -224,88 +298,6 @@ export class BaseNode<
   remoteSubprotocol: string | undefined
 
   /**
-   * Headers set by remote node.
-   * By default, it is an empty object.
-   *
-   * ```js
-   * let message = I18N_ERRORS[node.remoteHeaders.language || 'en']
-   * node.log.add({ type: 'error', message })
-   * ```
-   */
-  remoteHeaders: Headers | EmptyHeaders
-
-  /**
-   * Minimum version of Logux protocol, which is supported.
-   *
-   * ```js
-   * console.log(`You need Logux protocol ${node.minProtocol} or higher`)
-   * ```
-   */
-  minProtocol: number
-
-  /**
-   * Used Logux protocol.
-   *
-   * ```js
-   * if (tool.node.localProtocol !== 1) {
-   *   throw new Error('Unsupported Logux protocol')
-   * }
-   * ```
-   */
-  localProtocol: number
-
-  /**
-   * Unique current machine name.
-   *
-   * ```js
-   * console.log(node.localNodeId + ' is started')
-   * ```
-   */
-  localNodeId: string
-
-  /**
-   * Log for synchronization.
-   */
-  log: NodeLog
-
-  /**
-   * Connection used to communicate to remote node.
-   */
-  connection: Connection
-
-  /**
-   * Synchronization options.
-   */
-  options: NodeOptions<Headers>
-
-  /**
-   * Is synchronization in process.
-   *
-   * ```js
-   * node.on('disconnect', () => {
-   *   node.connected //=> false
-   * })
-   */
-  connected: boolean
-
-  /**
-   * Did we finish remote node authentication.
-   */
-  authenticated: boolean
-
-  /**
-   * Latest current log `added` time, which was successfully synchronized.
-   * It will be saves in log store.
-   */
-  lastSent: number
-
-  /**
-   * Latest remote node’s log `added` time, which was successfully
-   * synchronized. It will be saves in log store.
-   */
-  lastReceived: number
-
-  /**
    * Current synchronization state.
    *
    * * `disconnected`: no connection.
@@ -324,14 +316,54 @@ export class BaseNode<
   state: NodeState
 
   /**
-   * Promise for node data initial loadiging.
-   */
-  initializing: Promise<void>
-
-  /**
    * Time difference between nodes.
    */
   timeFix: number
+
+  /**
+   * @param nodeId Unique current machine name.
+   * @param log Logux log instance to be synchronized.
+   * @param connection Connection to remote node.
+   * @param options Synchronization options.
+   */
+  constructor(
+    nodeId: string,
+    log: NodeLog,
+    connection: Connection,
+    options?: NodeOptions<Headers>
+  )
+
+  /**
+   * Disable throwing a error on error message and create error listener.
+   *
+   * ```js
+   * node.catch(error => {
+   *   console.error(error)
+   * })
+   * ```
+   *
+   * @param listener The error listener.
+   * @returns Unbind listener from event.
+   */
+  catch(listener: (error: LoguxError) => void): Unsubscribe
+
+  /**
+   * Shut down the connection and unsubscribe from log events.
+   *
+   * ```js
+   * connection.on('disconnect', () => {
+   *   server.destroy()
+   * })
+   * ```
+   */
+  destroy(): void
+
+  on(event: 'headers', listener: (headers: Headers) => void): Unsubscribe
+
+  on(
+    event: 'clientError' | 'error',
+    listener: (error: LoguxError) => void
+  ): Unsubscribe
 
   /**
    * Subscribe for synchronization events. It implements nanoevents API.
@@ -356,13 +388,8 @@ export class BaseNode<
    * @returns Unbind listener from event.
    */
   on(
-    event: 'state' | 'connect' | 'debug' | 'headers',
+    event: 'connect' | 'debug' | 'headers' | 'state',
     listener: () => void
-  ): Unsubscribe
-
-  on(
-    event: 'error' | 'clientError',
-    listener: (error: LoguxError) => void
   ): Unsubscribe
 
   on(
@@ -370,21 +397,19 @@ export class BaseNode<
     listener: (type: 'error', data: string) => void
   ): Unsubscribe
 
-  on(event: 'headers', listener: (headers: Headers) => void): Unsubscribe
-
   /**
-   * Disable throwing a error on error message and create error listener.
+   * Set headers for current node.
    *
    * ```js
-   * node.catch(error => {
-   *   console.error(error)
-   * })
+   * if (navigator) {
+   *   node.setLocalHeaders({ language: navigator.language })
+   * }
+   * node.connection.connect()
    * ```
    *
-   * @param listener The error listener.
-   * @returns Unbind listener from event.
+   * @param headers The data object will be set as headers for current node.
    */
-  catch(listener: (error: LoguxError) => void): Unsubscribe
+  setLocalHeaders(headers: Headers): void
 
   /**
    * Return Promise until sync will have specific state.
@@ -400,29 +425,4 @@ export class BaseNode<
    * @returns Promise until specific state.
    */
   waitFor(state: NodeState): Promise<void>
-
-  /**
-   * Shut down the connection and unsubscribe from log events.
-   *
-   * ```js
-   * connection.on('disconnect', () => {
-   *   server.destroy()
-   * })
-   * ```
-   */
-  destroy(): void
-
-  /**
-   * Set headers for current node.
-   *
-   * ```js
-   * if (navigator) {
-   *   node.setLocalHeaders({ language: navigator.language })
-   * }
-   * node.connection.connect()
-   * ```
-   *
-   * @param headers The data object will be set as headers for current node.
-   */
-  setLocalHeaders(headers: Headers): void
 }

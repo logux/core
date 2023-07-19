@@ -1,4 +1,4 @@
-import { Unsubscribe, Emitter } from 'nanoevents'
+import type { Emitter, Unsubscribe } from 'nanoevents'
 
 /**
  * Action unique ID accross all nodes.
@@ -26,26 +26,33 @@ interface ActionIterator<LogMeta extends Meta> {
 
 export function actionEvents(
   emitter: Emitter,
-  event: 'preadd' | 'add' | 'clean',
+  event: 'add' | 'clean' | 'preadd',
   action: Action,
   meta: Meta
 ): void
 
 export interface Meta {
+  [extra: string]: any
+
   /**
    * Sequence number of action in current log. Log fills it.
    */
   added: number
 
   /**
-   * Action created time in current node time. Milliseconds since UNIX epoch.
-   */
-  time: number
-
-  /**
    * Action unique ID. Log sets it automatically.
    */
   id: ID
+
+  /**
+   * Indexes for action quick extraction.
+   */
+  indexes?: string[]
+
+  /**
+   * Set value to `reasons` and this reason from old action.
+   */
+  keepLast?: string
 
   /**
    * Why action should be kept in log. Action without reasons will be removed.
@@ -58,16 +65,9 @@ export interface Meta {
   subprotocol?: string
 
   /**
-   * Set value to `reasons` and this reason from old action.
+   * Action created time in current node time. Milliseconds since UNIX epoch.
    */
-  keepLast?: string
-
-  /**
-   * Indexes for action quick extraction.
-   */
-  indexes?: string[]
-
-  [extra: string]: any
+  time: number
 }
 
 export interface Action {
@@ -78,20 +78,25 @@ export interface Action {
 }
 
 export interface AnyAction {
-  type: string
   [extra: string]: any
+  type: string
 }
 
 interface Criteria {
   /**
-   * Remove reason only for actions with bigger `added`.
+   * Remove reason only for action with `id`.
    */
-  minAdded?: number
+  id?: ID
 
   /**
    * Remove reason only for actions with lower `added`.
    */
   maxAdded?: number
+
+  /**
+   * Remove reason only for actions with bigger `added`.
+   */
+  minAdded?: number
 
   /**
    * Remove reason only older than specific action.
@@ -102,11 +107,6 @@ interface Criteria {
    * Remove reason only younger than specific action.
    */
   youngerThan?: Meta
-
-  /**
-   * Remove reason only for action with `id`.
-   */
-  id?: ID
 }
 
 interface LastSynced {
@@ -135,14 +135,14 @@ export interface LogPage {
 
 interface GetOptions {
   /**
-   * Sort entries by created time or when they was added to current log.
-   */
-  order?: 'created' | 'added'
-
-  /**
    * Get entries with a custom index.
    */
   index?: string
+
+  /**
+   * Sort entries by created time or when they was added to current log.
+   */
+  order?: 'added' | 'created'
 }
 
 /**
@@ -157,7 +157,32 @@ export abstract class LogStore {
    * @returns Promise with `meta` for new action or `false` if action with
    *          same `meta.id` was already in store.
    */
-  add(action: AnyAction, meta: Meta): Promise<Meta | false>
+  add(action: AnyAction, meta: Meta): Promise<false | Meta>
+
+  /**
+   * Return action by action ID.
+   *
+   * @param id Action ID.
+   * @returns Promise with array of action and metadata.
+   */
+  byId(id: ID): Promise<[Action, Meta] | [null, null]>
+
+  /**
+   * Change action metadata.
+   *
+   * @param id Action ID.
+   * @param diff Object with values to change in action metadata.
+   * @returns Promise with `true` if metadata was changed or `false`
+   *          on unknown ID.
+   */
+  changeMeta(id: ID, diff: Partial<Meta>): Promise<boolean>
+
+  /**
+   * Remove all data from the store.
+   *
+   * @returns Promise when cleaning will be finished.
+   */
+  clean(): Promise<void>
 
   /**
    * Return a Promise with first page. Page object has `entries` property
@@ -171,53 +196,6 @@ export abstract class LogStore {
    * @returns Promise with first page.
    */
   get(opts?: GetOptions): Promise<LogPage>
-
-  /**
-   * Remove action from store.
-   *
-   * @param id Action ID.
-   * @returns Promise with entry if action was in store.
-   */
-  remove(id: ID): Promise<[Action, Meta] | false>
-
-  /**
-   * Change action metadata.
-   *
-   * @param id Action ID.
-   * @param diff Object with values to change in action metadata.
-   * @returns Promise with `true` if metadata was changed or `false`
-   *          on unknown ID.
-   */
-  changeMeta(id: ID, diff: Partial<Meta>): Promise<boolean>
-
-  /**
-   * Return action by action ID.
-   *
-   * @param id Action ID.
-   * @returns Promise with array of action and metadata.
-   */
-  byId(id: ID): Promise<[Action, Meta] | [null, null]>
-
-  /**
-   * Remove reason from action’s metadata and remove actions without reasons.
-   *
-   * @param reason The reason name.
-   * @param criteria Criteria to select action for reason removing.
-   * @param callback Callback for every removed action.
-   * @returns Promise when cleaning will be finished.
-   */
-  removeReason(
-    reason: string,
-    criteria: Criteria,
-    callback: ReadonlyListener<Action, Meta>
-  ): Promise<void>
-
-  /**
-   * Remove all data from the store.
-   *
-   * @returns Promise when cleaning will be finished.
-   */
-  clean(): Promise<void>
 
   /**
    * Return biggest `added` number in store.
@@ -235,6 +213,28 @@ export abstract class LogStore {
   getLastSynced(): Promise<LastSynced>
 
   /**
+   * Remove action from store.
+   *
+   * @param id Action ID.
+   * @returns Promise with entry if action was in store.
+   */
+  remove(id: ID): Promise<[Action, Meta] | false>
+
+  /**
+   * Remove reason from action’s metadata and remove actions without reasons.
+   *
+   * @param reason The reason name.
+   * @param criteria Criteria to select action for reason removing.
+   * @param callback Callback for every removed action.
+   * @returns Promise when cleaning will be finished.
+   */
+  removeReason(
+    reason: string,
+    criteria: Criteria,
+    callback: ReadonlyListener<Action, Meta>
+  ): Promise<void>
+
+  /**
    * Set `added` value for latest synchronized received or/and sent events.
    * @param values Object with latest sent or received values.
    * @returns Promise when values will be saved to store.
@@ -244,14 +244,14 @@ export abstract class LogStore {
 
 interface LogOptions<Store extends LogStore = LogStore> {
   /**
-   * Store for log.
-   */
-  store: Store
-
-  /**
    * Unique current machine name.
    */
   nodeId: string
+
+  /**
+   * Store for log.
+   */
+  store: Store
 }
 
 /**
@@ -274,9 +274,9 @@ export class Log<
   Store extends LogStore = LogStore
 > {
   /**
-   * @param opts Log options.
+   * Unique node ID. It is used in action IDs.
    */
-  constructor(opts: LogOptions<Store>)
+  nodeId: string
 
   /**
    * Log store.
@@ -284,9 +284,9 @@ export class Log<
   store: Store
 
   /**
-   * Unique node ID. It is used in action IDs.
+   * @param opts Log options.
    */
-  nodeId: string
+  constructor(opts: LogOptions<Store>)
 
   /**
    *
@@ -309,45 +309,76 @@ export class Log<
   add<NewAction extends Action = AnyAction>(
     action: NewAction,
     meta?: Partial<LogMeta>
-  ): Promise<LogMeta | false>
+  ): Promise<false | LogMeta>
 
   /**
-   * Add listener for adding action with specific type.
-   * Works faster than `on('add', cb)` with `if`.
-   *
-   * Setting `opts.id` will filter events ponly from actions with specific
-   * `action.id`.
+   * Does log already has action with this ID.
    *
    * ```js
-   * const unbind = log.type('beep', (action, meta) => {
-   *   beep()
-   * })
-   * function disableBeeps () {
-   *   unbind()
+   * if (action.type === 'logux/undo') {
+   *   const [undidAction, undidMeta] = await log.byId(action.id)
+   *   log.changeMeta(meta.id, { reasons: undidMeta.reasons })
    * }
    * ```
    *
-   * @param type Action’s type.
-   * @param listener The listener function.
-   * @param event
-   * @returns Unbind listener from event.
+   * @param id Action ID.
+   * @returns Promise with array of action and metadata.
    */
-  type<
-    NewAction extends Action = Action,
-    Type extends string = NewAction['type']
-  >(
-    type: Type,
-    listener: ReadonlyListener<NewAction, LogMeta>,
-    opts?: { id?: string; event?: 'add' | 'clean' }
-  ): Unsubscribe
-  type<
-    NewAction extends Action = Action,
-    Type extends string = NewAction['type']
-  >(
-    type: Type,
-    listener: PreaddListener<NewAction, LogMeta>,
-    opts: { id?: string; event: 'preadd' }
-  ): Unsubscribe
+  byId(id: ID): Promise<[Action, LogMeta] | [null, null]>
+  /**
+   * Change action metadata. You will remove action by setting `reasons: []`.
+   *
+   * ```js
+   * await process(action)
+   * log.changeMeta(action, { status: 'processed' })
+   * ```
+   *
+   * @param id Action ID.
+   * @param diff Object with values to change in action metadata.
+   * @returns Promise with `true` if metadata was changed or `false`
+   *          on unknown ID.
+   */
+  changeMeta(id: ID, diff: Partial<LogMeta>): Promise<boolean>
+
+  /**
+   * @param opts Iterator options.
+   * @param callback Function will be executed on every action.
+   */
+  each(opts: GetOptions, callback: ActionIterator<LogMeta>): Promise<void>
+  /**
+   * Iterates through all actions, from last to first.
+   *
+   * Return false from callback if you want to stop iteration.
+   *
+   * ```js
+   * log.each((action, meta) => {
+   *   if (compareTime(meta.id, lastBeep) <= 0) {
+   *     return false;
+   *   } else if (action.type === 'beep') {
+   *     beep()
+   *     lastBeep = meta.id
+   *     return false;
+   *   }
+   * })
+   * ```
+   *
+   * @param callback Function will be executed on every action.
+   * @returns When iteration will be finished by iterator or end of actions.
+   */
+  each(callback: ActionIterator<LogMeta>): Promise<void>
+
+  each(callback: ActionIterator<LogMeta>): Promise<void>
+
+  /**
+   * Generate next unique action ID.
+   *
+   * ```js
+   * const id = log.generateId()
+   * ```
+   *
+   * @returns Unique ID for action.
+   */
+  generateId(): ID
 
   /**
    * Subscribe for log events. It implements nanoevents API. Supported events:
@@ -378,61 +409,6 @@ export class Log<
   on(event: 'preadd', listener: PreaddListener<Action, LogMeta>): Unsubscribe
 
   /**
-   * Generate next unique action ID.
-   *
-   * ```js
-   * const id = log.generateId()
-   * ```
-   *
-   * @returns Unique ID for action.
-   */
-  generateId(): ID
-
-  /**
-   * Iterates through all actions, from last to first.
-   *
-   * Return false from callback if you want to stop iteration.
-   *
-   * ```js
-   * log.each((action, meta) => {
-   *   if (compareTime(meta.id, lastBeep) <= 0) {
-   *     return false;
-   *   } else if (action.type === 'beep') {
-   *     beep()
-   *     lastBeep = meta.id
-   *     return false;
-   *   }
-   * })
-   * ```
-   *
-   * @param callback Function will be executed on every action.
-   * @returns When iteration will be finished by iterator or end of actions.
-   */
-  each(callback: ActionIterator<LogMeta>): Promise<void>
-
-  /**
-   * @param opts Iterator options.
-   * @param callback Function will be executed on every action.
-   */
-  each(opts: GetOptions, callback: ActionIterator<LogMeta>): Promise<void>
-  each(callback: ActionIterator<LogMeta>): Promise<void>
-
-  /**
-   * Change action metadata. You will remove action by setting `reasons: []`.
-   *
-   * ```js
-   * await process(action)
-   * log.changeMeta(action, { status: 'processed' })
-   * ```
-   *
-   * @param id Action ID.
-   * @param diff Object with values to change in action metadata.
-   * @returns Promise with `true` if metadata was changed or `false`
-   *          on unknown ID.
-   */
-  changeMeta(id: ID, diff: Partial<LogMeta>): Promise<boolean>
-
-  /**
    * Remove reason tag from action’s metadata and remove actions without reason
    * from log.
    *
@@ -449,17 +425,41 @@ export class Log<
   removeReason(reason: string, criteria?: Criteria): Promise<void>
 
   /**
-   * Does log already has action with this ID.
+   * Add listener for adding action with specific type.
+   * Works faster than `on('add', cb)` with `if`.
+   *
+   * Setting `opts.id` will filter events ponly from actions with specific
+   * `action.id`.
    *
    * ```js
-   * if (action.type === 'logux/undo') {
-   *   const [undidAction, undidMeta] = await log.byId(action.id)
-   *   log.changeMeta(meta.id, { reasons: undidMeta.reasons })
+   * const unbind = log.type('beep', (action, meta) => {
+   *   beep()
+   * })
+   * function disableBeeps () {
+   *   unbind()
    * }
    * ```
    *
-   * @param id Action ID.
-   * @returns Promise with array of action and metadata.
+   * @param type Action’s type.
+   * @param listener The listener function.
+   * @param event
+   * @returns Unbind listener from event.
    */
-  byId(id: ID): Promise<[Action, LogMeta] | [null, null]>
+  type<
+    NewAction extends Action = Action,
+    Type extends string = NewAction['type']
+  >(
+    type: Type,
+    listener: ReadonlyListener<NewAction, LogMeta>,
+    opts?: { event?: 'add' | 'clean'; id?: string }
+  ): Unsubscribe
+
+  type<
+    NewAction extends Action = Action,
+    Type extends string = NewAction['type']
+  >(
+    type: Type,
+    listener: PreaddListener<NewAction, LogMeta>,
+    opts: { event: 'preadd'; id?: string }
+  ): Unsubscribe
 }

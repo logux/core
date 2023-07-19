@@ -1,4 +1,4 @@
-import { Log, Action, Meta } from '../log/index.js'
+import { type Action, Log, type Meta } from '../log/index.js'
 
 /**
  * Log to be used in tests. It already has memory store, node ID,
@@ -22,19 +22,6 @@ import { Log, Action, Meta } from '../log/index.js'
  */
 export class TestLog<LogMeta extends Meta = Meta> extends Log<LogMeta> {
   /**
-   * Return all entries (with metadata) inside log, sorted by created time.
-   *
-   * This shortcut works only with {@link MemoryStore}.
-   *
-   * ```js
-   * expect(log.action).toEqual([
-   *   [{ type: 'A' }, { id: '1 test1 0', time: 1, added: 1, reasons: ['t'] }]
-   * ])
-   * ```
-   */
-  entries(): [Action, Meta][]
-
-  /**
    * Return all action (without metadata) inside log, sorted by created time.
    *
    * This shortcut works only with {@link MemoryStore}.
@@ -46,6 +33,19 @@ export class TestLog<LogMeta extends Meta = Meta> extends Log<LogMeta> {
    * ```
    */
   actions(): Action[]
+
+  /**
+   * Return all entries (with metadata) inside log, sorted by created time.
+   *
+   * This shortcut works only with {@link MemoryStore}.
+   *
+   * ```js
+   * expect(log.action).toEqual([
+   *   [{ type: 'A' }, { id: '1 test1 0', time: 1, added: 1, reasons: ['t'] }]
+   * ])
+   * ```
+   */
+  entries(): [Action, Meta][]
 
   /**
    * Keep actions without `meta.reasons` in the log by setting `test` reason

@@ -1,14 +1,14 @@
-import { Log, MemoryStore, Action } from '../index.js'
+import { type Action, Log, MemoryStore } from '../index.js'
 
 let log = new Log({ nodeId: 'test1', store: new MemoryStore() })
 
-log.add({ type: 'user/add', name: 'Kate' })
+log.add({ name: 'Kate', type: 'user/add' })
 
-log.add({ type: 'user/add', name: 'Kate' }, { extra: 1 })
+log.add({ name: 'Kate', type: 'user/add' }, { extra: 1 })
 
 type RenameAction = Action & {
-  type: 'rename'
   name: string
+  type: 'rename'
 }
 
 log.type<RenameAction>('rename', action => {

@@ -1,5 +1,5 @@
-import { equal, instance, is } from 'uvu/assert'
 import { test } from 'uvu'
+import { equal, instance, is } from 'uvu/assert'
 
 import { MemoryStore, TestTime } from '../index.js'
 
@@ -11,7 +11,7 @@ test('creates test log', () => {
 
 test('creates test log with specific parameters', () => {
   let store = new MemoryStore()
-  let log = TestTime.getLog({ store, nodeId: 'other' })
+  let log = TestTime.getLog({ nodeId: 'other', store })
   equal(log.nodeId, 'other')
   is(log.store, store)
 })
@@ -23,8 +23,8 @@ test('uses special ID generator in test log', async () => {
     log.add({ type: 'b' }, { reasons: ['test'] })
   ])
   equal(log.entries(), [
-    [{ type: 'a' }, { added: 1, time: 1, id: '1 test1 0', reasons: ['test'] }],
-    [{ type: 'b' }, { added: 2, time: 2, id: '2 test1 0', reasons: ['test'] }]
+    [{ type: 'a' }, { added: 1, id: '1 test1 0', reasons: ['test'], time: 1 }],
+    [{ type: 'b' }, { added: 2, id: '2 test1 0', reasons: ['test'], time: 2 }]
   ])
 })
 
@@ -41,10 +41,10 @@ test('creates test logs with same time', async () => {
     log2.add({ type: 'b' }, { reasons: ['test'] })
   ])
   equal(log1.entries(), [
-    [{ type: 'a' }, { added: 1, time: 1, id: '1 test1 0', reasons: ['test'] }]
+    [{ type: 'a' }, { added: 1, id: '1 test1 0', reasons: ['test'], time: 1 }]
   ])
   equal(log2.entries(), [
-    [{ type: 'b' }, { added: 1, time: 2, id: '2 test2 0', reasons: ['test'] }]
+    [{ type: 'b' }, { added: 1, id: '2 test2 0', reasons: ['test'], time: 2 }]
   ])
 })
 
@@ -53,7 +53,7 @@ test('creates log with test shortcuts', () => {
   log.add({ type: 'A' }, { reasons: ['t'] })
   equal(log.actions(), [{ type: 'A' }])
   equal(log.entries(), [
-    [{ type: 'A' }, { id: '1 test1 0', time: 1, added: 1, reasons: ['t'] }]
+    [{ type: 'A' }, { added: 1, id: '1 test1 0', reasons: ['t'], time: 1 }]
   ])
 })
 

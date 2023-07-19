@@ -1,9 +1,9 @@
-import { equal } from 'uvu/assert'
 import { delay } from 'nanodelay'
 import { spyOn } from 'nanospy'
 import { test } from 'uvu'
+import { equal } from 'uvu/assert'
 
-import { ClientNode, TestTime, TestPair } from '../index.js'
+import { ClientNode, TestPair, TestTime } from '../index.js'
 
 let node: ClientNode
 test.after.each(() => {

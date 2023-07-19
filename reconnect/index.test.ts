@@ -1,9 +1,9 @@
-import { equal, is, not, ok, type } from 'uvu/assert'
-import { spyOn, restoreAll } from 'nanospy'
 import { delay } from 'nanodelay'
+import { restoreAll, spyOn } from 'nanospy'
 import { test } from 'uvu'
+import { equal, is, not, ok, type } from 'uvu/assert'
 
-import { Reconnect, TestPair, Message } from '../index.js'
+import { type Message, Reconnect, TestPair } from '../index.js'
 
 let listeners: { [key: string]: () => void } = {}
 const listenerMethods = {
@@ -23,7 +23,7 @@ function setHidden(value: boolean): void {
   listeners.visibilitychange()
 }
 
-function setOnLine(value: boolean, event: 'resume' | 'online'): void {
+function setOnLine(value: boolean, event: 'online' | 'resume'): void {
   // @ts-expect-error
   global.navigator.onLine = value
   listeners[event]()
@@ -112,21 +112,21 @@ test('reconnects on timeout and error disconnect', async () => {
 test('proxies connection methods', () => {
   let sent: Message[] = []
   let con = {
+    async connect() {
+      this.connected = true
+    },
+    connected: false,
+    destroy() {},
+    disconnect() {
+      this.connected = false
+    },
+    emitter: {},
     on() {
       return () => {}
     },
     send(msg: Message) {
       sent.push(msg)
-    },
-    async connect() {
-      this.connected = true
-    },
-    emitter: {},
-    connected: false,
-    disconnect() {
-      this.connected = false
-    },
-    destroy() {}
+    }
   }
   let recon = new Reconnect(con)
   is(recon.connected, false)
@@ -211,7 +211,7 @@ test('disconnects and unbind listeners on destroy', async () => {
 
 test('reconnects automatically with delay', async () => {
   let pair = new TestPair()
-  let recon = new Reconnect(pair.left, { minDelay: 50, maxDelay: 50 })
+  let recon = new Reconnect(pair.left, { maxDelay: 50, minDelay: 50 })
   await recon.connect()
   pair.right.disconnect()
   await pair.wait()
@@ -242,8 +242,8 @@ test('has maximum reconnection attempts', async () => {
 
   let recon = new Reconnect(pair.left, {
     attempts: 3,
-    minDelay: 0,
-    maxDelay: 0
+    maxDelay: 0,
+    minDelay: 0
   })
 
   recon.connect()
@@ -256,8 +256,8 @@ test('has maximum reconnection attempts', async () => {
 test('tracks connecting state', () => {
   let pair = new TestPair()
   let recon = new Reconnect(pair.left, {
-    minDelay: 1000,
-    maxDelay: 5000
+    maxDelay: 5000,
+    minDelay: 1000
   })
 
   is(recon.connecting, false)
@@ -276,8 +276,8 @@ test('tracks connecting state', () => {
 test('has dynamic delay', () => {
   let pair = new TestPair()
   let recon = new Reconnect(pair.left, {
-    minDelay: 1000,
-    maxDelay: 5000
+    maxDelay: 5000,
+    minDelay: 1000
   })
 
   function attemptsIsAround(attempt: number, ms: number): void {
