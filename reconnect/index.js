@@ -11,9 +11,13 @@ const FATAL_ERRORS = [
 ]
 
 export class Reconnect {
-  constructor(connection, options = {}) {
+  constructor(connection, {
+    minDelay = DEFAULT_OPTIONS.minDelay,
+    maxDelay = DEFAULT_OPTIONS.maxDelay,
+    attempts = DEFAULT_OPTIONS.attempts
+  } = {}) {
     this.connection = connection
-    this.options = { ...DEFAULT_OPTIONS, ...options }
+    this.options = { minDelay, maxDelay, attempts }
 
     this.reconnecting = connection.connected
     this.connecting = false
