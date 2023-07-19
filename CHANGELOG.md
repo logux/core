@@ -1,6 +1,9 @@
 # Change Log
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## 0.8.2
+* Fixed `undefined` options (by @erictheswift).
+
 ## 0.8.1
 * Removed Node.js dependencies to simplify bundling.
 
