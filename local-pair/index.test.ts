@@ -1,3 +1,4 @@
+import { delay } from 'nanodelay'
 import { test } from 'uvu'
 import { equal, is, ok, throws } from 'uvu/assert'
 
@@ -39,8 +40,8 @@ class Tracker {
 
   waiting?: () => void
 
-  constructor(delay?: number) {
-    this.pair = new LocalPair(delay)
+  constructor(delayMs?: number) {
+    this.pair = new LocalPair(delayMs)
     this.left = track(this, this.pair.left)
     this.right = track(this, this.pair.right)
   }
@@ -129,6 +130,15 @@ test('emulates delay', async () => {
   tracker.pair.left.send(['ping', 1])
   await tracker.wait()
   ok(Date.now() - prevTime >= 48)
+})
+
+test('allows disconnect during connecting', async () => {
+  let tracker = new Tracker(10)
+  tracker.pair.left.connect()
+  tracker.pair.left.disconnect()
+  await delay(50)
+  equal(tracker.left, [['connecting'], ['disconnect', undefined]])
+  equal(tracker.right, [])
 })
 
 test.run()

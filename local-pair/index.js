@@ -2,6 +2,7 @@ import { createNanoEvents } from 'nanoevents'
 
 class LocalConnection {
   constructor(pair, type) {
+    this.connecting = false
     this.connected = false
     this.emitter = createNanoEvents()
     this.type = type
@@ -12,11 +13,17 @@ class LocalConnection {
     if (this.connected) {
       throw new Error('Connection already established')
     } else {
+      this.connecting = true
       this.emitter.emit('connecting')
       return new Promise(resolve => {
         setTimeout(() => {
+          if (!this.connecting) {
+            resolve()
+            return
+          }
           this.other().connected = true
           this.connected = true
+          this.connecting = false
           this.other().emitter.emit('connect')
           this.emitter.emit('connect')
           resolve()
@@ -26,9 +33,11 @@ class LocalConnection {
   }
 
   disconnect(reason) {
-    if (!this.connected) {
-      throw new Error('Connection already finished')
-    } else {
+    if (this.connecting) {
+      this.connecting = false
+      this.emitter.emit('disconnect', reason)
+      return Promise.resolve()
+    } else if (this.connected) {
       this.connected = false
       this.emitter.emit('disconnect', reason)
       return new Promise(resolve => {
@@ -38,6 +47,8 @@ class LocalConnection {
           resolve()
         }, 1)
       })
+    } else {
+      throw new Error('Connection already finished')
     }
   }
 
