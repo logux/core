@@ -15,6 +15,14 @@ interface LogMapper {
   (action: Action, meta: Meta): Promise<[AnyAction, Meta]>
 }
 
+interface ActionsCallback {
+  (
+    process: (action: Action, meta: Meta) => Promise<void>,
+    action: Action,
+    meta: Meta
+  ): void
+}
+
 interface EmptyHeaders {
   [key: string]: undefined
 }
@@ -130,6 +138,11 @@ export interface NodeOptions<Headers extends object = {}> {
    * Map function to change remote node’s action before put it to current log.
    */
   inMap?: LogMapper
+
+  /**
+   * Function that will be called before node sends 'synced'
+   */
+  onActions?: ActionsCallback
 
   /**
    * Filter function to select actions to synchronization.

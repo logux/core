@@ -226,6 +226,48 @@ test('maps input actions', async () => {
   equal(pair.rightNode.log.actions(), [{ type: 'a1' }])
 })
 
+test('calls onActions if present', async () => {
+  let pair = await createTest(created => {
+    created.rightNode.options.onActions = () => {}
+    created.leftNode.log.add({ type: 'a' })
+    created.leftNode.log.add({ type: 'b' })
+    created.leftNode.log.add({ type: 'c' })
+  })
+  equal(pair.leftNode.log.actions(), [
+    { type: 'a' },
+    { type: 'b' },
+    { type: 'c' }
+  ])
+  equal(pair.rightNode.log.actions(), [])
+})
+
+test('inMap and inFilter work with onActions', async () => {
+  let pair = await createTest(created => {
+    created.rightNode.options.inFilter = async (action, meta) => {
+      type(meta.id, 'string')
+      type(meta.time, 'number')
+      return action.type !== 'c1'
+    }
+    created.rightNode.options.inMap = async (action, meta) => {
+      type(meta.id, 'string')
+      type(meta.time, 'number')
+      return [{ type: action.type + '1' }, meta]
+    }
+    created.rightNode.options.onActions = (process, action, meta) => {
+      process(action, meta)
+    }
+    created.leftNode.log.add({ type: 'a' })
+    created.leftNode.log.add({ type: 'b' })
+    created.leftNode.log.add({ type: 'c' })
+  })
+  equal(pair.leftNode.log.actions(), [
+    { type: 'a' },
+    { type: 'b' },
+    { type: 'c' }
+  ])
+  equal(pair.rightNode.log.actions(), [{ type: 'a1' }, { type: 'b1' }])
+})
+
 test('uses input map before filter', async () => {
   let calls: string[] = []
   let pair = await createTest()
