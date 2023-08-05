@@ -1,17 +1,16 @@
 # Logux Core [![Cult Of Martians][cult-img]][cult]
 
 <img align="right" width="95" height="148" title="Logux logotype"
-     src="https://logux.io/branding/logotype.svg">
+     src="https://logux.org/branding/logotype.svg">
 
 Logux is a new way to connect client and server. Instead of sending
 HTTP requests (e.g., AJAX and GraphQL) it synchronizes log of operations
 between client, server, and other clients.
 
-* **[Guide, recipes, and API](https://logux.io/)**
-* **[Chat](https://gitter.im/logux/logux)** for any questions
+* **[Guide, recipes, and API](https://logux.org/)**
 * **[Issues](https://github.com/logux/logux/issues)**
   and **[roadmap](https://github.com/orgs/logux/projects/1)**
-* **[Projects](https://logux.io/guide/architecture/parts/)**
+* **[Projects](https://logux.org/guide/architecture/parts/)**
   inside Logux ecosystem
 
 This repository contains Logux core components for JavaScript:
@@ -31,7 +30,6 @@ This repository contains Logux core components for JavaScript:
        alt="Sponsored by Evil Martians" width="236" height="54">
 </a>
 
-[logux.io]: https://logux.io/
 [cult-img]: http://cultofmartians.com/assets/badges/badge.svg
 [cult]: http://cultofmartians.com/done.html
 
@@ -67,4 +65,4 @@ log.type('RENAME', (action, meta) => {
 })
 ```
 
-[documentation]: https://logux.io/web-api/
+[documentation]: https://logux.org/web-api/
