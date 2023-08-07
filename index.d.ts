@@ -1,4 +1,5 @@
 export {
+  ActionsCallback,
   BaseNode,
   CompressedMeta,
   Connection,

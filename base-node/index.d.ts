@@ -15,9 +15,13 @@ interface LogMapper {
   (action: Action, meta: Meta): Promise<[AnyAction, Meta]>
 }
 
-interface ActionsCallback {
+export interface ActionsCallback {
   (
-    process: (action: Action, meta: Meta) => Promise<void>,
+    process: (
+      action: Action,
+      meta: Meta,
+      ignoreDestroying?: boolean
+    ) => Promise<void>,
     action: Action,
     meta: Meta
   ): void
