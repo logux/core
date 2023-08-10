@@ -304,7 +304,7 @@ test('has dynamic delay', () => {
 
 test('listens for window events', async () => {
   let pair = new TestPair()
-  let recon = new Reconnect(pair.left)
+  let recon = new Reconnect(pair.left, {maxDelay: 0})
 
   await recon.connect()
   pair.right.disconnect()
@@ -320,6 +320,8 @@ test('listens for window events', async () => {
   is(recon.connected, true)
 
   listeners.freeze()
+  await delay(10)
+
   is(recon.connecting, false)
   is(recon.connected, false)
 
