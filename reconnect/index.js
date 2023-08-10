@@ -16,6 +16,7 @@ export class Reconnect {
     this.options = { ...DEFAULT_OPTIONS, ...options }
 
     this.reconnecting = connection.connected
+    this.reconnectingBeforeFreeze = null
     this.connecting = false
     this.attempts = 0
 
@@ -51,7 +52,18 @@ export class Reconnect {
         if (navigator.onLine) this.connect()
       }
     }
-    let disconnect = () => {
+    let resume = () => {
+      if (this.reconnectingBeforeFreeze !== null) {
+        this.reconnecting = this.reconnectingBeforeFreeze
+        this.reconnectingBeforeFreeze = null
+      }
+      connect()
+    }
+    let freeze = () => {
+      if (this.reconnectingBeforeFreeze === null) {
+        this.reconnectingBeforeFreeze = this.reconnecting
+        this.reconnecting = false
+      }
       this.disconnect('freeze')
     }
     if (
@@ -63,14 +75,14 @@ export class Reconnect {
       document.addEventListener('visibilitychange', visibility, false)
       window.addEventListener('focus', connect, false)
       window.addEventListener('online', connect, false)
-      window.addEventListener('resume', connect, false)
-      window.addEventListener('freeze', disconnect, false)
+      window.addEventListener('resume', resume, false)
+      window.addEventListener('freeze', freeze, false)
       this.unbind.push(() => {
         document.removeEventListener('visibilitychange', visibility, false)
         window.removeEventListener('focus', connect, false)
         window.removeEventListener('online', connect, false)
-        window.removeEventListener('resume', connect, false)
-        window.removeEventListener('freeze', disconnect, false)
+        window.removeEventListener('resume', resume, false)
+        window.removeEventListener('freeze', freeze, false)
       })
     }
   }
