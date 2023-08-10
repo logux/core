@@ -20,7 +20,7 @@ export class Reconnect {
     this.options = { attempts, maxDelay, minDelay }
 
     this.reconnecting = connection.connected
-    this.reconnectingBeforeFreeze = null
+    this.beforeFreeze = null
     this.connecting = false
     this.attempts = 0
 
@@ -57,15 +57,15 @@ export class Reconnect {
       }
     }
     let resume = () => {
-      if (this.reconnectingBeforeFreeze !== null) {
-        this.reconnecting = this.reconnectingBeforeFreeze
-        this.reconnectingBeforeFreeze = null
+      if (this.beforeFreeze !== null) {
+        this.reconnecting = this.beforeFreeze
+        this.beforeFreeze = null
       }
       connect()
     }
     let freeze = () => {
-      if (this.reconnectingBeforeFreeze === null) {
-        this.reconnectingBeforeFreeze = this.reconnecting
+      if (this.beforeFreeze === null) {
+        this.beforeFreeze = this.reconnecting
         this.reconnecting = false
       }
       this.disconnect('freeze')
