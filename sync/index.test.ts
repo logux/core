@@ -226,6 +226,23 @@ test('maps input actions', async () => {
   equal(pair.rightNode.log.actions(), [{ type: 'a1' }])
 })
 
+test('handles error in onActions', async () => {
+  let error = new Error('test')
+  let catched: Error[] = []
+
+  let pair = await createTest()
+  pair.rightNode.options.onActions = () => {
+    throw error
+  }
+  pair.rightNode.catch(e => {
+    catched.push(e)
+  })
+  pair.leftNode.log.add({ type: 'a' })
+
+  await delay(50)
+  equal(catched, [error])
+})
+
 test('calls onActions if present', async () => {
   let pair = await createTest(created => {
     created.rightNode.options.onActions = () => {}

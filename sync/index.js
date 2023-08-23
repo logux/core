@@ -58,7 +58,11 @@ export async function syncMessage(added, ...data) {
 
     let process = processAction.bind(this)
     if (this.options.onActions) {
-      this.options.onActions(process, action, meta)
+      try {
+        this.options.onActions(process, action, meta)
+      } catch (e) {
+        this.error(e)
+      }
     } else {
       await process(action, meta)
     }
