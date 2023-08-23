@@ -144,15 +144,8 @@ export interface NodeOptions<Headers extends object = {}> {
    * Use it when you want to control when the inMap and inFilter will be called
    * @example
    * onActions(process, action, meta) {
-       queue.push({
-         element: {
-           action,
-           meta,
-           process,
-         },
-         processElement: async ({ process, action, meta }) => {
-           await process(action, meta) // calls inMap, inFilter and adds action to the log
-         }
+       myActionQueue.schedule(async () => {
+         await process(action, meta) // calls inMap, inFilter and adds action to the queue
        })
      }
    */
