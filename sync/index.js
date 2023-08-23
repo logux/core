@@ -72,7 +72,7 @@ export async function syncMessage(added, ...data) {
   this.sendSynced(added)
 }
 
-async function processAction(action, meta, ignoreDestroying) {
+async function processAction(action, meta) {
   let process = Promise.resolve([action, meta])
 
   if (this.options.inMap) {
@@ -103,9 +103,6 @@ async function processAction(action, meta, ignoreDestroying) {
     .then(changed => {
       if (!changed) return false
       if (this.received) this.received[changed[1].id] = true
-      if (typeof ignoreDestroying === 'boolean') {
-        changed[1].ignoreDestroying = ignoreDestroying
-      }
       return this.log.add(changed[0], changed[1])
     })
 }

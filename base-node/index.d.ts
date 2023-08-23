@@ -17,11 +17,7 @@ interface LogMapper {
 
 export interface ActionsCallback {
   (
-    process: (
-      action: Action,
-      meta: Meta,
-      ignoreDestroying?: boolean
-    ) => Promise<void>,
+    process: (action: Action, meta: Meta) => Promise<void>,
     action: Action,
     meta: Meta
   ): void
@@ -149,12 +145,12 @@ export interface NodeOptions<Headers extends object = {}> {
    * @example
    * onActions(process, action, meta) {
        queue.push({
-         data: {
+         element: {
            action,
            meta,
            process,
          },
-         processData: async ({ process, action, meta }) => {
+         processElement: async ({ process, action, meta }) => {
            await process(action, meta) // calls inMap, inFilter and adds action to the log
          }
        })

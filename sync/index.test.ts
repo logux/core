@@ -243,18 +243,6 @@ test('handles error in onActions', async () => {
   equal(catched, [error])
 })
 
-test('sets ignoreDestroying if present', async () => {
-  await createTest(created => {
-    created.rightNode.log.on('add', (action, meta) => {
-      equal(meta.ignoreDestroying, true)
-    })
-    created.rightNode.options.onActions = (process, action, meta) => {
-      process(action, meta, true)
-    }
-    created.leftNode.log.add({ type: 'a' })
-  })
-})
-
 test('inMap and inFilter are called and actions are added to the log if onActions is present and if process was called', async () => {
   let pair = await createTest(created => {
     created.rightNode.options.inFilter = async (action, meta) => {
