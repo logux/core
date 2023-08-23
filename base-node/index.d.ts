@@ -144,7 +144,21 @@ export interface NodeOptions<Headers extends object = {}> {
   inMap?: LogMapper
 
   /**
-   * Function that will be called before node sends 'synced'
+   * Function that will be called before node sends 'synced'.
+   * Use it when you want to control when the inMap and inFilter will be called
+   * @example
+   * onActions(process, action, meta) {
+       queue.push({
+         data: {
+           action,
+           meta,
+           process,
+         },
+         processData: async ({ process, action, meta }) => {
+           await process(action, meta) // calls inMap, inFilter and adds action to the log
+         }
+       })
+     }
    */
   onActions?: ActionsCallback
 
