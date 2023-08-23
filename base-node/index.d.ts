@@ -145,7 +145,7 @@ export interface NodeOptions<Headers extends object = {}> {
    * @example
    * onActions(process, action, meta) {
        myActionQueue.schedule(async () => {
-         await process(action, meta) // calls inMap, inFilter and adds action to the queue
+         await process(action, meta) // calls inMap, inFilter and adds action to the log
        })
      }
    */
