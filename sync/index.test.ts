@@ -243,7 +243,7 @@ test('handles error in onActions', async () => {
   equal(catched, [error])
 })
 
-test('inMap and inFilter are called and actions are added to the log if onActions is present and if process was called', async () => {
+test('actions are added to the log if onActions is present and if actions were added to the log inside it', async () => {
   let pair = await createTest(created => {
     created.rightNode.options.inFilter = async (action, meta) => {
       type(meta.id, 'string')
@@ -255,8 +255,8 @@ test('inMap and inFilter are called and actions are added to the log if onAction
       type(meta.time, 'number')
       return [{ type: action.type + '1' }, meta]
     }
-    created.rightNode.options.onActions = (process, action, meta) => {
-      process(action, meta)
+    created.rightNode.options.onActions = (action, meta) => {
+      created.rightNode.log.add(action, meta)
     }
     created.leftNode.log.add({ type: 'a' })
     created.leftNode.log.add({ type: 'b' })
@@ -270,14 +270,18 @@ test('inMap and inFilter are called and actions are added to the log if onAction
   equal(pair.rightNode.log.actions(), [{ type: 'a1' }, { type: 'b1' }])
 })
 
-test('actions are not added to the log if onActions is present and if process was not called', async () => {
+test('actions are not added to the log if onActions is present and if actions were not added to the log inside it', async () => {
+  let inMapIsCalled = false
+  let inFilterIsCalled = false
   let pair = await createTest(created => {
     created.rightNode.options.inFilter = async (action, meta) => {
+      inFilterIsCalled = true
       type(meta.id, 'string')
       type(meta.time, 'number')
       return action.type !== 'c1'
     }
     created.rightNode.options.inMap = async (action, meta) => {
+      inMapIsCalled = true
       type(meta.id, 'string')
       type(meta.time, 'number')
       return [{ type: action.type + '1' }, meta]
@@ -293,6 +297,8 @@ test('actions are not added to the log if onActions is present and if process wa
     { type: 'c' }
   ])
   equal(pair.rightNode.log.actions(), [])
+  equal(inMapIsCalled, true)
+  equal(inFilterIsCalled, true)
 })
 
 test('uses input map before filter', async () => {
