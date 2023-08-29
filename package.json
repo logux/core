@@ -30,7 +30,7 @@
     "./package.json": "./package.json"
   },
   "engines": {
-    "node": "^14.0.0 || ^16.0.0 || >=18.0.0"
+    "node": "^18.0.0 || >=20.0.0"
   },
   "dependencies": {
     "nanoevents": "^7.0.1"
