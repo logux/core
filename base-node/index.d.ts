@@ -15,7 +15,7 @@ interface LogMapper {
   (action: Action, meta: Meta): Promise<[AnyAction, Meta]>
 }
 
-export interface ActionsCallback {
+export interface SyncCallback {
   (action: Action, meta: Meta): void
 }
 
@@ -142,7 +142,7 @@ export interface NodeOptions<Headers extends object = {}> {
    * Use it if you want more control over when an action will be added to the log.
    *
    * ```js
-   * onActions(action, meta) {
+   * onSync(action, meta) {
    *   // Add action to the log later
    *   myActionQueue.schedule(() => {
    *     log.add(action, meta)
@@ -150,7 +150,7 @@ export interface NodeOptions<Headers extends object = {}> {
    * }
    * ```
    */
-  onActions?: ActionsCallback
+  onSync?: SyncCallback
 
   /**
    * Filter function to select actions to synchronization.

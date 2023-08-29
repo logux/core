@@ -86,9 +86,9 @@ export async function syncMessage(added, ...data) {
       .then(changed => {
         if (!changed) return false
         if (this.received) this.received[changed[1].id] = true
-        if (this.options.onActions) {
+        if (this.options.onSync) {
           try {
-            return this.options.onActions(changed[0], changed[1])
+            return this.options.onSync(changed[0], changed[1])
           } catch (e) {
             return this.error(e)
           }

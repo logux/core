@@ -1,11 +1,11 @@
 export {
-  ActionsCallback,
   BaseNode,
   CompressedMeta,
   Connection,
   Message,
   NodeOptions,
   NodeState,
+  SyncCallback,
   TokenGenerator
 } from './base-node/index.js'
 export { ClientNode } from './client-node/index.js'

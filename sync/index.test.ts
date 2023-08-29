@@ -226,12 +226,12 @@ test('maps input actions', async () => {
   equal(pair.rightNode.log.actions(), [{ type: 'a1' }])
 })
 
-test('handles error in onActions', async () => {
+test('handles error in onSync', async () => {
   let error = new Error('test')
   let catched: Error[] = []
 
   let pair = await createTest()
-  pair.rightNode.options.onActions = () => {
+  pair.rightNode.options.onSync = () => {
     throw error
   }
   pair.rightNode.catch(e => {
@@ -243,50 +243,12 @@ test('handles error in onActions', async () => {
   equal(catched, [error])
 })
 
-test('actions are added to the log if onActions is present and if actions were added to the log inside it', async () => {
+test('onSync is called instead of adding an action to the log', async () => {
+  let actions = []
   let pair = await createTest(created => {
-    created.rightNode.options.inFilter = async (action, meta) => {
-      type(meta.id, 'string')
-      type(meta.time, 'number')
-      return action.type !== 'c1'
+    created.rightNode.options.onSync = (action, meta) => {
+      actions.push([action, meta])
     }
-    created.rightNode.options.inMap = async (action, meta) => {
-      type(meta.id, 'string')
-      type(meta.time, 'number')
-      return [{ type: action.type + '1' }, meta]
-    }
-    created.rightNode.options.onActions = (action, meta) => {
-      created.rightNode.log.add(action, meta)
-    }
-    created.leftNode.log.add({ type: 'a' })
-    created.leftNode.log.add({ type: 'b' })
-    created.leftNode.log.add({ type: 'c' })
-  })
-  equal(pair.leftNode.log.actions(), [
-    { type: 'a' },
-    { type: 'b' },
-    { type: 'c' }
-  ])
-  equal(pair.rightNode.log.actions(), [{ type: 'a1' }, { type: 'b1' }])
-})
-
-test('actions are not added to the log if onActions is present and if actions were not added to the log inside it', async () => {
-  let inMapIsCalled = false
-  let inFilterIsCalled = false
-  let pair = await createTest(created => {
-    created.rightNode.options.inFilter = async (action, meta) => {
-      inFilterIsCalled = true
-      type(meta.id, 'string')
-      type(meta.time, 'number')
-      return action.type !== 'c1'
-    }
-    created.rightNode.options.inMap = async (action, meta) => {
-      inMapIsCalled = true
-      type(meta.id, 'string')
-      type(meta.time, 'number')
-      return [{ type: action.type + '1' }, meta]
-    }
-    created.rightNode.options.onActions = () => {}
     created.leftNode.log.add({ type: 'a' })
     created.leftNode.log.add({ type: 'b' })
     created.leftNode.log.add({ type: 'c' })
@@ -297,8 +259,6 @@ test('actions are not added to the log if onActions is present and if actions we
     { type: 'c' }
   ])
   equal(pair.rightNode.log.actions(), [])
-  equal(inMapIsCalled, true)
-  equal(inFilterIsCalled, true)
 })
 
 test('uses input map before filter', async () => {
