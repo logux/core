@@ -137,7 +137,7 @@ export interface NodeOptions<Headers extends object = {}> {
 
   /**
    * Function that will be called instead of adding action to the log
-   * after inMap and inFilter have been called.
+   * after `inMap` and `inFilter` have been called.
    *
    * Use it if you want more control over when an action will be added to the log.
    * ```js
