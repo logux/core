@@ -140,6 +140,7 @@ export interface NodeOptions<Headers extends object = {}> {
    * after `inMap` and `inFilter` have been called.
    *
    * Use it if you want more control over when an action will be added to the log.
+   *
    * ```js
    * onActions(action, meta) {
    *   // Add action to the log later
