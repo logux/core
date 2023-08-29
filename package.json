@@ -33,7 +33,7 @@
     "node": "^18.0.0 || >=20.0.0"
   },
   "dependencies": {
-    "nanoevents": "^7.0.1"
+    "nanoevents": "^8.0.0"
   },
   "devDependencies": {
     "@logux/eslint-config": "^51.0.1",
