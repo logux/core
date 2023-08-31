@@ -244,7 +244,7 @@ test('handles error in onSync', async () => {
   equal(catched, [error])
 })
 
-test('onSync is called instead of adding an action to the log', async () => {
+test('onSync is called instead of `inMap`, `inFilter` and `Log#add`', async () => {
   let actions: Action[] = []
   let pair = await createTest(created => {
     created.rightNode.options.inFilter = async action => {
@@ -253,7 +253,7 @@ test('onSync is called instead of adding an action to the log', async () => {
     created.rightNode.options.inMap = async (action, meta) => {
       return [{ type: action.type + '1' }, meta]
     }
-    created.rightNode.options.onSync = action => {
+    created.rightNode.options.onSync = (_, action) => {
       actions.push(action)
     }
     created.leftNode.log.add({ type: 'a' })
@@ -266,7 +266,38 @@ test('onSync is called instead of adding an action to the log', async () => {
     { type: 'c' }
   ])
   equal(pair.rightNode.log.actions(), [])
-  equal(actions, [{ type: 'a1' }, { type: 'b1' }])
+  equal(actions, [{ type: 'a' }, { type: 'b' }, { type: 'c' }])
+})
+
+test('onSync processAction calls `inMap`, `inFilter` and `Log#add`', async () => {
+  let actions: Action[] = []
+  let finish: any = null
+  let promise = new Promise(resolve => {
+    finish = resolve
+  })
+  let pair = await createTest(created => {
+    created.rightNode.options.inFilter = async action => {
+      return action.type !== 'c1'
+    }
+    created.rightNode.options.inMap = async (action, meta) => {
+      return [{ type: action.type + '1' }, meta]
+    }
+    created.rightNode.options.onSync = (processAction, action, meta) => {
+      actions.push(action)
+      processAction(action, meta).then(finish)
+    }
+    created.leftNode.log.add({ type: 'a' })
+    created.leftNode.log.add({ type: 'b' })
+    created.leftNode.log.add({ type: 'c' })
+  })
+  await promise
+  equal(pair.leftNode.log.actions(), [
+    { type: 'a' },
+    { type: 'b' },
+    { type: 'c' }
+  ])
+  equal(actions, [{ type: 'a' }, { type: 'b' }, { type: 'c' }])
+  equal(pair.rightNode.log.actions(), [{ type: 'a1' }, { type: 'b1' }])
 })
 
 test('uses input map before filter', async () => {

@@ -16,7 +16,11 @@ interface LogMapper {
 }
 
 export interface SyncCallback {
-  (action: Action, meta: Meta): void
+  (
+    processAction: (action: Action, meta: Meta) => Promise<void>,
+    action: Action,
+    meta: Meta
+  ): void
 }
 
 interface EmptyHeaders {
@@ -136,16 +140,16 @@ export interface NodeOptions<Headers extends object = {}> {
   inMap?: LogMapper
 
   /**
-   * Function that will be called instead of adding action to the log
-   * after `inMap` and `inFilter` have been called.
+   * Function that will be called instead of `inMap`, `inFilter` and `Log#add`.
    *
-   * Use it if you want more control over when an action will be added to the log.
+   * Use it if you want more control over when an action's `access` callback will be called
+   * and when an action will be added to the log.
    *
    * ```js
-   * onSync(action, meta) {
-   *   // Add action to the log later
-   *   myActionQueue.schedule(() => {
-   *     log.add(action, meta)
+   * onSync(processAction, action, meta) {
+   *   // Process an action later
+   *   myActionQueue.schedule(async () => {
+   *     await processAction(action, meta) // will call `inMap`, `inFilter` and `Log#add`
    *   })
    * }
    * ```
