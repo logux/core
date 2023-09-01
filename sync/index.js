@@ -57,9 +57,9 @@ export async function syncMessage(added, ...data) {
     if (this.timeFix) meta.time = meta.time + this.timeFix
 
     let process = processAction.bind(this)
-    if (this.options.onSync) {
+    if (this.options.onReceive) {
       try {
-        this.options.onSync(process, action, meta)
+        this.options.onReceive(process, action, meta)
       } catch (e) {
         this.error(e)
       }

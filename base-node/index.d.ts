@@ -15,7 +15,7 @@ interface LogMapper {
   (action: Action, meta: Meta): Promise<[AnyAction, Meta]>
 }
 
-export interface SyncCallback {
+export interface ReceiveCallback {
   (
     processAction: (action: Action, meta: Meta) => Promise<void>,
     action: Action,
@@ -146,7 +146,7 @@ export interface NodeOptions<Headers extends object = {}> {
    * and when an action will be added to the log.
    *
    * ```js
-   * onSync(processAction, action, meta) {
+   * onReceive(processAction, action, meta) {
    *   // Process an action later
    *   myActionQueue.schedule(async () => {
    *     await processAction(action, meta) // will call `inMap`, `inFilter` and `Log#add`
@@ -154,7 +154,7 @@ export interface NodeOptions<Headers extends object = {}> {
    * }
    * ```
    */
-  onSync?: SyncCallback
+  onReceive?: ReceiveCallback
 
   /**
    * Filter function to select actions to synchronization.

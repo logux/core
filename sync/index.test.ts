@@ -227,12 +227,12 @@ test('maps input actions', async () => {
   equal(pair.rightNode.log.actions(), [{ type: 'a1' }])
 })
 
-test('handles error in onSync', async () => {
+test('handles error in onReceive', async () => {
   let error = new Error('test')
   let catched: Error[] = []
 
   let pair = await createTest()
-  pair.rightNode.options.onSync = () => {
+  pair.rightNode.options.onReceive = () => {
     throw error
   }
   pair.rightNode.catch(e => {
@@ -244,7 +244,7 @@ test('handles error in onSync', async () => {
   equal(catched, [error])
 })
 
-test('onSync is called instead of `inMap`, `inFilter` and `Log#add`', async () => {
+test('onReceive is called instead of `inMap`, `inFilter` and `Log#add`', async () => {
   let actions: Action[] = []
   let pair = await createTest(created => {
     created.rightNode.options.inFilter = async action => {
@@ -253,7 +253,7 @@ test('onSync is called instead of `inMap`, `inFilter` and `Log#add`', async () =
     created.rightNode.options.inMap = async (action, meta) => {
       return [{ type: action.type + '1' }, meta]
     }
-    created.rightNode.options.onSync = (_, action) => {
+    created.rightNode.options.onReceive = (_, action) => {
       actions.push(action)
     }
     created.leftNode.log.add({ type: 'a' })
@@ -269,7 +269,7 @@ test('onSync is called instead of `inMap`, `inFilter` and `Log#add`', async () =
   equal(actions, [{ type: 'a' }, { type: 'b' }, { type: 'c' }])
 })
 
-test('onSync processAction calls `inMap`, `inFilter` and `Log#add`', async () => {
+test('onReceive processAction calls `inMap`, `inFilter` and `Log#add`', async () => {
   let actions: Action[] = []
   let finish: any = null
   let promise = new Promise(resolve => {
@@ -282,7 +282,7 @@ test('onSync processAction calls `inMap`, `inFilter` and `Log#add`', async () =>
     created.rightNode.options.inMap = async (action, meta) => {
       return [{ type: action.type + '1' }, meta]
     }
-    created.rightNode.options.onSync = (processAction, action, meta) => {
+    created.rightNode.options.onReceive = (processAction, action, meta) => {
       actions.push(action)
       processAction(action, meta).then(finish)
     }
