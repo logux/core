@@ -140,17 +140,16 @@ export interface NodeOptions<Headers extends object = {}> {
   inMap?: LogMapper
 
   /**
-   * Function that will be called instead of `inMap`, `inFilter` and `Log#add`.
-   *
-   * Use it if you want more control over when an action's `access` callback will be called
-   * and when an action will be added to the log.
+   * Function to filter or change actions coming from remote node’s
+   * before put it to current log.
    *
    * ```js
    * onReceive(processAction, action, meta) {
-   *   // Process an action later
-   *   myActionQueue.schedule(async () => {
-   *     await processAction(action, meta) // will call `inMap`, `inFilter` and `Log#add`
-   *   })
+   *   if (checkMeta(meta)) {
+   *     myAQueue.schedule(async () => {
+   *       await processAction(action, meta)
+   *     })
+   *   }
    * }
    * ```
    */
