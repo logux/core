@@ -7,8 +7,12 @@ interface Authenticator<Headers extends object> {
   (nodeId: string, token: string, headers: {} | Headers): Promise<boolean>
 }
 
-interface LogFilter {
-  (action: Action, meta: Meta): Promise<boolean>
+export interface Receiver {
+  (
+    add: (action: Action, meta: Meta) => Promise<string>,
+    action: Action,
+    meta: Meta
+  ): void
 }
 
 interface LogMapper {
@@ -136,14 +140,14 @@ export interface NodeOptions<Headers extends object = {}> {
    * ```js
    * onReceive(processAction, action, meta) {
    *   if (checkMeta(meta)) {
-   *     myAQueue.schedule(async () => {
-   *       await processAction(action, meta)
+   *     myQueue.schedule(async () => {
+   *       await processAction(action, cleanMeta(meta))
    *     })
    *   }
    * }
    * ```
    */
-  onReceive?: ReceiveCallback
+  onReceive?: Receiver
 
   /**
    * Filter function to select actions to synchronization.

@@ -218,7 +218,8 @@ test('maps input actions', async () => {
   pair.rightNode.options.onReceive = async (process, action, meta) => {
     type(meta.id, 'string')
     type(meta.time, 'number')
-    process({ type: action.type + '1' }, meta)
+    let result = process({ type: action.type + '1' }, meta)
+    type(result.then, 'function')
   }
   pair.leftNode.log.add({ type: 'a' })
   await pair.wait('left')
