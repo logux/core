@@ -3,7 +3,7 @@ import type { Unsubscribe } from 'nanoevents'
 import type { Action, AnyAction, Log, Meta } from '../log/index.js'
 import type { LoguxError, LoguxErrorOptions } from '../logux-error/index.js'
 
-interface Authentificator<Headers extends object> {
+interface Authenticator<Headers extends object> {
   (nodeId: string, token: string, headers: {} | Headers): Promise<boolean>
 }
 
@@ -121,7 +121,7 @@ export interface NodeOptions<Headers extends object = {}> {
   /**
    * Function to check client credentials.
    */
-  auth?: Authentificator<Headers>
+  auth?: Authenticator<Headers>
 
   /**
    * Detect difference between client and server and fix time
