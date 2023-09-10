@@ -56,42 +56,55 @@ export async function syncMessage(added, ...data) {
     meta.time = meta.time + this.baseTime
     if (this.timeFix) meta.time = meta.time + this.timeFix
 
-    let process = Promise.resolve([action, meta])
-
-    if (this.options.inMap) {
-      process = process
-        .then(([action2, meta2]) => {
-          return this.options.inMap(action2, meta2)
-        })
-        .catch(e => {
-          this.error(e)
-        })
+    let process = processAction.bind(this)
+    if (this.options.onReceive) {
+      try {
+        this.options.onReceive(process, action, meta)
+      } catch (e) {
+        this.error(e)
+      }
+    } else {
+      await process(action, meta)
     }
-
-    await process
-      .then(filtered => {
-        if (filtered && this.options.inFilter) {
-          return this.options
-            .inFilter(...filtered)
-            .then(res => {
-              return res ? filtered : false
-            })
-            .catch(e => {
-              this.error(e)
-            })
-        } else {
-          return filtered
-        }
-      })
-      .then(changed => {
-        if (!changed) return false
-        if (this.received) this.received[changed[1].id] = true
-        return this.log.add(changed[0], changed[1])
-      })
   }
 
   this.setLastReceived(added)
   this.sendSynced(added)
+}
+
+async function processAction(action, meta) {
+  let process = Promise.resolve([action, meta])
+
+  if (this.options.inMap) {
+    process = process
+      .then(([action2, meta2]) => {
+        return this.options.inMap(action2, meta2)
+      })
+      .catch(e => {
+        this.error(e)
+      })
+  }
+
+  await process
+    .then(filtered => {
+      if (filtered && this.options.inFilter) {
+        return this.options
+          .inFilter(...filtered)
+          .then(res => {
+            return res ? filtered : false
+          })
+          .catch(e => {
+            this.error(e)
+          })
+      } else {
+        return filtered
+      }
+    })
+    .then(changed => {
+      if (!changed) return false
+      if (this.received) this.received[changed[1].id] = true
+      return this.log.add(changed[0], changed[1])
+    })
 }
 
 export function syncedMessage(synced) {
