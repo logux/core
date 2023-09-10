@@ -58,11 +58,10 @@ export async function syncMessage(added, ...data) {
 
     if (this.options.onReceive) {
       try {
-        this.options.onReceive(
-          (changedAction, changedMeta) => add(this, changedAction, changedMeta),
-          action,
-          meta
-        )
+        let result = await this.options.onReceive(action, meta)
+        if (result) {
+          add(this, result[0], result[1])
+        }
       } catch (e) {
         this.error(e)
       }

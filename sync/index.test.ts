@@ -184,10 +184,14 @@ test('maps output actions', async () => {
 
 test('filters input actions', async () => {
   let pair = await createTest(created => {
-    created.rightNode.options.onReceive = (add, action, meta) => {
+    created.rightNode.options.onReceive = async (action, meta) => {
       type(meta.id, 'string')
       type(meta.time, 'number')
-      if (action.type !== 'c') add(action, meta)
+      if (action.type !== 'c') {
+        return [action, meta]
+      } else {
+        return false
+      }
     }
     created.leftNode.log.add({ type: 'a' })
     created.leftNode.log.add({ type: 'b' })
@@ -203,11 +207,10 @@ test('filters input actions', async () => {
 
 test('maps input actions', async () => {
   let pair = await createTest()
-  pair.rightNode.options.onReceive = async (process, action, meta) => {
+  pair.rightNode.options.onReceive = async (action, meta) => {
     type(meta.id, 'string')
     type(meta.time, 'number')
-    let result = process({ type: action.type + '1' }, meta)
-    type(result.then, 'function')
+    return [{ type: action.type + '1' }, meta]
   }
   pair.leftNode.log.add({ type: 'a' })
   await pair.wait('left')

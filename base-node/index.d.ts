@@ -7,15 +7,7 @@ interface Authenticator<Headers extends object> {
   (nodeId: string, token: string, headers: {} | Headers): Promise<boolean>
 }
 
-export interface Receiver {
-  (
-    add: (action: Action, meta: Meta) => Promise<string>,
-    action: Action,
-    meta: Meta
-  ): void
-}
-
-export interface Sender {
+export interface Filter {
   (action: Action, meta: Meta): Promise<[Action, Meta] | false>
 }
 
@@ -130,16 +122,16 @@ export interface NodeOptions<Headers extends object = {}> {
    * before put it to current log.
    *
    * ```js
-   * onReceive(add, action, meta) {
+   * async nReceive(action, meta) {
    *   if (checkMeta(meta)) {
-   *     myQueue.schedule(async () => {
-   *       await add(action, cleanMeta(meta))
-   *     })
+   *     await [action, cleanMeta(meta)]
+   *   } else {
+   *     return false
    *   }
    * }
    * ```
    */
-  onReceive?: Receiver
+  onReceive?: Filter
 
   /**
    * Function to filter or change actions before sending to remote node’s.
@@ -154,7 +146,7 @@ export interface NodeOptions<Headers extends object = {}> {
    * }
    * ```
    */
-  onSend?: Sender
+  onSend?: Filter
 
   /**
    * Milliseconds since last message to test connection by sending ping.
