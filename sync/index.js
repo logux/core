@@ -58,7 +58,7 @@ export async function syncMessage(added, ...data) {
 
     let process = (processedAction, processedMeta) => {
       if (this.received) this.received[processedMeta.id] = true
-      this.log.add(processedAction, processedMeta)
+      return this.log.add(processedAction, processedMeta)
     }
     if (this.options.onReceive) {
       try {
