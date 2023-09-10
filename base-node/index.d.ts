@@ -7,7 +7,7 @@ interface Authenticator<Headers extends object> {
   (nodeId: string, token: string, headers: {} | Headers): Promise<boolean>
 }
 
-export interface Filter {
+export interface ActionFilter {
   (action: Action, meta: Meta): Promise<[Action, Meta] | false>
 }
 
@@ -131,7 +131,7 @@ export interface NodeOptions<Headers extends object = {}> {
    * }
    * ```
    */
-  onReceive?: Filter
+  onReceive?: ActionFilter
 
   /**
    * Function to filter or change actions before sending to remote node’s.
@@ -146,7 +146,7 @@ export interface NodeOptions<Headers extends object = {}> {
    * }
    * ```
    */
-  onSend?: Filter
+  onSend?: ActionFilter
 
   /**
    * Milliseconds since last message to test connection by sending ping.
