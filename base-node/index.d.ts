@@ -15,6 +15,14 @@ interface LogMapper {
   (action: Action, meta: Meta): Promise<[AnyAction, Meta]>
 }
 
+export interface ReceiveCallback {
+  (
+    processAction: (action: Action, meta: Meta) => Promise<void>,
+    action: Action,
+    meta: Meta
+  ): void
+}
+
 interface EmptyHeaders {
   [key: string]: undefined
 }
@@ -130,6 +138,23 @@ export interface NodeOptions<Headers extends object = {}> {
    * Map function to change remote node’s action before put it to current log.
    */
   inMap?: LogMapper
+
+  /**
+   * Function that will be called instead of `inMap`, `inFilter` and `Log#add`.
+   *
+   * Use it if you want more control over when an action's `access` callback will be called
+   * and when an action will be added to the log.
+   *
+   * ```js
+   * onReceive(processAction, action, meta) {
+   *   // Process an action later
+   *   myActionQueue.schedule(async () => {
+   *     await processAction(action, meta) // will call `inMap`, `inFilter` and `Log#add`
+   *   })
+   * }
+   * ```
+   */
+  onReceive?: ReceiveCallback
 
   /**
    * Filter function to select actions to synchronization.

@@ -5,6 +5,7 @@ export {
   Message,
   NodeOptions,
   NodeState,
+  ReceiveCallback,
   TokenGenerator
 } from './base-node/index.js'
 export { ClientNode } from './client-node/index.js'
