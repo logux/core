@@ -130,16 +130,6 @@ export interface NodeOptions<Headers extends object = {}> {
   fixTime?: boolean
 
   /**
-   * Function to filter actions from remote node. Best place for access control.
-   */
-  inFilter?: LogFilter
-
-  /**
-   * Map function to change remote node’s action before put it to current log.
-   */
-  inMap?: LogMapper
-
-  /**
    * Function to filter or change actions coming from remote node’s
    * before put it to current log.
    *

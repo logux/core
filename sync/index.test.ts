@@ -2,7 +2,6 @@ import { delay } from 'nanodelay'
 import { test } from 'uvu'
 import { equal, is, type } from 'uvu/assert'
 
-import type { Action } from '../index.js'
 import { ClientNode, ServerNode, TestPair, TestTime } from '../index.js'
 
 let destroyable: TestPair
@@ -197,10 +196,10 @@ test('uses output filter before map', async () => {
 
 test('filters input actions', async () => {
   let pair = await createTest(created => {
-    created.rightNode.options.inFilter = async (action, meta) => {
+    created.rightNode.options.onReceive = async (process, action, meta) => {
       type(meta.id, 'string')
       type(meta.time, 'number')
-      return action.type !== 'c'
+      if (action.type !== 'c') process(action, meta)
     }
     created.leftNode.log.add({ type: 'a' })
     created.leftNode.log.add({ type: 'b' })
@@ -216,10 +215,10 @@ test('filters input actions', async () => {
 
 test('maps input actions', async () => {
   let pair = await createTest()
-  pair.rightNode.options.inMap = async (action, meta) => {
+  pair.rightNode.options.onReceive = async (process, action, meta) => {
     type(meta.id, 'string')
     type(meta.time, 'number')
-    return [{ type: action.type + '1' }, meta]
+    process({ type: action.type + '1' }, meta)
   }
   pair.leftNode.log.add({ type: 'a' })
   await pair.wait('left')
@@ -242,78 +241,6 @@ test('handles error in onReceive', async () => {
 
   await delay(50)
   equal(catched, [error])
-})
-
-test('onReceive is called instead of `inMap`, `inFilter` and `Log#add`', async () => {
-  let actions: Action[] = []
-  let pair = await createTest(created => {
-    created.rightNode.options.inFilter = async action => {
-      return action.type !== 'c1'
-    }
-    created.rightNode.options.inMap = async (action, meta) => {
-      return [{ type: action.type + '1' }, meta]
-    }
-    created.rightNode.options.onReceive = (_, action) => {
-      actions.push(action)
-    }
-    created.leftNode.log.add({ type: 'a' })
-    created.leftNode.log.add({ type: 'b' })
-    created.leftNode.log.add({ type: 'c' })
-  })
-  equal(pair.leftNode.log.actions(), [
-    { type: 'a' },
-    { type: 'b' },
-    { type: 'c' }
-  ])
-  equal(pair.rightNode.log.actions(), [])
-  equal(actions, [{ type: 'a' }, { type: 'b' }, { type: 'c' }])
-})
-
-test('onReceive processAction calls `inMap`, `inFilter` and `Log#add`', async () => {
-  let actions: Action[] = []
-  let finish: any = null
-  let promise = new Promise(resolve => {
-    finish = resolve
-  })
-  let pair = await createTest(created => {
-    created.rightNode.options.inFilter = async action => {
-      return action.type !== 'c1'
-    }
-    created.rightNode.options.inMap = async (action, meta) => {
-      return [{ type: action.type + '1' }, meta]
-    }
-    created.rightNode.options.onReceive = (processAction, action, meta) => {
-      actions.push(action)
-      processAction(action, meta).then(finish)
-    }
-    created.leftNode.log.add({ type: 'a' })
-    created.leftNode.log.add({ type: 'b' })
-    created.leftNode.log.add({ type: 'c' })
-  })
-  await promise
-  equal(pair.leftNode.log.actions(), [
-    { type: 'a' },
-    { type: 'b' },
-    { type: 'c' }
-  ])
-  equal(actions, [{ type: 'a' }, { type: 'b' }, { type: 'c' }])
-  equal(pair.rightNode.log.actions(), [{ type: 'a1' }, { type: 'b1' }])
-})
-
-test('uses input map before filter', async () => {
-  let calls: string[] = []
-  let pair = await createTest()
-  pair.rightNode.options.inMap = async (action, meta) => {
-    calls.push('map')
-    return [action, meta]
-  }
-  pair.rightNode.options.inFilter = async () => {
-    calls.push('filter')
-    return true
-  }
-  pair.leftNode.log.add({ type: 'a' })
-  await pair.wait('left')
-  equal(calls, ['map', 'filter'])
 })
 
 test('reports errors during initial output filter', async () => {
@@ -376,36 +303,6 @@ test('reports errors during output map', async () => {
     }
   })
   pair.rightNode.log.add({ type: 'a' })
-  await delay(50)
-  equal(catched, [error])
-})
-
-test('reports errors during input filter', async () => {
-  let error = new Error('test')
-  let catched: Error[] = []
-  let pair = await createTest()
-  pair.rightNode.catch(e => {
-    catched.push(e)
-  })
-  pair.rightNode.options.inFilter = async () => {
-    throw error
-  }
-  pair.leftNode.log.add({ type: 'a' })
-  await delay(50)
-  equal(catched, [error])
-})
-
-test('reports errors during input map', async () => {
-  let error = new Error('test')
-  let catched: Error[] = []
-  let pair = await createTest()
-  pair.rightNode.catch(e => {
-    catched.push(e)
-  })
-  pair.rightNode.options.inMap = async () => {
-    throw error
-  }
-  pair.leftNode.log.add({ type: 'a' })
   await delay(50)
   equal(catched, [error])
 })
