@@ -26,22 +26,13 @@ const NOT_TO_THROW = {
 
 const BEFORE_AUTH = ['connect', 'connected', 'error', 'debug', 'headers']
 
-async function syncMappedEvent(node, action, meta) {
+function syncEvent(node, action, meta) {
   let added = meta.added
   if (typeof added === 'undefined') {
     let lastAdded = node.lastAddedCache
     added = lastAdded > node.lastSent ? lastAdded : node.lastSent
   }
-  if (node.options.outMap) {
-    try {
-      let changed = await node.options.outMap(action, meta)
-      node.sendSync(added, [changed])
-    } catch (e) {
-      node.error(e)
-    }
-  } else {
-    node.sendSync(added, [[action, meta]])
-  }
+  node.sendSync(added, [[action, meta]])
 }
 
 export class BaseNode {
@@ -192,15 +183,17 @@ export class BaseNode {
       return
     }
 
-    if (this.options.outFilter) {
+    if (this.options.onSend) {
       try {
-        let result = await this.options.outFilter(action, meta)
-        if (result) syncMappedEvent(this, action, meta)
+        let result = await this.options.onSend(action, meta)
+        if (result) {
+          syncEvent(this, result[0], result[1])
+        }
       } catch (e) {
         this.error(e)
       }
     } else {
-      syncMappedEvent(this, action, meta)
+      syncEvent(this, action, meta)
     }
   }
 
@@ -300,21 +293,7 @@ export class BaseNode {
     let data = await this.syncSinceQuery(lastSynced)
     if (!this.connected) return
     if (data.entries.length > 0) {
-      if (this.options.outMap) {
-        Promise.all(
-          data.entries.map(i => {
-            return this.options.outMap(i[0], i[1])
-          })
-        )
-          .then(changed => {
-            this.sendSync(data.added, changed)
-          })
-          .catch(e => {
-            this.error(e)
-          })
-      } else {
-        this.sendSync(data.added, data.entries)
-      }
+      this.sendSync(data.added, data.entries)
     } else {
       this.setState('synchronized')
     }
@@ -324,20 +303,11 @@ export class BaseNode {
     let promises = []
     await this.log.each({ order: 'added' }, (action, meta) => {
       if (meta.added <= lastSynced) return false
-      if (this.options.outFilter) {
+      if (this.options.onSend) {
         promises.push(
-          this.options
-            .outFilter(action, meta)
-            .then(r => {
-              if (r) {
-                return [action, meta]
-              } else {
-                return false
-              }
-            })
-            .catch(e => {
-              this.error(e)
-            })
+          this.options.onSend(action, meta).catch(e => {
+            this.error(e)
+          })
         )
       } else {
         promises.push(Promise.resolve([action, meta]))

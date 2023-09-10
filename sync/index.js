@@ -56,23 +56,28 @@ export async function syncMessage(added, ...data) {
     meta.time = meta.time + this.baseTime
     if (this.timeFix) meta.time = meta.time + this.timeFix
 
-    let process = (processedAction, processedMeta) => {
-      if (this.received) this.received[processedMeta.id] = true
-      return this.log.add(processedAction, processedMeta)
-    }
     if (this.options.onReceive) {
       try {
-        this.options.onReceive(process, action, meta)
+        this.options.onReceive(
+          (changedAction, changedMeta) => add(this, changedAction, changedMeta),
+          action,
+          meta
+        )
       } catch (e) {
         this.error(e)
       }
     } else {
-      process(action, meta)
+      add(this, action, meta)
     }
   }
 
   this.setLastReceived(added)
   this.sendSynced(added)
+}
+
+function add(node, action, meta) {
+  if (node.received) node.received[meta.id] = true
+  return node.log.add(action, meta)
 }
 
 export function syncedMessage(synced) {

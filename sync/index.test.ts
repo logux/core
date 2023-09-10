@@ -144,11 +144,15 @@ test('remembers synced added', async () => {
 
 test('filters output actions', async () => {
   let pair = await createTest(async created => {
-    created.leftNode.options.outFilter = async (action, meta) => {
+    created.leftNode.options.onSend = async (action, meta) => {
       type(meta.id, 'string')
       type(meta.time, 'number')
       type(meta.added, 'number')
-      return action.type === 'b'
+      if (action.type === 'b') {
+        return [action, meta]
+      } else {
+        return false
+      }
     }
     await Promise.all([
       created.leftNode.log.add({ type: 'a' }),
@@ -166,7 +170,7 @@ test('filters output actions', async () => {
 
 test('maps output actions', async () => {
   let pair = await createTest()
-  pair.leftNode.options.outMap = async (action, meta) => {
+  pair.leftNode.options.onSend = async (action, meta) => {
     type(meta.id, 'string')
     type(meta.time, 'number')
     type(meta.added, 'number')
@@ -178,28 +182,12 @@ test('maps output actions', async () => {
   equal(pair.rightNode.log.actions(), [{ type: 'a1' }])
 })
 
-test('uses output filter before map', async () => {
-  let calls: string[] = []
-  let pair = await createTest()
-  pair.leftNode.options.outMap = async (action, meta) => {
-    calls.push('map')
-    return [action, meta]
-  }
-  pair.leftNode.options.outFilter = async () => {
-    calls.push('filter')
-    return true
-  }
-  pair.leftNode.log.add({ type: 'a' })
-  await pair.wait('left')
-  equal(calls, ['filter', 'map'])
-})
-
 test('filters input actions', async () => {
   let pair = await createTest(created => {
-    created.rightNode.options.onReceive = async (process, action, meta) => {
+    created.rightNode.options.onReceive = (add, action, meta) => {
       type(meta.id, 'string')
       type(meta.time, 'number')
-      if (action.type !== 'c') process(action, meta)
+      if (action.type !== 'c') add(action, meta)
     }
     created.leftNode.log.add({ type: 'a' })
     created.leftNode.log.add({ type: 'b' })
@@ -252,7 +240,7 @@ test('reports errors during initial output filter', async () => {
   pair.rightNode.catch(e => {
     catched.push(e)
   })
-  pair.rightNode.options.outFilter = async () => {
+  pair.rightNode.options.onSend = async () => {
     throw error
   }
   pair.left.connect()
@@ -267,39 +255,7 @@ test('reports errors during output filter', async () => {
     created.rightNode.catch(e => {
       catched.push(e)
     })
-    created.rightNode.options.outFilter = async () => {
-      throw error
-    }
-  })
-  pair.rightNode.log.add({ type: 'a' })
-  await delay(50)
-  equal(catched, [error])
-})
-
-test('reports errors during initial output map', async () => {
-  let error = new Error('test')
-  let catched: Error[] = []
-  let pair = createPair()
-  pair.rightNode.log.add({ type: 'a' })
-  pair.rightNode.catch(e => {
-    catched.push(e)
-  })
-  pair.rightNode.options.outMap = async () => {
-    throw error
-  }
-  pair.left.connect()
-  await delay(50)
-  equal(catched, [error])
-})
-
-test('reports errors during output map', async () => {
-  let error = new Error('test')
-  let catched: Error[] = []
-  let pair = await createTest(created => {
-    created.rightNode.catch(e => {
-      catched.push(e)
-    })
-    created.rightNode.options.outMap = async () => {
+    created.rightNode.options.onSend = async () => {
       throw error
     }
   })
@@ -432,7 +388,7 @@ test('uses always latest added', async () => {
 
 test('changes multiple actions in map', async () => {
   let pair = await createTest(created => {
-    created.leftNode.options.outMap = async (action, meta) => {
+    created.leftNode.options.onSend = async (action, meta) => {
       return [{ type: action.type.toUpperCase() }, meta]
     }
     created.leftNode.log.add({ type: 'a' })
