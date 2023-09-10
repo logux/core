@@ -15,16 +15,8 @@ export interface Receiver {
   ): void
 }
 
-interface LogMapper {
-  (action: Action, meta: Meta): Promise<[AnyAction, Meta]>
-}
-
-export interface ReceiveCallback {
-  (
-    processAction: (action: Action, meta: Meta) => Promise<void>,
-    action: Action,
-    meta: Meta
-  ): void
+export interface Sender {
+  (action: Action, meta: Meta): Promise<[Action, Meta] | false>
 }
 
 interface EmptyHeaders {
@@ -138,10 +130,10 @@ export interface NodeOptions<Headers extends object = {}> {
    * before put it to current log.
    *
    * ```js
-   * onReceive(processAction, action, meta) {
+   * onReceive(add, action, meta) {
    *   if (checkMeta(meta)) {
    *     myQueue.schedule(async () => {
-   *       await processAction(action, cleanMeta(meta))
+   *       await add(action, cleanMeta(meta))
    *     })
    *   }
    * }
@@ -150,14 +142,19 @@ export interface NodeOptions<Headers extends object = {}> {
   onReceive?: Receiver
 
   /**
-   * Filter function to select actions to synchronization.
+   * Function to filter or change actions before sending to remote node’s.
+   *
+   * ```js
+   * async onSend(action, meta) {
+   *   if (meta.sync) {
+   *     return [action, cleanMeta(meta)]
+   *   } else {
+   *     return false
+   *   }
+   * }
+   * ```
    */
-  outFilter?: LogFilter
-
-  /**
-   * Map function to change action before sending it to remote client.
-   */
-  outMap?: LogMapper
+  onSend?: Sender
 
   /**
    * Milliseconds since last message to test connection by sending ping.
