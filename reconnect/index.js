@@ -97,10 +97,6 @@ export class Reconnect {
     return this.connection.connect()
   }
 
-  get connected() {
-    return this.connection.connected
-  }
-
   destroy() {
     for (let i of this.unbind) i()
     this.disconnect('destroy')
@@ -111,10 +107,6 @@ export class Reconnect {
       this.reconnecting = false
     }
     return this.connection.disconnect(reason)
-  }
-
-  get emitter() {
-    return this.connection.emitter
   }
 
   nextDelay() {
@@ -146,5 +138,13 @@ export class Reconnect {
 
   send(...args) {
     return this.connection.send(...args)
+  }
+
+  get connected() {
+    return this.connection.connected
+  }
+
+  get emitter() {
+    return this.connection.emitter
   }
 }
