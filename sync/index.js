@@ -57,14 +57,7 @@ export async function syncMessage(added, ...data) {
     if (this.timeFix) meta.time = meta.time + this.timeFix
 
     if (this.options.onReceive) {
-      try {
-        let result = await this.options.onReceive(action, meta)
-        if (result) {
-          add(this, result[0], result[1])
-        }
-      } catch (e) {
-        this.error(e)
-      }
+      runOnReceiveInParallel(this, action, meta)
     } else {
       add(this, action, meta)
     }
@@ -72,6 +65,17 @@ export async function syncMessage(added, ...data) {
 
   this.setLastReceived(added)
   this.sendSynced(added)
+}
+
+async function runOnReceiveInParallel(node, action, meta) {
+  try {
+    let result = await node.options.onReceive(action, meta)
+    if (result) {
+      add(node, result[0], result[1])
+    }
+  } catch (e) {
+    node.error(e)
+  }
 }
 
 function add(node, action, meta) {
