@@ -8,7 +8,10 @@ interface Authenticator<Headers extends object> {
 }
 
 export interface ActionFilter {
-  (action: Action, meta: Meta): Promise<[Action, Meta] | false>
+  (action: Action, meta: Meta):
+    | [Action, Meta]
+    | false
+    | Promise<[Action, Meta] | false>
 }
 
 interface EmptyHeaders {

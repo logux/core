@@ -305,9 +305,15 @@ export class BaseNode {
       if (meta.added <= lastSynced) return false
       if (this.options.onSend) {
         promises.push(
-          this.options.onSend(action, meta).catch(e => {
-            this.error(e)
-          })
+          (async () => {
+            try {
+              let result = await this.options.onSend(action, meta)
+              return result
+            } catch (e) {
+              this.error(e)
+              return false
+            }
+          })()
         )
       } else {
         promises.push(Promise.resolve([action, meta]))
