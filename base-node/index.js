@@ -315,8 +315,8 @@ export class BaseNode {
             try {
               let result = await this.options.onSend(action, meta)
               if (result) {
-                if (result[1].added > maxAdded) {
-                  maxAdded = result[1].added
+                if (meta.added > maxAdded) {
+                  maxAdded = meta.added
                 }
               }
               return result
