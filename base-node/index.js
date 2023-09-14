@@ -301,6 +301,7 @@ export class BaseNode {
 
   async syncSinceQuery(lastSynced) {
     let promises = []
+    let maxAdded = 0
     await this.log.each({ order: 'added' }, (action, meta) => {
       if (meta.added <= lastSynced) return false
       if (this.options.onSend) {
@@ -308,6 +309,11 @@ export class BaseNode {
           (async () => {
             try {
               let result = await this.options.onSend(action, meta)
+              if (result) {
+                if (result[1].added > maxAdded) {
+                  maxAdded = result[1].added
+                }
+              }
               return result
             } catch (e) {
               this.error(e)
@@ -323,13 +329,8 @@ export class BaseNode {
 
     let entries = await Promise.all(promises)
 
-    let data = { added: 0 }
-    data.entries = entries.filter(entry => {
-      if (entry && data.added < entry[1].added) {
-        data.added = entry[1].added
-      }
-      return entry !== false
-    })
+    let data = { added: maxAdded }
+    data.entries = entries.filter(entry => entry !== false)
     return data
   }
 
