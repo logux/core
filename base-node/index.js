@@ -289,6 +289,10 @@ export class BaseNode {
     }
   }
 
+  syncFilter() {
+    return true
+  }
+
   async syncSince(lastSynced) {
     let data = await this.syncSinceQuery(lastSynced)
     if (!this.connected) return
@@ -304,6 +308,7 @@ export class BaseNode {
     let maxAdded = 0
     await this.log.each({ order: 'added' }, (action, meta) => {
       if (meta.added <= lastSynced) return false
+      if (!this.syncFilter(action, meta)) return undefined
       if (this.options.onSend) {
         promises.push(
           (async () => {
