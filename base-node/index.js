@@ -327,16 +327,19 @@ export class BaseNode {
           })()
         )
       } else {
+        if (meta.added > maxAdded) {
+          maxAdded = meta.added
+        }
         promises.push(Promise.resolve([action, meta]))
       }
       return true
     })
 
     let entries = await Promise.all(promises)
-
-    let data = { added: maxAdded }
-    data.entries = entries.filter(entry => entry !== false)
-    return data
+    return {
+      added: maxAdded,
+      entries: entries.filter(entry => entry !== false)
+    }
   }
 
   waitFor(state) {
