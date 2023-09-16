@@ -26,8 +26,7 @@ const NOT_TO_THROW = {
 
 const BEFORE_AUTH = ['connect', 'connected', 'error', 'debug', 'headers']
 
-function syncEvent(node, action, meta) {
-  let added = meta.added
+function syncEvent(node, action, meta, added) {
   if (typeof added === 'undefined') {
     let lastAdded = node.lastAddedCache
     added = lastAdded > node.lastSent ? lastAdded : node.lastSent
@@ -185,15 +184,16 @@ export class BaseNode {
 
     if (this.options.onSend) {
       try {
+        let added = meta.added
         let result = await this.options.onSend(action, meta)
         if (result) {
-          syncEvent(this, result[0], result[1])
+          syncEvent(this, result[0], result[1], added)
         }
       } catch (e) {
         this.error(e)
       }
     } else {
-      syncEvent(this, action, meta)
+      syncEvent(this, action, meta, meta.added)
     }
   }
 
