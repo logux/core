@@ -16,11 +16,13 @@ export {
   Action,
   actionEvents,
   AnyAction,
+  Criteria,
   ID,
   Log,
   LogPage,
   LogStore,
-  Meta
+  Meta,
+  ReadonlyListener
 } from './log/index.js'
 export { LoguxError, LoguxErrorOptions } from './logux-error/index.js'
 export { MemoryStore } from './memory-store/index.js'

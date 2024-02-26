@@ -13,7 +13,7 @@ interface PreaddListener<ListenerAction extends Action, LogMeta extends Meta> {
   (action: ListenerAction, meta: LogMeta): void
 }
 
-interface ReadonlyListener<
+export interface ReadonlyListener<
   ListenerAction extends Action,
   LogMeta extends Meta
 > {
@@ -82,7 +82,7 @@ export interface AnyAction {
   type: string
 }
 
-interface Criteria {
+export interface Criteria {
   /**
    * Remove reason only for action with `id`.
    */
