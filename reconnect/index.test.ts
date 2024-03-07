@@ -45,10 +45,10 @@ test.before.each(() => {
     ...listenerMethods
   }
   Object.defineProperty(global, 'navigator', {
+    configurable: true,
     value: {
       onLine: true
-    },
-    configurable: true
+    }
   })
 })
 
