@@ -47,7 +47,8 @@ test.before.each(() => {
   Object.defineProperty(global, 'navigator', {
     value: {
       onLine: true
-    }
+    },
+    configurable: true
   })
 })
 
