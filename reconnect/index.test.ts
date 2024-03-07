@@ -44,10 +44,11 @@ test.before.each(() => {
     hidden: false,
     ...listenerMethods
   }
-  // @ts-expect-error
-  global.navigator = {
-    onLine: true
-  }
+  Object.defineProperty(global, 'navigator', {
+    value: {
+      onLine: true
+    }
+  })
 })
 
 test.after.each(() => {
@@ -304,7 +305,7 @@ test('has dynamic delay', () => {
 
 test('listens for window events', async () => {
   let pair = new TestPair()
-  let recon = new Reconnect(pair.left, {maxDelay: 0})
+  let recon = new Reconnect(pair.left, { maxDelay: 0 })
 
   await recon.connect()
   pair.right.disconnect()

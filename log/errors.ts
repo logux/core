@@ -2,7 +2,7 @@ import { Log, MemoryStore, Action } from '../index.js'
 
 let log = new Log({ nodeId: 'test1', store: new MemoryStore() })
 
-// THROWS '{ name: string; }' is not assignable to parameter of type 'Action'
+// THROWS 'name' does not exist in type 'Action'
 log.add({ name: 'Kate' })
 
 // THROWS 'number' is not assignable to type 'string'

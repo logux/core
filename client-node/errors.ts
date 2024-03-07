@@ -13,7 +13,7 @@ let pair = new LocalPair()
 
 let client = new ClientNode<Headers, Log<MyMeta>>('client', log, pair.left)
 
-// THROWS { locale: string; }' is not assignable to parameter of type 'Headers'
+// THROWS 'locale' does not exist in type 'Headers'
 client.setLocalHeaders({ locale: 'ru' })
 
 // THROWS 'string' is not assignable to type 'number'
