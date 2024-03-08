@@ -1,6 +1,6 @@
 import { delay } from 'nanodelay'
-import { test } from 'uvu'
-import { equal, is, ok, throws } from 'uvu/assert'
+import { deepStrictEqual, equal, ok, throws } from 'node:assert'
+import { test } from 'node:test'
 
 import { type Connection, LocalPair, type Message } from '../index.js'
 
@@ -58,8 +58,8 @@ class Tracker {
 
 test('has right link between connections', () => {
   let pair = new LocalPair()
-  is(pair.left.other(), pair.right)
-  is(pair.right.other(), pair.left)
+  equal(pair.left.other(), pair.right)
+  equal(pair.right.other(), pair.left)
 })
 
 test('throws a error on disconnection in disconnected state', () => {
@@ -86,36 +86,40 @@ test('throws a error on connection in connected state', async () => {
 
 test('sends a connect event', async () => {
   let tracker = new Tracker()
-  equal(tracker.left, [])
+  deepStrictEqual(tracker.left, [])
 
   let connecting = tracker.pair.left.connect()
-  equal(tracker.left, [['connecting']])
-  equal(tracker.right, [])
+  deepStrictEqual(tracker.left, [['connecting']])
+  deepStrictEqual(tracker.right, [])
 
   await connecting
-  equal(tracker.left, [['connecting'], ['connect']])
-  equal(tracker.right, [['connect']])
+  deepStrictEqual(tracker.left, [['connecting'], ['connect']])
+  deepStrictEqual(tracker.right, [['connect']])
 })
 
 test('sends a disconnect event', async () => {
   let tracker = new Tracker()
   await tracker.pair.left.connect()
   tracker.pair.right.disconnect('error')
-  equal(tracker.left, [['connecting'], ['connect']])
-  equal(tracker.right, [['connect'], ['disconnect', 'error']])
+  deepStrictEqual(tracker.left, [['connecting'], ['connect']])
+  deepStrictEqual(tracker.right, [['connect'], ['disconnect', 'error']])
   await tracker.wait()
-  equal(tracker.left, [['connecting'], ['connect'], ['disconnect', undefined]])
-  equal(tracker.right, [['connect'], ['disconnect', 'error']])
+  deepStrictEqual(tracker.left, [
+    ['connecting'],
+    ['connect'],
+    ['disconnect', undefined]
+  ])
+  deepStrictEqual(tracker.right, [['connect'], ['disconnect', 'error']])
 })
 
 test('sends a message event', async () => {
   let tracker = new Tracker()
   await tracker.pair.left.connect()
   tracker.pair.left.send(['ping', 1])
-  equal(tracker.right, [['connect']])
+  deepStrictEqual(tracker.right, [['connect']])
   await tracker.wait()
-  equal(tracker.left, [['connecting'], ['connect']])
-  equal(tracker.right, [['connect'], ['message', ['ping', 1]]])
+  deepStrictEqual(tracker.left, [['connecting'], ['connect']])
+  deepStrictEqual(tracker.right, [['connect'], ['message', ['ping', 1]]])
 })
 
 test('emulates delay', async () => {
@@ -137,8 +141,6 @@ test('allows disconnect during connecting', async () => {
   tracker.pair.left.connect()
   tracker.pair.left.disconnect()
   await delay(50)
-  equal(tracker.left, [['connecting'], ['disconnect', undefined]])
-  equal(tracker.right, [])
+  deepStrictEqual(tracker.left, [['connecting'], ['disconnect', undefined]])
+  deepStrictEqual(tracker.right, [])
 })
-
-test.run()

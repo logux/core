@@ -1,5 +1,5 @@
-import { test } from 'uvu'
-import { equal, is, ok } from 'uvu/assert'
+import { equal, ok } from 'node:assert'
+import { test } from 'node:test'
 
 import { LoguxError, type LoguxErrorOptions } from '../index.js'
 
@@ -42,9 +42,9 @@ test('has error description', () => {
 
 test('has received', () => {
   let own = catchError('timeout', 10)
-  is(own.received, false)
+  equal(own.received, false)
   let received = catchError('timeout', 10, true)
-  is(received.received, true)
+  equal(received.received, true)
 })
 
 test('stringifies', () => {
@@ -100,5 +100,3 @@ test('returns description by unknown type', () => {
   // @ts-expect-error
   ok(catchError('unknown').toString().includes('LoguxError: unknown'))
 })
-
-test.run()

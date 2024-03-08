@@ -1,7 +1,7 @@
 import { delay } from 'nanodelay'
 import { spyOn } from 'nanospy'
-import { test } from 'uvu'
-import { equal, is, not, ok, throws, type } from 'uvu/assert'
+import { deepStrictEqual, doesNotThrow, equal, ok, throws } from 'node:assert'
+import { test } from 'node:test'
 
 import {
   BaseNode,
@@ -54,19 +54,19 @@ test('saves all arguments', () => {
   let node = new BaseNode('client', log, pair.left, options)
 
   equal(node.localNodeId, 'client')
-  is(node.log, log)
-  is(node.connection, pair.left)
-  is(node.options, options)
+  equal(node.log, log)
+  equal(node.connection, pair.left)
+  equal(node.options, options)
 })
 
 test('allows to miss options', () => {
-  equal(createNode().options, {})
+  deepStrictEqual(createNode().options, {})
 })
 
 test('has protocol version', () => {
   let node = createNode()
-  type(node.localProtocol, 'number')
-  type(node.minProtocol, 'number')
+  equal(typeof node.localProtocol, 'number')
+  equal(typeof node.minProtocol, 'number')
   ok(node.localProtocol >= node.minProtocol)
 })
 
@@ -90,7 +90,7 @@ test('destroys connection on destroy', () => {
   let destroy = spyOn(node.connection, 'destroy')
 
   node.destroy()
-  equal(disconnect.calls, [])
+  deepStrictEqual(disconnect.calls, [])
   equal(destroy.callCount, 1)
 })
 
@@ -98,12 +98,12 @@ test('disconnects on destroy', async () => {
   let node = createNode()
   await node.connection.connect()
   node.destroy()
-  is(node.connection.connected, false)
+  equal(node.connection.connected, false)
 })
 
 test('does not throw error on send to disconnected connection', () => {
   let node = createNode()
-  not.throws(() => {
+  doesNotThrow(() => {
     privateMethods(node).sendDuilian()
   })
 })
@@ -112,16 +112,16 @@ test('sends messages to connection', async () => {
   let pair = await createTest()
   privateMethods(pair.leftNode).send(['test'])
   await pair.wait()
-  equal(pair.leftSent, [['test']])
+  deepStrictEqual(pair.leftSent, [['test']])
 })
 
 test('has connection state', async () => {
   let node = createNode()
-  is(node.connected, false)
+  equal(node.connected, false)
   await node.connection.connect()
-  is(node.connected, true)
+  equal(node.connected, true)
   node.connection.disconnect()
-  is(node.connected, false)
+  equal(node.connected, false)
 })
 
 test('has state', async () => {
@@ -160,7 +160,7 @@ test('has state', async () => {
   equal(node.state, 'synchronized')
   await node.log.add({ type: 'c' })
   node.connection.disconnect()
-  equal(states, [
+  deepStrictEqual(states, [
     'connecting',
     'synchronized',
     'sending',
@@ -229,7 +229,7 @@ test('stops timeouts on disconnect', async () => {
 
   await delay(50)
   privateMethods(node).startTimeout()
-  is(error, undefined)
+  equal(error, undefined)
 })
 
 test('accepts already connected connection', async () => {
@@ -238,7 +238,7 @@ test('accepts already connected connection', async () => {
   await pair.left.connect()
   node = new BaseNode('client', TestTime.getLog(), pair.left)
   await node.initializing
-  is(node.connected, true)
+  equal(node.connected, true)
 })
 
 test('receives errors from connection', async () => {
@@ -251,8 +251,8 @@ test('receives errors from connection', async () => {
   let error = new Error('test')
   emit(pair.left, 'error', error)
 
-  is(pair.leftNode.connected, false)
-  equal(pair.leftEvents, [['connect'], ['disconnect', 'error']])
+  equal(pair.leftNode.connected, false)
+  deepStrictEqual(pair.leftEvents, [['connect'], ['disconnect', 'error']])
   equal(emitted, error)
 })
 
@@ -271,8 +271,8 @@ test('cancels error catching', async () => {
   } catch (e) {
     catched = e
   }
-  is(emitted, undefined)
-  is(catched, error)
+  equal(emitted, undefined)
+  equal(catched, error)
 })
 
 test('does not fall on sync without connection', async () => {
@@ -285,9 +285,9 @@ test('receives format errors from connection', async () => {
   privateMethods(error).received = 'options'
   emit(pair.left, 'error', error)
   await pair.wait()
-  is(pair.leftNode.connected, false)
-  equal(pair.leftEvents, [['connect'], ['disconnect', 'error']])
-  equal(pair.leftSent, [['error', 'wrong-format', 'options']])
+  equal(pair.leftNode.connected, false)
+  deepStrictEqual(pair.leftEvents, [['connect'], ['disconnect', 'error']])
+  deepStrictEqual(pair.leftSent, [['error', 'wrong-format', 'options']])
 })
 
 test('throws error by default', async () => {
@@ -313,8 +313,6 @@ test('disconnect on the error during send', async () => {
   }
   privateMethods(pair.leftNode).send(['ping', 0])
   await delay(1)
-  is(pair.leftNode.connected, false)
-  equal(errors, [error])
+  equal(pair.leftNode.connected, false)
+  deepStrictEqual(errors, [error])
 })
-
-test.run()

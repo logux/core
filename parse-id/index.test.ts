@@ -1,10 +1,10 @@
-import { test } from 'uvu'
-import { equal } from 'uvu/assert'
+import { deepStrictEqual } from 'node:assert'
+import { test } from 'node:test'
 
 import { parseId } from '../index.js'
 
 test('parses node ID', () => {
-  equal(parseId('10:client:uuid'), {
+  deepStrictEqual(parseId('10:client:uuid'), {
     clientId: '10:client',
     nodeId: '10:client:uuid',
     userId: '10'
@@ -12,7 +12,7 @@ test('parses node ID', () => {
 })
 
 test('parses action ID', () => {
-  equal(parseId('1 10:client:uuid 0'), {
+  deepStrictEqual(parseId('1 10:client:uuid 0'), {
     clientId: '10:client',
     nodeId: '10:client:uuid',
     userId: '10'
@@ -20,7 +20,7 @@ test('parses action ID', () => {
 })
 
 test('parses node ID without client', () => {
-  equal(parseId('10:uuid'), {
+  deepStrictEqual(parseId('10:uuid'), {
     clientId: '10:uuid',
     nodeId: '10:uuid',
     userId: '10'
@@ -28,7 +28,7 @@ test('parses node ID without client', () => {
 })
 
 test('parses node ID without client and user', () => {
-  equal(parseId('uuid'), {
+  deepStrictEqual(parseId('uuid'), {
     clientId: 'uuid',
     nodeId: 'uuid',
     userId: undefined
@@ -36,7 +36,7 @@ test('parses node ID without client and user', () => {
 })
 
 test('parses node ID with false user', () => {
-  equal(parseId('false:client:uuid'), {
+  deepStrictEqual(parseId('false:client:uuid'), {
     clientId: 'false:client',
     nodeId: 'false:client:uuid',
     userId: 'false'
@@ -44,11 +44,9 @@ test('parses node ID with false user', () => {
 })
 
 test('parses node ID with multiple colon', () => {
-  equal(parseId('10:client:uuid:more'), {
+  deepStrictEqual(parseId('10:client:uuid:more'), {
     clientId: '10:client',
     nodeId: '10:client:uuid:more',
     userId: '10'
   })
 })
-
-test.run()

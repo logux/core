@@ -1,12 +1,12 @@
 import { delay } from 'nanodelay'
-import { test } from 'uvu'
-import { equal, is } from 'uvu/assert'
+import { deepStrictEqual, equal } from 'node:assert'
+import { afterEach, test } from 'node:test'
 import WebSocket, { WebSocketServer } from 'ws'
 
 import { type Message, ServerConnection, WsConnection } from '../index.js'
 
 let wss: WebSocket.Server
-test.after.each(() => {
+afterEach(() => {
   wss.close()
 })
 
@@ -40,21 +40,19 @@ test('works in real protocol', async () => {
   })
 
   await delay(100)
-  is(server.connected, true)
-  is(client.connected, true)
+  equal(server.connected, true)
+  equal(client.connected, true)
 
   client.send(['ping', 1])
   await delay(100)
-  equal(serverReceived, [['ping', 1]])
+  deepStrictEqual(serverReceived, [['ping', 1]])
 
   server.send(['pong', 1])
   await delay(100)
-  equal(clientReceived, [['pong', 1]])
+  deepStrictEqual(clientReceived, [['pong', 1]])
 
   server.disconnect()
   await delay(100)
-  is(server.connected, false)
-  is(client.connected, false)
+  equal(server.connected, false)
+  equal(client.connected, false)
 })
-
-test.run()

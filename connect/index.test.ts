@@ -1,6 +1,6 @@
 import { delay } from 'nanodelay'
-import { test } from 'uvu'
-import { equal, is, not, ok, throws } from 'uvu/assert'
+import { deepStrictEqual, equal, ok, throws } from 'node:assert'
+import { afterEach, test } from 'node:test'
 
 import {
   BaseNode,
@@ -15,7 +15,7 @@ let fakeNode = new BaseNode('id', TestTime.getLog(), new TestPair().left)
 const PROTOCOL = fakeNode.localProtocol
 
 let pair: TestPair
-test.after.each(() => {
+afterEach(() => {
   pair.leftNode.destroy()
   pair.rightNode.destroy()
 })
@@ -48,14 +48,14 @@ test('sends protocol version and name in connect message', async () => {
   pair = createTest()
   await pair.left.connect()
   await pair.wait()
-  equal(pair.leftSent, [['connect', PROTOCOL, 'client', 0]])
+  deepStrictEqual(pair.leftSent, [['connect', PROTOCOL, 'client', 0]])
 })
 
 test('answers with protocol version and name in connected message', async () => {
   pair = createTest()
   await pair.left.connect()
   await pair.wait('left')
-  equal(pair.rightSent, [['connected', PROTOCOL, 'server', [2, 3]]])
+  deepStrictEqual(pair.rightSent, [['connected', PROTOCOL, 'server', [2, 3]]])
 })
 
 test('checks client protocol version', async () => {
@@ -65,10 +65,10 @@ test('checks client protocol version', async () => {
 
   await pair.left.connect()
   await pair.wait('left')
-  equal(pair.rightSent, [
+  deepStrictEqual(pair.rightSent, [
     ['error', 'wrong-protocol', { supported: 2, used: 1 }]
   ])
-  is(pair.rightNode.connected, false)
+  equal(pair.rightNode.connected, false)
 })
 
 test('checks server protocol version', async () => {
@@ -79,11 +79,11 @@ test('checks server protocol version', async () => {
   await pair.left.connect()
   await pair.wait('left')
   await pair.wait('right')
-  equal(pair.leftSent, [
+  deepStrictEqual(pair.leftSent, [
     ['connect', PROTOCOL, 'client', 0],
     ['error', 'wrong-protocol', { supported: 2, used: 1 }]
   ])
-  is(pair.left.connected, false)
+  equal(pair.left.connected, false)
 })
 
 test('checks types in connect message', async () => {
@@ -104,8 +104,10 @@ test('checks types in connect message', async () => {
       // @ts-expect-error
       p.right.send(msg)
       await p.wait('right')
-      is(node.connected, false)
-      equal(p.leftSent, [['error', 'wrong-format', JSON.stringify(msg)]])
+      equal(node.connected, false)
+      deepStrictEqual(p.leftSent, [
+        ['error', 'wrong-format', JSON.stringify(msg)]
+      ])
     })
   )
 })
@@ -161,10 +163,10 @@ test('checks subprotocol version', async () => {
 
   await pair.left.connect()
   await pair.wait('left')
-  equal(pair.rightSent, [
+  deepStrictEqual(pair.rightSent, [
     ['error', 'wrong-subprotocol', { supported: '2.x', used: '1.0.0' }]
   ])
-  is(pair.rightNode.connected, false)
+  equal(pair.rightNode.connected, false)
 })
 
 test('checks subprotocol version in client', async () => {
@@ -180,11 +182,11 @@ test('checks subprotocol version in client', async () => {
   await pair.left.connect()
   await pair.wait('right')
   await pair.wait('right')
-  equal(pair.leftSent, [
+  deepStrictEqual(pair.leftSent, [
     ['connect', PROTOCOL, 'client', 0],
     ['error', 'wrong-subprotocol', { supported: '2.x', used: '1.0.0' }]
   ])
-  is(pair.leftNode.connected, false)
+  equal(pair.leftNode.connected, false)
 })
 
 test('throws regular errors during connect event', () => {
@@ -206,7 +208,9 @@ test('sends credentials in connect', async () => {
 
   pair.left.connect()
   await pair.leftNode.waitFor('synchronized')
-  equal(pair.leftSent, [['connect', PROTOCOL, 'client', 0, { token: '1' }]])
+  deepStrictEqual(pair.leftSent, [
+    ['connect', PROTOCOL, 'client', 0, { token: '1' }]
+  ])
 })
 
 test('generates credentials in connect', async () => {
@@ -215,7 +219,9 @@ test('generates credentials in connect', async () => {
 
   pair.left.connect()
   await pair.leftNode.waitFor('synchronized')
-  equal(pair.leftSent, [['connect', PROTOCOL, 'client', 0, { token: '1' }]])
+  deepStrictEqual(pair.leftSent, [
+    ['connect', PROTOCOL, 'client', 0, { token: '1' }]
+  ])
 })
 
 test('sends credentials in connected', async () => {
@@ -224,7 +230,7 @@ test('sends credentials in connected', async () => {
 
   pair.left.connect()
   await pair.leftNode.waitFor('synchronized')
-  equal(pair.rightSent, [
+  deepStrictEqual(pair.rightSent, [
     ['connected', PROTOCOL, 'server', [2, 3], { token: '1' }]
   ])
 })
@@ -235,7 +241,7 @@ test('generates credentials in connected', async () => {
 
   pair.left.connect()
   await pair.leftNode.waitFor('synchronized')
-  equal(pair.rightSent, [
+  deepStrictEqual(pair.rightSent, [
     ['connected', PROTOCOL, 'server', [2, 3], { token: '1' }]
   ])
 })
@@ -250,8 +256,8 @@ test('denies access for wrong users', async () => {
 
   await pair.left.connect()
   await pair.wait('left')
-  equal(pair.rightSent, [['error', 'wrong-credentials']])
-  is(pair.rightNode.connected, false)
+  deepStrictEqual(pair.rightSent, [['error', 'wrong-credentials']])
+  equal(pair.rightNode.connected, false)
 })
 
 test('denies access to wrong server', async () => {
@@ -265,11 +271,11 @@ test('denies access to wrong server', async () => {
   await pair.left.connect()
   await pair.wait('right')
   await pair.wait('right')
-  equal(pair.leftSent, [
+  deepStrictEqual(pair.leftSent, [
     ['connect', PROTOCOL, 'client', 0],
     ['error', 'wrong-credentials']
   ])
-  is(pair.leftNode.connected, false)
+  equal(pair.leftNode.connected, false)
 })
 
 test('allows access for right users', async () => {
@@ -285,7 +291,7 @@ test('allows access for right users', async () => {
   await pair.left.connect()
   privateMethods(pair.leftNode).sendDuilian(0)
   await delay(50)
-  equal(pair.rightSent[0], ['connected', PROTOCOL, 'server', [1, 2]])
+  deepStrictEqual(pair.rightSent[0], ['connected', PROTOCOL, 'server', [1, 2]])
 })
 
 test('has default timeFix', async () => {
@@ -324,7 +330,7 @@ test('uses timeout between connect and connected', async () => {
   await delay(101)
   if (typeof error === 'undefined') throw new Error('Error was not thrown')
   equal(error.name, 'LoguxError')
-  not.ok(error.message.includes('received'))
+  ok(!error.message.includes('received'))
   ok(error.message.includes('timeout'))
 })
 
@@ -345,9 +351,9 @@ test('catches authentication errors', async () => {
   await pair.left.connect()
   await pair.wait('right')
   await delay(1)
-  equal(errors, [error])
-  equal(pair.rightSent, [])
-  is(pair.rightNode.connected, false)
+  deepStrictEqual(errors, [error])
+  deepStrictEqual(pair.rightSent, [])
+  equal(pair.rightNode.connected, false)
 })
 
 test('sends authentication errors', async () => {
@@ -361,8 +367,8 @@ test('sends authentication errors', async () => {
   await pair.left.connect()
   await pair.wait('right')
   await pair.wait('left')
-  equal(pair.rightSent, [['error', 'bruteforce']])
-  is(pair.rightNode.connected, false)
+  deepStrictEqual(pair.rightSent, [['error', 'bruteforce']])
+  equal(pair.rightNode.connected, false)
 })
 
 test('sends headers before connect message (if headers is set)', async () => {
@@ -370,7 +376,7 @@ test('sends headers before connect message (if headers is set)', async () => {
   pair.leftNode.setLocalHeaders({ env: 'development' })
   await pair.left.connect()
   await delay(101)
-  equal(pair.leftSent, [
+  deepStrictEqual(pair.leftSent, [
     ['headers', { env: 'development' }],
     ['connect', PROTOCOL, 'client', 0]
   ])
@@ -381,7 +387,7 @@ test('answers with headers before connected message', async () => {
   pair.rightNode.setLocalHeaders({ env: 'development' })
   await pair.left.connect()
   await delay(101)
-  equal(pair.rightSent, [
+  deepStrictEqual(pair.rightSent, [
     ['headers', { env: 'development' }],
     ['connected', PROTOCOL, 'server', [2, 3]]
   ])
@@ -391,11 +397,11 @@ test('sends headers if connection is active', async () => {
   pair = createTest()
   await pair.left.connect()
   await pair.wait()
-  equal(pair.leftSent, [['connect', PROTOCOL, 'client', 0]])
+  deepStrictEqual(pair.leftSent, [['connect', PROTOCOL, 'client', 0]])
 
   pair.leftNode.setLocalHeaders({ env: 'development' })
   await delay(101)
-  equal(pair.leftSent, [
+  deepStrictEqual(pair.leftSent, [
     ['connect', PROTOCOL, 'client', 0],
     ['headers', { env: 'development' }]
   ])
@@ -406,7 +412,7 @@ test('saves remote headers', async () => {
   pair.leftNode.setLocalHeaders({ env: 'development' })
   await pair.left.connect()
   await delay(101)
-  equal(pair.rightNode.remoteHeaders, { env: 'development' })
+  deepStrictEqual(pair.rightNode.remoteHeaders, { env: 'development' })
 })
 
 test('allows access only with headers', async () => {
@@ -425,7 +431,5 @@ test('allows access only with headers', async () => {
   await pair.left.connect()
   await delay(101)
 
-  equal(authHeaders, { env: 'development' })
+  deepStrictEqual(authHeaders, { env: 'development' })
 })
-
-test.run()

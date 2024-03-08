@@ -12,8 +12,7 @@
     "distributed systems"
   ],
   "scripts": {
-    "unit": "tsm node_modules/uvu/bin.js . '\\.test\\.(ts|js)$'",
-    "test:coverage": "c8 pnpm unit",
+    "test:coverage": "c8 pnpm bnt",
     "test:lint": "eslint .",
     "test:types": "check-dts",
     "test": "pnpm run /^test:/"
@@ -38,15 +37,15 @@
   "devDependencies": {
     "@logux/eslint-config": "^53.0.0",
     "@types/ws": "^8.5.10",
+    "better-node-test": "^0.5.1",
     "c8": "^9.1.0",
     "check-dts": "^0.7.2",
     "clean-publish": "^4.3.0",
     "eslint": "^8.57.0",
     "nanodelay": "^2.0.2",
     "nanospy": "^1.0.0",
-    "tsm": "^2.3.0",
+    "tsx": "^4.7.1",
     "typescript": "^5.4.2",
-    "uvu": "^0.5.6",
     "ws": "^8.16.0"
   },
   "prettier": {

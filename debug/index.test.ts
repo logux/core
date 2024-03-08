@@ -1,5 +1,5 @@
-import { test } from 'uvu'
-import { equal, is } from 'uvu/assert'
+import { deepStrictEqual, equal } from 'node:assert'
+import { afterEach, test } from 'node:test'
 
 import { ServerNode, type TestLog, TestPair, TestTime } from '../index.js'
 
@@ -13,7 +13,7 @@ async function createTest(): Promise<TestPair> {
   return pair
 }
 
-test.after.each(() => {
+afterEach(() => {
   node.destroy()
 })
 
@@ -25,7 +25,7 @@ test('sends debug messages', async () => {
   let pair = await createTest()
   privateMethods(pair.leftNode).sendDebug('testType', 'testData')
   await pair.wait('right')
-  equal(pair.leftSent, [['debug', 'testType', 'testData']])
+  deepStrictEqual(pair.leftSent, [['debug', 'testType', 'testData']])
 })
 
 test('emits a debug on debug error messages', () => {
@@ -39,7 +39,7 @@ test('emits a debug on debug error messages', () => {
 
   privateMethods(node).onMessage(['debug', 'error', 'testData'])
 
-  equal(debugs, [['error', 'testData']])
+  deepStrictEqual(debugs, [['error', 'testData']])
 })
 
 test('checks types', async () => {
@@ -58,10 +58,10 @@ test('checks types', async () => {
       // @ts-expect-error
       pair.right.send(msg)
       await pair.wait('right')
-      is(pair.leftNode.connected, false)
-      equal(pair.leftSent, [['error', 'wrong-format', JSON.stringify(msg)]])
+      equal(pair.leftNode.connected, false)
+      deepStrictEqual(pair.leftSent, [
+        ['error', 'wrong-format', JSON.stringify(msg)]
+      ])
     })
   )
 })
-
-test.run()

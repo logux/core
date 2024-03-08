@@ -1,12 +1,12 @@
 import { delay } from 'nanodelay'
-import { test } from 'uvu'
-import { equal, is, type } from 'uvu/assert'
+import { deepStrictEqual, equal } from 'node:assert'
+import { afterEach, test } from 'node:test'
 
 import { ClientNode, ServerNode, TestPair, TestTime } from '../index.js'
 
 let destroyable: TestPair
 
-test.after.each(() => {
+afterEach(() => {
   destroyable.leftNode.destroy()
   destroyable.rightNode.destroy()
 })
@@ -55,18 +55,18 @@ test('sends sync messages', async () => {
   let pair = await createTest()
   pair.leftNode.log.add(actionA)
   await pair.wait('left')
-  equal(pair.leftSent, [
+  deepStrictEqual(pair.leftSent, [
     ['sync', 1, actionA, { id: [1, 'test1', 0], reasons: ['t'], time: 1 }]
   ])
-  equal(pair.rightSent, [['synced', 1]])
+  deepStrictEqual(pair.rightSent, [['synced', 1]])
 
   pair.rightNode.log.add(actionB)
   await pair.wait('right')
-  equal(pair.leftSent, [
+  deepStrictEqual(pair.leftSent, [
     ['sync', 1, actionA, { id: [1, 'test1', 0], reasons: ['t'], time: 1 }],
     ['synced', 2]
   ])
-  equal(pair.rightSent, [
+  deepStrictEqual(pair.rightSent, [
     ['synced', 1],
     ['sync', 2, actionB, { id: [2, 'test2', 0], reasons: ['t'], time: 2 }]
   ])
@@ -79,7 +79,7 @@ test('uses last added on non-added action', async () => {
   })
   pair.leftNode.log.add({ type: 'a' })
   await pair.wait('left')
-  equal(pair.leftSent, [
+  deepStrictEqual(pair.leftSent, [
     ['sync', 0, { type: 'a' }, { id: [1, 'test1', 0], reasons: [], time: 1 }]
   ])
 })
@@ -108,8 +108,10 @@ test('checks sync types', async () => {
       // @ts-expect-error
       pair.leftNode.send(msg)
       await pair.wait('left')
-      is(pair.rightNode.connected, false)
-      equal(pair.rightSent, [['error', 'wrong-format', JSON.stringify(msg)]])
+      equal(pair.rightNode.connected, false)
+      deepStrictEqual(pair.rightSent, [
+        ['error', 'wrong-format', JSON.stringify(msg)]
+      ])
     })
   )
 })
@@ -118,12 +120,12 @@ test('synchronizes actions', async () => {
   let pair = await createTest()
   pair.leftNode.log.add({ type: 'a' })
   await pair.wait('left')
-  equal(pair.leftNode.log.actions(), [{ type: 'a' }])
-  equal(pair.leftNode.log.actions(), pair.rightNode.log.actions())
+  deepStrictEqual(pair.leftNode.log.actions(), [{ type: 'a' }])
+  deepStrictEqual(pair.leftNode.log.actions(), pair.rightNode.log.actions())
   pair.rightNode.log.add({ type: 'b' })
   await pair.wait('right')
-  equal(pair.leftNode.log.actions(), [{ type: 'a' }, { type: 'b' }])
-  equal(pair.leftNode.log.actions(), pair.rightNode.log.actions())
+  deepStrictEqual(pair.leftNode.log.actions(), [{ type: 'a' }, { type: 'b' }])
+  deepStrictEqual(pair.leftNode.log.actions(), pair.rightNode.log.actions())
 })
 
 test('remembers synced added', async () => {
@@ -145,9 +147,9 @@ test('remembers synced added', async () => {
 test('filters output actions', async () => {
   let pair = await createTest(async created => {
     created.leftNode.options.onSend = async (action, meta) => {
-      type(meta.id, 'string')
-      type(meta.time, 'number')
-      type(meta.added, 'number')
+      equal(typeof meta.id, 'string')
+      equal(typeof meta.time, 'number')
+      equal(typeof meta.added, 'number')
       if (action.type === 'b') {
         return [action, meta]
       } else {
@@ -159,34 +161,34 @@ test('filters output actions', async () => {
       created.leftNode.log.add({ type: 'b' })
     ])
   })
-  equal(pair.rightNode.log.actions(), [{ type: 'b' }])
+  deepStrictEqual(pair.rightNode.log.actions(), [{ type: 'b' }])
   await Promise.all([
     pair.leftNode.log.add({ type: 'a' }),
     pair.leftNode.log.add({ type: 'b' })
   ])
   await pair.leftNode.waitFor('synchronized')
-  equal(pair.rightNode.log.actions(), [{ type: 'b' }, { type: 'b' }])
+  deepStrictEqual(pair.rightNode.log.actions(), [{ type: 'b' }, { type: 'b' }])
 })
 
 test('maps output actions', async () => {
   let pair = await createTest()
   pair.leftNode.options.onSend = async (action, meta) => {
-    type(meta.id, 'string')
-    type(meta.time, 'number')
-    type(meta.added, 'number')
+    equal(typeof meta.id, 'string')
+    equal(typeof meta.time, 'number')
+    equal(typeof meta.added, 'number')
     return [{ type: action.type + '1' }, meta]
   }
   pair.leftNode.log.add({ type: 'a' })
   await pair.wait('left')
-  equal(pair.leftNode.log.actions(), [{ type: 'a' }])
-  equal(pair.rightNode.log.actions(), [{ type: 'a1' }])
+  deepStrictEqual(pair.leftNode.log.actions(), [{ type: 'a' }])
+  deepStrictEqual(pair.rightNode.log.actions(), [{ type: 'a1' }])
 })
 
 test('filters input actions', async () => {
   let pair = await createTest(created => {
     created.rightNode.options.onReceive = async (action, meta) => {
-      type(meta.id, 'string')
-      type(meta.time, 'number')
+      equal(typeof meta.id, 'string')
+      equal(typeof meta.time, 'number')
       if (action.type !== 'c') {
         return [action, meta]
       } else {
@@ -197,25 +199,25 @@ test('filters input actions', async () => {
     created.leftNode.log.add({ type: 'b' })
     created.leftNode.log.add({ type: 'c' })
   })
-  equal(pair.leftNode.log.actions(), [
+  deepStrictEqual(pair.leftNode.log.actions(), [
     { type: 'a' },
     { type: 'b' },
     { type: 'c' }
   ])
-  equal(pair.rightNode.log.actions(), [{ type: 'a' }, { type: 'b' }])
+  deepStrictEqual(pair.rightNode.log.actions(), [{ type: 'a' }, { type: 'b' }])
 })
 
 test('maps input actions', async () => {
   let pair = await createTest()
   pair.rightNode.options.onReceive = async (action, meta) => {
-    type(meta.id, 'string')
-    type(meta.time, 'number')
+    equal(typeof meta.id, 'string')
+    equal(typeof meta.time, 'number')
     return [{ type: action.type + '1' }, meta]
   }
   pair.leftNode.log.add({ type: 'a' })
   await pair.wait('left')
-  equal(pair.leftNode.log.actions(), [{ type: 'a' }])
-  equal(pair.rightNode.log.actions(), [{ type: 'a1' }])
+  deepStrictEqual(pair.leftNode.log.actions(), [{ type: 'a' }])
+  deepStrictEqual(pair.rightNode.log.actions(), [{ type: 'a1' }])
 })
 
 test('handles error in onReceive', async () => {
@@ -232,7 +234,7 @@ test('handles error in onReceive', async () => {
   pair.leftNode.log.add({ type: 'a' })
 
   await delay(50)
-  equal(catched, [error])
+  deepStrictEqual(catched, [error])
 })
 
 test('reports errors during initial output filter', async () => {
@@ -248,7 +250,7 @@ test('reports errors during initial output filter', async () => {
   }
   pair.left.connect()
   await delay(50)
-  equal(catched, [error])
+  deepStrictEqual(catched, [error])
 })
 
 test('reports errors during output filter', async () => {
@@ -264,7 +266,7 @@ test('reports errors during output filter', async () => {
   })
   pair.rightNode.log.add({ type: 'a' })
   await delay(50)
-  equal(catched, [error])
+  deepStrictEqual(catched, [error])
 })
 
 test('compresses time', async () => {
@@ -273,7 +275,7 @@ test('compresses time', async () => {
   privateMethods(pair.rightNode).baseTime = 100
   await pair.leftNode.log.add({ type: 'a' }, { id: '1 test1 0', time: 1 })
   await pair.leftNode.waitFor('synchronized')
-  equal(pair.leftSent, [
+  deepStrictEqual(pair.leftSent, [
     [
       'sync',
       1,
@@ -281,7 +283,7 @@ test('compresses time', async () => {
       { id: [-99, 'test1', 0], reasons: ['t'], time: -99 }
     ]
   ])
-  equal(pair.rightNode.log.entries(), [
+  deepStrictEqual(pair.rightNode.log.entries(), [
     [{ type: 'a' }, { added: 1, id: '1 test1 0', reasons: ['t'], time: 1 }]
   ])
 })
@@ -294,12 +296,12 @@ test('compresses IDs', async () => {
     pair.leftNode.log.add({ type: 'a' }, { id: '1 o 0', time: 1 })
   ])
   await pair.leftNode.waitFor('synchronized')
-  equal(pair.leftSent, [
+  deepStrictEqual(pair.leftSent, [
     ['sync', 1, { type: 'a' }, { id: 1, reasons: ['t'], time: 1 }],
     ['sync', 2, { type: 'a' }, { id: [1, 1], reasons: ['t'], time: 1 }],
     ['sync', 3, { type: 'a' }, { id: [1, 'o', 0], reasons: ['t'], time: 1 }]
   ])
-  equal(pair.rightNode.log.entries(), [
+  deepStrictEqual(pair.rightNode.log.entries(), [
     [{ type: 'a' }, { added: 1, id: '1 client 0', reasons: ['t'], time: 1 }],
     [{ type: 'a' }, { added: 2, id: '1 client 1', reasons: ['t'], time: 1 }],
     [{ type: 'a' }, { added: 3, id: '1 o 0', reasons: ['t'], time: 1 }]
@@ -311,10 +313,10 @@ test('synchronizes any meta fields', async () => {
   let pair = await createTest()
   await pair.leftNode.log.add(a, { id: '1 test1 0', one: 1, time: 1 })
   await pair.leftNode.waitFor('synchronized')
-  equal(pair.leftSent, [
+  deepStrictEqual(pair.leftSent, [
     ['sync', 1, a, { id: [1, 'test1', 0], one: 1, reasons: ['t'], time: 1 }]
   ])
-  equal(pair.rightNode.log.entries(), [
+  deepStrictEqual(pair.rightNode.log.entries(), [
     [a, { added: 1, id: '1 test1 0', one: 1, reasons: ['t'], time: 1 }]
   ])
 })
@@ -327,11 +329,11 @@ test('fixes created time', async () => {
     pair.rightNode.log.add({ type: 'b' }, { id: '2 test2 0', time: 2 })
   ])
   await pair.leftNode.waitFor('synchronized')
-  equal(pair.leftNode.log.entries(), [
+  deepStrictEqual(pair.leftNode.log.entries(), [
     [{ type: 'a' }, { added: 1, id: '11 test1 0', reasons: ['t'], time: 11 }],
     [{ type: 'b' }, { added: 2, id: '2 test2 0', reasons: ['t'], time: 12 }]
   ])
-  equal(pair.rightNode.log.entries(), [
+  deepStrictEqual(pair.rightNode.log.entries(), [
     [{ type: 'a' }, { added: 2, id: '11 test1 0', reasons: ['t'], time: 1 }],
     [{ type: 'b' }, { added: 1, id: '2 test2 0', reasons: ['t'], time: 2 }]
   ])
@@ -345,7 +347,7 @@ test('supports multiple actions in sync', async () => {
   ])
   await pair.wait('right')
   equal(pair.leftNode.lastReceived, 2)
-  equal(pair.leftNode.log.entries(), [
+  deepStrictEqual(pair.leftNode.log.entries(), [
     [{ type: 'a' }, { added: 1, id: '1 test2 0', reasons: ['t'], time: 1 }],
     [{ type: 'b' }, { added: 2, id: '2 test2 0', reasons: ['t'], time: 2 }]
   ])
@@ -399,7 +401,7 @@ test('changes multiple actions in map', async () => {
   })
   await pair.leftNode.waitFor('synchronized')
   equal(pair.rightNode.lastReceived, 2)
-  equal(pair.rightNode.log.actions(), [{ type: 'A' }, { type: 'B' }])
+  deepStrictEqual(pair.rightNode.log.actions(), [{ type: 'A' }, { type: 'B' }])
 })
 
 test('synchronizes actions on connect', async () => {
@@ -426,7 +428,7 @@ test('synchronizes actions on connect', async () => {
   await pair.left.connect()
   pair.rightNode = new ServerNode('server2', pair.rightNode.log, pair.right)
   await pair.leftNode.waitFor('synchronized')
-  equal(pair.leftNode.log.actions(), [
+  deepStrictEqual(pair.leftNode.log.actions(), [
     { type: 'a' },
     { type: 'b' },
     { type: 'c' },
@@ -434,8 +436,6 @@ test('synchronizes actions on connect', async () => {
     { type: 'e' },
     { type: 'f' }
   ])
-  equal(pair.leftNode.log.actions(), pair.rightNode.log.actions())
-  equal(added, ['a', 'b', 'c', 'd', 'e', 'f'])
+  deepStrictEqual(pair.leftNode.log.actions(), pair.rightNode.log.actions())
+  deepStrictEqual(added, ['a', 'b', 'c', 'd', 'e', 'f'])
 })
-
-test.run()

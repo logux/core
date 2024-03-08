@@ -1,11 +1,11 @@
-import { test } from 'uvu'
-import { equal, is } from 'uvu/assert'
+import { deepStrictEqual, equal } from 'node:assert'
+import { afterEach, test } from 'node:test'
 
 import { ServerNode, type TestLog, TestPair, TestTime } from '../index.js'
 
 let node: ServerNode<{}, TestLog>
 
-test.after.each(() => {
+afterEach(() => {
   node.destroy()
 })
 
@@ -32,7 +32,7 @@ test('emits a headers on header messages', async () => {
 
   privateMethods(pair.leftNode).onMessage(['headers', { test: 'test' }])
 
-  equal(headers, { test: 'test' })
+  deepStrictEqual(headers, { test: 'test' })
 })
 
 test('checks types', async () => {
@@ -50,8 +50,10 @@ test('checks types', async () => {
       // @ts-expect-error
       pair.right.send(msg)
       await pair.wait('right')
-      is(pair.leftNode.connected, false)
-      equal(pair.leftSent, [['error', 'wrong-format', JSON.stringify(msg)]])
+      equal(pair.leftNode.connected, false)
+      deepStrictEqual(pair.leftSent, [
+        ['error', 'wrong-format', JSON.stringify(msg)]
+      ])
       pair.leftNode.destroy()
     })
   )

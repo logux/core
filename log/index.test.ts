@@ -1,5 +1,5 @@
-import { test } from 'uvu'
-import { equal, is, not, ok, throws, type } from 'uvu/assert'
+import { deepStrictEqual, equal, ok, throws } from 'node:assert'
+import { afterEach, test } from 'node:test'
 
 import {
   type Action,
@@ -18,7 +18,7 @@ function createLog(): Log<Meta, MemoryStore> {
 
 function checkActions(log: Log<Meta, MemoryStore>, expected: Action[]): void {
   let actions = log.store.entries.map(entry => entry[0])
-  equal(actions, expected)
+  deepStrictEqual(actions, expected)
 }
 
 function checkEntries(
@@ -26,7 +26,7 @@ function checkEntries(
   expected: [Action, Partial<Meta>][]
 ): void {
   let entries = log.store.entries.map(entry => [entry[0], entry[1]])
-  equal(entries, expected)
+  deepStrictEqual(entries, expected)
 }
 
 async function logWith(
@@ -47,7 +47,7 @@ async function getError(cb: () => Promise<any>): Promise<string> {
 }
 
 let originNow = Date.now
-test.after.each(() => {
+afterEach(() => {
   Date.now = originNow
 })
 
@@ -84,7 +84,7 @@ test('sends new entries to listeners', async () => {
 
   await log.add({ type: 'A' })
   log.on('add', (action, meta) => {
-    type(meta, 'object')
+    equal(typeof meta, 'object')
     actions1.push(action)
   })
 
@@ -92,13 +92,13 @@ test('sends new entries to listeners', async () => {
     actions2.push(action)
   })
 
-  equal(actions1, [])
-  equal(actions2, [])
+  deepStrictEqual(actions1, [])
+  deepStrictEqual(actions2, [])
 
   await log.add({ type: 'B' })
   await log.add({ type: 'C' })
-  equal(actions1, [{ type: 'B' }, { type: 'C' }])
-  equal(actions2, actions1)
+  deepStrictEqual(actions1, [{ type: 'B' }, { type: 'C' }])
+  deepStrictEqual(actions2, actions1)
 })
 
 test('unsubscribes listeners', async () => {
@@ -112,7 +112,7 @@ test('unsubscribes listeners', async () => {
   await log.add({ type: 'A' })
   unsubscribe()
   await log.add({ type: 'B' })
-  equal(actions, [{ type: 'A' }])
+  deepStrictEqual(actions, [{ type: 'A' }])
 })
 
 test('ignore entry with existed ID', async () => {
@@ -125,11 +125,11 @@ test('ignore entry with existed ID', async () => {
 
   let meta = { id: '0 n 0', reasons: ['test'] }
   let result1 = await log.add({ type: 'A' }, meta)
-  type(result1, 'object')
+  equal(typeof result1, 'object')
   let result2 = await log.add({ type: 'B' }, meta)
-  is(result2, false)
+  equal(result2, false)
   checkActions(log, [{ type: 'A' }])
-  equal(added, [{ type: 'A' }])
+  deepStrictEqual(added, [{ type: 'A' }])
 })
 
 test('iterates through added entries', async () => {
@@ -142,7 +142,7 @@ test('iterates through added entries', async () => {
   await log.each((action, meta) => {
     entries.push([action, meta])
   })
-  equal(entries, [
+  deepStrictEqual(entries, [
     [{ type: 'A' }, { added: 1, id: '3 n 0', reasons: ['test'], time: 3 }],
     [{ type: 'B' }, { added: 2, id: '2 n 0', reasons: ['test'], time: 2 }],
     [{ type: 'C' }, { added: 3, id: '1 n 0', reasons: ['test'], time: 1 }]
@@ -159,7 +159,7 @@ test('iterates by added order', async () => {
   await log.each({ order: 'added' }, action => {
     actions.push(action)
   })
-  equal(actions, [{ type: 'C' }, { type: 'B' }, { type: 'A' }])
+  deepStrictEqual(actions, [{ type: 'C' }, { type: 'B' }, { type: 'A' }])
 })
 
 test('iterates by index', async () => {
@@ -172,7 +172,7 @@ test('iterates by index', async () => {
   await log.each({ index: 'b' }, action => {
     actions.push(action)
   })
-  equal(actions, [{ type: 'C' }, { type: 'B' }])
+  deepStrictEqual(actions, [{ type: 'C' }, { type: 'B' }])
 })
 
 test('disables iteration on false', async () => {
@@ -185,7 +185,7 @@ test('disables iteration on false', async () => {
     actions.push(action)
     return false
   })
-  equal(actions, [{ type: 'B' }])
+  deepStrictEqual(actions, [{ type: 'B' }])
 })
 
 test('supports multi-pages stores', async () => {
@@ -206,7 +206,7 @@ test('supports multi-pages stores', async () => {
   await log.each(action => {
     actions.push(action)
   })
-  equal(actions, [{ type: 'a' }, { type: 'b' }])
+  deepStrictEqual(actions, [{ type: 'a' }, { type: 'b' }])
 })
 
 test('copies time from ID', async () => {
@@ -235,9 +235,9 @@ test('sets default ID and time and empty reasons for new entries', async () => {
   let called = 0
   log.on('add', (action, meta) => {
     called += 1
-    type(meta.added, 'undefined')
-    equal(meta.reasons, [])
-    type(meta.time, 'number')
+    equal(typeof meta.added, 'undefined')
+    deepStrictEqual(meta.reasons, [])
+    deepStrictEqual(typeof meta.time, 'number')
     equal(meta.id, `${meta.time} test 0`)
   })
   await log.add({ type: 'A' })
@@ -246,10 +246,10 @@ test('sets default ID and time and empty reasons for new entries', async () => {
 
 test('generates unique ID', () => {
   let log = createLog()
-  let used = []
+  let used: string[] = []
   for (let i = 0; i < 100; i++) {
     let id = log.generateId()
-    not.ok(used.includes(id))
+    ok(!used.includes(id))
     used.push(id)
   }
 })
@@ -270,7 +270,7 @@ test('changes meta', async () => {
     [{ type: 'B' }, { a: 1, id: '2 node 0', indexes: ['a'], reasons: ['t'] }]
   ])
   let result = await log.changeMeta('2 node 0', { a: 2, b: 2 })
-  is(result, true)
+  equal(result, true)
   checkEntries(log, [
     [{ type: 'A' }, { added: 1, id: '1 node 0', reasons: ['t'], time: 1 }],
     [
@@ -310,15 +310,15 @@ test('removes action on setting entry reasons', async () => {
   })
 
   let result1 = await log.changeMeta('2 n 0', { a: 1, reasons: [] })
-  is(result1, true)
-  equal(cleaned, [
+  equal(result1, true)
+  deepStrictEqual(cleaned, [
     [{ type: 'B' }, { a: 1, added: 2, id: '2 n 0', reasons: [], time: 2 }]
   ])
   checkEntries(log, [
     [{ type: 'A' }, { added: 1, id: '1 n 0', reasons: ['test'], time: 1 }]
   ])
   let result2 = await log.changeMeta('3 n 0', { reasons: [] })
-  is(result2, false)
+  equal(result2, false)
 })
 
 test('returns action by ID', async () => {
@@ -326,12 +326,12 @@ test('returns action by ID', async () => {
 
   let result1 = await log.byId('1 n 0')
   if (result1[0] === null) throw new Error('Action was no found')
-  equal(result1[0], { type: 'A' })
-  equal(result1[1].reasons, ['test'])
+  deepStrictEqual(result1[0], { type: 'A' })
+  deepStrictEqual(result1[1].reasons, ['test'])
 
   let result2 = await log.byId('2 n 0')
-  is(result2[0], null)
-  is(result2[1], null)
+  equal(result2[0], null)
+  equal(result2[1], null)
 })
 
 test('cleans log by reason', async () => {
@@ -346,8 +346,8 @@ test('cleans log by reason', async () => {
   })
   await log.removeReason('a')
   checkActions(log, [{ type: 'AB' }, { type: 'B' }])
-  equal(log.store.entries[1][1].reasons, ['b'])
-  equal(cleaned, [[{ type: 'A' }, 1, []]])
+  deepStrictEqual(log.store.entries[1][1].reasons, ['b'])
+  deepStrictEqual(cleaned, [[{ type: 'A' }, 1, []]])
 })
 
 test('removes reason with minimum and maximum added', async () => {
@@ -365,7 +365,7 @@ test('does not put actions without reasons to log', async () => {
 
   let added: [Action, Meta['added']][] = []
   log.on('add', (action, meta) => {
-    type(meta.id, 'string')
+    equal(typeof meta.id, 'string')
     added.push([action, meta.added])
   })
   let cleaned: [Action, Meta['added']][] = []
@@ -375,16 +375,16 @@ test('does not put actions without reasons to log', async () => {
 
   let meta = await log.add({ type: 'A' })
   if (meta === false) throw new Error('Action was no added')
-  equal(meta.reasons, [])
-  equal(added, [[{ type: 'A' }, undefined]])
-  equal(cleaned, [[{ type: 'A' }, undefined]])
+  deepStrictEqual(meta.reasons, [])
+  deepStrictEqual(added, [[{ type: 'A' }, undefined]])
+  deepStrictEqual(cleaned, [[{ type: 'A' }, undefined]])
   checkActions(log, [])
   await log.add({ type: 'B' }, { reasons: ['test'] })
-  equal(added, [
+  deepStrictEqual(added, [
     [{ type: 'A' }, undefined],
     [{ type: 'B' }, 1]
   ])
-  equal(cleaned, [[{ type: 'A' }, undefined]])
+  deepStrictEqual(cleaned, [[{ type: 'A' }, undefined]])
   checkActions(log, [{ type: 'B' }])
 })
 
@@ -402,16 +402,16 @@ test('checks ID for actions without reasons', async () => {
 
   await log.add({ type: 'A' }, { id: '1 n 0', reasons: ['t'] })
   let meta1 = await log.add({ type: 'B' }, { id: '1 n 0' })
-  is(meta1, false)
-  equal(added, [[{ type: 'A' }, 1]])
-  equal(cleaned, [])
+  equal(meta1, false)
+  deepStrictEqual(added, [[{ type: 'A' }, 1]])
+  deepStrictEqual(cleaned, [])
   let meta2 = await log.add({ type: 'C' }, { id: '2 n 0' })
-  type(meta2, 'object')
-  equal(added, [
+  equal(typeof meta2, 'object')
+  deepStrictEqual(added, [
     [{ type: 'A' }, 1],
     [{ type: 'C' }, undefined]
   ])
-  equal(cleaned, [[{ type: 'C' }, undefined]])
+  deepStrictEqual(cleaned, [[{ type: 'C' }, undefined]])
 })
 
 test('fires preadd event', async () => {
@@ -424,7 +424,7 @@ test('fires preadd event', async () => {
 
   let preadd: string[] = []
   log.on('preadd', (action, meta) => {
-    type(meta.added, 'undefined')
+    equal(typeof meta.added, 'undefined')
     if (action.type === 'A') meta.reasons.push('test')
     preadd.push(action.type)
   })
@@ -433,11 +433,11 @@ test('fires preadd event', async () => {
   checkEntries(log, [
     [{ type: 'A' }, { added: 1, id: '1 n 0', reasons: ['test'], time: 1 }]
   ])
-  equal(preadd, ['A'])
-  equal(add, ['A'])
+  deepStrictEqual(preadd, ['A'])
+  deepStrictEqual(add, ['A'])
   await log.add({ type: 'B' }, { id: '1 n 0' })
-  equal(preadd, ['A', 'B'])
-  equal(add, ['A'])
+  deepStrictEqual(preadd, ['A', 'B'])
+  deepStrictEqual(add, ['A'])
 })
 
 test('removes reasons when keepLast option is used', async () => {
@@ -467,7 +467,7 @@ test('ensures `reasons` to be array of string values', async () => {
 
   let meta1 = await log.add({ type: '1' })
   if (meta1 === false) throw new Error('Action was no found')
-  equal(meta1.reasons, [])
+  deepStrictEqual(meta1.reasons, [])
 
   equal(
     // @ts-expect-error
@@ -502,15 +502,15 @@ test('has type listeners', async () => {
   let events: string[] = []
   let log = createLog()
 
-  let unsibscribeA = log.type('A', (action, meta) => {
-    type(meta.id, 'string')
+  let unsubscribeA = log.type('A', (action, meta) => {
+    equal(typeof meta.id, 'string')
     events.push(`A: ${action.type}`)
   })
 
   log.type(
     'B',
     (action, meta) => {
-      type(meta.id, 'string')
+      equal(typeof meta.id, 'string')
       events.push(`B add: ${action.type}`)
     },
     { event: 'add' }
@@ -519,7 +519,7 @@ test('has type listeners', async () => {
   log.type(
     'C',
     (action, meta) => {
-      type(meta.id, 'string')
+      equal(typeof meta.id, 'string')
       events.push(`C preadd: ${action.type}`)
     },
     { event: 'preadd' }
@@ -528,7 +528,7 @@ test('has type listeners', async () => {
   log.type(
     'A',
     (action, meta) => {
-      type(meta.id, 'string')
+      equal(typeof meta.id, 'string')
       events.push(`A clean: ${action.type}`)
     },
     { event: 'clean' }
@@ -546,10 +546,10 @@ test('has type listeners', async () => {
   await log.add({ type: 'D' })
   await log.removeReason('test')
   await log.changeMeta('0 test 0', { reasons: [] })
-  unsibscribeA()
+  unsubscribeA()
   await log.add({ type: 'A' })
 
-  equal(events, [
+  deepStrictEqual(events, [
     'A: A',
     'add: A',
     'A clean: A',
@@ -601,7 +601,10 @@ test('has type and action.id listener', async () => {
   await log.add({ id: 'Other', name: 'b', type: 'A' })
   await log.add({ id: 'ID', name: 'c', type: 'O' })
 
-  equal(events, ['A preadd ID a', 'A add ID a', 'A add all a', 'A add all b'])
+  deepStrictEqual(events, [
+    'A preadd ID a',
+    'A add ID a',
+    'A add all a',
+    'A add all b'
+  ])
 })
-
-test.run()

@@ -1,7 +1,7 @@
 import { delay } from 'nanodelay'
 import { restoreAll, spyOn } from 'nanospy'
-import { test } from 'uvu'
-import { equal, is, not, ok, type } from 'uvu/assert'
+import { deepStrictEqual, equal, notEqual, ok } from 'node:assert'
+import { afterEach, beforeEach, test } from 'node:test'
 
 import { type Message, Reconnect, TestPair } from '../index.js'
 
@@ -33,7 +33,7 @@ function privateMethods(obj: object): any {
   return obj
 }
 
-test.before.each(() => {
+beforeEach(() => {
   listeners = {}
   // @ts-expect-error
   global.window = {
@@ -52,37 +52,37 @@ test.before.each(() => {
   })
 })
 
-test.after.each(() => {
+afterEach(() => {
   restoreAll()
 })
 
 test('saves connection and options', () => {
   let pair = new TestPair()
   let recon = new Reconnect(pair.left, { attempts: 1 })
-  is(recon.connection, pair.left)
+  equal(recon.connection, pair.left)
   equal(recon.options.attempts, 1)
 })
 
 test('uses default options', () => {
   let pair = new TestPair()
   let recon = new Reconnect(pair.left)
-  type(recon.options.minDelay, 'number')
+  equal(typeof recon.options.minDelay, 'number')
 })
 
 test('enables reconnecting on connect', () => {
   let pair = new TestPair()
   let recon = new Reconnect(pair.left)
-  is(recon.reconnecting, false)
+  equal(recon.reconnecting, false)
 
   recon.connect()
-  is(recon.reconnecting, true)
+  equal(recon.reconnecting, true)
 })
 
 test('enables reconnecting if connection was already connected', async () => {
   let pair = new TestPair()
   await pair.left.connect()
   let recon = new Reconnect(pair.left)
-  is(recon.reconnecting, true)
+  equal(recon.reconnecting, true)
 })
 
 test('disables reconnecting on destroy and empty disconnect', async () => {
@@ -91,11 +91,11 @@ test('disables reconnecting on destroy and empty disconnect', async () => {
 
   await recon.connect()
   recon.disconnect('destroy')
-  is(recon.reconnecting, false)
-  equal(pair.leftEvents, [['connect'], ['disconnect', 'destroy']])
+  equal(recon.reconnecting, false)
+  deepStrictEqual(pair.leftEvents, [['connect'], ['disconnect', 'destroy']])
   await recon.connect()
   recon.disconnect()
-  is(recon.reconnecting, false)
+  equal(recon.reconnecting, false)
 })
 
 test('reconnects on timeout and error disconnect', async () => {
@@ -104,11 +104,11 @@ test('reconnects on timeout and error disconnect', async () => {
   let recon = new Reconnect(pair.left)
 
   recon.disconnect('timeout')
-  is(recon.reconnecting, true)
+  equal(recon.reconnecting, true)
   await pair.left.connect()
 
   recon.disconnect('error')
-  is(recon.reconnecting, true)
+  equal(recon.reconnecting, true)
 })
 
 test('proxies connection methods', () => {
@@ -131,17 +131,17 @@ test('proxies connection methods', () => {
     }
   }
   let recon = new Reconnect(con)
-  is(recon.connected, false)
-  is(privateMethods(recon).emitter, con.emitter)
+  equal(recon.connected, false)
+  equal(privateMethods(recon).emitter, con.emitter)
 
   recon.connect()
-  is(recon.connected, true)
+  equal(recon.connected, true)
 
   recon.send(['ping', 1])
-  equal(sent, [['ping', 1]])
+  deepStrictEqual(sent, [['ping', 1]])
 
   recon.disconnect()
-  is(recon.connected, false)
+  equal(recon.connected, false)
 })
 
 test('proxies connection events', async () => {
@@ -161,7 +161,7 @@ test('proxies connection events', async () => {
   unbind()
   pair.right.send(['ping', 3])
   await pair.wait()
-  equal(received, [
+  deepStrictEqual(received, [
     ['ping', 1],
     ['ping', 2]
   ])
@@ -174,7 +174,7 @@ test('disables reconnection on protocol error', async () => {
   pair.right.send(['error', 'wrong-protocol'])
   pair.right.disconnect()
   await pair.wait()
-  is(recon.reconnecting, false)
+  equal(recon.reconnecting, false)
 })
 
 test('disables reconnection on authentication error', async () => {
@@ -184,7 +184,7 @@ test('disables reconnection on authentication error', async () => {
   pair.right.send(['error', 'wrong-credentials'])
   pair.right.disconnect()
   await pair.wait()
-  is(recon.reconnecting, false)
+  equal(recon.reconnecting, false)
 })
 
 test('disables reconnection on subprotocol error', async () => {
@@ -194,7 +194,7 @@ test('disables reconnection on subprotocol error', async () => {
   pair.right.send(['error', 'wrong-subprotocol'])
   pair.right.disconnect()
   await pair.wait()
-  is(recon.reconnecting, false)
+  equal(recon.reconnecting, false)
 })
 
 test('disconnects and unbind listeners on destroy', async () => {
@@ -202,13 +202,13 @@ test('disconnects and unbind listeners on destroy', async () => {
   let origin = privateMethods(pair.left).emitter.events.connect.length
 
   let recon = new Reconnect(pair.left)
-  not.equal(privateMethods(pair.left).emitter.events.connect.length, origin)
+  notEqual(privateMethods(pair.left).emitter.events.connect.length, origin)
 
   await recon.connect()
   recon.destroy()
   await pair.wait()
   equal(privateMethods(pair.left).emitter.events.connect.length, origin)
-  is(pair.right.connected, false)
+  equal(pair.right.connected, false)
 })
 
 test('reconnects automatically with delay', async () => {
@@ -217,9 +217,9 @@ test('reconnects automatically with delay', async () => {
   await recon.connect()
   pair.right.disconnect()
   await pair.wait()
-  is(pair.right.connected, false)
+  equal(pair.right.connected, false)
   await delay(70)
-  is(pair.right.connected, true)
+  equal(pair.right.connected, true)
 })
 
 test('allows to disable reconnecting', async () => {
@@ -230,7 +230,7 @@ test('allows to disable reconnecting', async () => {
   pair.right.disconnect()
   await pair.wait()
   await delay(1)
-  is(pair.right.connected, false)
+  equal(pair.right.connected, false)
 })
 
 test('has maximum reconnection attempts', async () => {
@@ -251,7 +251,7 @@ test('has maximum reconnection attempts', async () => {
   recon.connect()
 
   await delay(10)
-  is(recon.reconnecting, false)
+  equal(recon.reconnecting, false)
   equal(connects, 3)
 })
 
@@ -262,17 +262,17 @@ test('tracks connecting state', () => {
     minDelay: 1000
   })
 
-  is(recon.connecting, false)
+  equal(recon.connecting, false)
 
   privateMethods(pair.left).emitter.emit('connecting')
-  is(recon.connecting, true)
+  equal(recon.connecting, true)
 
   privateMethods(pair.left).emitter.emit('disconnect')
-  is(recon.connecting, false)
+  equal(recon.connecting, false)
 
   privateMethods(pair.left).emitter.emit('connecting')
   privateMethods(pair.left).emitter.emit('connect')
-  is(recon.connecting, false)
+  equal(recon.connecting, false)
 })
 
 test('has dynamic delay', () => {
@@ -293,14 +293,14 @@ test('has dynamic delay', () => {
   attemptsIsAround(2, 4500)
   attemptsIsAround(3, 5000)
 
-  function attemptsIs(attempt: number, ms: number): void {
+  function attemptsequal(attempt: number, ms: number): void {
     recon.attempts = attempt
     let time = privateMethods(recon).nextDelay()
     equal(time, ms)
   }
 
   for (let i = 4; i < 100; i++) {
-    attemptsIs(i, 5000)
+    attemptsequal(i, 5000)
   }
 })
 
@@ -311,38 +311,38 @@ test('listens for window events', async () => {
   await recon.connect()
   pair.right.disconnect()
   await pair.wait()
-  is(recon.connected, false)
+  equal(recon.connected, false)
 
   setHidden(true)
   listeners.visibilitychange()
-  is(recon.connecting, false)
+  equal(recon.connecting, false)
 
   setHidden(false)
   await pair.wait()
-  is(recon.connected, true)
+  equal(recon.connected, true)
 
   listeners.freeze()
   await delay(10)
 
-  is(recon.connecting, false)
-  is(recon.connected, false)
+  equal(recon.connecting, false)
+  equal(recon.connected, false)
 
   setOnLine(false, 'resume')
-  is(recon.connecting, false)
+  equal(recon.connecting, false)
 
   setOnLine(true, 'resume')
   await delay(10)
-  is(recon.connected, true)
+  equal(recon.connected, true)
   pair.right.disconnect()
   await pair.wait()
-  is(recon.connected, false)
+  equal(recon.connected, false)
 
   setOnLine(true, 'online')
   await pair.wait()
-  is(recon.connected, true)
+  equal(recon.connected, true)
 
   recon.destroy()
-  equal(Object.keys(listeners), [])
+  deepStrictEqual(Object.keys(listeners), [])
 })
 
 test('does connect on online if client was not connected', async () => {
@@ -357,5 +357,3 @@ test('does connect on online if client was not connected', async () => {
   listeners.online()
   equal(connect.callCount, 0)
 })
-
-test.run()

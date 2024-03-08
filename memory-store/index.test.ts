@@ -1,4 +1,4 @@
-import { test } from 'uvu'
+import { test } from 'node:test'
 
 import { eachStoreCheck, MemoryStore } from '../index.js'
 
@@ -8,5 +8,3 @@ eachStoreCheck((desc, creator) => {
     creator(() => new MemoryStore())
   )
 })
-
-test.run()

@@ -1,6 +1,6 @@
 import { restoreAll, spyOn } from 'nanospy'
-import { test } from 'uvu'
-import { equal, is, throws } from 'uvu/assert'
+import { deepStrictEqual, equal, throws } from 'node:assert'
+import { afterEach, test } from 'node:test'
 import WebSocket from 'ws'
 
 import { type Message, ServerConnection } from '../index.js'
@@ -15,7 +15,7 @@ function prepareWs(): WebSocket {
   return ws
 }
 
-test.after.each(() => {
+afterEach(() => {
   restoreAll()
 })
 
@@ -34,12 +34,12 @@ test('emits connection states', () => {
     states.push('disconnect')
   })
 
-  equal(states, [])
-  is(connection.connected, true)
+  deepStrictEqual(states, [])
+  equal(connection.connected, true)
 
   connection.ws.emit('close', 500, 'message')
-  equal(states, ['disconnect'])
-  is(connection.connected, false)
+  deepStrictEqual(states, ['disconnect'])
+  equal(connection.connected, false)
 })
 
 test('emits error on wrong format', () => {
@@ -64,7 +64,7 @@ test('closes WebSocket', () => {
 
   connection.disconnect()
   equal(close.callCount, 1)
-  is(connection.connected, false)
+  equal(connection.connected, false)
 })
 
 test('receives messages', () => {
@@ -76,7 +76,7 @@ test('receives messages', () => {
   })
 
   connection.ws.emit('message', '["ping",1]')
-  equal(received, [['ping', 1]])
+  deepStrictEqual(received, [['ping', 1]])
 })
 
 test('sends messages', () => {
@@ -88,7 +88,7 @@ test('sends messages', () => {
   let connection = new ServerConnection(ws)
 
   connection.send(['ping', 1])
-  equal(sent, ['["ping",1]'])
+  deepStrictEqual(sent, ['["ping",1]'])
 })
 
 test('does not send to closed socket', () => {
@@ -108,8 +108,6 @@ test('does not send to closed socket', () => {
   privateMethods(connection.ws)._readyState = 2
 
   connection.send(['ping', 1])
-  equal(sent, [])
-  equal(errors, ['WS was closed'])
+  deepStrictEqual(sent, [])
+  deepStrictEqual(errors, ['WS was closed'])
 })
-
-test.run()

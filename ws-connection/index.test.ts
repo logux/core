@@ -1,6 +1,6 @@
 import { restoreAll, spyOn } from 'nanospy'
-import { test } from 'uvu'
-import { equal, is, throws } from 'uvu/assert'
+import { deepStrictEqual, equal, throws } from 'node:assert'
+import { afterEach, test } from 'node:test'
 import type WebSocket from 'ws'
 
 import { type Message, WsConnection } from '../index.js'
@@ -72,7 +72,7 @@ function setWebSocket(ws: object | undefined): void {
   global.WebSocket = ws
 }
 
-test.after.each(() => {
+afterEach(() => {
   restoreAll()
   setWebSocket(undefined)
 })
@@ -142,32 +142,32 @@ test('emits connection states', async () => {
     states.push('disconnect')
   })
 
-  equal(states, [])
-  is(connection.connected, false)
+  deepStrictEqual(states, [])
+  equal(connection.connected, false)
 
   let connecting = connection.connect()
 
-  equal(states, ['connecting'])
-  is(connection.connected, false)
+  deepStrictEqual(states, ['connecting'])
+  equal(connection.connected, false)
 
   await connecting
-  equal(states, ['connecting', 'connect'])
-  is(connection.connected, true)
+  deepStrictEqual(states, ['connecting', 'connect'])
+  equal(connection.connected, true)
 
   emit(connection.ws, 'close')
-  equal(states, ['connecting', 'connect', 'disconnect'])
-  is(connection.connected, false)
+  deepStrictEqual(states, ['connecting', 'connect', 'disconnect'])
+  equal(connection.connected, false)
 
   connection.connect()
   emit(connection.ws, 'close')
-  equal(states, [
+  deepStrictEqual(states, [
     'connecting',
     'connect',
     'disconnect',
     'connecting',
     'disconnect'
   ])
-  is(connection.connected, false)
+  equal(connection.connected, false)
 })
 
 test('closes WebSocket', async () => {
@@ -184,7 +184,7 @@ test('closes WebSocket', async () => {
 
   connection.disconnect()
   equal(close.callCount, 1)
-  is(connection.connected, false)
+  equal(connection.connected, false)
 })
 
 test('close WebSocket 2 times', async () => {
@@ -202,7 +202,7 @@ test('close WebSocket 2 times', async () => {
   connection.disconnect()
   connection.disconnect()
   equal(close.callCount, 1)
-  is(connection.connected, false)
+  equal(connection.connected, false)
 })
 
 test('receives messages', async () => {
@@ -217,7 +217,7 @@ test('receives messages', async () => {
   await connection.connect()
 
   emit(connection.ws, 'message', '["ping",1]')
-  equal(received, [['ping', 1]])
+  deepStrictEqual(received, [['ping', 1]])
 })
 
 test('sends messages', async () => {
@@ -230,7 +230,7 @@ test('sends messages', async () => {
   }
 
   connection.send(['ping', 1])
-  equal(connection.ws.sent, ['["ping",1]'])
+  deepStrictEqual(connection.ws.sent, ['["ping",1]'])
 })
 
 test('uses custom WebSocket implementation', async () => {
@@ -245,7 +245,7 @@ test('uses custom WebSocket implementation', async () => {
   }
 
   connection.send(['ping', 1])
-  equal(connection.ws.sent, ['["ping",1]'])
+  deepStrictEqual(connection.ws.sent, ['["ping",1]'])
 })
 
 test('passes extra option for WebSocket', async () => {
@@ -259,7 +259,7 @@ test('passes extra option for WebSocket', async () => {
     throw new Error('WebSocket was not created')
   }
 
-  equal(connection.ws.opts, { a: 1 })
+  deepStrictEqual(connection.ws.opts, { a: 1 })
 })
 
 test('does not send to closed socket', async () => {
@@ -278,7 +278,7 @@ test('does not send to closed socket', async () => {
 
   connection.ws.readyState = 2
   connection.send(['ping', 1])
-  equal(errors, ['WS was closed'])
+  deepStrictEqual(errors, ['WS was closed'])
 })
 
 test('ignores double connect call', async () => {
@@ -293,8 +293,6 @@ test('ignores double connect call', async () => {
   await connection.connect()
   await connection.connect()
 
-  is(connection.connected, true)
+  equal(connection.connected, true)
   equal(connected, 1)
 })
-
-test.run()

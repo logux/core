@@ -1,5 +1,5 @@
-import { test } from 'uvu'
-import { equal, is, throws } from 'uvu/assert'
+import { deepStrictEqual, equal, throws } from 'node:assert'
+import { afterEach, test } from 'node:test'
 
 import {
   LoguxError,
@@ -11,7 +11,7 @@ import {
 
 let node: ServerNode<{}, TestLog>
 
-test.after.each(() => {
+afterEach(() => {
   node.destroy()
 })
 
@@ -40,8 +40,10 @@ test('sends error on wrong message format', async () => {
       // @ts-expect-error
       pair.right.send(msg)
       await pair.wait('right')
-      is(pair.left.connected, false)
-      equal(pair.leftSent, [['error', 'wrong-format', JSON.stringify(msg)]])
+      equal(pair.left.connected, false)
+      deepStrictEqual(pair.leftSent, [
+        ['error', 'wrong-format', JSON.stringify(msg)]
+      ])
     })
   )
 })
@@ -54,8 +56,10 @@ test('sends error on wrong error parameters', async () => {
       // @ts-expect-error
       pair.right.send(msg)
       await pair.wait('right')
-      is(pair.left.connected, false)
-      equal(pair.leftSent, [['error', 'wrong-format', JSON.stringify(msg)]])
+      equal(pair.left.connected, false)
+      deepStrictEqual(pair.leftSent, [
+        ['error', 'wrong-format', JSON.stringify(msg)]
+      ])
     })
   )
 })
@@ -65,8 +69,8 @@ test('sends error on unknown message type', async () => {
   // @ts-expect-error
   pair.right.send(['test'])
   await pair.wait('right')
-  is(pair.left.connected, false)
-  equal(pair.leftSent, [['error', 'unknown-message', 'test']])
+  equal(pair.left.connected, false)
+  deepStrictEqual(pair.leftSent, [['error', 'unknown-message', 'test']])
 })
 
 test('throws a error on error message by default', () => {
@@ -92,7 +96,7 @@ test('disables throwing a error on listener', () => {
   })
 
   privateMethods(node).onMessage(['error', 'wrong-format', '2'])
-  equal(errors, [new LoguxError('wrong-format', '2', true)])
+  deepStrictEqual(errors, [new LoguxError('wrong-format', '2', true)])
 })
 
 test('emits a event on error sending', async () => {
@@ -104,7 +108,5 @@ test('emits a event on error sending', async () => {
 
   let error = new LoguxError('timeout', 10)
   privateMethods(pair.leftNode).sendError(error)
-  equal(errors, [error])
+  deepStrictEqual(errors, [error])
 })
-
-test.run()

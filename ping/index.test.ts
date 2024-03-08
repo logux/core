@@ -1,6 +1,6 @@
 import { delay } from 'nanodelay'
-import { test } from 'uvu'
-import { equal, is, ok, throws, type } from 'uvu/assert'
+import { deepStrictEqual, equal, ok, throws } from 'node:assert'
+import { afterEach, test } from 'node:test'
 
 import {
   type BaseNode,
@@ -14,7 +14,7 @@ import {
 
 let node: BaseNode<{}, TestLog> | undefined
 
-test.after.each(() => {
+afterEach(() => {
   node?.destroy()
 })
 
@@ -49,7 +49,7 @@ test('answers pong on ping', async () => {
   let pair = await createTest({ fixTime: false })
   pair.right.send(['ping', 1])
   await pair.wait('right')
-  equal(pair.leftSent, [['pong', 1]])
+  deepStrictEqual(pair.leftSent, [['pong', 1]])
 })
 
 test('sends ping on idle connection', async () => {
@@ -67,24 +67,24 @@ test('sends ping on idle connection', async () => {
   await delay(250)
   privateMethods(pair.leftNode).send(['duilian', ''])
   await delay(250)
-  type(error, 'undefined')
-  equal(pair.leftSent, [['duilian', '']])
+  equal(typeof error, 'undefined')
+  deepStrictEqual(pair.leftSent, [['duilian', '']])
   await delay(100)
-  type(error, 'undefined')
-  equal(pair.leftSent, [
+  equal(typeof error, 'undefined')
+  deepStrictEqual(pair.leftSent, [
     ['duilian', ''],
     ['ping', 1]
   ])
   pair.right.send(['pong', 1])
   await delay(250)
-  type(error, 'undefined')
-  equal(pair.leftSent, [
+  equal(typeof error, 'undefined')
+  deepStrictEqual(pair.leftSent, [
     ['duilian', ''],
     ['ping', 1]
   ])
   await delay(100)
-  type(error, 'undefined')
-  equal(pair.leftSent, [
+  equal(typeof error, 'undefined')
+  deepStrictEqual(pair.leftSent, [
     ['duilian', ''],
     ['ping', 1],
     ['ping', 1]
@@ -92,12 +92,12 @@ test('sends ping on idle connection', async () => {
   await delay(250)
   if (typeof error === 'undefined') throw new Error('Error was not sent')
   ok(error.message.includes('timeout'))
-  equal(pair.leftSent, [
+  deepStrictEqual(pair.leftSent, [
     ['duilian', ''],
     ['ping', 1],
     ['ping', 1]
   ])
-  equal(pair.leftEvents[3], ['disconnect', 'timeout'])
+  deepStrictEqual(pair.leftEvents[3], ['disconnect', 'timeout'])
 })
 
 test('does not ping before authentication', async () => {
@@ -113,7 +113,7 @@ test('does not ping before authentication', async () => {
   await pair.wait()
   pair.clear()
   await delay(250)
-  equal(pair.leftSent, [])
+  deepStrictEqual(pair.leftSent, [])
 })
 
 test('sends only one ping if timeout is bigger than ping', async () => {
@@ -123,7 +123,7 @@ test('sends only one ping if timeout is bigger than ping', async () => {
     timeout: 300
   })
   await delay(250)
-  equal(pair.leftSent, [['ping', 1]])
+  deepStrictEqual(pair.leftSent, [['ping', 1]])
 })
 
 test('do not try clear timeout if it does not set', async () => {
@@ -132,7 +132,7 @@ test('do not try clear timeout if it does not set', async () => {
   })
   await delay(250)
   privateMethods(pair.leftNode).sendPing()
-  equal(pair.leftSent, [])
+  deepStrictEqual(pair.leftSent, [])
 })
 
 test('do not send ping if not connected', async () => {
@@ -140,7 +140,7 @@ test('do not send ping if not connected', async () => {
   pair.right.send(['ping', 1])
   pair.left.disconnect()
   await pair.wait('right')
-  equal(pair.leftSent, [])
+  deepStrictEqual(pair.leftSent, [])
 })
 
 test('checks types', async () => {
@@ -161,10 +161,10 @@ test('checks types', async () => {
       // @ts-expect-error
       pair.right.send(msg)
       await pair.wait('right')
-      is(pair.leftNode.connected, false)
-      equal(pair.leftSent, [['error', 'wrong-format', JSON.stringify(msg)]])
+      equal(pair.leftNode.connected, false)
+      deepStrictEqual(pair.leftSent, [
+        ['error', 'wrong-format', JSON.stringify(msg)]
+      ])
     })
   )
 })
-
-test.run()

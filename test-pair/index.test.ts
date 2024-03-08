@@ -1,30 +1,30 @@
-import { test } from 'uvu'
-import { equal, is } from 'uvu/assert'
+import { deepStrictEqual, equal } from 'node:assert'
+import { test } from 'node:test'
 
-import type { Message } from '../index.js';
+import type { Message } from '../index.js'
 import { TestPair } from '../index.js'
 
 test('tracks events', async () => {
   let pair = new TestPair()
-  equal(pair.leftEvents, [])
-  equal(pair.rightEvents, [])
+  deepStrictEqual(pair.leftEvents, [])
+  deepStrictEqual(pair.rightEvents, [])
 
   pair.left.connect()
   await pair.wait()
-  equal(pair.leftEvents, [['connect']])
-  equal(pair.rightEvents, [['connect']])
+  deepStrictEqual(pair.leftEvents, [['connect']])
+  deepStrictEqual(pair.rightEvents, [['connect']])
 
   pair.left.send(['ping', 1])
-  equal(pair.rightEvents, [['connect']])
+  deepStrictEqual(pair.rightEvents, [['connect']])
 
   await pair.wait()
-  equal(pair.rightEvents, [['connect'], ['message', ['ping', 1]]])
+  deepStrictEqual(pair.rightEvents, [['connect'], ['message', ['ping', 1]]])
 
   pair.left.disconnect('timeout')
-  equal(pair.leftEvents, [['connect'], ['disconnect', 'timeout']])
-  equal(pair.rightEvents, [['connect'], ['message', ['ping', 1]]])
+  deepStrictEqual(pair.leftEvents, [['connect'], ['disconnect', 'timeout']])
+  deepStrictEqual(pair.rightEvents, [['connect'], ['message', ['ping', 1]]])
   await pair.wait()
-  equal(pair.rightEvents, [
+  deepStrictEqual(pair.rightEvents, [
     ['connect'],
     ['message', ['ping', 1]],
     ['disconnect']
@@ -32,7 +32,7 @@ test('tracks events', async () => {
 
   pair.right.connect()
   await pair.wait()
-  equal(pair.rightEvents, [
+  deepStrictEqual(pair.rightEvents, [
     ['connect'],
     ['message', ['ping', 1]],
     ['disconnect'],
@@ -44,15 +44,15 @@ test('tracks messages', async () => {
   let pair = new TestPair()
   await pair.left.connect()
   pair.right.send(['ping', 1])
-  equal(pair.rightSent, [])
-  equal(pair.leftSent, [])
+  deepStrictEqual(pair.rightSent, [])
+  deepStrictEqual(pair.leftSent, [])
   await pair.wait()
-  equal(pair.rightSent, [['ping', 1]])
+  deepStrictEqual(pair.rightSent, [['ping', 1]])
   pair.left.send(['pong', 1])
-  equal(pair.leftSent, [])
+  deepStrictEqual(pair.leftSent, [])
   await pair.wait()
-  equal(pair.leftSent, [['pong', 1]])
-  equal(pair.rightSent, [['ping', 1]])
+  deepStrictEqual(pair.leftSent, [['pong', 1]])
+  deepStrictEqual(pair.rightSent, [['ping', 1]])
 })
 
 test('clears tracked data', async () => {
@@ -61,10 +61,10 @@ test('clears tracked data', async () => {
   pair.left.send(['ping', 1])
   await pair.wait()
   pair.clear()
-  equal(pair.leftSent, [])
-  equal(pair.rightSent, [])
-  equal(pair.leftEvents, [])
-  equal(pair.rightEvents, [])
+  deepStrictEqual(pair.leftSent, [])
+  deepStrictEqual(pair.rightSent, [])
+  deepStrictEqual(pair.leftEvents, [])
+  deepStrictEqual(pair.rightEvents, [])
 })
 
 test('clones messages', async () => {
@@ -74,8 +74,8 @@ test('clones messages', async () => {
   pair.left.send(msg)
   await pair.wait()
   msg[1] = 2
-  equal(pair.leftSent, [['ping', 1]])
-  equal(pair.rightEvents, [['connect'], ['message', ['ping', 1]]])
+  deepStrictEqual(pair.leftSent, [['ping', 1]])
+  deepStrictEqual(pair.rightEvents, [['connect'], ['message', ['ping', 1]]])
 })
 
 test('returns self in wait()', async () => {
@@ -83,7 +83,7 @@ test('returns self in wait()', async () => {
   await pair.left.connect()
   pair.left.send(['ping', 1])
   let testPair = await pair.wait()
-  is(testPair, pair)
+  equal(testPair, pair)
 })
 
 test('filters events in wait()', async () => {
@@ -94,15 +94,15 @@ test('filters events in wait()', async () => {
     pair.right.send(['pong', 1])
   }, 1)
   await pair.wait()
-  equal(pair.rightSent, [])
+  deepStrictEqual(pair.rightSent, [])
   await pair.wait()
-  equal(pair.rightSent, [['pong', 1]])
+  deepStrictEqual(pair.rightSent, [['pong', 1]])
   pair.left.send(['ping', 2])
   setTimeout(() => {
     pair.right.send(['pong', 2])
   }, 1)
   await pair.wait('left')
-  equal(pair.rightSent, [
+  deepStrictEqual(pair.rightSent, [
     ['pong', 1],
     ['pong', 2]
   ])
@@ -112,5 +112,3 @@ test('passes delay', () => {
   let pair = new TestPair(50)
   equal(pair.delay, 50)
 })
-
-test.run()

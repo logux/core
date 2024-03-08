@@ -1,12 +1,12 @@
 import { delay } from 'nanodelay'
 import { spyOn } from 'nanospy'
-import { test } from 'uvu'
-import { equal, is, ok, throws } from 'uvu/assert'
+import { deepStrictEqual, equal, ok, throws } from 'node:assert'
+import { afterEach, test } from 'node:test'
 
 import { ServerNode, TestPair, TestTime } from '../index.js'
 
 let node: ServerNode
-test.after.each(() => {
+afterEach(() => {
   node.destroy()
 })
 
@@ -86,13 +86,11 @@ test('supports connection before initializing', async () => {
   await pair.right.connect()
   pair.right.send(['connect', node.localProtocol, 'client', 0])
   await delay(70)
-  equal(pair.leftSent, [])
+  deepStrictEqual(pair.leftSent, [])
   returnLastAdded(10)
   await delay(70)
-  is(node.connected, true)
+  equal(node.connected, true)
   equal(pair.leftSent.length, 2)
-  equal(pair.leftSent[0][0], 'connected')
-  equal(pair.leftSent[1], ['ping', 10])
+  deepStrictEqual(pair.leftSent[0][0], 'connected')
+  deepStrictEqual(pair.leftSent[1], ['ping', 10])
 })
-
-test.run()
