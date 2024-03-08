@@ -36,20 +36,12 @@
     "nanoevents": "^9.0.0"
   },
   "devDependencies": {
-    "@logux/eslint-config": "^52.0.2",
+    "@logux/eslint-config": "^53.0.0",
     "@types/ws": "^8.5.10",
-    "@typescript-eslint/eslint-plugin": "^7.1.1",
-    "@typescript-eslint/parser": "^7.1.1",
     "c8": "^9.1.0",
     "check-dts": "^0.7.2",
     "clean-publish": "^4.3.0",
     "eslint": "^8.57.0",
-    "eslint-config-standard": "^17.1.0",
-    "eslint-plugin-import": "^2.29.1",
-    "eslint-plugin-n": "^16.6.2",
-    "eslint-plugin-perfectionist": "^2.6.0",
-    "eslint-plugin-prefer-let": "^3.0.1",
-    "eslint-plugin-promise": "^6.1.1",
     "nanodelay": "^2.0.2",
     "nanospy": "^1.0.0",
     "tsm": "^2.3.0",
@@ -78,26 +70,5 @@
     ],
     "skip-full": true,
     "clean": true
-  },
-  "eslintConfig": {
-    "extends": "@logux/eslint-config/ts",
-    "rules": {
-      "@typescript-eslint/no-explicit-any": "off",
-      "no-invalid-this": "off"
-    },
-    "overrides": [
-      {
-        "files": [
-          "server-connection/*.ts",
-          "ws-connection/*.ts"
-        ],
-        "rules": {
-          "import/order": "off"
-        }
-      }
-    ]
-  },
-  "eslintIgnore": [
-    "**/errors.ts"
-  ]
+  }
 }
