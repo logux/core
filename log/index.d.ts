@@ -239,7 +239,7 @@ export abstract class LogStore {
    * @param values Object with latest sent or received values.
    * @returns Promise when values will be saved to store.
    */
-  setLastSynced(values: LastSynced): Promise<void>
+  setLastSynced(values: Partial<LastSynced>): Promise<void>
 }
 
 interface LogOptions<Store extends LogStore = LogStore> {
