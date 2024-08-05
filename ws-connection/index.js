@@ -9,6 +9,7 @@ export class WsConnection {
     } else if (typeof WebSocket !== 'undefined') {
       this.Class = WebSocket
     } else {
+      /* c8 ignore next 2 */
       throw new Error('No WebSocket support')
     }
     this.url = url
