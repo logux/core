@@ -58,5 +58,3 @@ test('checks types', async () => {
     })
   )
 })
-
-test.run()
