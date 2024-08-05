@@ -14,6 +14,18 @@ export default [
     },
     rules: {
       '@typescript-eslint/no-explicit-any': 'off',
+      'n/no-unsupported-features/node-builtins': [
+        'error',
+        {
+          ignores: [
+            'navigator',
+            'WebSocket',
+            'test',
+            'test.afterEach',
+            'test.beforeEach'
+          ]
+        }
+      ],
       'no-invalid-this': 'off'
     }
   },

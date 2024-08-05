@@ -6,10 +6,10 @@ log.add({ name: 'Kate', type: 'user/add' })
 
 log.add({ name: 'Kate', type: 'user/add' }, { extra: 1 })
 
-type RenameAction = Action & {
+type RenameAction = {
   name: string
   type: 'rename'
-}
+} & Action
 
 log.type<RenameAction>('rename', action => {
   document.title = action.name

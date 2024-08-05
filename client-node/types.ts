@@ -1,8 +1,8 @@
 import { ClientNode, LocalPair, Log, MemoryStore, type Meta } from '../index.js'
 
-type MyMeta = Meta & {
+type MyMeta = {
   extra: number
-}
+} & Meta
 
 type Headers = {
   lang: string
