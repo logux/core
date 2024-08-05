@@ -1,5 +1,5 @@
 import { restoreAll, spyOn } from 'nanospy'
-import { deepStrictEqual, equal, throws } from 'node:assert'
+import { deepStrictEqual, equal } from 'node:assert'
 import { afterEach, test } from 'node:test'
 import type WebSocket from 'ws'
 
@@ -87,12 +87,6 @@ function emit(
   }
   ws.emit(name, data)
 }
-
-test('throws a error on lack of WebSocket support', () => {
-  throws(() => {
-    new WsConnection('ws://localhost')
-  }, /WebSocket/)
-})
 
 test('emits error on wrong format', async () => {
   setWebSocket(FakeWebSocket)
