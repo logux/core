@@ -35,18 +35,18 @@
     "nanoevents": "^9.0.0"
   },
   "devDependencies": {
-    "@logux/eslint-config": "^53.0.0",
-    "@types/ws": "^8.5.10",
+    "@logux/eslint-config": "^53.3.0",
+    "@types/ws": "^8.5.12",
     "better-node-test": "^0.5.1",
-    "c8": "^9.1.0",
-    "check-dts": "^0.7.2",
-    "clean-publish": "^4.3.0",
-    "eslint": "^8.57.0",
+    "c8": "^10.1.2",
+    "check-dts": "^0.8.0",
+    "clean-publish": "^5.0.0",
+    "eslint": "^9.8.0",
     "nanodelay": "^2.0.2",
     "nanospy": "^1.0.0",
-    "tsx": "^4.7.1",
-    "typescript": "^5.4.2",
-    "ws": "^8.16.0"
+    "tsx": "^4.16.5",
+    "typescript": "^5.5.4",
+    "ws": "^8.18.0"
   },
   "prettier": {
     "arrowParens": "avoid",
