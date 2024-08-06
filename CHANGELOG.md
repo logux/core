@@ -1,6 +1,13 @@
 # Change Log
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## 0.9 L·L
+* Removed Node.js 16 support.
+* Replaced `inMap` and `inFilter` with `onReceive`.
+* Replaced `outMap` and `outFilter` to `onSend`.
+* Fixed synchronization.
+* Added `Criteria` and `ReadonlyListener` types to exports (by @nichoth).
+
 ## 0.8.5
 * Fixed frozen pages support (by @erictheswift).
 
