@@ -60,7 +60,7 @@ export interface Meta {
   reasons: string[]
 
   /**
-   * Set code as reason and remove this reasons from previous actions.
+   * Application subprotocol version in SemVer format.
    */
   subprotocol?: string
 
