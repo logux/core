@@ -60,9 +60,9 @@ export interface Meta {
   reasons: string[]
 
   /**
-   * Application subprotocol version in SemVer format.
+   * Application subprotocol version.
    */
-  subprotocol?: string
+  subprotocol?: number
 
   /**
    * Action created time in current node time. Milliseconds since UNIX epoch.

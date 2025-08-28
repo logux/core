@@ -127,7 +127,7 @@ export function connectMessage(ver, nodeId, synced, options) {
   this.remoteNodeId = nodeId
   if (!checkProtocol(this, ver)) return
 
-  this.remoteSubprotocol = options.subprotocol || '0.0.0'
+  this.remoteSubprotocol = options.subprotocol || 0
 
   if (!emitEvent(this)) {
     this.destroy()
@@ -157,7 +157,7 @@ export function connectedMessage(ver, nodeId, time, options) {
     this.timeFix = Math.floor(this.connectSended - time[0] + roundTrip / 2)
   }
 
-  this.remoteSubprotocol = options.subprotocol || '0.0.0'
+  this.remoteSubprotocol = options.subprotocol || 0
 
   if (!emitEvent(this)) {
     this.destroy()

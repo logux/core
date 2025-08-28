@@ -155,9 +155,9 @@ export interface NodeOptions<Headers extends object = object> {
   ping?: number
 
   /**
-   * Application subprotocol version in SemVer format.
+   * Application subprotocol version.
    */
-  subprotocol?: string
+  subprotocol?: number
 
   /**
    * Timeout in milliseconds to wait answer before disconnect.
@@ -290,20 +290,20 @@ export class BaseNode<
   remoteProtocol: number | undefined
 
   /**
-   * Remote node’s application subprotocol version in SemVer format.
+   * Remote node’s application subprotocol version.
    *
    * It is undefined until nodes handshake. If remote node will not send
-   * on handshake its subprotocol, it will be set to `0.0.0`.
+   * on handshake its subprotocol, it will be set to `0`.
    *
    * ```js
-   * if (semver.satisfies(node.remoteSubprotocol, '>= 5.0.0') {
+   * if (node.remoteSubprotocol > 9) {
    *   useNewAPI()
    * } else {
    *   useOldAPI()
    * }
    * ```
    */
-  remoteSubprotocol: string | undefined
+  remoteSubprotocol: number | undefined
 
   /**
    * Current synchronization state.

@@ -1,6 +1,6 @@
 interface Versions {
-  supported: string
-  used: string
+  supported: number
+  used: number
 }
 
 export interface LoguxErrorOptions {

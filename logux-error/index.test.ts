@@ -73,8 +73,8 @@ test('stringifies subprotocol error', () => {
   let error = catchError(
     'wrong-subprotocol',
     {
-      supported: '2.x',
-      used: '1.0'
+      supported: 2,
+      used: 1
     },
     true
   )
@@ -83,7 +83,7 @@ test('stringifies subprotocol error', () => {
       .toString()
       .includes(
         'LoguxError: Logux received wrong-subprotocol error ' +
-          '(Only 2.x application subprotocols are supported, but you use 1.0)'
+          '(Only 2 application subprotocols are supported, but you use 1)'
       )
   )
 })

@@ -135,47 +135,47 @@ test('saves other client protocol', async () => {
 
 test('saves other client subprotocol', async () => {
   pair = createTest()
-  pair.leftNode.options.subprotocol = '1.0.0'
-  pair.rightNode.options.subprotocol = '1.1.0'
+  pair.leftNode.options.subprotocol = 1
+  pair.rightNode.options.subprotocol = 1
 
   pair.left.connect()
   await pair.leftNode.waitFor('synchronized')
-  equal(pair.leftNode.remoteSubprotocol, '1.1.0')
-  equal(pair.rightNode.remoteSubprotocol, '1.0.0')
+  equal(pair.leftNode.remoteSubprotocol, 1)
+  equal(pair.rightNode.remoteSubprotocol, 1)
 })
 
 test('has default subprotocol', async () => {
   pair = createTest()
   pair.left.connect()
   await pair.leftNode.waitFor('synchronized')
-  equal(pair.rightNode.remoteSubprotocol, '0.0.0')
+  equal(pair.rightNode.remoteSubprotocol, 0)
 })
 
 test('checks subprotocol version', async () => {
   pair = createTest()
-  pair.leftNode.options.subprotocol = '1.0.0'
+  pair.leftNode.options.subprotocol = 1
   pair.rightNode.on('connect', () => {
     throw new LoguxError('wrong-subprotocol', {
-      supported: '2.x',
-      used: pair.rightNode.remoteSubprotocol ?? 'NO REMOTE'
+      supported: 2,
+      used: pair.rightNode.remoteSubprotocol ?? -1
     })
   })
 
   await pair.left.connect()
   await pair.wait('left')
   deepStrictEqual(pair.rightSent, [
-    ['error', 'wrong-subprotocol', { supported: '2.x', used: '1.0.0' }]
+    ['error', 'wrong-subprotocol', { supported: 2, used: 1 }]
   ])
   equal(pair.rightNode.connected, false)
 })
 
 test('checks subprotocol version in client', async () => {
   pair = createTest()
-  pair.rightNode.options.subprotocol = '1.0.0'
+  pair.rightNode.options.subprotocol = 1
   pair.leftNode.on('connect', () => {
     throw new LoguxError('wrong-subprotocol', {
-      supported: '2.x',
-      used: pair.leftNode.remoteSubprotocol ?? 'NO REMOTE'
+      supported: 2,
+      used: pair.leftNode.remoteSubprotocol ?? -1
     })
   })
 
@@ -184,7 +184,7 @@ test('checks subprotocol version in client', async () => {
   await pair.wait('right')
   deepStrictEqual(pair.leftSent, [
     ['connect', PROTOCOL, 'client', 0],
-    ['error', 'wrong-subprotocol', { supported: '2.x', used: '1.0.0' }]
+    ['error', 'wrong-subprotocol', { supported: 2, used: 1 }]
   ])
   equal(pair.leftNode.connected, false)
 })
