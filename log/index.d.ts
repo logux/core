@@ -366,7 +366,6 @@ export class Log<
    * @returns When iteration will be finished by iterator or end of actions.
    */
   each(callback: ActionIterator<LogMeta>): Promise<void>
-
   each(callback: ActionIterator<LogMeta>): Promise<void>
 
   /**
@@ -453,7 +452,6 @@ export class Log<
     listener: ReadonlyListener<NewAction, LogMeta>,
     opts?: { event?: 'add' | 'clean'; id?: string }
   ): Unsubscribe
-
   type<
     NewAction extends Action = Action,
     Type extends string = NewAction['type']

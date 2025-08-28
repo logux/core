@@ -15,7 +15,7 @@ import {
 function createNode(
   opts?: NodeOptions,
   pair = new TestPair()
-): BaseNode<{}, TestLog> {
+): BaseNode<object, TestLog> {
   let log = TestTime.getLog()
   log.on('preadd', (action, meta) => {
     meta.reasons = ['test']

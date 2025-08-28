@@ -4,7 +4,7 @@ import { eachStoreCheck, MemoryStore } from '../index.js'
 
 eachStoreCheck((desc, creator) => {
   test(
-    `${desc}`,
+    desc,
     creator(() => new MemoryStore())
   )
 })

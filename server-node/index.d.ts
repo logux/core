@@ -1,5 +1,5 @@
 import { BaseNode } from '../base-node/index.js'
-import type { Log, Meta } from '../log/index.js'
+import type { Log } from '../log/index.js'
 
 /**
  * Server node in synchronization pair.
@@ -16,6 +16,6 @@ import type { Log, Meta } from '../log/index.js'
  * ```
  */
 export class ServerNode<
-  Headers extends object = {},
-  NodeLog extends Log = Log<Meta>
+  Headers extends object = object,
+  NodeLog extends Log = Log
 > extends BaseNode<Headers, NodeLog> {}

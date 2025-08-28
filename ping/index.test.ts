@@ -12,7 +12,7 @@ import {
   TestTime
 } from '../index.js'
 
-let node: BaseNode<{}, TestLog> | undefined
+let node: BaseNode<object, TestLog> | undefined
 
 afterEach(() => {
   node?.destroy()

@@ -9,7 +9,7 @@ import {
   TestTime
 } from '../index.js'
 
-let node: ServerNode<{}, TestLog>
+let node: ServerNode<object, TestLog>
 
 afterEach(() => {
   node.destroy()
@@ -19,7 +19,7 @@ function privateMethods(obj: object): any {
   return obj
 }
 
-function createNode(): ServerNode<{}, TestLog> {
+function createNode(): ServerNode<object, TestLog> {
   let pair = new TestPair()
   return new ServerNode('server', TestTime.getLog(), pair.left)
 }
@@ -75,9 +75,12 @@ test('sends error on unknown message type', async () => {
 
 test('throws a error on error message by default', () => {
   node = createNode()
-  throws(() => {
-    privateMethods(node).onMessage(['error', 'wrong-format', '1'])
-  }, new LoguxError('wrong-format', '1', true))
+  throws(
+    () => {
+      privateMethods(node).onMessage(['error', 'wrong-format', '1'])
+    },
+    new LoguxError('wrong-format', '1', true)
+  )
 })
 
 test('does not throw errors which are not relevant to code', () => {

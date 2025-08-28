@@ -40,7 +40,7 @@ export class TestPair extends LocalPair {
    * }
    * ```
    */
-  leftNode: BaseNode<{}, TestLog>
+  leftNode: BaseNode<object, TestLog>
 
   /**
    * Sent messages from `left` connection.
@@ -73,7 +73,7 @@ export class TestPair extends LocalPair {
    * }
    * ```
    */
-  rightNode: BaseNode<{}, TestLog>
+  rightNode: BaseNode<object, TestLog>
 
   /**
    * Sent messages from `right` connection.

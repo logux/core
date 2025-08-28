@@ -4,14 +4,14 @@ import type { Action, AnyAction, Log, Meta } from '../log/index.js'
 import type { LoguxError, LoguxErrorOptions } from '../logux-error/index.js'
 
 interface Authenticator<Headers extends object> {
-  (nodeId: string, token: string, headers: {} | Headers): Promise<boolean>
+  (nodeId: string, token: string, headers: Headers | object): Promise<boolean>
 }
 
 export interface ActionFilter {
-  (action: Action, meta: Meta):
-    | [Action, Meta]
-    | false
-    | Promise<[Action, Meta] | false>
+  (
+    action: Action,
+    meta: Meta
+  ): [Action, Meta] | false | Promise<[Action, Meta] | false>
 }
 
 interface EmptyHeaders {
@@ -78,7 +78,6 @@ export abstract class Connection {
   disconnect(reason?: 'destroy' | 'error' | 'timeout'): void
   on(event: 'disconnect', listener: (reason: string) => void): Unsubscribe
   on(event: 'error', listener: (error: Error) => void): Unsubscribe
-
   /**
    * Subscribe for connection events. It implements nanoevents API.
    * Supported events:
@@ -97,7 +96,6 @@ export abstract class Connection {
     event: 'connect' | 'connecting' | 'disconnect',
     listener: () => void
   ): Unsubscribe
-
   on(event: 'message', listener: (msg: Message) => void): Unsubscribe
 
   /**
@@ -108,7 +106,7 @@ export abstract class Connection {
   send(message: Message): void
 }
 
-export interface NodeOptions<Headers extends object = {}> {
+export interface NodeOptions<Headers extends object = object> {
   /**
    * Function to check client credentials.
    */
@@ -177,8 +175,8 @@ export interface NodeOptions<Headers extends object = {}> {
  * are based on this module.
  */
 export class BaseNode<
-  Headers extends object = {},
-  NodeLog extends Log = Log<Meta>
+  Headers extends object = object,
+  NodeLog extends Log = Log
 > {
   /**
    * Did we finish remote node authentication.
@@ -369,12 +367,10 @@ export class BaseNode<
   destroy(): void
 
   on(event: 'headers', listener: (headers: Headers) => void): Unsubscribe
-
   on(
     event: 'clientError' | 'error',
     listener: (error: LoguxError) => void
   ): Unsubscribe
-
   /**
    * Subscribe for synchronization events. It implements nanoevents API.
    * Supported events:
@@ -401,7 +397,6 @@ export class BaseNode<
     event: 'connect' | 'debug' | 'headers' | 'state',
     listener: () => void
   ): Unsubscribe
-
   on(
     event: 'debug',
     listener: (type: 'error', data: string) => void

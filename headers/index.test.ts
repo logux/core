@@ -3,7 +3,7 @@ import { afterEach, test } from 'node:test'
 
 import { ServerNode, type TestLog, TestPair, TestTime } from '../index.js'
 
-let node: ServerNode<{}, TestLog>
+let node: ServerNode<object, TestLog>
 
 afterEach(() => {
   node.destroy()
@@ -15,7 +15,7 @@ function privateMethods(obj: object): any {
 
 async function createTestPair(): Promise<TestPair> {
   let pair = new TestPair()
-  node = new ServerNode<{}, TestLog>('server', TestTime.getLog(), pair.left)
+  node = new ServerNode<object, TestLog>('server', TestTime.getLog(), pair.left)
   pair.leftNode = node
   await pair.left.connect()
 

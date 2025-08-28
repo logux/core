@@ -13,7 +13,9 @@ export default [
       }
     },
     rules: {
+      '@typescript-eslint/no-base-to-string': 'off',
       '@typescript-eslint/no-explicit-any': 'off',
+      '@typescript-eslint/require-await': 'off',
       'n/no-unsupported-features/node-builtins': [
         'error',
         {

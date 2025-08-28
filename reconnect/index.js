@@ -11,11 +11,22 @@ const FATAL_ERRORS = [
 ]
 
 export class Reconnect {
-  constructor(connection, {
-    attempts = DEFAULT_OPTIONS.attempts,
-    maxDelay = DEFAULT_OPTIONS.maxDelay,
-    minDelay = DEFAULT_OPTIONS.minDelay
-  } = {}) {
+  get connected() {
+    return this.connection.connected
+  }
+
+  get emitter() {
+    return this.connection.emitter
+  }
+
+  constructor(
+    connection,
+    {
+      attempts = DEFAULT_OPTIONS.attempts,
+      maxDelay = DEFAULT_OPTIONS.maxDelay,
+      minDelay = DEFAULT_OPTIONS.minDelay
+    } = {}
+  ) {
     this.connection = connection
     this.options = { attempts, maxDelay, minDelay }
 
@@ -138,13 +149,5 @@ export class Reconnect {
 
   send(...args) {
     return this.connection.send(...args)
-  }
-
-  get connected() {
-    return this.connection.connected
-  }
-
-  get emitter() {
-    return this.connection.emitter
   }
 }

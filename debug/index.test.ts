@@ -3,7 +3,7 @@ import { afterEach, test } from 'node:test'
 
 import { ServerNode, type TestLog, TestPair, TestTime } from '../index.js'
 
-let node: ServerNode<{}, TestLog>
+let node: ServerNode<object, TestLog>
 
 async function createTest(): Promise<TestPair> {
   let pair = new TestPair()
