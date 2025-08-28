@@ -37,6 +37,7 @@
   "devDependencies": {
     "@logux/eslint-config": "^56.1.0",
     "@types/ws": "^8.18.1",
+    "actions-up": "^1.1.1",
     "better-node-test": "^0.7.2",
     "c8": "^10.1.3",
     "check-dts": "^0.9.0",
