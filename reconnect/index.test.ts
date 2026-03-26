@@ -6,7 +6,7 @@ import { afterEach, beforeEach, test } from 'node:test'
 import { type Message, Reconnect, TestPair } from '../index.js'
 
 let listeners: { [key: string]: () => void } = {}
-const listenerMethods = {
+let listenerMethods = {
   addEventListener(name: string, callback: () => void): void {
     listeners[name] = callback
   },

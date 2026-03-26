@@ -5,13 +5,13 @@ import WebSocket, { WebSocketServer } from 'ws'
 
 import { type Message, ServerConnection, WsConnection } from '../index.js'
 
-let wss: WebSocket.Server
+let wss: WebSocketServer
 afterEach(() => {
   wss.close()
 })
 
 function connect(
-  server: WebSocket.Server,
+  server: WebSocketServer,
   client: WsConnection
 ): Promise<ServerConnection> {
   return new Promise(resolve => {
