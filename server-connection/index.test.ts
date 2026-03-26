@@ -1,5 +1,5 @@
 import { restoreAll, spyOn } from 'nanospy'
-import { deepStrictEqual, equal, throws } from 'node:assert'
+import { deepStrictEqual, equal, ok, throws } from 'node:assert'
 import { afterEach, test } from 'node:test'
 import WebSocket from 'ws'
 
@@ -79,7 +79,20 @@ test('receives messages', () => {
   deepStrictEqual(received, [['ping', 1]])
 })
 
-test('sends messages', () => {
+test('sends binary messages by default', () => {
+  let sent: (Buffer | string)[] = []
+  let ws = prepareWs()
+  ws.send = (msg: Buffer | string) => {
+    sent.push(msg)
+  }
+  let connection = new ServerConnection(ws)
+
+  connection.send(['ping', 1])
+  equal(sent.length, 1)
+  ok(sent[0] instanceof Uint8Array)
+})
+
+test('sends text messages after receiving text', () => {
   let sent: string[] = []
   let ws = prepareWs()
   ws.send = (msg: string) => {
@@ -87,8 +100,9 @@ test('sends messages', () => {
   }
   let connection = new ServerConnection(ws)
 
-  connection.send(['ping', 1])
-  deepStrictEqual(sent, ['["ping",1]'])
+  ws.emit('message', '["ping",1]')
+  connection.send(['pong', 1])
+  deepStrictEqual(sent, ['["pong",1]'])
 })
 
 test('does not send to closed socket', () => {

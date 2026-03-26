@@ -3,7 +3,7 @@ import type WebSocket from 'ws'
 import { Connection } from '../base-node/index.js'
 
 /**
- * Logux connection for browser WebSocket.
+ * Logux connection for WebSocket.
  *
  * ```js
  * import { WsConnection } from '@logux/core'
@@ -13,6 +13,12 @@ import { Connection } from '../base-node/index.js'
  * ```
  */
 export class WsConnection<WS = WebSocket> extends Connection {
+  /**
+   * Whether to use text JSON protocol instead of binary.
+   * Always `true` for WsConnection, can change in WsBinaryConnection.
+   */
+  textMode: boolean
+
   /**
    * WebSocket instance.
    */

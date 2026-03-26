@@ -3,6 +3,7 @@ import { createNanoEvents } from 'nanoevents'
 export class WsConnection {
   constructor(url, Class, opts) {
     this.connected = false
+    this.textMode = true
     this.emitter = createNanoEvents()
     if (Class) {
       this.Class = Class

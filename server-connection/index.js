@@ -1,6 +1,6 @@
-import { WsConnection } from '../ws-connection/index.js'
+import { WsBinaryConnection } from '../ws-binary-connection/index.js'
 
-export class ServerConnection extends WsConnection {
+export class ServerConnection extends WsBinaryConnection {
   constructor(ws) {
     super(undefined, true)
     this.connected = true

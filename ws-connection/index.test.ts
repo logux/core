@@ -1,67 +1,9 @@
 import { restoreAll, spyOn } from 'nanospy'
 import { deepStrictEqual, equal } from 'node:assert'
 import { afterEach, test } from 'node:test'
-import type WebSocket from 'ws'
 
 import { type Message, WsConnection } from '../index.js'
-
-class FakeWebSocket {
-  onclose?: () => void
-
-  onerror?: (event: object) => void
-
-  onmessage?: (event: object) => void
-
-  onopen?: () => void
-
-  opts: object
-
-  readyState?: number
-
-  sent: string[]
-
-  constructor(url: string, protocols: string, opts: object) {
-    this.opts = opts
-    this.sent = []
-    setTimeout(() => {
-      this.onopen?.()
-    }, 1)
-  }
-
-  close(): void {
-    this.emit('close')
-  }
-
-  emit(name: string, data?: Error | string): void {
-    if (name === 'open') {
-      if (typeof this.onopen === 'undefined') {
-        throw new Error(`No ${name} event listener`)
-      } else {
-        this.onopen()
-      }
-    } else if (name === 'message') {
-      if (typeof this.onmessage === 'undefined') {
-        throw new Error(`No ${name} event listener`)
-      } else {
-        this.onmessage({ data })
-      }
-    } else if (name === 'error') {
-      if (typeof this.onerror === 'undefined') {
-        throw new Error(`No ${name} event listener`)
-      } else {
-        this.onerror({ error: data })
-      }
-    } else if (name === 'close') {
-      if (typeof this.onclose !== 'undefined') {
-        this.onclose()
-      }
-    }
-  }
-
-  send(msg: string): void {
-    this.sent.push(msg)
-  }
-}
+import { FakeWebSocket } from '../test/fake-ws.js'
 
 function privateMethods(obj: object): any {
   return obj
@@ -78,7 +20,7 @@ afterEach(() => {
 })
 
 function emit(
-  ws: undefined | WebSocket,
+  ws: FakeWebSocket | undefined,
   name: string,
   data?: Error | string
 ): void {
@@ -90,7 +32,7 @@ function emit(
 
 test('emits error on wrong format', async () => {
   setWebSocket(FakeWebSocket)
-  let connection = new WsConnection('ws://localhost')
+  let connection = new WsConnection<FakeWebSocket>('ws://localhost')
   let error: Error | undefined
   connection.on('error', err => {
     error = err
@@ -106,7 +48,7 @@ test('emits error on wrong format', async () => {
 
 test('emits error on error', async () => {
   setWebSocket(FakeWebSocket)
-  let connection = new WsConnection('ws://localhost')
+  let connection = new WsConnection<FakeWebSocket>('ws://localhost')
   let error: Error | undefined
   connection.on('error', err => {
     error = err
@@ -123,7 +65,7 @@ test('emits error on error', async () => {
 
 test('emits connection states', async () => {
   setWebSocket(FakeWebSocket)
-  let connection = new WsConnection('ws://localhost')
+  let connection = new WsConnection<FakeWebSocket>('ws://localhost')
 
   let states: string[] = []
   connection.on('connecting', () => {
@@ -201,7 +143,7 @@ test('close WebSocket 2 times', async () => {
 
 test('receives messages', async () => {
   setWebSocket(FakeWebSocket)
-  let connection = new WsConnection('ws://localhost')
+  let connection = new WsConnection<FakeWebSocket>('ws://localhost')
 
   let received: Message[] = []
   connection.on('message', msg => {
