@@ -1,4 +1,4 @@
-/* c8 ignore start */
+/* node:coverage disable */
 function ok(value) {
   if (!value) {
     throw new Error('Expected value to be truthy, but got false')
@@ -38,7 +38,7 @@ function equal(a, b) {
     )
   }
 }
-/* c8 ignore stop */
+/* node:coverage enable */
 
 async function all(request, list) {
   if (!list) list = []

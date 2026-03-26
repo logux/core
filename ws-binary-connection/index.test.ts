@@ -286,6 +286,32 @@ test('round-trips logux/processed action', async () => {
   ])
 })
 
+test('round-trips logux/processed with implicit nodeId & counter', async () => {
+  let { connection, received } = await createConnection()
+
+  internal(connection).baseTime = 1000
+  internal(connection).localNodeId = 'server:abc'
+  internal(connection).remoteNodeId = 'server:abc'
+
+  connection.send([
+    'sync',
+    1,
+    { id: '1100 server:abc 3', type: 'logux/processed' },
+    { id: 5, time: 10 }
+  ])
+  let binary = connection.ws!.sent[0] as Uint8Array
+  emit(connection.ws, 'message', binary.buffer)
+
+  deepStrictEqual(received, [
+    [
+      'sync',
+      1,
+      { id: '1100 server:abc 3', type: 'logux/processed' },
+      { id: 5, time: 10 }
+    ]
+  ])
+})
+
 test('round-trips logux/processed with different nodeId', async () => {
   let { connection, received } = await createConnection()
 

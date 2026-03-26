@@ -69,6 +69,7 @@ function decodeActionId(ctx, buf, offset) {
     let [nodeId, pos2] = decodeString(buf, pos)
     let [order, end] = decodeVarint(buf, pos2)
     return [`${timestamp} ${nodeId} ${order}`, end]
+  /* node:coverage ignore next 3 */
   }
 
   throw new Error('Unknown action ID type: ' + type)
@@ -111,6 +112,7 @@ function decodeMeta(buf, offset) {
     meta.id = [shift, nodeId, order]
     meta.subprotocol = subprotocol
     return [meta, end]
+  /* node:coverage ignore next 3 */
   }
 
   throw new Error('Unknown meta field count: ' + fieldCount)
@@ -156,6 +158,7 @@ function decodeAction(ctx, buf, offset) {
     let [id, pos] = decodeActionId(ctx, buf, offset)
     let [meta, end] = decodeMeta(buf, pos)
     return [{ id, type: '0/clean' }, meta, end]
+  /* node:coverage ignore next 3 */
   }
 
   throw new Error('Unknown action type: ' + type)
@@ -445,6 +448,7 @@ function encodeMessage(ctx, message) {
       bytes = [0x53 /* 'S' */, ...encodeVarint(message[1])]
       break
     }
+    /* node:coverage ignore next 2 */
     default:
       throw new Error('Unknown message type: ' + type)
   }
