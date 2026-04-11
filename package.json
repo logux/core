@@ -34,10 +34,10 @@
   "devDependencies": {
     "@logux/oxc-configs": "^0.2.2",
     "@types/ws": "^8.18.1",
-    "actions-up": "^1.12.0",
-    "better-node-test": "^0.8.3",
+    "actions-up": "^1.13.0",
+    "better-node-test": "^0.8.4",
     "check-dts": "^1.0.0",
-    "clean-publish": "^6.0.4",
+    "clean-publish": "^6.0.5",
     "nanodelay": "^2.0.2",
     "nanospy": "^1.0.0",
     "oxlint": "^1.59.0",
