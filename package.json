@@ -3,58 +3,50 @@
   "version": "0.10.0",
   "description": "Logux core components",
   "keywords": [
-    "logux",
-    "core",
     "connection",
-    "websocket",
+    "core",
     "crdt",
+    "distributed systems",
     "event sourcing",
-    "distributed systems"
+    "logux",
+    "websocket"
   ],
-  "scripts": {
-    "test:coverage": "bnt --coverage 100 --coverage-exclude '**/*.test.*' --coverage-exclude 'test/*'",
-    "test:lint": "eslint .",
-    "test:types": "check-dts",
-    "test": "pnpm run /^test:/"
-  },
-  "author": "Andrey Sitnik <andrey@sitnik.es>",
-  "license": "MIT",
   "homepage": "https://logux.org/",
+  "license": "MIT",
+  "author": "Andrey Sitnik <andrey@sitnik.es>",
   "repository": "logux/core",
-  "sideEffects": false,
   "type": "module",
+  "sideEffects": false,
   "types": "./index.d.ts",
   "exports": {
     ".": "./index.js",
     "./package.json": "./package.json"
   },
-  "engines": {
-    "node": "^22.0.0 || >=24.0.0"
+  "scripts": {
+    "test:coverage": "bnt --coverage 100 --coverage-exclude '**/*.test.*' --coverage-exclude 'test/*'",
+    "test:lint": "oxlint",
+    "test:types": "check-dts",
+    "test": "pnpm run /^test:/"
   },
   "dependencies": {
     "nanoevents": "^9.1.0"
   },
   "devDependencies": {
-    "@logux/eslint-config": "^57.1.0",
+    "@logux/oxc-configs": "^0.2.2",
     "@types/ws": "^8.18.1",
     "actions-up": "^1.12.0",
     "better-node-test": "^0.8.3",
-
     "check-dts": "^1.0.0",
     "clean-publish": "^6.0.4",
-    "eslint": "^10.1.0",
     "nanodelay": "^2.0.2",
     "nanospy": "^1.0.0",
+    "oxlint": "^1.59.0",
+    "oxlint-tsgolint": "^0.20.0",
     "tsx": "^4.21.0",
     "typescript": "^6.0.2",
     "ws": "^8.20.0"
   },
-  "prettier": {
-    "arrowParens": "avoid",
-    "jsxSingleQuote": false,
-    "quoteProps": "consistent",
-    "semi": false,
-    "singleQuote": true,
-    "trailingComma": "none"
+  "engines": {
+    "node": "^22.0.0 || >=24.0.0"
   }
 }
