@@ -32,7 +32,7 @@ export function actionEvents(
 ): void
 
 export interface Meta {
-  [extra: string]: any
+  [extra: string]: unknown
 
   /**
    * Sequence number of action in current log. Log fills it.
@@ -78,7 +78,7 @@ export interface Action {
 }
 
 export interface AnyAction {
-  [extra: string]: any
+  [extra: string]: unknown
   type: string
 }
 

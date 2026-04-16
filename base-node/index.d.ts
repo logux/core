@@ -37,7 +37,7 @@ export type Message =
   | ['connect', number, string, number, object?]
   | ['connected', number, string, [number, number], object?]
   | ['debug', 'error', string]
-  | ['error', keyof LoguxErrorOptions, any?]
+  | ['error', keyof LoguxErrorOptions, unknown?]
   | ['headers', object]
   | ['ping', number]
   | ['pong', number]
