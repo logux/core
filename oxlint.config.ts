@@ -8,6 +8,7 @@ export default defineConfig({
     {
       files: ['**/*.ts', '**/*.tsx', '**/*.mts', '**/*.cts'],
       rules: {
+        'typescript/no-unnecessary-type-parameters': 'off',
         'typescript/no-explicit-any': 'off',
         'typescript/require-await': 'off'
       }

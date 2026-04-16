@@ -444,19 +444,13 @@ export class Log<
    * @param event
    * @returns Unbind listener from event.
    */
-  type<
-    NewAction extends Action = Action,
-    Type extends string = NewAction['type']
-  >(
-    type: Type,
+  type<NewAction extends Action = Action>(
+    type: NewAction['type'],
     listener: ReadonlyListener<NewAction, LogMeta>,
     opts?: { event?: 'add' | 'clean'; id?: string }
   ): Unsubscribe
-  type<
-    NewAction extends Action = Action,
-    Type extends string = NewAction['type']
-  >(
-    type: Type,
+  type<NewAction extends Action = Action>(
+    type: NewAction['type'],
     listener: PreaddListener<NewAction, LogMeta>,
     opts: { event: 'preadd'; id?: string }
   ): Unsubscribe
