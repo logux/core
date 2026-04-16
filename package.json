@@ -32,16 +32,17 @@
     "nanoevents": "^9.1.0"
   },
   "devDependencies": {
-    "@logux/oxc-configs": "^0.2.2",
+    "@logux/oxc-configs": "^0.3.3",
     "@types/ws": "^8.18.1",
     "actions-up": "^1.13.0",
     "better-node-test": "^0.8.4",
     "check-dts": "^1.0.0",
     "clean-publish": "^6.0.5",
+    "eslint-plugin-prefer-let": "^4.2.2",
     "nanodelay": "^2.0.2",
     "nanospy": "^1.0.0",
-    "oxlint": "^1.59.0",
-    "oxlint-tsgolint": "^0.20.0",
+    "oxlint": "^1.60.0",
+    "oxlint-tsgolint": "^0.21.0",
     "tsx": "^4.21.0",
     "typescript": "^6.0.2",
     "ws": "^8.20.0"
