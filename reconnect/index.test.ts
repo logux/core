@@ -20,13 +20,13 @@ let listenerMethods = {
 function setHidden(value: boolean): void {
   // @ts-expect-error
   global.document.hidden = value
-  listeners.visibilitychange()
+  listeners.visibilitychange!()
 }
 
 function setOnLine(value: boolean, event: 'online' | 'resume'): void {
   // @ts-expect-error
   global.navigator.onLine = value
-  listeners[event]()
+  listeners[event]!()
 }
 
 function privateMethods(obj: object): any {
@@ -314,14 +314,14 @@ test('listens for window events', async () => {
   equal(recon.connected, false)
 
   setHidden(true)
-  listeners.visibilitychange()
+  listeners.visibilitychange!()
   equal(recon.connecting, false)
 
   setHidden(false)
   await pair.wait()
   equal(recon.connected, true)
 
-  listeners.freeze()
+  listeners.freeze!()
   await delay(10)
 
   equal(recon.connecting, false)
@@ -351,9 +351,9 @@ test('does connect on online if client was not connected', async () => {
 
   let connect = spyOn(Reconnect.prototype, 'connect')
 
-  listeners.visibilitychange()
+  listeners.visibilitychange!()
   equal(connect.callCount, 0)
 
-  listeners.online()
+  listeners.online!()
   equal(connect.callCount, 0)
 })

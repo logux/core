@@ -388,7 +388,7 @@ test('uses always latest added', async () => {
   await delay(1)
   pair.leftNode.log.add({ type: 'b' })
   await delay(1)
-  equal(pair.leftSent[1][1], 1)
+  equal(pair.leftSent[1]![1], 1)
 })
 
 test('changes multiple actions in map', async () => {

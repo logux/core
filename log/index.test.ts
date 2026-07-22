@@ -346,7 +346,7 @@ test('cleans log by reason', async () => {
   })
   await log.removeReason('a')
   checkActions(log, [{ type: 'AB' }, { type: 'B' }])
-  deepStrictEqual(log.store.entries[1][1].reasons, ['b'])
+  deepStrictEqual(log.store.entries[1]![1].reasons, ['b'])
   deepStrictEqual(cleaned, [[{ type: 'A' }, 1, []]])
 })
 

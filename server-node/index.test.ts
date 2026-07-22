@@ -91,6 +91,6 @@ test('supports connection before initializing', async () => {
   await delay(70)
   equal(node.connected, true)
   equal(pair.leftSent.length, 2)
-  deepStrictEqual(pair.leftSent[0][0], 'connected')
+  deepStrictEqual(pair.leftSent[0]![0], 'connected')
   deepStrictEqual(pair.leftSent[1], ['ping', 10])
 })
