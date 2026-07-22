@@ -15,6 +15,12 @@
   "license": "MIT",
   "author": "Andrey Sitnik <andrey@sitnik.es>",
   "repository": "logux/core",
+  "funding": [
+    {
+      "type": "github",
+      "url": "https://github.com/sponsors/ai"
+    }
+  ],
   "type": "module",
   "sideEffects": false,
   "types": "./index.d.ts",
@@ -47,6 +53,6 @@
     "ws": "^8.21.1"
   },
   "engines": {
-    "node": "^22.0.0 || >=24.0.0"
+    "node": "^22.0.0 || ^24.0.0 || >=26.0.0"
   }
 }
