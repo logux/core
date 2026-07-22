@@ -1,4 +1,4 @@
-import { type Action, Log, type Meta } from '../log/index.js'
+import type { Action, Log, Meta } from '../log/index.js'
 
 /**
  * Log to be used in tests. It already has memory store, node ID,

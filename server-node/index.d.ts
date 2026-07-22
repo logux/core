@@ -1,4 +1,4 @@
-import { BaseNode } from '../base-node/index.js'
+import type { BaseNode } from '../base-node/index.js'
 import type { Log } from '../log/index.js'
 
 /**

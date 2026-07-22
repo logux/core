@@ -1,4 +1,4 @@
-import { Connection } from '../base-node/index.js'
+import type { Connection } from '../base-node/index.js'
 
 interface ReconnectOptions {
   /**

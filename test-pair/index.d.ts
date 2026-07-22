@@ -1,5 +1,5 @@
 import type { BaseNode, Message } from '../base-node/index.js'
-import { LocalPair } from '../local-pair/index.js'
+import type { LocalPair } from '../local-pair/index.js'
 import type { TestLog } from '../test-log/index.js'
 
 /**

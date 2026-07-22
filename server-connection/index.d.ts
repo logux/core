@@ -1,6 +1,6 @@
 import type WebSocket from 'ws'
 
-import { WsBinaryConnection } from '../ws-binary-connection/index.js'
+import type { WsBinaryConnection } from '../ws-binary-connection/index.js'
 
 /**
  * Logux connection for server WebSocket.

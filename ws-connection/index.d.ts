@@ -1,6 +1,6 @@
 import type WebSocket from 'ws'
 
-import { Connection } from '../base-node/index.js'
+import type { Connection } from '../base-node/index.js'
 
 /**
  * Logux connection for WebSocket.

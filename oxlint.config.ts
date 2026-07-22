@@ -14,7 +14,8 @@ export default defineConfig({
     }
   ],
   rules: {
-    'eslint/no-new': 'off',
+    'no-new': 'off',
+    'no-underscore-dangle': 'off',
     'import/no-named-as-default': 'off',
     'oxc/no-this-in-exported-function': 'off',
     'typescript/no-extraneous-class': 'off',
