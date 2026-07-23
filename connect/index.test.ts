@@ -1,6 +1,6 @@
-import { delay } from 'nanodelay'
 import { deepStrictEqual, equal, ok, throws } from 'node:assert'
 import { afterEach, test } from 'node:test'
+import { setTimeout } from 'node:timers/promises'
 
 import {
   BaseNode,
@@ -283,14 +283,14 @@ test('allows access for right users', async () => {
   pair.leftNode.options = { token: 'a' }
   pair.rightNode.options = {
     async auth(nodeId, token) {
-      await delay(10)
+      await setTimeout(10)
       return token === 'a' && nodeId === 'client'
     }
   }
 
   await pair.left.connect()
   privateMethods(pair.leftNode).sendDuilian(0)
-  await delay(50)
+  await setTimeout(50)
   deepStrictEqual(pair.rightSent[0], ['connected', PROTOCOL, 'server', [1, 2]])
 })
 
@@ -327,7 +327,7 @@ test('uses timeout between connect and connected', async () => {
   })
 
   await p.left.connect()
-  await delay(101)
+  await setTimeout(101)
   if (typeof error === 'undefined') throw new Error('Error was not thrown')
   equal(error.name, 'LoguxError')
   ok(!error.message.includes('received'))
@@ -350,7 +350,7 @@ test('catches authentication errors', async () => {
 
   await pair.left.connect()
   await pair.wait('right')
-  await delay(1)
+  await setTimeout(1)
   deepStrictEqual(errors, [error])
   deepStrictEqual(pair.rightSent, [])
   equal(pair.rightNode.connected, false)
@@ -375,7 +375,7 @@ test('sends headers before connect message (if headers is set)', async () => {
   pair = createTest()
   pair.leftNode.setLocalHeaders({ env: 'development' })
   await pair.left.connect()
-  await delay(101)
+  await setTimeout(101)
   deepStrictEqual(pair.leftSent, [
     ['headers', { env: 'development' }],
     ['connect', PROTOCOL, 'client', 0]
@@ -386,7 +386,7 @@ test('answers with headers before connected message', async () => {
   pair = createTest()
   pair.rightNode.setLocalHeaders({ env: 'development' })
   await pair.left.connect()
-  await delay(101)
+  await setTimeout(101)
   deepStrictEqual(pair.rightSent, [
     ['headers', { env: 'development' }],
     ['connected', PROTOCOL, 'server', [2, 3]]
@@ -400,7 +400,7 @@ test('sends headers if connection is active', async () => {
   deepStrictEqual(pair.leftSent, [['connect', PROTOCOL, 'client', 0]])
 
   pair.leftNode.setLocalHeaders({ env: 'development' })
-  await delay(101)
+  await setTimeout(101)
   deepStrictEqual(pair.leftSent, [
     ['connect', PROTOCOL, 'client', 0],
     ['headers', { env: 'development' }]
@@ -411,7 +411,7 @@ test('saves remote headers', async () => {
   pair = createTest()
   pair.leftNode.setLocalHeaders({ env: 'development' })
   await pair.left.connect()
-  await delay(101)
+  await setTimeout(101)
   deepStrictEqual(pair.rightNode.remoteHeaders, { env: 'development' })
 })
 
@@ -429,7 +429,7 @@ test('allows access only with headers', async () => {
 
   pair.leftNode.setLocalHeaders({ env: 'development' })
   await pair.left.connect()
-  await delay(101)
+  await setTimeout(101)
 
   deepStrictEqual(authHeaders, { env: 'development' })
 })

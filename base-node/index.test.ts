@@ -1,7 +1,7 @@
-import { delay } from 'nanodelay'
 import { spyOn } from 'nanospy'
 import { deepStrictEqual, doesNotThrow, equal, ok, throws } from 'node:assert'
 import { test } from 'node:test'
+import { setTimeout } from 'node:timers/promises'
 
 import {
   BaseNode,
@@ -208,9 +208,9 @@ test('has separated timeouts', async () => {
   })
 
   privateMethods(node).startTimeout()
-  await delay(60)
+  await setTimeout(60)
   privateMethods(node).startTimeout()
-  await delay(60)
+  await setTimeout(60)
   if (typeof error === 'undefined') throw new Error('Error was no sent')
   ok(error.message.includes('timeout'))
 })
@@ -227,7 +227,7 @@ test('stops timeouts on disconnect', async () => {
   privateMethods(node).startTimeout()
   privateMethods(node).onDisconnect()
 
-  await delay(50)
+  await setTimeout(50)
   privateMethods(node).startTimeout()
   equal(error, undefined)
 })
@@ -312,7 +312,7 @@ test('disconnect on the error during send', async () => {
     throw error
   }
   privateMethods(pair.leftNode).send(['ping', 0])
-  await delay(1)
+  await setTimeout(1)
   equal(pair.leftNode.connected, false)
   deepStrictEqual(errors, [error])
 })

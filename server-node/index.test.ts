@@ -1,7 +1,7 @@
-import { delay } from 'nanodelay'
 import { spyOn } from 'nanospy'
 import { deepStrictEqual, equal, ok, throws } from 'node:assert'
 import { afterEach, test } from 'node:test'
+import { setTimeout } from 'node:timers/promises'
 
 import { ServerNode, TestPair, TestTime } from '../index.js'
 
@@ -43,7 +43,7 @@ test('destroys on connect timeout', async () => {
   let destroy = spyOn(node, 'destroy')
   await pair.left.connect()
   equal(destroy.callCount, 0)
-  await delay(200)
+  await setTimeout(200)
   if (typeof error === 'undefined') throw new Error('Error was not sent')
   ok(error.message.includes('timeout'))
   equal(destroy.callCount, 1)
@@ -85,10 +85,10 @@ test('supports connection before initializing', async () => {
 
   await pair.right.connect()
   pair.right.send(['connect', node.localProtocol, 'client', 0])
-  await delay(70)
+  await setTimeout(70)
   deepStrictEqual(pair.leftSent, [])
   returnLastAdded(10)
-  await delay(70)
+  await setTimeout(70)
   equal(node.connected, true)
   equal(pair.leftSent.length, 2)
   deepStrictEqual(pair.leftSent[0]![0], 'connected')

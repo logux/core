@@ -1,6 +1,6 @@
-import { delay } from 'nanodelay'
 import { deepStrictEqual, equal, ok, throws } from 'node:assert'
 import { test } from 'node:test'
+import { setTimeout } from 'node:timers/promises'
 
 import { type Connection, LocalPair, type Message } from '../index.js'
 
@@ -140,7 +140,7 @@ test('allows disconnect during connecting', async () => {
   let tracker = new Tracker(10)
   tracker.pair.left.connect()
   tracker.pair.left.disconnect()
-  await delay(50)
+  await setTimeout(50)
   deepStrictEqual(tracker.left, [['connecting'], ['disconnect', undefined]])
   deepStrictEqual(tracker.right, [])
 })

@@ -1,6 +1,6 @@
-import { delay } from 'nanodelay'
 import { deepStrictEqual, equal } from 'node:assert'
 import { afterEach, test } from 'node:test'
+import { setTimeout } from 'node:timers/promises'
 import WebSocket, { WebSocketServer } from 'ws'
 
 import { type Message, ServerConnection, WsConnection } from '../index.js'
@@ -39,20 +39,20 @@ test('works in real protocol', async () => {
     serverReceived.push(msg)
   })
 
-  await delay(100)
+  await setTimeout(100)
   equal(server.connected, true)
   equal(client.connected, true)
 
   client.send(['ping', 1])
-  await delay(100)
+  await setTimeout(100)
   deepStrictEqual(serverReceived, [['ping', 1]])
 
   server.send(['pong', 1])
-  await delay(100)
+  await setTimeout(100)
   deepStrictEqual(clientReceived, [['pong', 1]])
 
   server.disconnect()
-  await delay(100)
+  await setTimeout(100)
   equal(server.connected, false)
   equal(client.connected, false)
 })

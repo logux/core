@@ -1,6 +1,6 @@
-import { delay } from 'nanodelay'
 import { deepStrictEqual, equal, ok, throws } from 'node:assert'
 import { afterEach, test } from 'node:test'
+import { setTimeout } from 'node:timers/promises'
 
 import {
   type BaseNode,
@@ -62,34 +62,34 @@ test('sends ping on idle connection', async () => {
   pair.leftNode.catch(err => {
     error = err
   })
-  await delay(250)
+  await setTimeout(250)
   privateMethods(pair.right).send(['duilian', ''])
-  await delay(250)
+  await setTimeout(250)
   privateMethods(pair.leftNode).send(['duilian', ''])
-  await delay(250)
+  await setTimeout(250)
   equal(typeof error, 'undefined')
   deepStrictEqual(pair.leftSent, [['duilian', '']])
-  await delay(100)
+  await setTimeout(100)
   equal(typeof error, 'undefined')
   deepStrictEqual(pair.leftSent, [
     ['duilian', ''],
     ['ping', 1]
   ])
   pair.right.send(['pong', 1])
-  await delay(250)
+  await setTimeout(250)
   equal(typeof error, 'undefined')
   deepStrictEqual(pair.leftSent, [
     ['duilian', ''],
     ['ping', 1]
   ])
-  await delay(100)
+  await setTimeout(100)
   equal(typeof error, 'undefined')
   deepStrictEqual(pair.leftSent, [
     ['duilian', ''],
     ['ping', 1],
     ['ping', 1]
   ])
-  await delay(250)
+  await setTimeout(250)
   if (typeof error === 'undefined') throw new Error('Error was not sent')
   ok(error.message.includes('timeout'))
   deepStrictEqual(pair.leftSent, [
@@ -112,7 +112,7 @@ test('does not ping before authentication', async () => {
   await pair.left.connect()
   await pair.wait()
   pair.clear()
-  await delay(250)
+  await setTimeout(250)
   deepStrictEqual(pair.leftSent, [])
 })
 
@@ -122,7 +122,7 @@ test('sends only one ping if timeout is bigger than ping', async () => {
     ping: 100,
     timeout: 300
   })
-  await delay(250)
+  await setTimeout(250)
   deepStrictEqual(pair.leftSent, [['ping', 1]])
 })
 
@@ -130,7 +130,7 @@ test('do not try clear timeout if it does not set', async () => {
   let pair = await createTest({
     ping: undefined
   })
-  await delay(250)
+  await setTimeout(250)
   privateMethods(pair.leftNode).sendPing()
   deepStrictEqual(pair.leftSent, [])
 })

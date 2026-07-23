@@ -1,7 +1,7 @@
-import { delay } from 'nanodelay'
 import { spyOn } from 'nanospy'
 import { deepStrictEqual, equal } from 'node:assert'
 import { afterEach, test } from 'node:test'
+import { setTimeout } from 'node:timers/promises'
 
 import { ClientNode, TestPair, TestTime } from '../index.js'
 
@@ -55,9 +55,9 @@ test('does not connect before initializing', async () => {
   node = new ClientNode('client', log, pair.left, { fixTime: false })
 
   await pair.left.connect()
-  await delay(10)
+  await setTimeout(10)
   deepStrictEqual(pair.leftSent, [])
   returnLastAdded(10)
-  await delay(10)
+  await setTimeout(10)
   deepStrictEqual(pair.leftSent, [['connect', node.localProtocol, 'client', 0]])
 })

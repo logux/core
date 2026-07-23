@@ -1,6 +1,6 @@
-import { delay } from 'nanodelay'
 import { deepStrictEqual, equal } from 'node:assert'
 import { afterEach, test } from 'node:test'
+import { setTimeout } from 'node:timers/promises'
 
 import { ClientNode, ServerNode, TestPair, TestTime } from '../index.js'
 
@@ -233,7 +233,7 @@ test('handles error in onReceive', async () => {
   })
   pair.leftNode.log.add({ type: 'a' })
 
-  await delay(50)
+  await setTimeout(50)
   deepStrictEqual(catched, [error])
 })
 
@@ -249,7 +249,7 @@ test('reports errors during initial output filter', async () => {
     throw error
   }
   pair.left.connect()
-  await delay(50)
+  await setTimeout(50)
   deepStrictEqual(catched, [error])
 })
 
@@ -265,7 +265,7 @@ test('reports errors during output filter', async () => {
     }
   })
   pair.rightNode.log.add({ type: 'a' })
-  await delay(50)
+  await setTimeout(50)
   deepStrictEqual(catched, [error])
 })
 
@@ -385,9 +385,9 @@ test('uses always latest added', async () => {
   })
   privateMethods(pair.rightNode).send = () => {}
   pair.leftNode.log.add({ type: 'a' })
-  await delay(1)
+  await setTimeout(1)
   pair.leftNode.log.add({ type: 'b' })
-  await delay(1)
+  await setTimeout(1)
   equal(pair.leftSent[1]![1], 1)
 })
 

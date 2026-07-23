@@ -1,7 +1,7 @@
-import { delay } from 'nanodelay'
 import { restoreAll, spyOn } from 'nanospy'
 import { deepStrictEqual, equal, notEqual, ok } from 'node:assert'
 import { afterEach, beforeEach, test } from 'node:test'
+import { setTimeout } from 'node:timers/promises'
 
 import { type Message, Reconnect, TestPair } from '../index.js'
 
@@ -218,7 +218,7 @@ test('reconnects automatically with delay', async () => {
   pair.right.disconnect()
   await pair.wait()
   equal(pair.right.connected, false)
-  await delay(70)
+  await setTimeout(70)
   equal(pair.right.connected, true)
 })
 
@@ -229,7 +229,7 @@ test('allows to disable reconnecting', async () => {
   recon.reconnecting = false
   pair.right.disconnect()
   await pair.wait()
-  await delay(1)
+  await setTimeout(1)
   equal(pair.right.connected, false)
 })
 
@@ -250,7 +250,7 @@ test('has maximum reconnection attempts', async () => {
 
   recon.connect()
 
-  await delay(10)
+  await setTimeout(10)
   equal(recon.reconnecting, false)
   equal(connects, 3)
 })
@@ -322,7 +322,7 @@ test('listens for window events', async () => {
   equal(recon.connected, true)
 
   listeners.freeze!()
-  await delay(10)
+  await setTimeout(10)
 
   equal(recon.connecting, false)
   equal(recon.connected, false)
@@ -331,7 +331,7 @@ test('listens for window events', async () => {
   equal(recon.connecting, false)
 
   setOnLine(true, 'resume')
-  await delay(10)
+  await setTimeout(10)
   equal(recon.connected, true)
   pair.right.disconnect()
   await pair.wait()

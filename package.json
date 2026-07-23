@@ -44,7 +44,6 @@
     "better-node-test": "^0.8.4",
     "check-dts": "^2.0.0",
     "eslint-plugin-prefer-let": "^4.2.2",
-    "nanodelay": "^2.0.2",
     "nanospy": "^2.0.2",
     "oxlint": "^1.75.0",
     "oxlint-tsgolint": "^7.0.2001",
