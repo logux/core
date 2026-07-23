@@ -1,4 +1,4 @@
-# Logux Core [![Cult Of Martians][cult-img]][cult]
+# Logux Core
 
 <img align="right" width="95" height="148" title="Logux logotype"
      src="https://logux.org/branding/logotype.svg">
@@ -30,9 +30,6 @@ This repository contains Logux core components for JavaScript:
 <img src="https://cdn.evilmartians.com/badges/logo-no-label.svg" alt="" width="22" height="16" />  Logux Core is built by <b><a href="https://evilmartians.com/">Evil Martians</a></b>, an American design and engineering consultancy for <b>developer tools, AI, and cybersecurity startups</b>.
 
 ---
-
-[cult-img]: http://cultofmartians.com/assets/badges/badge.svg
-[cult]: http://cultofmartians.com/done.html
 
 ## Install
 
