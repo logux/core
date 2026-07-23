@@ -48,7 +48,6 @@
     "nanospy": "^2.0.2",
     "oxlint": "^1.75.0",
     "oxlint-tsgolint": "^7.0.2001",
-    "tsx": "^4.23.1",
     "typescript": "^7.0.2",
     "ws": "^8.21.1"
   },
