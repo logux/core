@@ -35,7 +35,7 @@
     "test": "pnpm run /^test:/"
   },
   "dependencies": {
-    "nanoevents": "^9.1.0"
+    "nanoevents": "^10.0.0"
   },
   "devDependencies": {
     "@logux/oxc-configs": "^0.4.1",
