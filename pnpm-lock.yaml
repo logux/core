@@ -22,8 +22,8 @@ importers:
         specifier: ^1.16.0
         version: 1.16.0
       better-node-test:
-        specifier: ^0.8.4
-        version: 0.8.4
+        specifier: ^1.0.0
+        version: 1.0.0
       check-dts:
         specifier: ^2.0.0
         version: 2.0.0(typescript@7.0.2)
@@ -347,9 +347,9 @@ packages:
     resolution: {integrity: sha512-quJQXlTSUGL2LH9SUXo8VwsY4soanhgo6LNSm84E1LBcE8s3O0wpdiRzyR9z/ZZJMlMWv37qOOb9pdJlMUEKFQ==}
     engines: {node: '>=8'}
 
-  better-node-test@0.8.4:
-    resolution: {integrity: sha512-Abil6GxliznKjFTrIZa95y7W2siBXq+I74caB0UmiJ78G9SBXfu7vTnVN+y3DohR7gsxaz0UOqVwOf0OaFxFQw==}
-    engines: {node: ^18.19.0 || ^20.0.0 || ^22.0.0 || >=24.0.0}
+  better-node-test@1.0.0:
+    resolution: {integrity: sha512-15Dz6VMm0sH5zwxKmOxEwrrOttcQ/z2bhAAAQOujScYxQqO3rlU3rtE1/Vfkcu7rpwaqZ0iqmrwE26G4hwDlVg==}
+    engines: {node: ^22.0.0 || ^24.0.0 || >=26.0.0}
     hasBin: true
 
   check-dts@2.0.0:
@@ -600,7 +600,7 @@ snapshots:
 
   ansi-regex@5.0.1: {}
 
-  better-node-test@0.8.4: {}
+  better-node-test@1.0.0: {}
 
   check-dts@2.0.0(typescript@7.0.2):
     dependencies:
