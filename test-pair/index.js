@@ -3,6 +3,8 @@ import { LocalPair } from '../local-pair/index.js'
 function clone(obj) {
   if (Array.isArray(obj)) {
     return obj.map(i => clone(i))
+  } else if (obj instanceof Uint8Array) {
+    return new obj.constructor(obj)
   } else if (typeof obj === 'object') {
     let cloned = {}
     for (let i in obj) {

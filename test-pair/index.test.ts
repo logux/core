@@ -1,4 +1,4 @@
-import { deepStrictEqual, equal } from 'node:assert'
+import { deepStrictEqual, equal, ok } from 'node:assert'
 import { test } from 'node:test'
 
 import type { Message } from '../index.js'
@@ -76,6 +76,29 @@ test('clones messages', async () => {
   msg[1] = 2
   deepStrictEqual(pair.leftSent, [['ping', 1]])
   deepStrictEqual(pair.rightEvents, [['connect'], ['message', ['ping', 1]]])
+})
+
+test('clones binary bytes in actions', async () => {
+  let pair = new TestPair()
+  let action = {
+    compressed: true,
+    d: new Uint8Array([1, 2, 3]),
+    iv: new Uint8Array([4, 5, 6]),
+    type: '0'
+  }
+  let msg: Message = ['sync', 1, action, { id: 1, time: 1 }]
+  await pair.left.connect()
+  pair.left.send(msg)
+  await pair.wait()
+
+  action.d[0] = 9
+  action.iv[0] = 9
+
+  let sent = pair.leftSent[0] as [string, number, typeof action, object]
+  ok(sent[2].d instanceof Uint8Array)
+  ok(sent[2].iv instanceof Uint8Array)
+  deepStrictEqual(sent[2].d, new Uint8Array([1, 2, 3]))
+  deepStrictEqual(sent[2].iv, new Uint8Array([4, 5, 6]))
 })
 
 test('returns self in wait()', async () => {
