@@ -15,6 +15,7 @@ export default defineConfig({
   ],
   rules: {
     'no-new': 'off',
+    'new-cap': 'off',
     'no-underscore-dangle': 'off',
     'import/no-named-as-default': 'off',
     'oxc/no-this-in-exported-function': 'off',
