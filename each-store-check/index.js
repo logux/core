@@ -8,6 +8,17 @@ function ok(value) {
 function deepEqual(a, b) {
   if (a === b) {
     return true
+  } else if (a instanceof Uint8Array || b instanceof Uint8Array) {
+    if (!(a instanceof Uint8Array) || !(b instanceof Uint8Array)) {
+      return false
+    } else if (a.length !== b.length) {
+      return false
+    } else {
+      for (let i = 0; i < a.length; i++) {
+        if (a[i] !== b[i]) return false
+      }
+      return true
+    }
   } else if (Array.isArray(a) && Array.isArray(b)) {
     if (a.length !== b.length) {
       return false
@@ -452,6 +463,30 @@ export function eachStoreCheck(test) {
       [{ type: 'B' }, { added: 1, id: '2 a 0', indexes: ['a'], time: 1 }],
       [{ type: 'C' }, { added: 2, id: '3 a 0', indexes: ['a'], time: 1 }]
     ])
+  })
+
+  test('keeps bytes in actions', factory => async () => {
+    let store = factory()
+    let action = {
+      d: new Uint8Array([1, 2, 3]),
+      iv: new Uint8Array(12),
+      type: '0'
+    }
+    await store.add(action, { id: '1 n 0', reasons: ['a'], time: 1 })
+
+    let [byId] = await store.byId('1 n 0')
+    equal(byId, action)
+    ok(byId.d instanceof Uint8Array)
+
+    await store.changeMeta('1 n 0', { reasons: ['a', 'b'] })
+    await store.removeReason('b', {}, () => {})
+    await checkBoth(store, [
+      [action, { added: 1, id: '1 n 0', reasons: ['a'], time: 1 }]
+    ])
+
+    let removed = await store.remove('1 n 0')
+    equal(removed[0], action)
+    ok(removed[0].d instanceof Uint8Array)
   })
 
   test('cleans whole store if implemented', factory => async () => {
