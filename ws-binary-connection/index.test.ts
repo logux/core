@@ -385,7 +385,7 @@ test('round-trips encrypted 0 action without compression', async () => {
   equal(syncMsg[2].type, '0')
   deepStrictEqual(syncMsg[2].iv, iv)
   deepStrictEqual(syncMsg[2].d, d)
-  equal(syncMsg[2].compressed, undefined)
+  equal(syncMsg[2].compressed, false)
   deepStrictEqual(syncMsg[3], { id: 5, time: 10 })
 })
 

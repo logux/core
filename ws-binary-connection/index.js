@@ -148,7 +148,7 @@ function decodeAction(ctx, buf, offset) {
       iv: new Uint8Array(iv),
       type: '0'
     }
-    if (type === 0x5a) action.compressed = true
+    action.compressed = type === 0x5a
     let [meta, end] = decodeMeta(buf, pos + length)
     return [action, meta, end]
   }
