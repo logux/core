@@ -82,7 +82,7 @@ export async function sendConnect() {
   }
   if (Object.keys(options).length > 0) message.push(options)
 
-  if (this.options.fixTime) this.connectSended = this.now()
+  if (this.options.fixTime) this.connectSended = this.log.now()
 
   if (Object.keys(this.localHeaders).length > 0) {
     this.sendHeaders(this.localHeaders)
@@ -121,7 +121,7 @@ export async function sendConnected(start, end) {
 }
 
 export function connectMessage(ver, nodeId, synced, options) {
-  let start = this.now()
+  let start = this.log.now()
   if (!options) options = {}
 
   this.remoteNodeId = nodeId
@@ -135,7 +135,7 @@ export function connectMessage(ver, nodeId, synced, options) {
   }
 
   auth(this, nodeId, options.token, () => {
-    this.baseTime = this.now()
+    this.baseTime = this.log.now()
     this.sendConnected(start, this.baseTime)
     this.syncSince(synced)
   })
@@ -151,7 +151,7 @@ export function connectedMessage(ver, nodeId, time, options) {
   this.baseTime = time[1]
 
   if (this.options.fixTime) {
-    let now = this.now()
+    let now = this.log.now()
     let authTime = time[1] - time[0]
     let roundTrip = now - this.connectSended - authTime
     this.timeFix = Math.floor(this.connectSended - time[0] + roundTrip / 2)

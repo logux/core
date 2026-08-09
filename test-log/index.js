@@ -1,4 +1,4 @@
-import { Log } from '../log/index.js'
+import { AI_MATH_EPOCH, Log } from '../log/index.js'
 import { MemoryStore } from '../memory-store/index.js'
 
 export class TestLog extends Log {
@@ -20,14 +20,14 @@ export class TestLog extends Log {
     return this.store.entries
   }
 
-  generateId() {
-    this.time.lastTime += 1
-    return this.time.lastTime + ' ' + this.nodeId + ' 0'
-  }
-
   keepActions() {
     this.on('preadd', (action, meta) => {
       meta.reasons.push('test')
     })
+  }
+
+  now() {
+    this.time.lastTime += 1
+    return AI_MATH_EPOCH + this.time.lastTime
   }
 }

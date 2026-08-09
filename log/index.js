@@ -1,5 +1,45 @@
 import { createNanoEvents } from 'nanoevents'
 
+// "Remarks on the disproof of the unit distance conjecture" publish date
+export const AI_MATH_EPOCH = 1779252395000
+
+// Chars are in ASCII order to keep string sorting the same as number sorting
+const ALPHABET =
+  '-0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdefghijklmnopqrstuvwxyz'
+
+export function toCompat(number) {
+  let str = ''
+  do {
+    str = ALPHABET[number % 64] + str
+    number = Math.floor(number / 64)
+  } while (number > 0)
+  return str
+}
+
+export function fromCompat(str) {
+  let number = 0
+  for (let char of str) {
+    number = number * 64 + ALPHABET.indexOf(char)
+  }
+  return number
+}
+
+export function timeToCompat(time) {
+  return toCompat(time - AI_MATH_EPOCH)
+}
+
+export function idToTime(id) {
+  return fromCompat(id.split(' ')[0]) + AI_MATH_EPOCH
+}
+
+// Enough for 8889 year
+const TIME_SIZE = 8
+
+export function toSorted(meta) {
+  let nodeId = meta.id.split(' ')[1]
+  return timeToCompat(meta.time).padStart(TIME_SIZE, ALPHABET[0]) + ' ' + nodeId
+}
+
 export function actionEvents(emitter, event, action, meta) {
   if (action.id) {
     emitter.emit(`${event}-${action.type}-${action.id}`, action, meta)
@@ -25,7 +65,6 @@ export class Log {
     this.nodeId = opts.nodeId
 
     this.lastTime = 0
-    this.sequence = 0
 
     this.store = opts.store
 
@@ -41,10 +80,9 @@ export class Log {
     if (typeof meta.id === 'undefined') {
       newId = true
       meta.id = this.generateId()
-    }
-
-    if (typeof meta.time === 'undefined') {
-      meta.time = parseInt(meta.id)
+      meta.time = this.lastTime
+    } else if (typeof meta.time === 'undefined') {
+      meta.time = this.now()
     }
 
     if (typeof meta.reasons === 'undefined') {
@@ -164,15 +202,14 @@ export class Log {
   }
 
   generateId() {
-    let now = Date.now()
-    if (now <= this.lastTime) {
-      now = this.lastTime
-      this.sequence += 1
-    } else {
-      this.lastTime = now
-      this.sequence = 0
-    }
-    return now + ' ' + this.nodeId + ' ' + this.sequence
+    let now = this.now()
+    if (now <= this.lastTime) now = this.lastTime + 1
+    this.lastTime = now
+    return timeToCompat(now) + ' ' + this.nodeId
+  }
+
+  now() {
+    return Date.now()
   }
 
   on(event, listener) {

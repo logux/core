@@ -28,9 +28,10 @@ export type NodeState =
   | 'sending'
   | 'synchronized'
 
-export interface CompressedMeta {
-  id: [number, string, number] | number
+export interface SyncMeta {
+  id: string
   time: number
+  subprotocol?: number
 }
 
 export type Message =
@@ -41,7 +42,7 @@ export type Message =
   | ['headers', object]
   | ['ping', number]
   | ['pong', number]
-  | ['sync', number, ...(AnyAction | CompressedMeta)[]]
+  | ['sync', number, ...(AnyAction | SyncMeta)[]]
   | ['synced', number]
 
 /**

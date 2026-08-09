@@ -86,7 +86,7 @@ test('clones binary bytes in actions', async () => {
     iv: new Uint8Array([4, 5, 6]),
     type: '0'
   }
-  let msg: Message = ['sync', 1, action, { id: 1, time: 1 }]
+  let msg: Message = ['sync', 1, action, { id: '0', time: 1 }]
   await pair.left.connect()
   pair.left.send(msg)
   await pair.wait()

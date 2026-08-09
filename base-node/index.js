@@ -40,8 +40,8 @@ export class BaseNode {
     this.remoteProtocol = undefined
     this.remoteSubprotocol = undefined
 
-    this.minProtocol = 5
-    this.localProtocol = 5
+    this.minProtocol = 6
+    this.localProtocol = 6
     this.localNodeId = nodeId
 
     this.log = log
@@ -161,10 +161,6 @@ export class BaseNode {
     this.lastReceived = synced.received
     this.lastAddedCache = added
     if (this.connection.connected) this.onConnect()
-  }
-
-  now() {
-    return Date.now()
   }
 
   on(event, listener) {

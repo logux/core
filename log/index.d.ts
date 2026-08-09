@@ -1,10 +1,85 @@
 import type { Emitter, Unsubscribe } from 'nanoevents'
 
 /**
- * Action unique ID accross all nodes.
+ * Base time to make time-based meta.id smaller.
+ *
+ * "Remarks on the disproof of the unit distance conjecture" publish date.
+ */
+export const AI_MATH_EPOCH: number
+
+/**
+ * Encode number to `-0-9A-Z_a-z` alphabet.
+ *
+ * Chars are in ASCII order, so strings of the same length have the same
+ * order as encoded numbers.
  *
  * ```js
- * "1564508138460 380:R7BNGAP5:px3-J3oc 0"
+ * toCompat(64) //=> "0-"
+ * ```
+ *
+ * @param number Number to encode.
+ * @returns Encoded number.
+ */
+export function toCompat(number: number): string
+
+/**
+ * Decode number from `-0-9A-Z_a-z` alphabet.
+ *
+ * ```js
+ * fromCompat('0-') //=> 1779252396000
+ * ```
+ *
+ * @param str Encoded number.
+ * @returns Decoded number.
+ */
+export function fromCompat(str: string): number
+
+/**
+ * Encode `meta.time` to the compact format, which is used
+ * in the time part of action ID.
+ *
+ * ```js
+ * timeToCompat(AI_MATH_EPOCH + 1000) //=> "Ec"
+ * ```
+ *
+ * @param time Milliseconds since UNIX epoch.
+ * @returns Encoded time.
+ */
+export function timeToCompat(time: number): string
+
+/**
+ * Decode `meta.time` from action ID.
+ *
+ * ```js
+ * idToTime('Ec client:1') //=> AI_MATH_EPOCH + 1000
+ * ```
+ *
+ * @param id Action ID or its time part.
+ * @returns Milliseconds since UNIX epoch.
+ */
+export function idToTime(id: ID): number
+
+/**
+ * Convert metadata to a string with the same order as `isFirstOlder()`.
+ *
+ * Numbers are padded, so simple string sorting (for instance, in a database
+ * column) will return actions in the log order.
+ *
+ * ```js
+ * db.insert({ action, sorted: toSorted(meta) })
+ * // SELECT * FROM actions ORDER BY sorted
+ * ```
+ *
+ * @param meta Action’s metadata.
+ * @returns String to sort actions.
+ */
+export function toSorted(meta: Meta): string
+
+/**
+ * Action unique ID across all nodes.
+ *
+ * ```js
+ * "5Yrxca 380:R7BNGA:1"
  * ```
  */
 export type ID = string
@@ -66,6 +141,9 @@ export interface Meta {
 
   /**
    * Action created time in current node time. Milliseconds since UNIX epoch.
+   *
+   * Log could move the action a few milliseconds to the future to keep
+   * actions of the same node in the log order.
    */
   time: number
 }
@@ -388,6 +466,19 @@ export class Log<
    * @returns Unique ID for action.
    */
   generateId(): ID
+
+  /**
+   * Current time of this node. Log uses it for `meta.time` and action ID.
+   *
+   * Redefine it to use a custom clock, for instance, in tests.
+   *
+   * ```js
+   * log.now = () => fakeTime
+   * ```
+   *
+   * @returns Milliseconds since UNIX epoch.
+   */
+  now(): number
 
   /**
    * Subscribe for log events. It implements nanoevents API. Supported events:

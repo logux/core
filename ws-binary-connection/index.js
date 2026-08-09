@@ -1,3 +1,4 @@
+import { idToTime, timeToCompat } from '../log/index.js'
 import { WsConnection } from '../ws-connection/index.js'
 
 let encoder = new TextEncoder()
@@ -27,6 +28,15 @@ function decodeVarint(buf, offset) {
   return [value, offset]
 }
 
+function encodeSigned(value) {
+  return encodeVarint(value < 0 ? -2 * value - 1 : 2 * value)
+}
+
+function decodeSigned(buf, offset) {
+  let [value, pos] = decodeVarint(buf, offset)
+  return [value % 2 === 1 ? -(value + 1) / 2 : value / 2, pos]
+}
+
 function encodeString(str) {
   let bytes = encoder.encode(str)
   return [...encodeVarint(bytes.length), ...bytes]
@@ -50,66 +60,51 @@ function decodeJson(buf, offset) {
 
 function decodeActionId(ctx, buf, offset) {
   let type = buf[offset++]
-  let [shift, pos] = decodeVarint(buf, offset)
-  let timestamp = shift + ctx.baseTime
-
-  // Implicit nodeId, orderInMs = 0
-  if (type === 10) {
-    return [`${timestamp} ${ctx.remoteNodeId} 0`, pos]
-  }
+  let [shift, pos] = decodeSigned(buf, offset)
+  let timestamp = timeToCompat(shift + ctx.baseTime)
 
   // Implicit nodeId
-  if (type === 11) {
-    let [order, end] = decodeVarint(buf, pos)
-    return [`${timestamp} ${ctx.remoteNodeId} ${order}`, end]
+  if (type === 10) {
+    return [`${timestamp} ${ctx.remoteNodeId}`, pos]
   }
 
   // Explicit nodeId
-  if (type === 12) {
-    let [nodeId, pos2] = decodeString(buf, pos)
-    let [order, end] = decodeVarint(buf, pos2)
-    return [`${timestamp} ${nodeId} ${order}`, end]
+  if (type === 11) {
+    let [nodeId, end] = decodeString(buf, pos)
+    return [`${timestamp} ${nodeId}`, end]
     /* node:coverage ignore next 3 */
   }
 
   throw new Error('Unknown action ID type: ' + type)
 }
 
-function decodeMeta(buf, offset) {
+function decodeMeta(ctx, buf, offset) {
   let fieldCount = buf[offset++]
-  let [time, pos] = decodeVarint(buf, offset)
-  let [shift, pos2] = decodeVarint(buf, pos)
+  let [time, pos] = decodeSigned(buf, offset)
+  let [shift, pos2] = decodeSigned(buf, pos)
 
   let meta = { time }
+  let id = timeToCompat(shift + ctx.baseTime)
 
   // time, shift
   if (fieldCount === 2) {
-    meta.id = shift
+    meta.id = id
     return [meta, pos2]
   }
 
-  // time, shift, orderInMs
+  // time, shift, subprotocol
   if (fieldCount === 3) {
-    let [order, end] = decodeVarint(buf, pos2)
-    meta.id = [shift, order]
-    return [meta, end]
-  }
-
-  // time, shift, orderInMs, subprotocol
-  if (fieldCount === 4) {
-    let [order, pos3] = decodeVarint(buf, pos2)
-    let [subprotocol, end] = decodeVarint(buf, pos3)
-    meta.id = [shift, order]
+    let [subprotocol, end] = decodeVarint(buf, pos2)
+    meta.id = id
     meta.subprotocol = subprotocol
     return [meta, end]
   }
 
-  // time, shift, nodeId, orderInMs, subprotocol
-  if (fieldCount === 5) {
+  // time, shift, nodeId, subprotocol
+  if (fieldCount === 4) {
     let [nodeId, pos3] = decodeString(buf, pos2)
-    let [order, pos4] = decodeVarint(buf, pos3)
-    let [subprotocol, end] = decodeVarint(buf, pos4)
-    meta.id = [shift, nodeId, order]
+    let [subprotocol, end] = decodeVarint(buf, pos3)
+    meta.id = id + ' ' + nodeId
     meta.subprotocol = subprotocol
     return [meta, end]
     /* node:coverage ignore next 3 */
@@ -126,14 +121,14 @@ function decodeAction(ctx, buf, offset) {
     let [length, pos] = decodeVarint(buf, offset)
     let json = decoder.decode(buf.subarray(pos, pos + length))
     let action = JSON.parse(json)
-    let [meta, end] = decodeMeta(buf, pos + length)
+    let [meta, end] = decodeMeta(ctx, buf, pos + length)
     return [action, meta, end]
   }
 
   // 'p' — logux/processed
   if (type === 0x70) {
     let [id, pos] = decodeActionId(ctx, buf, offset)
-    let [meta, end] = decodeMeta(buf, pos)
+    let [meta, end] = decodeMeta(ctx, buf, pos)
     return [{ id, type: 'logux/processed' }, meta, end]
   }
 
@@ -149,14 +144,14 @@ function decodeAction(ctx, buf, offset) {
       type: '0'
     }
     action.compressed = type === 0x5a
-    let [meta, end] = decodeMeta(buf, pos + length)
+    let [meta, end] = decodeMeta(ctx, buf, pos + length)
     return [action, meta, end]
   }
 
   // 'c' — 0/clean
   if (type === 0x63) {
     let [id, pos] = decodeActionId(ctx, buf, offset)
-    let [meta, end] = decodeMeta(buf, pos)
+    let [meta, end] = decodeMeta(ctx, buf, pos)
     return [{ id, type: '0/clean' }, meta, end]
     /* node:coverage ignore next 3 */
   }
@@ -254,54 +249,34 @@ function decodeMessage(ctx, buf) {
 }
 
 function encodeActionId(ctx, id) {
-  let parts = id.split(' ')
-  let shift = parseInt(parts[0]) - ctx.baseTime
-  let nodeId = parts[1]
-  let counter = parseInt(parts[2])
+  let shift = idToTime(id) - ctx.baseTime
+  let nodeId = id.split(' ')[1]
 
   if (nodeId === ctx.localNodeId) {
-    if (counter === 0) {
-      return [10, ...encodeVarint(shift)] // Implicit nodeId, orderInMs = 0
-    }
-    return [11, ...encodeVarint(shift), ...encodeVarint(counter)] // Implicit nodeId
+    return [10, ...encodeSigned(shift)] // Implicit nodeId
   }
 
   return [
-    12, // Explicit nodeId
-    ...encodeVarint(shift),
-    ...encodeString(nodeId),
-    ...encodeVarint(counter)
+    11, // Explicit nodeId
+    ...encodeSigned(shift),
+    ...encodeString(nodeId)
   ]
 }
 
 function encodeMeta(ctx, meta) {
-  let nodeId, orderInMs, shift
-
-  if (typeof meta.id === 'number') {
-    shift = meta.id
-    orderInMs = 0
-    nodeId = null
-  } else if (meta.id.length === 2) {
-    shift = meta.id[0]
-    orderInMs = meta.id[1]
-    nodeId = null
-  } else {
-    shift = meta.id[0]
-    nodeId = meta.id[1]
-    orderInMs = meta.id[2]
-  }
+  let nodeId = meta.id.split(' ')[1]
+  let shift = idToTime(meta.id) - ctx.baseTime
 
   let hasSubprotocol =
     meta.subprotocol !== undefined &&
     meta.subprotocol !== ctx.connectedSubprotocol
 
-  if (nodeId !== null) {
+  if (nodeId !== undefined) {
     return [
-      5, // time, shift, nodeId, orderInMs, subprotocol
-      ...encodeVarint(meta.time),
-      ...encodeVarint(shift),
+      4, // time, shift, nodeId, subprotocol
+      ...encodeSigned(meta.time),
+      ...encodeSigned(shift),
       ...encodeString(nodeId),
-      ...encodeVarint(orderInMs),
       ...encodeVarint(
         meta.subprotocol !== undefined
           ? meta.subprotocol
@@ -312,27 +287,17 @@ function encodeMeta(ctx, meta) {
 
   if (hasSubprotocol) {
     return [
-      4, // time, shift, orderInMs, subprotocol
-      ...encodeVarint(meta.time),
-      ...encodeVarint(shift),
-      ...encodeVarint(orderInMs),
+      3, // time, shift, subprotocol
+      ...encodeSigned(meta.time),
+      ...encodeSigned(shift),
       ...encodeVarint(meta.subprotocol)
-    ]
-  }
-
-  if (orderInMs !== 0) {
-    return [
-      3, // time, shift, orderInMs
-      ...encodeVarint(meta.time),
-      ...encodeVarint(shift),
-      ...encodeVarint(orderInMs)
     ]
   }
 
   return [
     2, // time, shift
-    ...encodeVarint(meta.time),
-    ...encodeVarint(shift)
+    ...encodeSigned(meta.time),
+    ...encodeSigned(shift)
   ]
 }
 

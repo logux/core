@@ -1,7 +1,7 @@
 export {
   ActionFilter,
   BaseNode,
-  CompressedMeta,
+  SyncMeta,
   Connection,
   Message,
   NodeOptions,
@@ -15,14 +15,20 @@ export { LocalPair } from './local-pair/index.js'
 export {
   Action,
   actionEvents,
+  AI_MATH_EPOCH,
   AnyAction,
   Criteria,
+  fromCompat,
   ID,
+  idToTime,
   Log,
   LogPage,
   LogStore,
   Meta,
-  ReadonlyListener
+  ReadonlyListener,
+  timeToCompat,
+  toCompat,
+  toSorted
 } from './log/index.js'
 export { LoguxError, LoguxErrorOptions } from './logux-error/index.js'
 export { MemoryStore } from './memory-store/index.js'

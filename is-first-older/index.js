@@ -1,3 +1,5 @@
+import { idToTime } from '../log/index.js'
+
 export function isFirstOlder(firstMeta, secondMeta) {
   if (firstMeta && !secondMeta) {
     return false
@@ -6,10 +8,10 @@ export function isFirstOlder(firstMeta, secondMeta) {
   }
 
   if (typeof firstMeta === 'string') {
-    firstMeta = { id: firstMeta, time: parseInt(firstMeta) }
+    firstMeta = { id: firstMeta, time: idToTime(firstMeta) }
   }
   if (typeof secondMeta === 'string') {
-    secondMeta = { id: secondMeta, time: parseInt(secondMeta) }
+    secondMeta = { id: secondMeta, time: idToTime(secondMeta) }
   }
 
   if (firstMeta.time > secondMeta.time) {
@@ -18,22 +20,11 @@ export function isFirstOlder(firstMeta, secondMeta) {
     return true
   }
 
-  let first = firstMeta.id.split(' ')
-  let second = secondMeta.id.split(' ')
-
-  let firstNode = first[1]
-  let secondNode = second[1]
+  let firstNode = firstMeta.id.split(' ')[1]
+  let secondNode = secondMeta.id.split(' ')[1]
   if (firstNode > secondNode) {
     return false
   } else if (firstNode < secondNode) {
-    return true
-  }
-
-  let firstCounter = parseInt(first[2])
-  let secondCounter = parseInt(second[2])
-  if (firstCounter > secondCounter) {
-    return false
-  } else if (firstCounter < secondCounter) {
     return true
   }
 

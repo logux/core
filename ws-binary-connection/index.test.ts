@@ -2,7 +2,7 @@ import { restoreAll, spyOn } from 'nanospy'
 import { deepStrictEqual, equal, ok } from 'node:assert'
 import { afterEach, test } from 'node:test'
 
-import { type Message, WsBinaryConnection } from '../index.js'
+import { AI_MATH_EPOCH, type Message, WsBinaryConnection } from '../index.js'
 import { FakeWebSocket } from '../test/fake-ws.js'
 
 interface WsBinaryInternals {
@@ -202,13 +202,13 @@ test('round-trips sync message with JSON action', async () => {
     'sync',
     5,
     { name: 'Alice', type: 'user/add' },
-    { id: 100, time: 200 }
+    { id: '0Z', time: 200 }
   ])
   let binary = connection.ws!.sent[0] as Uint8Array
   emit(connection.ws, 'message', binary.buffer)
 
   deepStrictEqual(received, [
-    ['sync', 5, { name: 'Alice', type: 'user/add' }, { id: 100, time: 200 }]
+    ['sync', 5, { name: 'Alice', type: 'user/add' }, { id: '0Z', time: 200 }]
   ])
 })
 
@@ -219,9 +219,9 @@ test('round-trips sync with multiple actions', async () => {
     'sync',
     10,
     { type: 'a' },
-    { id: 1, time: 2 },
+    { id: '0', time: 2 },
     { type: 'b' },
-    { id: [3, 4], time: 5 }
+    { id: '2 other:node', time: 5 }
   ] as unknown as Message)
   let binary = connection.ws!.sent[0] as Uint8Array
   emit(connection.ws, 'message', binary.buffer)
@@ -231,9 +231,9 @@ test('round-trips sync with multiple actions', async () => {
       'sync',
       10,
       { type: 'a' },
-      { id: 1, time: 2 },
+      { id: '0', time: 2 },
       { type: 'b' },
-      { id: [3, 4], time: 5 }
+      { id: '2 other:node', subprotocol: 0, time: 5 }
     ]
   ])
 })
@@ -245,7 +245,7 @@ test('round-trips sync with meta containing nodeId', async () => {
     'sync',
     1,
     { type: 'test' },
-    { id: [10, 'other:node', 2], subprotocol: 3, time: 50 }
+    { id: '9 other:node', subprotocol: 3, time: 50 }
   ] as unknown as Message)
   let binary = connection.ws!.sent[0] as Uint8Array
   emit(connection.ws, 'message', binary.buffer)
@@ -255,7 +255,7 @@ test('round-trips sync with meta containing nodeId', async () => {
       'sync',
       1,
       { type: 'test' },
-      { id: [10, 'other:node', 2], subprotocol: 3, time: 50 }
+      { id: '9 other:node', subprotocol: 3, time: 50 }
     ]
   ])
 })
@@ -263,15 +263,15 @@ test('round-trips sync with meta containing nodeId', async () => {
 test('round-trips logux/processed action', async () => {
   let { connection, received } = await createConnection()
 
-  internal(connection).baseTime = 1000
+  internal(connection).baseTime = AI_MATH_EPOCH + 1000
   internal(connection).localNodeId = 'server:abc'
   internal(connection).remoteNodeId = 'server:abc'
 
   connection.send([
     'sync',
     1,
-    { id: '1100 server:abc 0', type: 'logux/processed' },
-    { id: 5, time: 10 }
+    { id: '1100 server:abc', type: 'logux/processed' },
+    { id: '4', time: 10 }
   ])
   let binary = connection.ws!.sent[0] as Uint8Array
   emit(connection.ws, 'message', binary.buffer)
@@ -280,8 +280,8 @@ test('round-trips logux/processed action', async () => {
     [
       'sync',
       1,
-      { id: '1100 server:abc 0', type: 'logux/processed' },
-      { id: 5, time: 10 }
+      { id: '1100 server:abc', type: 'logux/processed' },
+      { id: '4', time: 10 }
     ]
   ])
 })
@@ -289,15 +289,15 @@ test('round-trips logux/processed action', async () => {
 test('round-trips logux/processed with implicit nodeId & counter', async () => {
   let { connection, received } = await createConnection()
 
-  internal(connection).baseTime = 1000
+  internal(connection).baseTime = AI_MATH_EPOCH + 1000
   internal(connection).localNodeId = 'server:abc'
   internal(connection).remoteNodeId = 'server:abc'
 
   connection.send([
     'sync',
     1,
-    { id: '1100 server:abc 3', type: 'logux/processed' },
-    { id: 5, time: 10 }
+    { id: '1100 server:abc', type: 'logux/processed' },
+    { id: '4', time: 10 }
   ])
   let binary = connection.ws!.sent[0] as Uint8Array
   emit(connection.ws, 'message', binary.buffer)
@@ -306,8 +306,8 @@ test('round-trips logux/processed with implicit nodeId & counter', async () => {
     [
       'sync',
       1,
-      { id: '1100 server:abc 3', type: 'logux/processed' },
-      { id: 5, time: 10 }
+      { id: '1100 server:abc', type: 'logux/processed' },
+      { id: '4', time: 10 }
     ]
   ])
 })
@@ -315,15 +315,15 @@ test('round-trips logux/processed with implicit nodeId & counter', async () => {
 test('round-trips logux/processed with different nodeId', async () => {
   let { connection, received } = await createConnection()
 
-  internal(connection).baseTime = 1000
+  internal(connection).baseTime = AI_MATH_EPOCH + 1000
   internal(connection).localNodeId = 'server:abc'
   internal(connection).remoteNodeId = 'server:abc'
 
   connection.send([
     'sync',
     1,
-    { id: '1200 client:xyz 3', type: 'logux/processed' },
-    { id: 5, time: 10 }
+    { id: '1200 client:xyz', type: 'logux/processed' },
+    { id: '4', time: 10 }
   ])
   let binary = connection.ws!.sent[0] as Uint8Array
   emit(connection.ws, 'message', binary.buffer)
@@ -332,8 +332,8 @@ test('round-trips logux/processed with different nodeId', async () => {
     [
       'sync',
       1,
-      { id: '1200 client:xyz 3', type: 'logux/processed' },
-      { id: 5, time: 10 }
+      { id: '1200 client:xyz', type: 'logux/processed' },
+      { id: '4', time: 10 }
     ]
   ])
 })
@@ -341,15 +341,15 @@ test('round-trips logux/processed with different nodeId', async () => {
 test('round-trips 0/clean action', async () => {
   let { connection, received } = await createConnection()
 
-  internal(connection).baseTime = 1000
+  internal(connection).baseTime = AI_MATH_EPOCH + 1000
   internal(connection).localNodeId = 'server:abc'
   internal(connection).remoteNodeId = 'server:abc'
 
   connection.send([
     'sync',
     1,
-    { id: '1050 server:abc 0', type: '0/clean' },
-    { id: 3, time: 7 }
+    { id: '1050 server:abc', type: '0/clean' },
+    { id: '2', time: 7 }
   ])
   let binary = connection.ws!.sent[0] as Uint8Array
   emit(connection.ws, 'message', binary.buffer)
@@ -358,8 +358,8 @@ test('round-trips 0/clean action', async () => {
     [
       'sync',
       1,
-      { id: '1050 server:abc 0', type: '0/clean' },
-      { id: 3, time: 7 }
+      { id: '1050 server:abc', type: '0/clean' },
+      { id: '2', time: 7 }
     ]
   ])
 })
@@ -370,7 +370,7 @@ test('round-trips encrypted 0 action without compression', async () => {
   let iv = new Uint8Array([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12])
   let d = new Uint8Array([100, 200, 50])
 
-  connection.send(['sync', 1, { d, iv, type: '0' }, { id: 5, time: 10 }])
+  connection.send(['sync', 1, { d, iv, type: '0' }, { id: '4', time: 10 }])
   let binary = connection.ws!.sent[0] as Uint8Array
   emit(connection.ws, 'message', binary.buffer)
 
@@ -386,7 +386,7 @@ test('round-trips encrypted 0 action without compression', async () => {
   deepStrictEqual(syncMsg[2].iv, iv)
   deepStrictEqual(syncMsg[2].d, d)
   equal(syncMsg[2].compressed, false)
-  deepStrictEqual(syncMsg[3], { id: 5, time: 10 })
+  deepStrictEqual(syncMsg[3], { id: '4', time: 10 })
 })
 
 test('round-trips encrypted 0 action with compression', async () => {
@@ -399,7 +399,7 @@ test('round-trips encrypted 0 action with compression', async () => {
     'sync',
     1,
     { compressed: true, d, iv, type: '0' },
-    { id: 5, time: 10 }
+    { id: '4', time: 10 }
   ])
   let binary = connection.ws!.sent[0] as Uint8Array
   emit(connection.ws, 'message', binary.buffer)
@@ -579,7 +579,33 @@ test('tracks context from incoming connect/connected', async () => {
   equal(internal(connection).remoteNodeId, 'client:abc')
 })
 
-test('meta format 4 with subprotocol', async () => {
+test('round-trips actions older than the connection', async () => {
+  let { connection, received } = await createConnection()
+
+  internal(connection).baseTime = AI_MATH_EPOCH + 1000
+  internal(connection).localNodeId = 'server:abc'
+  internal(connection).remoteNodeId = 'server:abc'
+
+  connection.send([
+    'sync',
+    1,
+    { id: '4 client:xyz', type: 'logux/processed' },
+    { id: '9 other:node', time: -990 }
+  ] as unknown as Message)
+  let binary = connection.ws!.sent[0] as Uint8Array
+  emit(connection.ws, 'message', binary.buffer)
+
+  deepStrictEqual(received, [
+    [
+      'sync',
+      1,
+      { id: '4 client:xyz', type: 'logux/processed' },
+      { id: '9 other:node', subprotocol: 0, time: -990 }
+    ]
+  ])
+})
+
+test('meta format with subprotocol', async () => {
   let { connection, received } = await createConnection()
 
   internal(connection).connectedSubprotocol = 1
@@ -588,13 +614,37 @@ test('meta format 4 with subprotocol', async () => {
     'sync',
     1,
     { type: 'test' },
-    { id: [5, 2], subprotocol: 7, time: 10 }
+    { id: '4', subprotocol: 7, time: 10 }
   ] as unknown as Message)
   let binary = connection.ws!.sent[0] as Uint8Array
   emit(connection.ws, 'message', binary.buffer)
 
   deepStrictEqual(received, [
-    ['sync', 1, { type: 'test' }, { id: [5, 2], subprotocol: 7, time: 10 }]
+    ['sync', 1, { type: 'test' }, { id: '4', subprotocol: 7, time: 10 }]
+  ])
+})
+
+test('meta format with nodeId and subprotocol', async () => {
+  let { connection, received } = await createConnection()
+
+  internal(connection).connectedSubprotocol = 1
+
+  connection.send([
+    'sync',
+    1,
+    { type: 'test' },
+    { id: '4 other:node', subprotocol: 7, time: 10 }
+  ] as unknown as Message)
+  let binary = connection.ws!.sent[0] as Uint8Array
+  emit(connection.ws, 'message', binary.buffer)
+
+  deepStrictEqual(received, [
+    [
+      'sync',
+      1,
+      { type: 'test' },
+      { id: '4 other:node', subprotocol: 7, time: 10 }
+    ]
   ])
 })
 
@@ -607,7 +657,7 @@ test('meta omits subprotocol when matching connected value', async () => {
     'sync',
     1,
     { type: 'test' },
-    { id: [3, 2], subprotocol: 5, time: 10 }
+    { id: '2', subprotocol: 5, time: 10 }
   ] as unknown as Message)
   let binary = connection.ws!.sent[0] as Uint8Array
   emit(connection.ws, 'message', binary.buffer)

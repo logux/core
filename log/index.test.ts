@@ -3,10 +3,17 @@ import { afterEach, test } from 'node:test'
 
 import {
   type Action,
+  fromCompat,
+  idToTime,
+  isFirstOlder,
   Log,
   type LogPage,
+  AI_MATH_EPOCH,
   MemoryStore,
-  type Meta
+  type Meta,
+  timeToCompat,
+  toCompat,
+  toSorted
 } from '../index.js'
 
 function createLog(): Log<Meta, MemoryStore> {
@@ -123,7 +130,7 @@ test('ignore entry with existed ID', async () => {
     added.push(action)
   })
 
-  let meta = { id: '0 n 0', reasons: ['test'] }
+  let meta = { id: '0 n', reasons: ['test'] }
   let result1 = await log.add({ type: 'A' }, meta)
   equal(typeof result1, 'object')
   let result2 = await log.add({ type: 'B' }, meta)
@@ -134,26 +141,26 @@ test('ignore entry with existed ID', async () => {
 
 test('iterates through added entries', async () => {
   let log = await logWith([
-    [{ type: 'A' }, { id: '3 n 0', reasons: ['test'] }],
-    [{ type: 'B' }, { id: '2 n 0', reasons: ['test'] }],
-    [{ type: 'C' }, { id: '1 n 0', reasons: ['test'] }]
+    [{ type: 'A' }, { id: '3 n', reasons: ['test'], time: 3 }],
+    [{ type: 'B' }, { id: '2 n', reasons: ['test'], time: 2 }],
+    [{ type: 'C' }, { id: '1 n', reasons: ['test'], time: 1 }]
   ])
   let entries: [Action, Meta][] = []
   await log.each((action, meta) => {
     entries.push([action, meta])
   })
   deepStrictEqual(entries, [
-    [{ type: 'A' }, { added: 1, id: '3 n 0', reasons: ['test'], time: 3 }],
-    [{ type: 'B' }, { added: 2, id: '2 n 0', reasons: ['test'], time: 2 }],
-    [{ type: 'C' }, { added: 3, id: '1 n 0', reasons: ['test'], time: 1 }]
+    [{ type: 'A' }, { added: 1, id: '3 n', reasons: ['test'], time: 3 }],
+    [{ type: 'B' }, { added: 2, id: '2 n', reasons: ['test'], time: 2 }],
+    [{ type: 'C' }, { added: 3, id: '1 n', reasons: ['test'], time: 1 }]
   ])
 })
 
 test('iterates by added order', async () => {
   let log = await logWith([
-    [{ type: 'A' }, { id: '3 n 0', reasons: ['test'] }],
-    [{ type: 'B' }, { id: '2 n 0', reasons: ['test'] }],
-    [{ type: 'C' }, { id: '1 n 0', reasons: ['test'] }]
+    [{ type: 'A' }, { id: '3 n', reasons: ['test'] }],
+    [{ type: 'B' }, { id: '2 n', reasons: ['test'] }],
+    [{ type: 'C' }, { id: '1 n', reasons: ['test'] }]
   ])
   let actions: Action[] = []
   await log.each({ order: 'added' }, action => {
@@ -164,9 +171,9 @@ test('iterates by added order', async () => {
 
 test('iterates by index', async () => {
   let log = await logWith([
-    [{ type: 'A' }, { id: '3 n 0', indexes: ['a'], reasons: ['test'] }],
-    [{ type: 'B' }, { id: '2 n 0', indexes: ['a', 'b'], reasons: ['test'] }],
-    [{ type: 'C' }, { id: '1 n 0', indexes: ['b'], reasons: ['test'] }]
+    [{ type: 'A' }, { id: '3 n', indexes: ['a'], reasons: ['test'] }],
+    [{ type: 'B' }, { id: '2 n', indexes: ['a', 'b'], reasons: ['test'] }],
+    [{ type: 'C' }, { id: '1 n', indexes: ['b'], reasons: ['test'] }]
   ])
   let actions: Action[] = []
   await log.each({ index: 'b' }, action => {
@@ -190,7 +197,7 @@ test('disables iteration on false', async () => {
 
 test('supports multi-pages stores', async () => {
   let store = new MemoryStore()
-  let meta: Meta = { added: 0, id: '1 0 0', reasons: [], time: 0 }
+  let meta: Meta = { added: 0, id: '1 0', reasons: [], time: 0 }
   let get: (opts?: object) => Promise<LogPage> = async () => {
     return {
       entries: [[{ type: 'a' }, meta]],
@@ -209,24 +216,29 @@ test('supports multi-pages stores', async () => {
   deepStrictEqual(actions, [{ type: 'a' }, { type: 'b' }])
 })
 
-test('copies time from ID', async () => {
-  let log = await logWith([
-    [{ type: 'TIMED' }, { id: '100 n 0', reasons: ['test'] }]
-  ])
+test('generates ID from time', async () => {
+  let log = createLog()
+  Date.now = () => AI_MATH_EPOCH + 100
+  await log.add({ type: 'TIMED' }, { reasons: ['test'] })
   checkEntries(log, [
     [
       { type: 'TIMED' },
-      { added: 1, id: '100 n 0', reasons: ['test'], time: 100 }
+      {
+        added: 1,
+        id: '0Z test',
+        reasons: ['test'],
+        time: AI_MATH_EPOCH + 100
+      }
     ]
   ])
 })
 
 test('keeps existed ID, time and reasons', async () => {
   let log = await logWith([
-    [{ type: 'TIMED' }, { id: '100 n 0', reasons: ['a'], time: 1 }]
+    [{ type: 'TIMED' }, { id: '100 n', reasons: ['a'], time: 1 }]
   ])
   checkEntries(log, [
-    [{ type: 'TIMED' }, { added: 1, id: '100 n 0', reasons: ['a'], time: 1 }]
+    [{ type: 'TIMED' }, { added: 1, id: '100 n', reasons: ['a'], time: 1 }]
   ])
 })
 
@@ -238,7 +250,7 @@ test('sets default ID and time and empty reasons for new entries', async () => {
     equal(typeof meta.added, 'undefined')
     deepStrictEqual(meta.reasons, [])
     deepStrictEqual(typeof meta.time, 'number')
-    equal(meta.id, `${meta.time} test 0`)
+    equal(meta.id, `${toCompat(meta.time - AI_MATH_EPOCH)} test`)
   })
   await log.add({ type: 'A' })
   equal(called, 1)
@@ -256,30 +268,99 @@ test('generates unique ID', () => {
 
 test('always generates biggest ID', () => {
   let log = createLog()
-  let times = [10, 9]
+  let times = [AI_MATH_EPOCH + 10, AI_MATH_EPOCH + 9]
 
   Date.now = () => times.shift() ?? 0
 
-  equal(log.generateId(), '10 test 0')
-  equal(log.generateId(), '10 test 1')
+  equal(log.generateId(), `${toCompat(10)} test`)
+  equal(log.generateId(), `${toCompat(11)} test`)
+})
+
+test('trims time in ID by Logux epoch and encodes it', () => {
+  let log = createLog()
+
+  Date.now = () => AI_MATH_EPOCH + 1000
+
+  equal(log.generateId(), 'Ec test')
+  equal(fromCompat('Ec'), 1000)
+  equal(new Date(AI_MATH_EPOCH).toISOString(), '2026-05-20T04:46:35.000Z')
+})
+
+test('encodes numbers to ASCII-sorted alphabet', () => {
+  equal(toCompat(0), '-')
+  equal(toCompat(1), '0')
+  equal(toCompat(63), 'z')
+  equal(toCompat(64), '0-')
+  equal(toCompat(AI_MATH_EPOCH), 'Ot2hEjs')
+
+  let numbers = [0, 1, 10, 63, 64, 4095, 4096, 1e6, 7059950678]
+  for (let number of numbers) {
+    equal(fromCompat(toCompat(number)), number)
+  }
+})
+
+test('keeps numbers order in encoded strings of same length', () => {
+  let encoded = []
+  for (let i = 64; i < 4096; i++) encoded.push(toCompat(i))
+  deepStrictEqual(encoded.toSorted(), encoded)
+})
+
+test('converts time to ID part and back', () => {
+  equal(timeToCompat(AI_MATH_EPOCH + 1000), 'Ec')
+  equal(idToTime('Ec test'), AI_MATH_EPOCH + 1000)
+  equal(idToTime(timeToCompat(AI_MATH_EPOCH)), AI_MATH_EPOCH)
+})
+
+test('creates string to sort actions in database', () => {
+  let meta = {
+    added: 1,
+    id: 'Ec test',
+    reasons: [],
+    time: AI_MATH_EPOCH + 1000
+  }
+  equal(toSorted(meta), '------Ec test')
+})
+
+test('sorts strings in the same order as isFirstOlder()', () => {
+  let metas: Meta[] = []
+  for (let time of [1, 2, 63, 64, 4095, 4096]) {
+    for (let nodeId of ['a', 'ab', 'b']) {
+      metas.push({
+        added: 0,
+        id: `${toCompat(time)} ${nodeId}`,
+        reasons: [],
+        time: AI_MATH_EPOCH + time
+      })
+    }
+  }
+
+  let byCompare = metas.toSorted((a, b) => (isFirstOlder(a, b) ? -1 : 1))
+  let byString = metas.toSorted((a, b) => (toSorted(a) < toSorted(b) ? -1 : 1))
+  deepStrictEqual(
+    byString.map(i => i.id),
+    byCompare.map(i => i.id)
+  )
 })
 
 test('changes meta', async () => {
   let log = await logWith([
-    [{ type: 'A' }, { id: '1 node 0', reasons: ['t'] }],
-    [{ type: 'B' }, { a: 1, id: '2 node 0', indexes: ['a'], reasons: ['t'] }]
+    [{ type: 'A' }, { id: '1 node', reasons: ['t'], time: 1 }],
+    [
+      { type: 'B' },
+      { a: 1, id: '2 node', indexes: ['a'], reasons: ['t'], time: 2 }
+    ]
   ])
-  let result = await log.changeMeta('2 node 0', { a: 2, b: 2 })
+  let result = await log.changeMeta('2 node', { a: 2, b: 2 })
   equal(result, true)
   checkEntries(log, [
-    [{ type: 'A' }, { added: 1, id: '1 node 0', reasons: ['t'], time: 1 }],
+    [{ type: 'A' }, { added: 1, id: '1 node', reasons: ['t'], time: 1 }],
     [
       { type: 'B' },
       {
         a: 2,
         added: 2,
         b: 2,
-        id: '2 node 0',
+        id: '2 node',
         indexes: ['a'],
         reasons: ['t'],
         time: 2
@@ -292,7 +373,7 @@ test('does not allow to change ID, added or indexes', async () => {
   let log = createLog()
   for (let key of ['id', 'added', 'time', 'subprotocol', 'indexes']) {
     ok(
-      (await getError(() => log.changeMeta('1 n 0', { [key]: true }))).includes(
+      (await getError(() => log.changeMeta('1 n', { [key]: true }))).includes(
         `"${key}" is read-only`
       )
     )
@@ -301,35 +382,35 @@ test('does not allow to change ID, added or indexes', async () => {
 
 test('removes action on setting entry reasons', async () => {
   let log = await logWith([
-    [{ type: 'A' }, { id: '1 n 0', reasons: ['test'] }],
-    [{ type: 'B' }, { id: '2 n 0', reasons: ['test'] }]
+    [{ type: 'A' }, { id: '1 n', reasons: ['test'], time: 1 }],
+    [{ type: 'B' }, { id: '2 n', reasons: ['test'], time: 2 }]
   ])
   let cleaned: [Action, Meta][] = []
   log.on('clean', (action, meta) => {
     cleaned.push([action, meta])
   })
 
-  let result1 = await log.changeMeta('2 n 0', { a: 1, reasons: [] })
+  let result1 = await log.changeMeta('2 n', { a: 1, reasons: [] })
   equal(result1, true)
   deepStrictEqual(cleaned, [
-    [{ type: 'B' }, { a: 1, added: 2, id: '2 n 0', reasons: [], time: 2 }]
+    [{ type: 'B' }, { a: 1, added: 2, id: '2 n', reasons: [], time: 2 }]
   ])
   checkEntries(log, [
-    [{ type: 'A' }, { added: 1, id: '1 n 0', reasons: ['test'], time: 1 }]
+    [{ type: 'A' }, { added: 1, id: '1 n', reasons: ['test'], time: 1 }]
   ])
-  let result2 = await log.changeMeta('3 n 0', { reasons: [] })
+  let result2 = await log.changeMeta('3 n', { reasons: [] })
   equal(result2, false)
 })
 
 test('returns action by ID', async () => {
-  let log = await logWith([[{ type: 'A' }, { id: '1 n 0', reasons: ['test'] }]])
+  let log = await logWith([[{ type: 'A' }, { id: '1 n', reasons: ['test'] }]])
 
-  let result1 = await log.byId('1 n 0')
+  let result1 = await log.byId('1 n')
   if (result1[0] === null) throw new Error('Action was no found')
   deepStrictEqual(result1[0], { type: 'A' })
   deepStrictEqual(result1[1].reasons, ['test'])
 
-  let result2 = await log.byId('2 n 0')
+  let result2 = await log.byId('2 n')
   equal(result2[0], null)
   equal(result2[1], null)
 })
@@ -400,12 +481,12 @@ test('checks ID for actions without reasons', async () => {
     cleaned.push([action, meta.added])
   })
 
-  await log.add({ type: 'A' }, { id: '1 n 0', reasons: ['t'] })
-  let meta1 = await log.add({ type: 'B' }, { id: '1 n 0' })
+  await log.add({ type: 'A' }, { id: '1 n', reasons: ['t'] })
+  let meta1 = await log.add({ type: 'B' }, { id: '1 n' })
   equal(meta1, false)
   deepStrictEqual(added, [[{ type: 'A' }, 1]])
   deepStrictEqual(cleaned, [])
-  let meta2 = await log.add({ type: 'C' }, { id: '2 n 0' })
+  let meta2 = await log.add({ type: 'C' }, { id: '2 n' })
   equal(typeof meta2, 'object')
   deepStrictEqual(added, [
     [{ type: 'A' }, 1],
@@ -429,13 +510,13 @@ test('fires preadd event', async () => {
     preadd.push(action.type)
   })
 
-  await log.add({ type: 'A' }, { id: '1 n 0' })
+  await log.add({ type: 'A' }, { id: '1 n', time: 1 })
   checkEntries(log, [
-    [{ type: 'A' }, { added: 1, id: '1 n 0', reasons: ['test'], time: 1 }]
+    [{ type: 'A' }, { added: 1, id: '1 n', reasons: ['test'], time: 1 }]
   ])
   deepStrictEqual(preadd, ['A'])
   deepStrictEqual(add, ['A'])
-  await log.add({ type: 'B' }, { id: '1 n 0' })
+  await log.add({ type: 'B' }, { id: '1 n' })
   deepStrictEqual(preadd, ['A', 'B'])
   deepStrictEqual(add, ['A'])
 })
@@ -540,12 +621,12 @@ test('has type listeners', async () => {
 
   await log.add({ type: 'A' })
   await log.add({ type: 'A' }, { reasons: ['test'] })
-  await log.add({ type: 'A' }, { id: '0 test 0', reasons: ['test', 'test2'] })
+  await log.add({ type: 'A' }, { id: '0 test', reasons: ['test', 'test2'] })
   await log.add({ type: 'B' })
   await log.add({ type: 'C' })
   await log.add({ type: 'D' })
   await log.removeReason('test')
-  await log.changeMeta('0 test 0', { reasons: [] })
+  await log.changeMeta('0 test', { reasons: [] })
   unsubscribeA()
   await log.add({ type: 'A' })
 

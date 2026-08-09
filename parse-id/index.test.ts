@@ -12,7 +12,7 @@ test('parses node ID', () => {
 })
 
 test('parses action ID', () => {
-  deepStrictEqual(parseId('1 10:client:uuid 0'), {
+  deepStrictEqual(parseId('1 10:client:uuid'), {
     clientId: '10:client',
     nodeId: '10:client:uuid',
     userId: '10'

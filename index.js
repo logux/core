@@ -3,7 +3,16 @@ export { ClientNode } from './client-node/index.js'
 export { eachStoreCheck } from './each-store-check/index.js'
 export { isFirstOlder } from './is-first-older/index.js'
 export { LocalPair } from './local-pair/index.js'
-export { actionEvents, Log } from './log/index.js'
+export {
+  actionEvents,
+  AI_MATH_EPOCH,
+  fromCompat,
+  idToTime,
+  Log,
+  timeToCompat,
+  toCompat,
+  toSorted
+} from './log/index.js'
 export { LoguxError } from './logux-error/index.js'
 export { MemoryStore } from './memory-store/index.js'
 export { parseId } from './parse-id/index.js'

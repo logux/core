@@ -5,25 +5,14 @@ export function sendSync(added, entries) {
   for (let [action, originMeta] of entries) {
     let meta = {}
     for (let key in originMeta) {
-      if (key === 'id') {
-        meta.id = originMeta.id.split(' ')
-      } else if (key !== 'added') {
-        meta[key] = originMeta[key]
-      }
+      if (key !== 'added') meta[key] = originMeta[key]
     }
 
     if (this.timeFix) meta.time -= this.timeFix
-    meta.id[0] = parseInt(meta.id[0]) - this.baseTime
-    meta.id[2] = parseInt(meta.id[2])
     meta.time -= this.baseTime
 
-    if (meta.id[1] === this.localNodeId) {
-      if (meta.id[2] === 0) {
-        meta.id = meta.id[0]
-      } else {
-        meta.id = [meta.id[0], meta.id[2]]
-      }
-    }
+    let [time, nodeId] = originMeta.id.split(' ')
+    if (nodeId === this.localNodeId) meta.id = time
 
     data.unshift(action, meta)
   }
@@ -42,15 +31,8 @@ export async function syncMessage(added, ...data) {
     let action = data[i]
     let meta = data[i + 1]
 
-    if (typeof meta.id === 'number') {
-      meta.id = meta.id + this.baseTime + ' ' + this.remoteNodeId + ' ' + 0
-    } else {
-      meta.id[0] = meta.id[0] + this.baseTime
-      if (meta.id.length === 2) {
-        meta.id = meta.id[0] + ' ' + this.remoteNodeId + ' ' + meta.id[1]
-      } else {
-        meta.id = meta.id.join(' ')
-      }
+    if (!meta.id.includes(' ')) {
+      meta.id = meta.id + ' ' + this.remoteNodeId
     }
 
     meta.time = meta.time + this.baseTime

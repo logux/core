@@ -25,22 +25,8 @@ function isTwoNumbers(value) {
   )
 }
 
-function isID(value) {
-  return (
-    isArray(value) &&
-    value.length === 3 &&
-    isNumber(value[0]) &&
-    isString(value[1]) &&
-    isNumber(value[2])
-  )
-}
-
 function isMeta(value) {
-  return (
-    isObject(value) &&
-    isNumber(value.time) &&
-    (isNumber(value.id) || isTwoNumbers(value.id) || isID(value.id))
-  )
+  return isObject(value) && isNumber(value.time) && isString(value.id)
 }
 
 let validators = {
