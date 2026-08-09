@@ -89,6 +89,11 @@ export interface Criteria {
   id?: ID
 
   /**
+   * Remove reason only for actions with these IDs.
+   */
+  ids?: ID[]
+
+  /**
    * Remove reason only for actions with lower `added`.
    */
   maxAdded?: number

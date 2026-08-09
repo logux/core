@@ -400,6 +400,84 @@ export function eachStoreCheck(test) {
     ])
   })
 
+  test('removes reasons and actions by ids', factory => async () => {
+    let store = factory()
+    let removed = []
+    function push(action) {
+      removed.push(action.type)
+    }
+    await Promise.all([
+      store.add({ type: '1' }, { id: '1 n 0', reasons: ['a'], time: 1 }),
+      store.add({ type: '2' }, { id: '2 n 0', reasons: ['a', 'b'], time: 2 }),
+      store.add({ type: '3' }, { id: '3 n 0', reasons: ['a'], time: 3 }),
+      store.add({ type: '4' }, { id: '4 n 0', reasons: ['a'], time: 4 }),
+      store.add({ type: '5' }, { id: '5 n 0', reasons: ['a'], time: 5 })
+    ])
+    await store.removeReason(
+      'a',
+      { ids: ['1 n 0', '2 n 0', '4 n 0', '6 n 0'] },
+      push
+    )
+    equal(
+      removed.toSorted((a, b) => a.localeCompare(b)),
+      ['1', '4']
+    )
+    await checkBoth(store, [
+      [{ type: '2' }, { added: 2, id: '2 n 0', reasons: ['b'], time: 2 }],
+      [{ type: '3' }, { added: 3, id: '3 n 0', reasons: ['a'], time: 3 }],
+      [{ type: '5' }, { added: 5, id: '5 n 0', reasons: ['a'], time: 5 }]
+    ])
+  })
+
+  test('removes reason by ids from indexes', factory => async () => {
+    let store = factory()
+    await Promise.all([
+      store.add(
+        { type: '1' },
+        { id: '1 n 0', indexes: ['a', 'b'], reasons: ['a'], time: 1 }
+      ),
+      store.add(
+        { type: '2' },
+        { id: '2 n 0', indexes: ['b'], reasons: ['a'], time: 2 }
+      )
+    ])
+    await store.removeReason('a', { ids: ['1 n 0'] }, () => {})
+    await checkIndex(store, 'a', [])
+    await checkIndex(store, 'b', [
+      [
+        { type: '2' },
+        { added: 2, id: '2 n 0', indexes: ['b'], reasons: ['a'], time: 2 }
+      ]
+    ])
+  })
+
+  test('combines ids with other criteria', factory => async () => {
+    let store = factory()
+    await Promise.all([
+      store.add({ type: '1' }, { id: '1 n 0', reasons: ['a'], time: 1 }),
+      store.add({ type: '2' }, { id: '2 n 0', reasons: ['a'], time: 2 }),
+      store.add({ type: '3' }, { id: '3 n 0', reasons: ['a'], time: 3 })
+    ])
+    await store.removeReason(
+      'a',
+      { ids: ['1 n 0', '3 n 0'], maxAdded: 2 },
+      () => {}
+    )
+    await checkBoth(store, [
+      [{ type: '2' }, { added: 2, id: '2 n 0', reasons: ['a'], time: 2 }],
+      [{ type: '3' }, { added: 3, id: '3 n 0', reasons: ['a'], time: 3 }]
+    ])
+  })
+
+  test('removes reason with empty ids', factory => async () => {
+    let store = factory()
+    await store.add({ type: '1' }, { id: '1 n 0', reasons: ['a'], time: 1 })
+    await store.removeReason('a', { ids: [] }, () => {})
+    await checkBoth(store, [
+      [{ type: '1' }, { added: 1, id: '1 n 0', reasons: ['a'], time: 1 }]
+    ])
+  })
+
   test('returns action by ID', factory => async () => {
     let store = factory()
     await Promise.all([

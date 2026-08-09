@@ -198,6 +198,9 @@ export class MemoryStore {
         if (reasonPos === -1) {
           return true
         }
+        if (isDefined(c.ids) && !c.ids.includes(meta.id)) {
+          return true
+        }
         if (isDefined(c.olderThan) && !isFirstOlder(meta, c.olderThan)) {
           return true
         }
