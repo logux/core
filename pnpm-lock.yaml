@@ -19,8 +19,8 @@ importers:
         specifier: ^8.18.1
         version: 8.18.1
       actions-up:
-        specifier: ^1.16.0
-        version: 1.16.0
+        specifier: ^1.17.0
+        version: 1.17.0
       better-node-test:
         specifier: ^1.0.0
         version: 1.0.0
@@ -43,8 +43,8 @@ importers:
         specifier: ^7.0.2
         version: 7.0.2
       ws:
-        specifier: ^8.21.2
-        version: 8.21.2
+        specifier: ^8.21.3
+        version: 8.21.3
 
 packages:
 
@@ -208,8 +208,8 @@ packages:
     cpu: [x64]
     os: [win32]
 
-  '@types/node@26.1.2':
-    resolution: {integrity: sha512-Vu4a5UFA9rIIFJ7rB/Vaafh9lrCQszopTCx6KjFboXTGQbPNasehVR5TEiithSDGyd1DEiUByggTZsg8jukeIg==}
+  '@types/node@26.2.0':
+    resolution: {integrity: sha512-5IviulTZeRNp2vAJ514cc/HUlY5nZ9fCbq9DMyC52BrhFZACo3nI0R7qBxhQmo/d27NFe96ur/b7Wwxklda+kg==}
 
   '@types/ws@8.18.1':
     resolution: {integrity: sha512-ThVF6DCVhA8kUGy+aazFQ4kXQ7E1Ty7A3ypFOe0IcJV8O/M511G99AW24irKrW56Wt44yG9+ij8FaqoBGkuBXg==}
@@ -334,8 +334,8 @@ packages:
     cpu: [x64]
     os: [win32]
 
-  actions-up@1.16.0:
-    resolution: {integrity: sha512-i/2cDk8Z5YUatx1atmxmZx5jCe0z6nwpDvBiqf4FB7cTuKXnEvpwLbwDGlvKkwA7n+SOHxlosGgOhBJXtHW3IA==}
+  actions-up@1.17.0:
+    resolution: {integrity: sha512-gdLr+nJY4v2/wwrxkUUsemfSl9VfmEraCOWSJDG24DDFJHCNWoC8GYRnL2aQEyM0G1gG5mTL71k4ZnI/8hxu1A==}
     engines: {node: ^18.3.0 || >=20.0.0}
     hasBin: true
 
@@ -419,8 +419,8 @@ packages:
   undici-types@8.3.0:
     resolution: {integrity: sha512-j375ScV60dom+YkPFIfTLcOiPxkN/buHz5GobjLhixFuANaNs3C9l4GmrWqejgXWJ7BbJcFYpTEUkS1Ge8bpZQ==}
 
-  ws@8.21.2:
-    resolution: {integrity: sha512-54dMVAo4WIe6SKy3vBgN+9bJZqqQ8IMRevAkOLQALhi49qkkQDQfWdAZ8KQlXiEabw88ARXXdUrlvtbKQX+aKw==}
+  ws@8.21.3:
+    resolution: {integrity: sha512-201TZ/kPWxoPr/OKWjquZR1SWKXcvxdH+e1xrx89b3YbmzLMFCLfnaG1HFIgWzJOEWZ7MvpK++odZufgYR50Rw==}
     engines: {node: '>=10.0.0'}
     peerDependencies:
       bufferutil: ^4.0.1
@@ -520,13 +520,13 @@ snapshots:
   '@oxlint/binding-win32-x64-msvc@1.77.0':
     optional: true
 
-  '@types/node@26.1.2':
+  '@types/node@26.2.0':
     dependencies:
       undici-types: 8.3.0
 
   '@types/ws@8.18.1':
     dependencies:
-      '@types/node': 26.1.2
+      '@types/node': 26.2.0
 
   '@typescript/typescript-aix-ppc64@7.0.2':
     optional: true
@@ -588,7 +588,7 @@ snapshots:
   '@typescript/typescript-win32-x64@7.0.2':
     optional: true
 
-  actions-up@1.16.0:
+  actions-up@1.17.0:
     dependencies:
       enquirer: 2.4.1
       nanospinner: 1.2.2
@@ -691,6 +691,6 @@ snapshots:
 
   undici-types@8.3.0: {}
 
-  ws@8.21.2: {}
+  ws@8.21.3: {}
 
   yaml@2.9.0: {}
