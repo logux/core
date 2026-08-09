@@ -5,11 +5,9 @@ export { isFirstOlder } from './is-first-older/index.js'
 export { LocalPair } from './local-pair/index.js'
 export {
   actionEvents,
-  AI_MATH_EPOCH,
   fromCompat,
   idToTime,
   Log,
-  timeToCompat,
   toCompat,
   toSorted
 } from './log/index.js'

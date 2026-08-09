@@ -2,7 +2,7 @@ import { restoreAll, spyOn } from 'nanospy'
 import { deepStrictEqual, equal, ok } from 'node:assert'
 import { afterEach, test } from 'node:test'
 
-import { AI_MATH_EPOCH, type Message, WsBinaryConnection } from '../index.js'
+import { type Message, WsBinaryConnection } from '../index.js'
 import { FakeWebSocket } from '../test/fake-ws.js'
 
 interface WsBinaryInternals {
@@ -263,7 +263,7 @@ test('round-trips sync with meta containing nodeId', async () => {
 test('round-trips logux/processed action', async () => {
   let { connection, received } = await createConnection()
 
-  internal(connection).baseTime = AI_MATH_EPOCH + 1000
+  internal(connection).baseTime = 1000
   internal(connection).localNodeId = 'server:abc'
   internal(connection).remoteNodeId = 'server:abc'
 
@@ -289,7 +289,7 @@ test('round-trips logux/processed action', async () => {
 test('round-trips logux/processed with implicit nodeId & counter', async () => {
   let { connection, received } = await createConnection()
 
-  internal(connection).baseTime = AI_MATH_EPOCH + 1000
+  internal(connection).baseTime = 1000
   internal(connection).localNodeId = 'server:abc'
   internal(connection).remoteNodeId = 'server:abc'
 
@@ -315,7 +315,7 @@ test('round-trips logux/processed with implicit nodeId & counter', async () => {
 test('round-trips logux/processed with different nodeId', async () => {
   let { connection, received } = await createConnection()
 
-  internal(connection).baseTime = AI_MATH_EPOCH + 1000
+  internal(connection).baseTime = 1000
   internal(connection).localNodeId = 'server:abc'
   internal(connection).remoteNodeId = 'server:abc'
 
@@ -341,7 +341,7 @@ test('round-trips logux/processed with different nodeId', async () => {
 test('round-trips 0/clean action', async () => {
   let { connection, received } = await createConnection()
 
-  internal(connection).baseTime = AI_MATH_EPOCH + 1000
+  internal(connection).baseTime = 1000
   internal(connection).localNodeId = 'server:abc'
   internal(connection).remoteNodeId = 'server:abc'
 
@@ -582,7 +582,7 @@ test('tracks context from incoming connect/connected', async () => {
 test('round-trips actions older than the connection', async () => {
   let { connection, received } = await createConnection()
 
-  internal(connection).baseTime = AI_MATH_EPOCH + 1000
+  internal(connection).baseTime = 1000
   internal(connection).localNodeId = 'server:abc'
   internal(connection).remoteNodeId = 'server:abc'
 

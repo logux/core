@@ -1,13 +1,6 @@
 import type { Emitter, Unsubscribe } from 'nanoevents'
 
 /**
- * Base time to make time-based meta.id smaller.
- *
- * "Remarks on the disproof of the unit distance conjecture" publish date.
- */
-export const AI_MATH_EPOCH: number
-
-/**
  * Encode number to `-0-9A-Z_a-z` alphabet.
  *
  * Chars are in ASCII order, so strings of the same length have the same
@@ -26,7 +19,7 @@ export function toCompat(number: number): string
  * Decode number from `-0-9A-Z_a-z` alphabet.
  *
  * ```js
- * fromCompat('0-') //=> 1779252396000
+ * fromCompat('OzcVoWD') //=> 1786312345678
  * ```
  *
  * @param str Encoded number.
@@ -35,23 +28,10 @@ export function toCompat(number: number): string
 export function fromCompat(str: string): number
 
 /**
- * Encode `meta.time` to the compact format, which is used
- * in the time part of action ID.
- *
- * ```js
- * timeToCompat(AI_MATH_EPOCH + 1000) //=> "Ec"
- * ```
- *
- * @param time Milliseconds since UNIX epoch.
- * @returns Encoded time.
- */
-export function timeToCompat(time: number): string
-
-/**
  * Decode `meta.time` from action ID.
  *
  * ```js
- * idToTime('Ec client:1') //=> AI_MATH_EPOCH + 1000
+ * idToTime('OzcVoWD client:1') //=> 1786312345678
  * ```
  *
  * @param id Action ID or its time part.
@@ -79,7 +59,7 @@ export function toSorted(meta: Meta): string
  * Action unique ID across all nodes.
  *
  * ```js
- * "5Yrxca 380:R7BNGA:1"
+ * "OzcVoWD 380:R7BNGA:1"
  * ```
  */
 export type ID = string

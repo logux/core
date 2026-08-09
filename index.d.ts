@@ -15,7 +15,6 @@ export { LocalPair } from './local-pair/index.js'
 export {
   Action,
   actionEvents,
-  AI_MATH_EPOCH,
   AnyAction,
   Criteria,
   fromCompat,
@@ -26,7 +25,6 @@ export {
   LogStore,
   Meta,
   ReadonlyListener,
-  timeToCompat,
   toCompat,
   toSorted
 } from './log/index.js'

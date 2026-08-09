@@ -23,14 +23,8 @@ test('uses special ID generator in test log', async () => {
     log.add({ type: 'b' }, { reasons: ['test'] })
   ])
   deepStrictEqual(log.entries(), [
-    [
-      { type: 'a' },
-      { added: 1, id: '0 test1', reasons: ['test'], time: 1 }
-    ],
-    [
-      { type: 'b' },
-      { added: 2, id: '1 test1', reasons: ['test'], time: 2 }
-    ]
+    [{ type: 'a' }, { added: 1, id: '0 test1', reasons: ['test'], time: 1 }],
+    [{ type: 'b' }, { added: 2, id: '1 test1', reasons: ['test'], time: 2 }]
   ])
 })
 
@@ -53,16 +47,10 @@ test('creates test logs with same time', async () => {
     log2.add({ type: 'b' }, { reasons: ['test'] })
   ])
   deepStrictEqual(log1.entries(), [
-    [
-      { type: 'a' },
-      { added: 1, id: '0 test1', reasons: ['test'], time: 1 }
-    ]
+    [{ type: 'a' }, { added: 1, id: '0 test1', reasons: ['test'], time: 1 }]
   ])
   deepStrictEqual(log2.entries(), [
-    [
-      { type: 'b' },
-      { added: 1, id: '1 test2', reasons: ['test'], time: 2 }
-    ]
+    [{ type: 'b' }, { added: 1, id: '1 test2', reasons: ['test'], time: 2 }]
   ])
 })
 
@@ -71,10 +59,7 @@ test('creates log with test shortcuts', () => {
   log.add({ type: 'A' }, { reasons: ['t'] })
   deepStrictEqual(log.actions(), [{ type: 'A' }])
   deepStrictEqual(log.entries(), [
-    [
-      { type: 'A' },
-      { added: 1, id: '0 test1', reasons: ['t'], time: 1 }
-    ]
+    [{ type: 'A' }, { added: 1, id: '0 test1', reasons: ['t'], time: 1 }]
   ])
 })
 

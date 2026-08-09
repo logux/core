@@ -8,10 +8,8 @@ import {
   isFirstOlder,
   Log,
   type LogPage,
-  AI_MATH_EPOCH,
   MemoryStore,
   type Meta,
-  timeToCompat,
   toCompat,
   toSorted
 } from '../index.js'
@@ -218,7 +216,7 @@ test('supports multi-pages stores', async () => {
 
 test('generates ID from time', async () => {
   let log = createLog()
-  Date.now = () => AI_MATH_EPOCH + 100
+  Date.now = () => 100
   await log.add({ type: 'TIMED' }, { reasons: ['test'] })
   checkEntries(log, [
     [
@@ -227,7 +225,7 @@ test('generates ID from time', async () => {
         added: 1,
         id: '0Z test',
         reasons: ['test'],
-        time: AI_MATH_EPOCH + 100
+        time: 100
       }
     ]
   ])
@@ -250,7 +248,7 @@ test('sets default ID and time and empty reasons for new entries', async () => {
     equal(typeof meta.added, 'undefined')
     deepStrictEqual(meta.reasons, [])
     deepStrictEqual(typeof meta.time, 'number')
-    equal(meta.id, `${toCompat(meta.time - AI_MATH_EPOCH)} test`)
+    equal(meta.id, `${toCompat(meta.time)} test`)
   })
   await log.add({ type: 'A' })
   equal(called, 1)
@@ -268,7 +266,7 @@ test('generates unique ID', () => {
 
 test('always generates biggest ID', () => {
   let log = createLog()
-  let times = [AI_MATH_EPOCH + 10, AI_MATH_EPOCH + 9]
+  let times = [10, 9]
 
   Date.now = () => times.shift() ?? 0
 
@@ -276,14 +274,13 @@ test('always generates biggest ID', () => {
   equal(log.generateId(), `${toCompat(11)} test`)
 })
 
-test('trims time in ID by Logux epoch and encodes it', () => {
+test('encodes time in ID', () => {
   let log = createLog()
 
-  Date.now = () => AI_MATH_EPOCH + 1000
+  Date.now = () => 1000
 
   equal(log.generateId(), 'Ec test')
   equal(fromCompat('Ec'), 1000)
-  equal(new Date(AI_MATH_EPOCH).toISOString(), '2026-05-20T04:46:35.000Z')
 })
 
 test('encodes numbers to ASCII-sorted alphabet', () => {
@@ -291,7 +288,7 @@ test('encodes numbers to ASCII-sorted alphabet', () => {
   equal(toCompat(1), '0')
   equal(toCompat(63), 'z')
   equal(toCompat(64), '0-')
-  equal(toCompat(AI_MATH_EPOCH), 'Ot2hEjs')
+  equal(toCompat(1786312345678), 'OzcVoWD')
 
   let numbers = [0, 1, 10, 63, 64, 4095, 4096, 1e6, 7059950678]
   for (let number of numbers) {
@@ -305,10 +302,9 @@ test('keeps numbers order in encoded strings of same length', () => {
   deepStrictEqual(encoded.toSorted(), encoded)
 })
 
-test('converts time to ID part and back', () => {
-  equal(timeToCompat(AI_MATH_EPOCH + 1000), 'Ec')
-  equal(idToTime('Ec test'), AI_MATH_EPOCH + 1000)
-  equal(idToTime(timeToCompat(AI_MATH_EPOCH)), AI_MATH_EPOCH)
+test('takes time from ID', () => {
+  equal(idToTime('Ec test'), 1000)
+  equal(idToTime(toCompat(1786312345678)), 1786312345678)
 })
 
 test('creates string to sort actions in database', () => {
@@ -316,9 +312,9 @@ test('creates string to sort actions in database', () => {
     added: 1,
     id: 'Ec test',
     reasons: [],
-    time: AI_MATH_EPOCH + 1000
+    time: 1000
   }
-  equal(toSorted(meta), '-Ot2hEzV test ------Ec')
+  equal(toSorted(meta), '------Ec test ------Ec')
 })
 
 test('sorts strings in the same order as isFirstOlder()', () => {
@@ -329,7 +325,7 @@ test('sorts strings in the same order as isFirstOlder()', () => {
         added: 0,
         id: `${toCompat(time)} ${nodeId}`,
         reasons: [],
-        time: AI_MATH_EPOCH + time
+        time: time
       })
     }
   }
@@ -342,7 +338,7 @@ test('sorts strings in the same order as isFirstOlder()', () => {
       added: 0,
       id: `${toCompat(idTime)} same`,
       reasons: [],
-      time: AI_MATH_EPOCH + 1000
+      time: 1000
     })
   }
 

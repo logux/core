@@ -1,8 +1,5 @@
 import { createNanoEvents } from 'nanoevents'
 
-// "Remarks on the disproof of the unit distance conjecture" publish date
-export const AI_MATH_EPOCH = 1779252395000
-
 // Chars are in ASCII order to keep string sorting the same as number sorting
 const ALPHABET =
   '-0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdefghijklmnopqrstuvwxyz'
@@ -24,12 +21,8 @@ export function fromCompat(str) {
   return number
 }
 
-export function timeToCompat(time) {
-  return toCompat(time - AI_MATH_EPOCH)
-}
-
 export function idToTime(id) {
-  return fromCompat(id.split(' ')[0]) + AI_MATH_EPOCH
+  return fromCompat(id.split(' ')[0])
 }
 
 // Enough for 8889 year
@@ -70,7 +63,6 @@ export class Log {
 
     this.nodeId = opts.nodeId
 
-    this.epoch = AI_MATH_EPOCH
     this.lastTime = 0
 
     this.store = opts.store
@@ -212,7 +204,7 @@ export class Log {
     let now = this.now()
     if (now <= this.lastTime) now = this.lastTime + 1
     this.lastTime = now
-    return toCompat(now - this.epoch) + ' ' + this.nodeId
+    return toCompat(now) + ' ' + this.nodeId
   }
 
   now() {

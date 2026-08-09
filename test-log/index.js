@@ -9,7 +9,6 @@ export class TestLog extends Log {
     }
 
     super(opts)
-    this.epoch = 0
     this.time = time
   }
 

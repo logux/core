@@ -1,4 +1,4 @@
-import { idToTime, timeToCompat } from '../log/index.js'
+import { idToTime, toCompat } from '../log/index.js'
 import { WsConnection } from '../ws-connection/index.js'
 
 let encoder = new TextEncoder()
@@ -61,7 +61,7 @@ function decodeJson(buf, offset) {
 function decodeActionId(ctx, buf, offset) {
   let type = buf[offset++]
   let [shift, pos] = decodeSigned(buf, offset)
-  let timestamp = timeToCompat(shift + ctx.baseTime)
+  let timestamp = toCompat(shift + ctx.baseTime)
 
   // Implicit nodeId
   if (type === 10) {
@@ -84,7 +84,7 @@ function decodeMeta(ctx, buf, offset) {
   let [shift, pos2] = decodeSigned(buf, pos)
 
   let meta = { time }
-  let id = timeToCompat(shift + ctx.baseTime)
+  let id = toCompat(shift + ctx.baseTime)
 
   // time, shift
   if (fieldCount === 2) {
