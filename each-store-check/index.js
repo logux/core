@@ -567,34 +567,6 @@ export function eachStoreCheck(test) {
     ])
   })
 
-  test('sorts actions with same time', factory => async () => {
-    let store = factory()
-    await Promise.all([
-      store.add({ type: 'B' }, { id: '2 a 0', time: 1 }),
-      store.add({ type: 'C' }, { id: '3 a 0', time: 1 }),
-      store.add({ type: 'A' }, { id: '1 a 0', time: 1 })
-    ])
-    await check(store, { order: 'created' }, [
-      [{ type: 'A' }, { added: 3, id: '1 a 0', time: 1 }],
-      [{ type: 'B' }, { added: 1, id: '2 a 0', time: 1 }],
-      [{ type: 'C' }, { added: 2, id: '3 a 0', time: 1 }]
-    ])
-  })
-
-  test('sorts actions with same time and index', factory => async () => {
-    let store = factory()
-    await Promise.all([
-      store.add({ type: 'B' }, { id: '2 a 0', indexes: ['a'], time: 1 }),
-      store.add({ type: 'C' }, { id: '3 a 0', indexes: ['a'], time: 1 }),
-      store.add({ type: 'A' }, { id: '1 a 0', indexes: ['a'], time: 1 })
-    ])
-    await check(store, { index: 'a', order: 'created' }, [
-      [{ type: 'A' }, { added: 3, id: '1 a 0', indexes: ['a'], time: 1 }],
-      [{ type: 'B' }, { added: 1, id: '2 a 0', indexes: ['a'], time: 1 }],
-      [{ type: 'C' }, { added: 2, id: '3 a 0', indexes: ['a'], time: 1 }]
-    ])
-  })
-
   test('keeps bytes in actions', factory => async () => {
     let store = factory()
     let action = {

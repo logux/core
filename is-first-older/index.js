@@ -37,13 +37,5 @@ export function isFirstOlder(firstMeta, secondMeta) {
     return true
   }
 
-  let firstNodeTime = parseInt(first[0])
-  let secondNodeTime = parseInt(second[0])
-  if (firstNodeTime > secondNodeTime) {
-    return false
-  } else if (firstNodeTime < secondNodeTime) {
-    return true
-  }
-
   return false
 }
