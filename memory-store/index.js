@@ -138,6 +138,11 @@ export class MemoryStore {
     } else {
       entries = store.added
     }
+    if (isDefined(opts.reason)) {
+      entries = entries.filter(([, meta]) => {
+        return isDefined(meta.reasons) && meta.reasons.includes(opts.reason)
+      })
+    }
     return { entries: entries.slice(0) }
   }
 

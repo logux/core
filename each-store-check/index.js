@@ -149,6 +149,58 @@ export function eachStoreCheck(test) {
     ])
   })
 
+  test('returns entries with reason', factory => async () => {
+    let store = factory()
+    await Promise.all([
+      store.add({ type: '1' }, { id: '1 n 0', reasons: ['b'], time: 1 }),
+      store.add({ type: '2' }, { id: '2 n 0', reasons: [], time: 2 }),
+      store.add({ type: '3' }, { id: '3 n 0', reasons: ['a'], time: 3 }),
+      store.add({ type: '4' }, { id: '4 n 0', reasons: ['b'], time: 4 }),
+      store.add({ type: '5' }, { id: '5 n 0', reasons: ['a', 'b'], time: 5 })
+    ])
+    await check(store, { order: 'created', reason: 'a' }, [
+      [{ type: '3' }, { added: 3, id: '3 n 0', reasons: ['a'], time: 3 }],
+      [{ type: '5' }, { added: 5, id: '5 n 0', reasons: ['a', 'b'], time: 5 }]
+    ])
+    await check(store, { order: 'added', reason: 'a' }, [
+      [{ type: '3' }, { added: 3, id: '3 n 0', reasons: ['a'], time: 3 }],
+      [{ type: '5' }, { added: 5, id: '5 n 0', reasons: ['a', 'b'], time: 5 }]
+    ])
+    await check(store, { order: 'added', reason: 'b' }, [
+      [{ type: '1' }, { added: 1, id: '1 n 0', reasons: ['b'], time: 1 }],
+      [{ type: '4' }, { added: 4, id: '4 n 0', reasons: ['b'], time: 4 }],
+      [{ type: '5' }, { added: 5, id: '5 n 0', reasons: ['a', 'b'], time: 5 }]
+    ])
+    await check(store, { order: 'added', reason: 'c' }, [])
+  })
+
+  test('returns indexed entries with reason', factory => async () => {
+    let store = factory()
+    await Promise.all([
+      store.add(
+        { type: '1' },
+        { id: '1 n 0', indexes: ['a'], reasons: ['a'], time: 1 }
+      ),
+      store.add(
+        { type: '2' },
+        { id: '2 n 0', indexes: ['a'], reasons: ['b'], time: 2 }
+      ),
+      store.add({ type: '3' }, { id: '3 n 0', reasons: ['a'], time: 3 })
+    ])
+    await check(store, { index: 'a', order: 'created', reason: 'a' }, [
+      [
+        { type: '1' },
+        { added: 1, id: '1 n 0', indexes: ['a'], reasons: ['a'], time: 1 }
+      ]
+    ])
+    await check(store, { index: 'a', order: 'added', reason: 'a' }, [
+      [
+        { type: '1' },
+        { added: 1, id: '1 n 0', indexes: ['a'], reasons: ['a'], time: 1 }
+      ]
+    ])
+  })
+
   test('returns latest added', factory => async () => {
     let store = factory()
     await store.add({ type: 'A' }, { id: '1 n 0', time: 1 })

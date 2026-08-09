@@ -148,6 +148,11 @@ interface GetOptions {
    * Sort entries by created time or when they was added to current log.
    */
   order?: 'added' | 'created'
+
+  /**
+   * Get only entries with this reason.
+   */
+  reason?: string
 }
 
 /**
