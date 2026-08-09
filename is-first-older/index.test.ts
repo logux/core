@@ -32,6 +32,13 @@ test('compares entries by node ID', () => {
   equal(isFirstOlder('1 a', '1 b'), true)
 })
 
+test('compares entries with same time by time in ID', () => {
+  let a = createMeta('2 a', 1)
+  let b = createMeta('1 a', 1)
+  equal(isFirstOlder(a, b), false)
+  equal(isFirstOlder(b, a), true)
+})
+
 test('returns false for same entry', () => {
   let a = createMeta('1 b', 1)
   equal(isFirstOlder(a, a), false)

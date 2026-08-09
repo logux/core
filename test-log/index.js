@@ -1,4 +1,4 @@
-import { AI_MATH_EPOCH, Log } from '../log/index.js'
+import { Log } from '../log/index.js'
 import { MemoryStore } from '../memory-store/index.js'
 
 export class TestLog extends Log {
@@ -9,6 +9,7 @@ export class TestLog extends Log {
     }
 
     super(opts)
+    this.epoch = 0
     this.time = time
   }
 
@@ -28,6 +29,6 @@ export class TestLog extends Log {
 
   now() {
     this.time.lastTime += 1
-    return AI_MATH_EPOCH + this.time.lastTime
+    return this.time.lastTime
   }
 }

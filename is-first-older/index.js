@@ -1,4 +1,4 @@
-import { idToTime } from '../log/index.js'
+import { fromCompat, idToTime } from '../log/index.js'
 
 export function isFirstOlder(firstMeta, secondMeta) {
   if (firstMeta && !secondMeta) {
@@ -20,11 +20,20 @@ export function isFirstOlder(firstMeta, secondMeta) {
     return true
   }
 
-  let firstNode = firstMeta.id.split(' ')[1]
-  let secondNode = secondMeta.id.split(' ')[1]
-  if (firstNode > secondNode) {
+  let first = firstMeta.id.split(' ')
+  let second = secondMeta.id.split(' ')
+
+  if (first[1] > second[1]) {
     return false
-  } else if (firstNode < secondNode) {
+  } else if (first[1] < second[1]) {
+    return true
+  }
+
+  let firstIdTime = fromCompat(first[0])
+  let secondIdTime = fromCompat(second[0])
+  if (firstIdTime > secondIdTime) {
+    return false
+  } else if (firstIdTime < secondIdTime) {
     return true
   }
 

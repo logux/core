@@ -2,13 +2,7 @@ import { deepStrictEqual, equal } from 'node:assert'
 import { afterEach, test } from 'node:test'
 import { setTimeout } from 'node:timers/promises'
 
-import {
-  ClientNode,
-  AI_MATH_EPOCH,
-  ServerNode,
-  TestPair,
-  TestTime
-} from '../index.js'
+import { ClientNode, ServerNode, TestPair, TestTime } from '../index.js'
 
 let destroyable: TestPair
 
@@ -50,8 +44,8 @@ async function createTest(
   pair.left.connect()
   await pair.leftNode.waitFor('synchronized')
   pair.clear()
-  privateMethods(pair.leftNode).baseTime = AI_MATH_EPOCH
-  privateMethods(pair.rightNode).baseTime = AI_MATH_EPOCH
+  privateMethods(pair.leftNode).baseTime = 0
+  privateMethods(pair.rightNode).baseTime = 0
   return pair
 }
 
@@ -276,9 +270,9 @@ test('reports errors during output filter', async () => {
 
 test('compresses time', async () => {
   let pair = await createTest()
-  privateMethods(pair.leftNode).baseTime = AI_MATH_EPOCH + 100
-  privateMethods(pair.rightNode).baseTime = AI_MATH_EPOCH + 100
-  let time = AI_MATH_EPOCH + 1
+  privateMethods(pair.leftNode).baseTime = 100
+  privateMethods(pair.rightNode).baseTime = 100
+  let time = 1
   await pair.leftNode.log.add({ type: 'a' }, { id: '0 test1', time })
   await pair.leftNode.waitFor('synchronized')
   deepStrictEqual(pair.leftSent, [
@@ -291,7 +285,7 @@ test('compresses time', async () => {
 
 test('compresses IDs', async () => {
   let pair = await createTest()
-  let time = AI_MATH_EPOCH + 1
+  let time = 1
   await Promise.all([
     pair.leftNode.log.add({ type: 'a' }, { id: '0 client', time }),
     pair.leftNode.log.add({ type: 'b' }, { id: '0 o', time })
@@ -310,7 +304,7 @@ test('compresses IDs', async () => {
 test('synchronizes any meta fields', async () => {
   let a = { type: 'a' }
   let pair = await createTest()
-  let time = AI_MATH_EPOCH + 1
+  let time = 1
   await pair.leftNode.log.add(a, { id: '0 test1', one: 1, time })
   await pair.leftNode.waitFor('synchronized')
   deepStrictEqual(pair.leftSent, [

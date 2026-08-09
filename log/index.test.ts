@@ -318,7 +318,7 @@ test('creates string to sort actions in database', () => {
     reasons: [],
     time: AI_MATH_EPOCH + 1000
   }
-  equal(toSorted(meta), '------Ec test')
+  equal(toSorted(meta), '-Ot2hEzV test ------Ec')
 })
 
 test('sorts strings in the same order as isFirstOlder()', () => {
@@ -332,6 +332,18 @@ test('sorts strings in the same order as isFirstOlder()', () => {
         time: AI_MATH_EPOCH + time
       })
     }
+  }
+
+  for (let time of [1, 2, 63, 64]) {
+    metas.push({ added: 0, id: `${toCompat(time)} test1`, reasons: [], time })
+  }
+  for (let idTime of [1, 2, 63, 64]) {
+    metas.push({
+      added: 0,
+      id: `${toCompat(idTime)} same`,
+      reasons: [],
+      time: AI_MATH_EPOCH + 1000
+    })
   }
 
   let byCompare = metas.toSorted((a, b) => (isFirstOlder(a, b) ? -1 : 1))

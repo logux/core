@@ -3,7 +3,6 @@ import { afterEach, test } from 'node:test'
 import { setTimeout } from 'node:timers/promises'
 
 import {
-  AI_MATH_EPOCH,
   BaseNode,
   ClientNode,
   LoguxError,
@@ -32,7 +31,7 @@ function createTest(): TestPair {
   p.leftNode = new ClientNode('client', time.nextLog(), p.left)
   p.rightNode = new ServerNode('server', time.nextLog(), p.right)
 
-  let current = AI_MATH_EPOCH
+  let current = 0
   privateMethods(p.leftNode.log).now = () => {
     current += 1
     return current
@@ -56,9 +55,7 @@ test('answers with protocol version and name in connected message', async () => 
   pair = createTest()
   await pair.left.connect()
   await pair.wait('left')
-  deepStrictEqual(pair.rightSent, [
-    ['connected', PROTOCOL, 'server', [AI_MATH_EPOCH + 2, AI_MATH_EPOCH + 3]]
-  ])
+  deepStrictEqual(pair.rightSent, [['connected', PROTOCOL, 'server', [2, 3]]])
 })
 
 test('checks client protocol version', async () => {
@@ -234,13 +231,7 @@ test('sends credentials in connected', async () => {
   pair.left.connect()
   await pair.leftNode.waitFor('synchronized')
   deepStrictEqual(pair.rightSent, [
-    [
-      'connected',
-      PROTOCOL,
-      'server',
-      [AI_MATH_EPOCH + 2, AI_MATH_EPOCH + 3],
-      { token: '1' }
-    ]
+    ['connected', PROTOCOL, 'server', [2, 3], { token: '1' }]
   ])
 })
 
@@ -251,13 +242,7 @@ test('generates credentials in connected', async () => {
   pair.left.connect()
   await pair.leftNode.waitFor('synchronized')
   deepStrictEqual(pair.rightSent, [
-    [
-      'connected',
-      PROTOCOL,
-      'server',
-      [AI_MATH_EPOCH + 2, AI_MATH_EPOCH + 3],
-      { token: '1' }
-    ]
+    ['connected', PROTOCOL, 'server', [2, 3], { token: '1' }]
   ])
 })
 
@@ -306,12 +291,7 @@ test('allows access for right users', async () => {
   await pair.left.connect()
   privateMethods(pair.leftNode).sendDuilian(0)
   await setTimeout(50)
-  deepStrictEqual(pair.rightSent[0], [
-    'connected',
-    PROTOCOL,
-    'server',
-    [AI_MATH_EPOCH + 1, AI_MATH_EPOCH + 2]
-  ])
+  deepStrictEqual(pair.rightSent[0], ['connected', PROTOCOL, 'server', [1, 2]])
 })
 
 test('has default timeFix', async () => {
@@ -323,16 +303,16 @@ test('has default timeFix', async () => {
 
 test('calculates time difference', async () => {
   pair = createTest()
-  let clientTime = [10000, 10000 + 1000 + 100 + 1].map(i => AI_MATH_EPOCH + i)
+  let clientTime = [10000, 10000 + 1000 + 100 + 1]
   privateMethods(pair.leftNode.log).now = () => clientTime.shift()
-  let serverTime = [0 + 50, 0 + 50 + 1000].map(i => AI_MATH_EPOCH + i)
+  let serverTime = [0 + 50, 0 + 50 + 1000]
   privateMethods(pair.rightNode.log).now = () => serverTime.shift()
 
   pair.leftNode.options.fixTime = true
   pair.left.connect()
   await pair.leftNode.waitFor('synchronized')
-  equal(privateMethods(pair.leftNode).baseTime, AI_MATH_EPOCH + 1050)
-  equal(privateMethods(pair.rightNode).baseTime, AI_MATH_EPOCH + 1050)
+  equal(privateMethods(pair.leftNode).baseTime, 1050)
+  equal(privateMethods(pair.rightNode).baseTime, 1050)
   equal(pair.leftNode.timeFix, 10000)
 })
 
@@ -409,7 +389,7 @@ test('answers with headers before connected message', async () => {
   await setTimeout(101)
   deepStrictEqual(pair.rightSent, [
     ['headers', { env: 'development' }],
-    ['connected', PROTOCOL, 'server', [AI_MATH_EPOCH + 2, AI_MATH_EPOCH + 3]]
+    ['connected', PROTOCOL, 'server', [2, 3]]
   ])
 })
 

@@ -36,8 +36,14 @@ export function idToTime(id) {
 const TIME_SIZE = 8
 
 export function toSorted(meta) {
-  let nodeId = meta.id.split(' ')[1]
-  return timeToCompat(meta.time).padStart(TIME_SIZE, ALPHABET[0]) + ' ' + nodeId
+  let [time, nodeId] = meta.id.split(' ')
+  return (
+    toCompat(meta.time).padStart(TIME_SIZE, ALPHABET[0]) +
+    ' ' +
+    nodeId +
+    ' ' +
+    time.padStart(TIME_SIZE, ALPHABET[0])
+  )
 }
 
 export function actionEvents(emitter, event, action, meta) {
@@ -64,6 +70,7 @@ export class Log {
 
     this.nodeId = opts.nodeId
 
+    this.epoch = AI_MATH_EPOCH
     this.lastTime = 0
 
     this.store = opts.store
@@ -80,7 +87,7 @@ export class Log {
     if (typeof meta.id === 'undefined') {
       newId = true
       meta.id = this.generateId()
-      meta.time = this.lastTime
+      if (typeof meta.time === 'undefined') meta.time = this.lastTime
     } else if (typeof meta.time === 'undefined') {
       meta.time = this.now()
     }
@@ -205,7 +212,7 @@ export class Log {
     let now = this.now()
     if (now <= this.lastTime) now = this.lastTime + 1
     this.lastTime = now
-    return timeToCompat(now) + ' ' + this.nodeId
+    return toCompat(now - this.epoch) + ' ' + this.nodeId
   }
 
   now() {

@@ -120,8 +120,8 @@ export function eachStoreCheck(test) {
     ])
     await check(store, { order: 'created' }, [
       [{ type: '1' }, { added: 1, id: '1 a', time: 1 }],
-      [{ type: '4' }, { added: 4, id: '3 b', time: 2 }],
       [{ type: '3' }, { added: 3, id: '1 b', time: 2 }],
+      [{ type: '4' }, { added: 4, id: '3 b', time: 2 }],
       [{ type: '2' }, { added: 2, id: '1 c', time: 2 }]
     ])
     await check(store, { order: 'added' }, [

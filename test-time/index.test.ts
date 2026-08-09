@@ -1,7 +1,7 @@
 import { deepStrictEqual, equal, ok } from 'node:assert'
 import { test } from 'node:test'
 
-import { AI_MATH_EPOCH, MemoryStore, TestTime } from '../index.js'
+import { MemoryStore, TestTime } from '../index.js'
 
 test('creates test log', () => {
   let log = TestTime.getLog()
@@ -25,11 +25,11 @@ test('uses special ID generator in test log', async () => {
   deepStrictEqual(log.entries(), [
     [
       { type: 'a' },
-      { added: 1, id: '0 test1', reasons: ['test'], time: AI_MATH_EPOCH + 1 }
+      { added: 1, id: '0 test1', reasons: ['test'], time: 1 }
     ],
     [
       { type: 'b' },
-      { added: 2, id: '1 test1', reasons: ['test'], time: AI_MATH_EPOCH + 2 }
+      { added: 2, id: '1 test1', reasons: ['test'], time: 2 }
     ]
   ])
 })
@@ -55,13 +55,13 @@ test('creates test logs with same time', async () => {
   deepStrictEqual(log1.entries(), [
     [
       { type: 'a' },
-      { added: 1, id: '0 test1', reasons: ['test'], time: AI_MATH_EPOCH + 1 }
+      { added: 1, id: '0 test1', reasons: ['test'], time: 1 }
     ]
   ])
   deepStrictEqual(log2.entries(), [
     [
       { type: 'b' },
-      { added: 1, id: '1 test2', reasons: ['test'], time: AI_MATH_EPOCH + 2 }
+      { added: 1, id: '1 test2', reasons: ['test'], time: 2 }
     ]
   ])
 })
@@ -73,7 +73,7 @@ test('creates log with test shortcuts', () => {
   deepStrictEqual(log.entries(), [
     [
       { type: 'A' },
-      { added: 1, id: '0 test1', reasons: ['t'], time: AI_MATH_EPOCH + 1 }
+      { added: 1, id: '0 test1', reasons: ['t'], time: 1 }
     ]
   ])
 })
