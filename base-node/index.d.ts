@@ -161,6 +161,17 @@ export interface NodeOptions<Headers extends object = object> {
   subprotocol?: number
 
   /**
+   * Maximum actions in a single `sync` message. `100` by default.
+   * Node will split a bigger batch into a few messages, so the remote node
+   * will be able to apply them by parts.
+   *
+   * ```js
+   * new ClientNode(nodeId, log, connection, { syncBatch: 1000 })
+   * ```
+   */
+  syncBatch?: number
+
+  /**
    * Timeout in milliseconds to wait answer before disconnect.
    */
   timeout?: number
@@ -368,6 +379,7 @@ export class BaseNode<
   destroy(): void
 
   on(event: 'headers', listener: (headers: Headers) => void): Unsubscribe
+  on(event: 'synced', listener: (synced: number) => void): Unsubscribe
   on(
     event: 'clientError' | 'error',
     listener: (error: LoguxError) => void
@@ -383,6 +395,8 @@ export class BaseNode<
    * * `clientError`: when error was sent to remote node.
    * * `debug`: when debug information received from remote node.
    * * `headers`: headers was receive from remote node.
+   * * `synced`: remote node confirmed a `sync` message. Use it to send
+   *             the next batch only after the previous one was received.
    *
    * ```js
    * node.on('clientError', error => {

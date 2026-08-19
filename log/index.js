@@ -70,77 +70,93 @@ export class Log {
     this.emitter = createNanoEvents()
   }
 
-  async add(action, meta = {}) {
-    if (typeof action.type === 'undefined') {
-      throw new Error('Expected "type" in action')
-    }
+  async add(input, inputMeta = {}) {
+    let wasBatched = Array.isArray(input)
+    let entries = wasBatched ? input : [[input, inputMeta]]
 
-    let newId = false
-    if (typeof meta.id === 'undefined') {
-      newId = true
-      meta.id = this.generateId()
-      if (typeof meta.time === 'undefined') meta.time = this.lastTime
-    } else if (typeof meta.time === 'undefined') {
-      meta.time = this.now()
-    }
-
-    if (typeof meta.reasons === 'undefined') {
-      meta.reasons = []
-    }
-
-    if (process.env.NODE_ENV !== 'production') {
-      if (!Array.isArray(meta.reasons)) {
-        throw new Error('Expected "reasons" to be an array of strings')
+    let results = []
+    let batch = []
+    for (let [action, meta = {}] of entries) {
+      if (typeof action.type === 'undefined') {
+        throw new Error('Expected "type" in action')
       }
 
-      for (let reason of meta.reasons) {
-        if (typeof reason !== 'string') {
+      let newId = false
+      if (typeof meta.id === 'undefined') {
+        newId = true
+        meta.id = this.generateId()
+        if (typeof meta.time === 'undefined') meta.time = this.lastTime
+      } else if (typeof meta.time === 'undefined') {
+        meta.time = this.now()
+      }
+
+      if (typeof meta.reasons === 'undefined') {
+        meta.reasons = []
+      }
+
+      if (process.env.NODE_ENV !== 'production') {
+        if (!Array.isArray(meta.reasons)) {
           throw new Error('Expected "reasons" to be an array of strings')
         }
-      }
 
-      if (typeof meta.indexes !== 'undefined') {
-        if (!Array.isArray(meta.indexes)) {
-          throw new Error('Expected "indexes" to be an array of strings')
+        for (let reason of meta.reasons) {
+          if (typeof reason !== 'string') {
+            throw new Error('Expected "reasons" to be an array of strings')
+          }
         }
 
-        for (let index of meta.indexes) {
-          if (typeof index !== 'string') {
+        if (typeof meta.indexes !== 'undefined') {
+          if (!Array.isArray(meta.indexes)) {
             throw new Error('Expected "indexes" to be an array of strings')
+          }
+
+          for (let index of meta.indexes) {
+            if (typeof index !== 'string') {
+              throw new Error('Expected "indexes" to be an array of strings')
+            }
           }
         }
       }
-    }
 
-    actionEvents(this.emitter, 'preadd', action, meta)
+      actionEvents(this.emitter, 'preadd', action, meta)
 
-    if (meta.keepLast) {
-      this.removeReason(meta.keepLast, { olderThan: meta })
-      meta.reasons.push(meta.keepLast)
-    }
+      if (meta.keepLast) {
+        this.removeReason(meta.keepLast, { olderThan: meta })
+        meta.reasons.push(meta.keepLast)
+      }
 
-    if (meta.reasons.length === 0 && newId) {
-      actionEvents(this.emitter, 'add', action, meta)
-      actionEvents(this.emitter, 'clean', action, meta)
-      return meta
-    } else if (meta.reasons.length === 0) {
-      let [action2] = await this.store.byId(meta.id)
-      if (action2) {
-        return false
-      } else {
+      // Actions without reasons will not be stored, so we can skip the store
+      // and keep `add()` synchronous for them
+      let result
+      if (meta.reasons.length === 0 && newId) {
         actionEvents(this.emitter, 'add', action, meta)
         actionEvents(this.emitter, 'clean', action, meta)
-        return meta
-      }
-    } else {
-      let addedMeta = await this.store.add(action, meta)
-      if (addedMeta === false) {
-        return false
+        result = meta
+      } else if (meta.reasons.length === 0) {
+        let [action2] = await this.store.byId(meta.id)
+        if (action2) {
+          result = false
+        } else {
+          actionEvents(this.emitter, 'add', action, meta)
+          actionEvents(this.emitter, 'clean', action, meta)
+          result = meta
+        }
       } else {
-        actionEvents(this.emitter, 'add', action, meta)
-        return addedMeta
+        let addedMeta = await this.store.add(action, meta)
+        if (addedMeta === false) {
+          result = false
+        } else {
+          actionEvents(this.emitter, 'add', action, meta)
+          result = addedMeta
+        }
       }
+
+      results.push(result)
+      if (result !== false) batch.push([action, meta])
     }
+
+    if (batch.length > 0) this.emitter.emit('batch', batch)
+    return wasBatched ? results : results[0]
   }
 
   byId(id) {

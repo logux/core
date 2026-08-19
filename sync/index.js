@@ -1,6 +1,4 @@
-export function sendSync(added, entries) {
-  this.startTimeout()
-
+function encodeEntries(node, entries) {
   let data = []
   for (let [action, originMeta] of entries) {
     let meta = {}
@@ -8,18 +6,30 @@ export function sendSync(added, entries) {
       if (key !== 'added') meta[key] = originMeta[key]
     }
 
-    if (this.timeFix) meta.time -= this.timeFix
-    meta.time -= this.baseTime
+    if (node.timeFix) meta.time -= node.timeFix
+    meta.time -= node.baseTime
 
     let [time, nodeId] = originMeta.id.split(' ')
-    if (nodeId === this.localNodeId) meta.id = time
+    if (nodeId === node.localNodeId) meta.id = time
 
-    data.unshift(action, meta)
+    data.push(action, meta)
   }
+  return data
+}
 
-  this.syncing += 1
-  this.setState('sending')
-  this.send(['sync', added].concat(data))
+export function sendSync(added, entries) {
+  if (entries.length === 0) return
+  // Callers collect entries from the newest to the oldest one,
+  // but the wire order is from the oldest to the newest one
+  let ordered = entries.toReversed()
+  let batch = this.options.syncBatch ?? 100
+  for (let i = 0; i < ordered.length; i += batch) {
+    let chunk = ordered.slice(i, i + batch)
+    this.startTimeout()
+    this.syncing += 1
+    this.setState('sending')
+    this.send(['sync', added].concat(encodeEntries(this, chunk)))
+  }
 }
 
 export function sendSynced(added) {
@@ -68,6 +78,7 @@ function add(node, action, meta) {
 export function syncedMessage(synced) {
   this.endTimeout()
   this.setLastSent(synced)
+  this.emitter.emit('synced', synced)
   if (this.syncing > 0) this.syncing -= 1
   if (this.syncing === 0) {
     this.setState('synchronized')

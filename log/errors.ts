@@ -2,7 +2,7 @@ import { Log, MemoryStore, Action } from '../index.js'
 
 let log = new Log({ nodeId: 'test1', store: new MemoryStore() })
 
-// THROWS 'name' does not exist in type 'Action'
+// THROWS No overload matches this call
 log.add({ name: 'Kate' })
 
 // THROWS 'number' is not assignable to type 'string'

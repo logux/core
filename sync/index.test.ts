@@ -2,7 +2,13 @@ import { deepStrictEqual, equal } from 'node:assert'
 import { afterEach, test } from 'node:test'
 import { setTimeout } from 'node:timers/promises'
 
-import { ClientNode, ServerNode, TestPair, TestTime } from '../index.js'
+import {
+  ClientNode,
+  type NodeOptions,
+  ServerNode,
+  TestPair,
+  TestTime
+} from '../index.js'
 
 let destroyable: TestPair
 
@@ -15,7 +21,11 @@ function privateMethods(obj: object): any {
   return obj
 }
 
-function createPair(): TestPair {
+function syncActions(message: any): any[] {
+  return message.slice(2).filter((_: unknown, i: number) => i % 2 === 0)
+}
+
+function createPair(opts: NodeOptions = {}): TestPair {
   let time = new TestTime()
   let log1 = time.nextLog()
   let log2 = time.nextLog()
@@ -30,16 +40,20 @@ function createPair(): TestPair {
     meta.reasons = ['t']
   })
 
-  pair.leftNode = new ClientNode('client', log1, pair.left, { fixTime: false })
+  pair.leftNode = new ClientNode('client', log1, pair.left, {
+    fixTime: false,
+    ...opts
+  })
   pair.rightNode = new ServerNode('server', log2, pair.right)
 
   return pair
 }
 
 async function createTest(
-  before?: (testPair: TestPair) => void
+  before?: (testPair: TestPair) => void,
+  opts: NodeOptions = {}
 ): Promise<TestPair> {
-  let pair = createPair()
+  let pair = createPair(opts)
   before?.(pair)
   pair.left.connect()
   await pair.leftNode.waitFor('synchronized')
@@ -432,4 +446,116 @@ test('synchronizes actions on connect', async () => {
   ])
   deepStrictEqual(pair.leftNode.log.actions(), pair.rightNode.log.actions())
   deepStrictEqual(added, ['a', 'b', 'c', 'd', 'e', 'f'])
+})
+
+test('sends batch of actions in a single message', async () => {
+  let pair = await createTest()
+  await pair.leftNode.log.add([
+    [{ type: 'a' }],
+    [{ type: 'b' }],
+    [{ type: 'c' }]
+  ])
+  await pair.leftNode.waitFor('synchronized')
+
+  equal(pair.leftSent.length, 1)
+  equal(pair.leftSent[0]![0], 'sync')
+  deepStrictEqual(syncActions(pair.leftSent[0]), [
+    { type: 'a' },
+    { type: 'b' },
+    { type: 'c' }
+  ])
+  deepStrictEqual(pair.rightNode.log.actions(), [
+    { type: 'a' },
+    { type: 'b' },
+    { type: 'c' }
+  ])
+})
+
+test('splits big batch by actions count', async () => {
+  let pair = await createTest(undefined, { syncBatch: 2 })
+  await pair.leftNode.log.add([
+    [{ type: 'a' }],
+    [{ type: 'b' }],
+    [{ type: 'c' }],
+    [{ type: 'd' }],
+    [{ type: 'e' }]
+  ])
+  await pair.leftNode.waitFor('synchronized')
+
+  deepStrictEqual(pair.leftSent.map(syncActions), [
+    [{ type: 'a' }, { type: 'b' }],
+    [{ type: 'c' }, { type: 'd' }],
+    [{ type: 'e' }]
+  ])
+  deepStrictEqual(pair.rightNode.log.actions(), [
+    { type: 'a' },
+    { type: 'b' },
+    { type: 'c' },
+    { type: 'd' },
+    { type: 'e' }
+  ])
+})
+
+test('keeps timeouts and syncing balanced on split batch', async () => {
+  let synced: number[] = []
+  let pair = await createTest(
+    created => {
+      created.leftNode.on('synced', value => {
+        synced.push(value)
+      })
+    },
+    { syncBatch: 1 }
+  )
+
+  privateMethods(pair.rightNode).send = (): void => {}
+  await pair.leftNode.log.add([[{ type: 'a' }], [{ type: 'b' }]])
+  await pair.wait('right')
+  equal(privateMethods(pair.leftNode).syncing, 2)
+  equal(privateMethods(pair.leftNode).timeouts.length, 2)
+
+  privateMethods(pair.leftNode).syncedMessage(1)
+  privateMethods(pair.leftNode).syncedMessage(2)
+  equal(privateMethods(pair.leftNode).syncing, 0)
+  equal(privateMethods(pair.leftNode).timeouts.length, 0)
+  equal(pair.leftNode.state, 'synchronized')
+  deepStrictEqual(synced, [1, 2])
+})
+
+test('does not send message on fully filtered batch', async () => {
+  let pair = await createTest(created => {
+    created.leftNode.options.onSend = async (): Promise<false> => false
+  })
+  await pair.leftNode.log.add([[{ type: 'a' }], [{ type: 'b' }]])
+  await setTimeout(10)
+
+  deepStrictEqual(pair.leftSent, [])
+  equal(privateMethods(pair.leftNode).syncing, 0)
+  equal(privateMethods(pair.leftNode).timeouts.length, 0)
+})
+
+test('keeps order on slow onSend', async () => {
+  let pair = await createTest(created => {
+    created.leftNode.options.onSend = async (action, meta) => {
+      if (action.type === 'a') await setTimeout(20)
+      return [action, meta]
+    }
+  })
+  await pair.leftNode.log.add([
+    [{ type: 'a' }],
+    [{ type: 'b' }],
+    [{ type: 'c' }]
+  ])
+  await setTimeout(50)
+
+  equal(pair.leftSent.length, 1)
+  deepStrictEqual(syncActions(pair.leftSent[0]), [
+    { type: 'a' },
+    { type: 'b' },
+    { type: 'c' }
+  ])
+  deepStrictEqual(pair.rightNode.log.actions(), [
+    { type: 'a' },
+    { type: 'b' },
+    { type: 'c' }
+  ])
 })

@@ -378,6 +378,7 @@ export class Log<
     action: NewAction,
     meta?: Partial<LogMeta>
   ): Promise<false | LogMeta>
+  add(entries: [AnyAction, Partial<LogMeta>?][]): Promise<(false | LogMeta)[]>
 
   /**
    * Does log already has action with this ID.
@@ -467,6 +468,7 @@ export class Log<
    *   It fires before ID check. The best place to add reason.
    * * `add`: when new action was added to log.
    * * `clean`: when action was cleaned from store.
+   * * `batch`: when actions from a single `Log#add()` call were added.
    *
    * Note, that `Log#type()` will work faster than `on` event with `if`.
    *
@@ -487,6 +489,10 @@ export class Log<
     listener: ReadonlyListener<Action, LogMeta>
   ): Unsubscribe
   on(event: 'preadd', listener: PreaddListener<Action, LogMeta>): Unsubscribe
+  on(
+    event: 'batch',
+    listener: (entries: [Action, LogMeta][]) => void
+  ): Unsubscribe
 
   /**
    * Remove reason tag from action’s metadata and remove actions without reason

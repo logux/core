@@ -82,6 +82,13 @@ test('requires type for action', async () => {
   ok((await getError(() => log.add({ a: 1 }))).includes('"type" in action'))
 })
 
+test('rejects on action without type instead of throwing', async () => {
+  let log = createLog()
+  // @ts-expect-error
+  let promise = log.add({ a: 1 })
+  ok((await getError(() => promise)).includes('"type" in action'))
+})
+
 test('sends new entries to listeners', async () => {
   let log = createLog()
   let actions1: Action[] = []
@@ -696,4 +703,78 @@ test('has type and action.id listener', async () => {
     'A add all a',
     'A add all b'
   ])
+})
+
+test('adds array of actions', async () => {
+  let log = createLog()
+  let preadded: Action[] = []
+  let added: Action[] = []
+  let cleaned: Action[] = []
+  log.on('preadd', action => {
+    preadded.push(action)
+  })
+  log.on('add', action => {
+    added.push(action)
+  })
+  log.on('clean', action => {
+    cleaned.push(action)
+  })
+
+  let metas = await log.add([
+    [{ type: 'A' }, { reasons: ['test'] }],
+    [{ type: 'B' }],
+    [{ type: 'C' }, { reasons: ['test'] }]
+  ])
+
+  deepStrictEqual(preadded, [{ type: 'A' }, { type: 'B' }, { type: 'C' }])
+  deepStrictEqual(added, [{ type: 'A' }, { type: 'B' }, { type: 'C' }])
+  deepStrictEqual(cleaned, [{ type: 'B' }])
+  deepStrictEqual(
+    metas.map(meta => meta && meta.added),
+    [1, undefined, 2]
+  )
+  checkActions(log, [{ type: 'A' }, { type: 'C' }])
+})
+
+test('returns false for duplicates in array', async () => {
+  let log = createLog()
+  let metas = await log.add([
+    [{ type: 'A' }, { id: '1 node 0', reasons: ['test'] }],
+    [{ type: 'B' }, { id: '1 node 0', reasons: ['test'] }]
+  ])
+  equal(metas[1], false)
+  checkActions(log, [{ type: 'A' }])
+})
+
+test('emits batch event', async () => {
+  let log = createLog()
+  let batches: Action[][] = []
+  log.on('batch', entries => {
+    batches.push(entries.map(entry => entry[0]))
+  })
+
+  await log.add({ type: 'A' })
+  await log.add({ type: 'B' }, { reasons: ['test'] })
+  await log.add([[{ type: 'C' }], [{ type: 'D' }, { reasons: ['test'] }]])
+  await log.add([])
+  await log.add({ type: 'E' }, { id: '1 node 0', reasons: ['test'] })
+  await log.add({ type: 'F' }, { id: '1 node 0', reasons: ['test'] })
+
+  deepStrictEqual(batches, [
+    [{ type: 'A' }],
+    [{ type: 'B' }],
+    [{ type: 'C' }, { type: 'D' }],
+    [{ type: 'E' }]
+  ])
+})
+
+test('emits batch event with metadata', async () => {
+  let log = createLog()
+  let ids: string[] = []
+  log.on('batch', entries => {
+    ids = entries.map(entry => entry[1].id)
+  })
+
+  let metas = await log.add([[{ type: 'A' }], [{ type: 'B' }]])
+  deepStrictEqual(ids, [metas[0] && metas[0].id, metas[1] && metas[1].id])
 })

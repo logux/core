@@ -6,6 +6,17 @@ log.add({ name: 'Kate', type: 'user/add' })
 
 log.add({ name: 'Kate', type: 'user/add' }, { extra: 1 })
 
+log.add([
+  [{ name: 'Kate', type: 'user/add' }],
+  [{ name: 'Ann', type: 'user/add' }, { extra: 1 }]
+])
+
+log.on('batch', entries => {
+  for (let [action, meta] of entries) {
+    console.log(action.type, meta.id)
+  }
+})
+
 type RenameAction = {
   name: string
   type: 'rename'

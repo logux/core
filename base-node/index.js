@@ -26,12 +26,13 @@ const NOT_TO_THROW = {
 
 const BEFORE_AUTH = ['connect', 'connected', 'error', 'debug', 'headers']
 
-function syncEvent(node, action, meta, added) {
+function syncEvent(node, entries, added) {
   if (typeof added === 'undefined') {
     let lastAdded = node.lastAddedCache
     added = lastAdded > node.lastSent ? lastAdded : node.lastSent
   }
-  node.sendSync(added, [[action, meta]])
+  // `sendSync()` takes entries from the newest to the oldest one
+  node.sendSync(added, entries.toReversed())
 }
 
 export class BaseNode {
@@ -70,8 +71,8 @@ export class BaseNode {
     this.throwsError = true
 
     this.unbind = [
-      log.on('add', (action, meta) => {
-        this.onAdd(action, meta)
+      log.on('batch', entries => {
+        this.onAdd(entries)
       }),
       connection.on('connecting', () => {
         this.onConnecting()
@@ -167,29 +168,46 @@ export class BaseNode {
     return this.emitter.on(event, listener)
   }
 
-  async onAdd(action, meta) {
+  async onAdd(entries) {
     if (!this.authenticated) return
-    if (this.lastAddedCache < meta.added) {
-      this.lastAddedCache = meta.added
+
+    let added
+    let sending = []
+    for (let entry of entries) {
+      let meta = entry[1]
+      if (this.lastAddedCache < meta.added) {
+        this.lastAddedCache = meta.added
+      }
+
+      if (this.received && this.received[meta.id]) {
+        delete this.received[meta.id]
+        continue
+      }
+
+      if (typeof meta.added !== 'undefined') {
+        if (typeof added === 'undefined' || meta.added > added) {
+          added = meta.added
+        }
+      }
+      sending.push(entry)
     }
 
-    if (this.received && this.received[meta.id]) {
-      delete this.received[meta.id]
-      return
-    }
+    if (sending.length === 0) return
 
     if (this.options.onSend) {
+      let results
       try {
-        let added = meta.added
-        let result = await this.options.onSend(action, meta)
-        if (result) {
-          syncEvent(this, result[0], result[1], added)
-        }
+        results = await Promise.all(
+          sending.map(([action, meta]) => this.options.onSend(action, meta))
+        )
       } catch (e) {
         this.error(e)
+        return
       }
+      let filtered = results.filter(Boolean)
+      if (filtered.length > 0) syncEvent(this, filtered, added)
     } else {
-      syncEvent(this, action, meta, meta.added)
+      syncEvent(this, sending, added)
     }
   }
 
