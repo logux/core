@@ -40,7 +40,6 @@
   "devDependencies": {
     "@logux/oxc-configs": "^1.1.0",
     "@types/ws": "^8.18.1",
-    "actions-up": "^1.17.1",
     "better-node-test": "^1.0.0",
     "check-dts": "^2.0.1",
     "eslint-plugin-prefer-let": "^4.2.2",
