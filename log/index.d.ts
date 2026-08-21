@@ -56,6 +56,18 @@ export function idToTime(id: ID): number
 export function toSorted(meta: Meta): string
 
 /**
+ * Convert string created by `toSorted()` back to metadata.
+ *
+ * ```js
+ * sortedToMeta('------Ec test ------Ec') //=> { id: 'Ec test', time: 1000 }
+ * ```
+ *
+ * @param sorted String created by `toSorted()`.
+ * @returns Action’s metadata with `id` and `time` keys.
+ */
+export function sortedToMeta(sorted: string): { id: ID; time: number }
+
+/**
  * Action unique ID across all nodes.
  *
  * ```js

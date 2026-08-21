@@ -25,6 +25,7 @@ export {
   LogStore,
   Meta,
   ReadonlyListener,
+  sortedToMeta,
   toCompat,
   toSorted
 } from './log/index.js'

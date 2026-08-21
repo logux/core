@@ -8,6 +8,7 @@ export {
   fromCompat,
   idToTime,
   Log,
+  sortedToMeta,
   toCompat,
   toSorted
 } from './log/index.js'

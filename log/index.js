@@ -39,6 +39,14 @@ export function toSorted(meta) {
   )
 }
 
+export function sortedToMeta(sorted) {
+  let [time, nodeId, id] = sorted.split(' ')
+  return {
+    id: `${toCompat(fromCompat(id))} ${nodeId}`,
+    time: fromCompat(time)
+  }
+}
+
 export function actionEvents(emitter, event, action, meta) {
   if (action.id) {
     emitter.emit(`${event}-${action.type}-${action.id}`, action, meta)

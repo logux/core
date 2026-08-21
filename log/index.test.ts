@@ -10,6 +10,7 @@ import {
   type LogPage,
   MemoryStore,
   type Meta,
+  sortedToMeta,
   toCompat,
   toSorted
 } from '../index.js'
@@ -322,6 +323,23 @@ test('creates string to sort actions in database', () => {
     time: 1000
   }
   equal(toSorted(meta), '------Ec test ------Ec')
+})
+
+test('restores metadata from sorted string', () => {
+  deepStrictEqual(sortedToMeta('------Ec test ------Ec'), {
+    id: 'Ec test',
+    time: 1000
+  })
+  let meta = {
+    added: 1,
+    id: `${toCompat(1786312345678)} 380:R7BNGA:1`,
+    reasons: [],
+    time: 1786312345678
+  }
+  deepStrictEqual(sortedToMeta(toSorted(meta)), {
+    id: meta.id,
+    time: meta.time
+  })
 })
 
 test('sorts strings in the same order as isFirstOlder()', () => {
