@@ -32,7 +32,7 @@ export {
 } from './log/index.js'
 export { LoguxError, LoguxErrorOptions } from './logux-error/index.js'
 export { MemoryStore } from './memory-store/index.js'
-export { parseId } from './parse-id/index.js'
+export { isSameClient, parseId } from './parse-id/index.js'
 export { Reconnect } from './reconnect/index.js'
 export { ServerConnection } from './server-connection/index.js'
 export { ServerNode } from './server-node/index.js'

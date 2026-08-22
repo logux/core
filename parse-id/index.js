@@ -8,3 +8,16 @@ export function parseId(nodeId) {
     return { clientId: parts[0] + ':' + parts[1], nodeId, userId }
   }
 }
+
+export function isSameClient(id, clientId) {
+  let start = id.indexOf(' ') + 1
+  let end = start
+  let colons = 0
+  while (end < id.length) {
+    let char = id.charCodeAt(end)
+    if (char === 32 /* space */) break
+    if (char === 58 /* colon */ && ++colons === 2) break
+    end += 1
+  }
+  return end - start === clientId.length && id.startsWith(clientId, start)
+}
