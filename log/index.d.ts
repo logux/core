@@ -53,7 +53,7 @@ export function idToTime(id: ID): number
  * @param meta Action’s metadata.
  * @returns String to sort actions.
  */
-export function toSorted(meta: Meta): string
+export function toSorted(meta: MetaTime): string
 
 /**
  * Convert string created by `toSorted()` back to metadata.
@@ -65,7 +65,7 @@ export function toSorted(meta: Meta): string
  * @param sorted String created by `toSorted()`.
  * @returns Action’s metadata with `id` and `time` keys.
  */
-export function sortedToMeta(sorted: string): { id: ID; time: number }
+export function sortedToMeta(sorted: string): MetaTime
 
 /**
  * Action unique ID across all nodes.
@@ -139,6 +139,8 @@ export interface Meta {
    */
   time: number
 }
+
+export type MetaTime = Pick<Meta, 'time' | 'id'>
 
 export interface Action {
   /**

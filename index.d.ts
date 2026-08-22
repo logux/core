@@ -27,7 +27,8 @@ export {
   ReadonlyListener,
   sortedToMeta,
   toCompat,
-  toSorted
+  toSorted,
+  MetaTime
 } from './log/index.js'
 export { LoguxError, LoguxErrorOptions } from './logux-error/index.js'
 export { MemoryStore } from './memory-store/index.js'
