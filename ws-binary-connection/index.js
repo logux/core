@@ -405,7 +405,10 @@ function encodeMessage(ctx, message) {
         ...encodeVarint(actionCount)
       ]
       for (let i = 2; i < message.length; i += 2) {
-        bytes.push(...encodeAction(ctx, message[i], message[i + 1]))
+        // Spread as arguments breaks the stack on a big action
+        for (let byte of encodeAction(ctx, message[i], message[i + 1])) {
+          bytes.push(byte)
+        }
       }
       break
     }
