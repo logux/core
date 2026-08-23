@@ -156,32 +156,39 @@ export interface AnyAction {
 
 export interface Criteria {
   /**
-   * Remove reason only for action with `id`.
+   * Change reasons only for action with `id`.
    */
   id?: ID
 
   /**
-   * Remove reason only for actions with these IDs.
+   * Change reasons only for actions with these IDs.
    */
   ids?: ID[]
 
   /**
-   * Remove reason only for actions with lower `added`.
+   * Change reasons only for actions with this index in `meta.indexes`.
+   *
+   * Store will use the index instead of scanning the whole log.
+   */
+  index?: string
+
+  /**
+   * Change reasons only for actions with lower `added`.
    */
   maxAdded?: number
 
   /**
-   * Remove reason only for actions with bigger `added`.
+   * Change reasons only for actions with bigger `added`.
    */
   minAdded?: number
 
   /**
-   * Remove reason only older than specific action.
+   * Change reasons only for actions older than specific action.
    */
   olderThan?: Meta
 
   /**
-   * Remove reason only younger than specific action.
+   * Change reasons only for actions younger than specific action.
    */
   youngerThan?: Meta
 }
@@ -240,6 +247,17 @@ export abstract class LogStore {
    *          same `meta.id` was already in store.
    */
   add(action: AnyAction, meta: Meta): Promise<false | Meta>
+
+  /**
+   * Add reasons to metadata of actions, which are already in the store.
+   *
+   * Reasons, which action already has, should not be duplicated.
+   *
+   * @param reasons The reason names.
+   * @param criteria Criteria to select actions for reason adding.
+   * @returns Promise when adding will be finished.
+   */
+  addReason(reasons: string[], criteria: Criteria): Promise<void>
 
   /**
    * Return action by action ID.
@@ -303,15 +321,15 @@ export abstract class LogStore {
   remove(id: ID): Promise<[Action, Meta] | false>
 
   /**
-   * Remove reason from action’s metadata and remove actions without reasons.
+   * Remove reasons from action’s metadata and remove actions without reasons.
    *
-   * @param reason The reason name.
-   * @param criteria Criteria to select action for reason removing.
+   * @param reasons The reason names.
+   * @param criteria Criteria to select actions for reason removing.
    * @param callback Callback for every removed action.
    * @returns Promise when cleaning will be finished.
    */
   removeReason(
-    reason: string,
+    reasons: string[],
     criteria: Criteria,
     callback: ReadonlyListener<Action, Meta>
   ): Promise<void>
@@ -393,6 +411,20 @@ export class Log<
     meta?: Partial<LogMeta>
   ): Promise<false | LogMeta>
   add(entries: [AnyAction, Partial<LogMeta>?][]): Promise<(false | LogMeta)[]>
+
+  /**
+   * Add reason tags to metadata of actions, which are already in the log. Reasons, which action already has, will not be duplicated.
+   *
+   * ```js
+   * // The action still owns these cells, so it should keep their reasons
+   * log.addReason('last-value', { id: meta.id })
+   * ```
+   *
+   * @param reasons The reason name or names.
+   * @param criteria Criteria to select actions for reason adding.
+   * @returns Promise when adding will be finished.
+   */
+  addReason(reasons: string[] | string, criteria?: Criteria): Promise<void>
 
   /**
    * Does log already has action with this ID.
@@ -509,8 +541,8 @@ export class Log<
   ): Unsubscribe
 
   /**
-   * Remove reason tag from action’s metadata and remove actions without reason
-   * from log.
+   * Remove reason tags from actions’ metadata and remove actions without
+   * reasons from log.
    *
    * ```js
    * onSync(lastSent) {
@@ -518,11 +550,11 @@ export class Log<
    * }
    * ```
    *
-   * @param reason The reason name.
-   * @param criteria Criteria to select action for reason removing.
+   * @param reasons The reason name or names.
+   * @param criteria Criteria to select actions for reason removing.
    * @returns Promise when cleaning will be finished.
    */
-  removeReason(reason: string, criteria?: Criteria): Promise<void>
+  removeReason(reasons: string[] | string, criteria?: Criteria): Promise<void>
 
   /**
    * Add listener for adding action with specific type.

@@ -57,6 +57,50 @@ function isDefined(value) {
   return typeof value !== 'undefined'
 }
 
+function hasIndex(meta, index) {
+  return isDefined(meta.indexes) && meta.indexes.includes(index)
+}
+
+function matchCriteria(meta, criteria) {
+  let c = criteria
+  if (isDefined(c.ids) && !c.ids.includes(meta.id)) {
+    return false
+  }
+  if (isDefined(c.index) && !hasIndex(meta, c.index)) {
+    return false
+  }
+  if (isDefined(c.olderThan) && !isFirstOlder(meta, c.olderThan)) {
+    return false
+  }
+  if (isDefined(c.youngerThan) && !isFirstOlder(c.youngerThan, meta)) {
+    return false
+  }
+  if (isDefined(c.minAdded) && meta.added < c.minAdded) {
+    return false
+  }
+  if (isDefined(c.maxAdded) && meta.added > c.maxAdded) {
+    return false
+  }
+  return true
+}
+
+// Actions to change reasons in. Uses `criteria.id` or `criteria.index`
+// to avoid scanning the whole log.
+function selectEntries(store, criteria) {
+  if (isDefined(criteria.id)) {
+    let created = find(store.entries, criteria.id)
+    if (created === -1) return []
+    let entry = store.entries[created]
+    return matchCriteria(entry[1], criteria) ? [entry] : []
+  }
+
+  let entries = store.entries
+  if (isDefined(criteria.index)) {
+    entries = (store.indexes[criteria.index] || { entries: [] }).entries
+  }
+  return entries.filter(([, meta]) => matchCriteria(meta, criteria))
+}
+
 export class MemoryStore {
   constructor() {
     this.entries = []
@@ -94,6 +138,14 @@ export class MemoryStore {
     })
     list.push(entry)
     return insert(this, entry)
+  }
+
+  async addReason(reasons, criteria) {
+    for (let [, meta] of selectEntries(this, criteria)) {
+      for (let reason of reasons) {
+        if (!meta.reasons.includes(reason)) meta.reasons.push(reason)
+      }
+    }
   }
 
   async byId(id) {
@@ -179,66 +231,37 @@ export class MemoryStore {
     return entry
   }
 
-  async removeReason(reason, criteria, callback) {
+  async removeReason(reasons, criteria, callback) {
     let removed = []
-
-    if (criteria.id) {
-      let index = find(this.entries, criteria.id)
-      if (index !== -1) {
-        let meta = this.entries[index][1]
+    for (let [action, meta] of selectEntries(this, criteria)) {
+      let changed = false
+      for (let reason of reasons) {
         let reasonPos = meta.reasons.indexOf(reason)
         if (reasonPos !== -1) {
           meta.reasons.splice(reasonPos, 1)
-          if (meta.reasons.length === 0) {
-            callback(this.entries[index][0], meta)
-            this.remove(criteria.id)
-          }
+          changed = true
         }
       }
-    } else {
-      this.entries = this.entries.filter(([action, meta]) => {
-        let c = criteria
-
-        let reasonPos = meta.reasons.indexOf(reason)
-        if (reasonPos === -1) {
-          return true
-        }
-        if (isDefined(c.ids) && !c.ids.includes(meta.id)) {
-          return true
-        }
-        if (isDefined(c.olderThan) && !isFirstOlder(meta, c.olderThan)) {
-          return true
-        }
-        if (isDefined(c.youngerThan) && !isFirstOlder(c.youngerThan, meta)) {
-          return true
-        }
-        if (isDefined(c.minAdded) && meta.added < c.minAdded) {
-          return true
-        }
-        if (isDefined(c.maxAdded) && meta.added > c.maxAdded) {
-          return true
-        }
-
-        meta.reasons.splice(reasonPos, 1)
-        if (meta.reasons.length === 0) {
-          callback(action, meta)
-          removed.push(meta)
-          return false
-        } else {
-          return true
-        }
-      })
-
-      let removedAdded = removed.map(m => m.added)
-      let removing = i => !removedAdded.includes(i[1].added)
-      this.added = this.added.filter(removing)
-
-      for (let meta of removed) {
-        forEachIndex(meta, i => {
-          this.indexes[i].entries = this.indexes[i].entries.filter(removing)
-          this.indexes[i].added = this.indexes[i].added.filter(removing)
-        })
+      if (changed && meta.reasons.length === 0) {
+        callback(action, meta)
+        removed.push(meta)
       }
+    }
+
+    if (removed.length === 0) return
+
+    let removedAdded = new Set(removed.map(meta => meta.added))
+    let removing = i => !removedAdded.has(i[1].added)
+    this.entries = this.entries.filter(removing)
+    this.added = this.added.filter(removing)
+
+    let dirty = new Set()
+    for (let meta of removed) {
+      forEachIndex(meta, index => dirty.add(index))
+    }
+    for (let index of dirty) {
+      this.indexes[index].entries = this.indexes[index].entries.filter(removing)
+      this.indexes[index].added = this.indexes[index].added.filter(removing)
     }
   }
 

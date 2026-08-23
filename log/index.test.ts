@@ -464,6 +464,53 @@ test('cleans log by reason', async () => {
   deepStrictEqual(cleaned, [[{ type: 'A' }, 1, []]])
 })
 
+test('cleans log by many reasons in a single pass', async () => {
+  let log = await logWith([
+    [{ type: 'A' }, { reasons: ['a', 'b'] }],
+    [{ type: 'AC' }, { reasons: ['a', 'c'] }],
+    [{ type: 'C' }, { reasons: ['c'] }]
+  ])
+  let cleaned: Action[] = []
+  log.on('clean', action => {
+    cleaned.push(action)
+  })
+  await log.removeReason(['a', 'b'])
+  checkActions(log, [{ type: 'AC' }, { type: 'C' }])
+  deepStrictEqual(log.store.entries[0]![1].reasons, ['c'])
+  deepStrictEqual(cleaned, [{ type: 'A' }])
+})
+
+test('cleans log by reason from index', async () => {
+  let log = await logWith([
+    [{ type: 'A' }, { indexes: ['users/1'], reasons: ['a'] }],
+    [{ type: 'B' }, { indexes: ['users/2'], reasons: ['a'] }],
+    [{ type: 'C' }, { reasons: ['a'] }]
+  ])
+  await log.removeReason('a', { index: 'users/1' })
+  checkActions(log, [{ type: 'B' }, { type: 'C' }])
+})
+
+test('adds reason to actions in log', async () => {
+  let log = await logWith([
+    [{ type: 'A' }, { id: '1 test', reasons: ['a'] }],
+    [{ type: 'B' }, { id: '2 test', reasons: ['a'] }]
+  ])
+  await log.addReason('b', { id: '1 test' })
+  await log.addReason(['a', 'c'], { id: '2 test' })
+  deepStrictEqual(log.store.entries[0]![1].reasons, ['a', 'b'])
+  deepStrictEqual(log.store.entries[1]![1].reasons, ['a', 'c'])
+})
+
+test('adds reason by index', async () => {
+  let log = await logWith([
+    [{ type: 'A' }, { indexes: ['users/1'], reasons: ['a'] }],
+    [{ type: 'B' }, { reasons: ['a'] }]
+  ])
+  await log.addReason('b', { index: 'users/1' })
+  deepStrictEqual(log.store.entries[0]![1].reasons, ['a', 'b'])
+  deepStrictEqual(log.store.entries[1]![1].reasons, ['a'])
+})
+
 test('removes reason with minimum and maximum added', async () => {
   let log = await logWith([
     [{ type: '1' }, { reasons: ['a'] }],

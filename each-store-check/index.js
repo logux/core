@@ -301,7 +301,7 @@ export function eachStoreCheck(test) {
       store.add({ type: '3' }, { id: '3 n', reasons: ['a', 'b'], time: 3 }),
       store.add({ type: '4' }, { id: '4 n', reasons: ['b'], time: 4 })
     ])
-    await store.removeReason('a', {}, () => {})
+    await store.removeReason(['a'], {}, () => {})
     await checkBoth(store, [
       [{ type: '3' }, { added: 3, id: '3 n', reasons: ['b'], time: 3 }],
       [{ type: '4' }, { added: 4, id: '4 n', reasons: ['b'], time: 4 }]
@@ -320,7 +320,7 @@ export function eachStoreCheck(test) {
         { id: '2 n', indexes: ['b'], reasons: ['b'], time: 2 }
       )
     ])
-    await store.removeReason('a', {}, () => {})
+    await store.removeReason(['a'], {}, () => {})
     await checkIndex(store, 'a', [])
     await checkIndex(store, 'b', [
       [
@@ -339,7 +339,8 @@ export function eachStoreCheck(test) {
     ])
     let m1 = { id: '1 n', time: 1 }
     let m3 = { id: '3 n', time: 3 }
-    await store.removeReason('a', { olderThan: m3, youngerThan: m1 }, () => {})
+    let criteria = { olderThan: m3, youngerThan: m1 }
+    await store.removeReason(['a'], criteria, () => {})
     await checkBoth(store, [
       [{ type: '1' }, { added: 1, id: '1 n', reasons: ['a'], time: 1 }],
       [{ type: '3' }, { added: 3, id: '3 n', reasons: ['a'], time: 3 }]
@@ -354,7 +355,7 @@ export function eachStoreCheck(test) {
       store.add({ type: '3' }, { id: '3 n', reasons: ['a'], time: 3 })
     ])
     let m2 = { id: '2 n', time: 2 }
-    await store.removeReason('a', { olderThan: m2 }, () => {})
+    await store.removeReason(['a'], { olderThan: m2 }, () => {})
     await checkBoth(store, [
       [{ type: '2' }, { added: 2, id: '2 n', reasons: ['a'], time: 2 }],
       [{ type: '3' }, { added: 3, id: '3 n', reasons: ['a'], time: 3 }]
@@ -369,7 +370,7 @@ export function eachStoreCheck(test) {
       store.add({ type: '3' }, { id: '3 n', reasons: ['a'], time: 3 })
     ])
     let m2 = { id: '2 n', time: 2 }
-    await store.removeReason('a', { youngerThan: m2 }, () => {})
+    await store.removeReason(['a'], { youngerThan: m2 }, () => {})
     await checkBoth(store, [
       [{ type: '1' }, { added: 1, id: '1 n', reasons: ['a'], time: 1 }],
       [{ type: '2' }, { added: 2, id: '2 n', reasons: ['a'], time: 2 }]
@@ -383,7 +384,7 @@ export function eachStoreCheck(test) {
       store.add({ type: '2' }, { id: '2 n', reasons: ['a'], time: 2 }),
       store.add({ type: '3' }, { id: '3 n', reasons: ['a'], time: 3 })
     ])
-    await store.removeReason('a', { minAdded: 2 }, () => {})
+    await store.removeReason(['a'], { minAdded: 2 }, () => {})
     await checkBoth(store, [
       [{ type: '1' }, { added: 1, id: '1 n', reasons: ['a'], time: 1 }]
     ])
@@ -396,7 +397,7 @@ export function eachStoreCheck(test) {
       store.add({ type: '2' }, { id: '2 n', reasons: ['a'], time: 2 }),
       store.add({ type: '3' }, { id: '3 n', reasons: ['a'], time: 3 })
     ])
-    await store.removeReason('a', { maxAdded: 2 }, () => {})
+    await store.removeReason(['a'], { maxAdded: 2 }, () => {})
     await checkBoth(store, [
       [{ type: '3' }, { added: 3, id: '3 n', reasons: ['a'], time: 3 }]
     ])
@@ -409,7 +410,7 @@ export function eachStoreCheck(test) {
       store.add({ type: '2' }, { id: '2 n', reasons: ['a'], time: 2 }),
       store.add({ type: '3' }, { id: '3 n', reasons: ['a'], time: 3 })
     ])
-    await store.removeReason('a', { maxAdded: 2, minAdded: 2 }, () => {})
+    await store.removeReason(['a'], { maxAdded: 2, minAdded: 2 }, () => {})
     await checkBoth(store, [
       [{ type: '1' }, { added: 1, id: '1 n', reasons: ['a'], time: 1 }],
       [{ type: '3' }, { added: 3, id: '3 n', reasons: ['a'], time: 3 }]
@@ -419,7 +420,7 @@ export function eachStoreCheck(test) {
   test('removes reason with zero at maximum added', factory => async () => {
     let store = factory()
     await store.add({}, { id: '1 n', reasons: ['a'], time: 1 })
-    await store.removeReason('a', { maxAdded: 0 }, () => {})
+    await store.removeReason(['a'], { maxAdded: 0 }, () => {})
     await checkBoth(store, [
       [{}, { added: 1, id: '1 n', reasons: ['a'], time: 1 }]
     ])
@@ -437,10 +438,10 @@ export function eachStoreCheck(test) {
       store.add({ type: '3' }, { id: '3 n', reasons: ['a'], time: 3 })
     ])
     await Promise.all([
-      store.removeReason('a', { id: '1 n' }, push),
-      store.removeReason('b', { id: '2 n' }, push),
-      store.removeReason('c', { id: '3 n' }, push),
-      store.removeReason('a', { id: '4 n' }, push)
+      store.removeReason(['a'], { id: '1 n' }, push),
+      store.removeReason(['b'], { id: '2 n' }, push),
+      store.removeReason(['c'], { id: '3 n' }, push),
+      store.removeReason(['a'], { id: '4 n' }, push)
     ])
     equal(removed, ['1'])
     await checkBoth(store, [
@@ -462,7 +463,7 @@ export function eachStoreCheck(test) {
       store.add({ type: '4' }, { id: '4 n', reasons: ['a'], time: 4 }),
       store.add({ type: '5' }, { id: '5 n', reasons: ['a'], time: 5 })
     ])
-    await store.removeReason('a', { ids: ['1 n', '2 n', '4 n', '6 n'] }, push)
+    await store.removeReason(['a'], { ids: ['1 n', '2 n', '4 n', '6 n'] }, push)
     equal(
       removed.toSorted((a, b) => a.localeCompare(b)),
       ['1', '4']
@@ -486,7 +487,7 @@ export function eachStoreCheck(test) {
         { id: '2 n', indexes: ['b'], reasons: ['a'], time: 2 }
       )
     ])
-    await store.removeReason('a', { ids: ['1 n'] }, () => {})
+    await store.removeReason(['a'], { ids: ['1 n'] }, () => {})
     await checkIndex(store, 'a', [])
     await checkIndex(store, 'b', [
       [
@@ -503,11 +504,8 @@ export function eachStoreCheck(test) {
       store.add({ type: '2' }, { id: '2 n', reasons: ['a'], time: 2 }),
       store.add({ type: '3' }, { id: '3 n', reasons: ['a'], time: 3 })
     ])
-    await store.removeReason(
-      'a',
-      { ids: ['1 n', '3 n'], maxAdded: 2 },
-      () => {}
-    )
+    let criteria = { ids: ['1 n', '3 n'], maxAdded: 2 }
+    await store.removeReason(['a'], criteria, () => {})
     await checkBoth(store, [
       [{ type: '2' }, { added: 2, id: '2 n', reasons: ['a'], time: 2 }],
       [{ type: '3' }, { added: 3, id: '3 n', reasons: ['a'], time: 3 }]
@@ -517,9 +515,169 @@ export function eachStoreCheck(test) {
   test('removes reason with empty ids', factory => async () => {
     let store = factory()
     await store.add({ type: '1' }, { id: '1 n', reasons: ['a'], time: 1 })
-    await store.removeReason('a', { ids: [] }, () => {})
+    await store.removeReason(['a'], { ids: [] }, () => {})
     await checkBoth(store, [
       [{ type: '1' }, { added: 1, id: '1 n', reasons: ['a'], time: 1 }]
+    ])
+  })
+
+  test('removes many reasons in a single pass', factory => async () => {
+    let store = factory()
+    let removed = []
+    function push(action) {
+      removed.push(action.type)
+    }
+    await Promise.all([
+      store.add({ type: '1' }, { id: '1 n', reasons: ['a', 'b'], time: 1 }),
+      store.add({ type: '2' }, { id: '2 n', reasons: ['a', 'c'], time: 2 }),
+      store.add({ type: '3' }, { id: '3 n', reasons: ['c'], time: 3 })
+    ])
+    await store.removeReason(['a', 'b'], {}, push)
+    equal(removed, ['1'])
+    await checkBoth(store, [
+      [{ type: '2' }, { added: 2, id: '2 n', reasons: ['c'], time: 2 }],
+      [{ type: '3' }, { added: 3, id: '3 n', reasons: ['c'], time: 3 }]
+    ])
+  })
+
+  test('removes reason by index', factory => async () => {
+    let store = factory()
+    await Promise.all([
+      store.add(
+        { type: '1' },
+        { id: '1 n', indexes: ['a', 'b'], reasons: ['r'], time: 1 }
+      ),
+      store.add(
+        { type: '2' },
+        { id: '2 n', indexes: ['b'], reasons: ['r'], time: 2 }
+      ),
+      store.add({ type: '3' }, { id: '3 n', reasons: ['r'], time: 3 })
+    ])
+    await store.removeReason(['r'], { index: 'a' }, () => {})
+    await store.removeReason(['r'], { index: 'unknown' }, () => {})
+    await checkBoth(store, [
+      [
+        { type: '2' },
+        { added: 2, id: '2 n', indexes: ['b'], reasons: ['r'], time: 2 }
+      ],
+      [{ type: '3' }, { added: 3, id: '3 n', reasons: ['r'], time: 3 }]
+    ])
+    await checkIndex(store, 'a', [])
+    await checkIndex(store, 'b', [
+      [
+        { type: '2' },
+        { added: 2, id: '2 n', indexes: ['b'], reasons: ['r'], time: 2 }
+      ]
+    ])
+  })
+
+  test('combines index with other criteria', factory => async () => {
+    let store = factory()
+    await Promise.all([
+      store.add(
+        { type: '1' },
+        { id: '1 n', indexes: ['a'], reasons: ['r'], time: 1 }
+      ),
+      store.add(
+        { type: '2' },
+        { id: '2 n', indexes: ['a'], reasons: ['r'], time: 2 }
+      ),
+      store.add(
+        { type: '3' },
+        { id: '3 n', indexes: ['a'], reasons: ['r'], time: 3 }
+      )
+    ])
+    await store.removeReason(['r'], { index: 'a', maxAdded: 2 }, () => {})
+    await checkIndex(store, 'a', [
+      [
+        { type: '3' },
+        { added: 3, id: '3 n', indexes: ['a'], reasons: ['r'], time: 3 }
+      ]
+    ])
+  })
+
+  test('adds reasons to actions', factory => async () => {
+    let store = factory()
+    await Promise.all([
+      store.add({ type: '1' }, { id: '1 n', reasons: ['a'], time: 1 }),
+      store.add({ type: '2' }, { id: '2 n', reasons: ['a'], time: 2 })
+    ])
+    await store.addReason(['b', 'c'], {})
+    let reasons = ['a', 'b', 'c']
+    await checkBoth(store, [
+      [{ type: '1' }, { added: 1, id: '1 n', reasons, time: 1 }],
+      [{ type: '2' }, { added: 2, id: '2 n', reasons, time: 2 }]
+    ])
+  })
+
+  test('adds reasons by ID', factory => async () => {
+    let store = factory()
+    await Promise.all([
+      store.add({ type: '1' }, { id: '1 n', reasons: ['a'], time: 1 }),
+      store.add({ type: '2' }, { id: '2 n', reasons: ['a'], time: 2 })
+    ])
+    await store.addReason(['b'], { id: '2 n' })
+    await store.addReason(['b'], { id: '3 n' })
+    await checkBoth(store, [
+      [{ type: '1' }, { added: 1, id: '1 n', reasons: ['a'], time: 1 }],
+      [{ type: '2' }, { added: 2, id: '2 n', reasons: ['a', 'b'], time: 2 }]
+    ])
+  })
+
+  test('does not duplicate reasons', factory => async () => {
+    let store = factory()
+    await store.add({ type: '1' }, { id: '1 n', reasons: ['a'], time: 1 })
+    await store.addReason(['a', 'b'], { ids: ['1 n'] })
+    await checkBoth(store, [
+      [{ type: '1' }, { added: 1, id: '1 n', reasons: ['a', 'b'], time: 1 }]
+    ])
+  })
+
+  test('adds reasons by index', factory => async () => {
+    let store = factory()
+    await Promise.all([
+      store.add(
+        { type: '1' },
+        { id: '1 n', indexes: ['a'], reasons: ['r'], time: 1 }
+      ),
+      store.add(
+        { type: '2' },
+        { id: '2 n', indexes: ['b'], reasons: ['r'], time: 2 }
+      ),
+      store.add({ type: '3' }, { id: '3 n', reasons: ['r'], time: 3 })
+    ])
+    await store.addReason(['new'], { index: 'a' })
+    await store.addReason(['new'], { index: 'unknown' })
+    await checkBoth(store, [
+      [
+        { type: '1' },
+        { added: 1, id: '1 n', indexes: ['a'], reasons: ['r', 'new'], time: 1 }
+      ],
+      [
+        { type: '2' },
+        { added: 2, id: '2 n', indexes: ['b'], reasons: ['r'], time: 2 }
+      ],
+      [{ type: '3' }, { added: 3, id: '3 n', reasons: ['r'], time: 3 }]
+    ])
+  })
+
+  test('checks index on action from ID', factory => async () => {
+    let store = factory()
+    await Promise.all([
+      store.add(
+        { type: '1' },
+        { id: '1 n', indexes: ['b'], reasons: ['r'], time: 1 }
+      ),
+      store.add({ type: '2' }, { id: '2 n', reasons: ['r'], time: 2 })
+    ])
+    await store.addReason(['new'], { id: '1 n', index: 'a' })
+    await store.addReason(['new'], { id: '2 n', index: 'a' })
+    await checkBoth(store, [
+      [
+        { type: '1' },
+        { added: 1, id: '1 n', indexes: ['b'], reasons: ['r'], time: 1 }
+      ],
+      [{ type: '2' }, { added: 2, id: '2 n', reasons: ['r'], time: 2 }]
     ])
   })
 
@@ -574,7 +732,7 @@ export function eachStoreCheck(test) {
     ok(byId.d instanceof Uint8Array)
 
     await store.changeMeta('1 n', { reasons: ['a', 'b'] })
-    await store.removeReason('b', {}, () => {})
+    await store.removeReason(['b'], {}, () => {})
     await checkBoth(store, [
       [action, { added: 1, id: '1 n', reasons: ['a'], time: 1 }]
     ])

@@ -55,6 +55,10 @@ export function actionEvents(emitter, event, action, meta) {
   emitter.emit(event, action, meta)
 }
 
+function toReasons(reasons) {
+  return typeof reasons === 'string' ? [reasons] : reasons
+}
+
 export class Log {
   constructor(opts = {}) {
     if (process.env.NODE_ENV !== 'production') {
@@ -167,6 +171,10 @@ export class Log {
     return wasBatched ? results : results[0]
   }
 
+  addReason(reasons, criteria = {}) {
+    return this.store.addReason(toReasons(reasons), criteria)
+  }
+
   byId(id) {
     return this.store.byId(id)
   }
@@ -239,10 +247,11 @@ export class Log {
     return this.emitter.on(event, listener)
   }
 
-  removeReason(reason, criteria = {}) {
-    return this.store.removeReason(reason, criteria, (action, meta) => {
+  removeReason(reasons, criteria = {}) {
+    let clean = (action, meta) => {
       actionEvents(this.emitter, 'clean', action, meta)
-    })
+    }
+    return this.store.removeReason(toReasons(reasons), criteria, clean)
   }
 
   type(type, listener, opts = {}) {

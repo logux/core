@@ -11,6 +11,14 @@ log.add([
   [{ name: 'Ann', type: 'user/add' }, { extra: 1 }]
 ])
 
+log.removeReason('user', { index: 'users/1' })
+
+log.removeReason(['users/1', 'users/2'], { maxAdded: 10 })
+
+log.addReason('user', { id: '1 test' })
+
+log.addReason(['users/1', 'users/2'])
+
 log.on('batch', entries => {
   for (let [action, meta] of entries) {
     console.log(action.type, meta.id)
