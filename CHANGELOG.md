@@ -2,6 +2,32 @@
 
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## 0.11 ጨ
+
+- Moved to Protocol 6 with binary messages support.
+- Changed action ID format to more compact `time nodeId` without counter.
+- Changed `Log#removeReason()` to accept an array of reasons.
+- Changed `LogStore#removeReason()` to accept an array of reasons.
+- Changed `LogStore#get()` to support `reason` option.
+- Changed `LogStore` to require `addReason()` method.
+- Changed `LogStore` to require `ids` and `index` criteria support.
+- Changed `LogStore` to require keeping `Uint8Array` values in actions.
+- Renamed `CompressedMeta` type to `SyncMeta`.
+- Replaced `TestLog#generateId()` with `Log#now()` redefining.
+- Removed Node.js 20 support.
+- Added actions batches to `Log#add()`.
+- Added `batch` event to `Log`.
+- Added `Log#addReason()`.
+- Added `Log#now()` to redefine node’s clock.
+- Added `meta.indexes` with `ids` and `index` criteria to change reasons faster.
+- Added `reason` option to `Log#get()`.
+- Added `synced` event and `syncBatch` option to nodes.
+- Added `isSameClient()` helper.
+- Added `toSorted()` and `sortedToMeta()` helpers to sort actions in database.
+- Added `toCompat()`, `fromCompat()`, and `idToTime()` helpers.
+- Added `MetaTime` type.
+- Moved types from `any` to `unknown`.
+
 ## 0.10 ꙮ
 
 - Moved to Protocol 5 with number as subprotocol.
