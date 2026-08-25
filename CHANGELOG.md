@@ -2,6 +2,10 @@
 
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## 0.11.1
+
+- Fixed `0/clean` with `ids` in binary protocol.
+
 ## 0.11 ጨ
 
 - Moved to Protocol 6 with binary messages support.
