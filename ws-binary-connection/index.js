@@ -148,11 +148,24 @@ function decodeAction(ctx, buf, offset) {
     return [action, meta, end]
   }
 
-  // 'c' — 0/clean
+  // 'c' — 0/clean with id
   if (type === 0x63) {
     let [id, pos] = decodeActionId(ctx, buf, offset)
     let [meta, end] = decodeMeta(ctx, buf, pos)
     return [{ id, type: '0/clean' }, meta, end]
+  }
+
+  // 'C' — 0/clean with ids
+  if (type === 0x43) {
+    let [length, pos] = decodeVarint(buf, offset)
+    let ids = []
+    for (let i = 0; i < length; i++) {
+      let [id, next] = decodeActionId(ctx, buf, pos)
+      ids.push(id)
+      pos = next
+    }
+    let [meta, end] = decodeMeta(ctx, buf, pos)
+    return [{ ids, type: '0/clean' }, meta, end]
     /* node:coverage ignore next 3 */
   }
 
@@ -307,9 +320,23 @@ function encodeAction(ctx, action, meta) {
     return [0x70, ...encodeActionId(ctx, action.id), ...encodeMeta(ctx, meta)]
   }
 
-  // 'c' — 0/clean
-  if (action.type === '0/clean') {
+  // 'c' — 0/clean with id
+  if (action.type === '0/clean' && action.id !== undefined) {
     return [0x63, ...encodeActionId(ctx, action.id), ...encodeMeta(ctx, meta)]
+  }
+
+  // 'C' — 0/clean with ids
+  if (action.type === '0/clean' && action.ids !== undefined) {
+    let ids = []
+    for (let id of action.ids) {
+      ids.push(...encodeActionId(ctx, id))
+    }
+    return [
+      0x43,
+      ...encodeVarint(action.ids.length),
+      ...ids,
+      ...encodeMeta(ctx, meta)
+    ]
   }
 
   // 'Z' or 'z' — encrypted 0 action

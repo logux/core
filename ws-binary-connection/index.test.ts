@@ -364,6 +364,32 @@ test('round-trips 0/clean action', async () => {
   ])
 })
 
+test('round-trips 0/clean action with ids', async () => {
+  let { connection, received } = await createConnection()
+
+  internal(connection).baseTime = 1000
+  internal(connection).localNodeId = 'server:abc'
+  internal(connection).remoteNodeId = 'server:abc'
+
+  connection.send([
+    'sync',
+    1,
+    { ids: ['1050 server:abc', '1060 client:xyz'], type: '0/clean' },
+    { id: '2', time: 7 }
+  ])
+  let binary = connection.ws!.sent[0] as Uint8Array
+  emit(connection.ws, 'message', binary.buffer)
+
+  deepStrictEqual(received, [
+    [
+      'sync',
+      1,
+      { ids: ['1050 server:abc', '1060 client:xyz'], type: '0/clean' },
+      { id: '2', time: 7 }
+    ]
+  ])
+})
+
 test('round-trips encrypted 0 action without compression', async () => {
   let { connection, received } = await createConnection()
 
