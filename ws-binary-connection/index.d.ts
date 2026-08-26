@@ -24,8 +24,3 @@ export class WsBinaryConnection<WS = WebSocket> extends WsConnection<WS> {
    */
   constructor(url: string, Class?: unknown, opts?: unknown)
 }
-
-export interface ActionPacker {
-  pack(action: Action): Uint8Array | undefined
-  unpack(action: PackedAction): Action | undefined
-}
