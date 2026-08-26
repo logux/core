@@ -2,6 +2,10 @@
 
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## 0.11.5
+
+- Removed `ActionPacker` type.
+
 ## 0.11.4
 
 - Fixed export of `ActionPacker` type from main export.
