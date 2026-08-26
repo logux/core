@@ -2,6 +2,10 @@
 
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## 0.11.2
+
+- Fixed missed `exceptIndex` pair for `index` log's criteria.
+
 ## 0.11.1
 
 - Fixed `0/clean` with `ids` in binary protocol.
