@@ -633,6 +633,58 @@ export function eachStoreCheck(test) {
     ])
   })
 
+  test('removes reason except the index', factory => async () => {
+    let store = factory()
+    await Promise.all([
+      store.add(
+        { type: '1' },
+        { id: '1 n', indexes: ['a', 'b'], reasons: ['r'], time: 1 }
+      ),
+      store.add(
+        { type: '2' },
+        { id: '2 n', indexes: ['a'], reasons: ['r'], time: 2 }
+      )
+    ])
+    await store.removeReason(['r'], { exceptIndex: 'b', index: 'a' }, () => {})
+    await checkBoth(store, [
+      [
+        { type: '1' },
+        { added: 1, id: '1 n', indexes: ['a', 'b'], reasons: ['r'], time: 1 }
+      ]
+    ])
+  })
+
+  test('adds reasons except the index', factory => async () => {
+    let store = factory()
+    await Promise.all([
+      store.add(
+        { type: '1' },
+        { id: '1 n', indexes: ['a', 'b'], reasons: ['r'], time: 1 }
+      ),
+      store.add(
+        { type: '2' },
+        { id: '2 n', indexes: ['a'], reasons: ['r'], time: 2 }
+      )
+    ])
+    await store.addReason(['new'], { exceptIndex: 'b', index: 'a' })
+    await checkBoth(store, [
+      [
+        { type: '1' },
+        { added: 1, id: '1 n', indexes: ['a', 'b'], reasons: ['r'], time: 1 }
+      ],
+      [
+        { type: '2' },
+        {
+          added: 2,
+          id: '2 n',
+          indexes: ['a'],
+          reasons: ['r', 'new'],
+          time: 2
+        }
+      ]
+    ])
+  })
+
   test('adds reasons by index', factory => async () => {
     let store = factory()
     await Promise.all([

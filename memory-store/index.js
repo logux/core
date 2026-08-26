@@ -69,6 +69,9 @@ function matchCriteria(meta, criteria) {
   if (isDefined(c.index) && !hasIndex(meta, c.index)) {
     return false
   }
+  if (isDefined(c.exceptIndex) && hasIndex(meta, c.exceptIndex)) {
+    return false
+  }
   if (isDefined(c.olderThan) && !isFirstOlder(meta, c.olderThan)) {
     return false
   }

@@ -173,6 +173,11 @@ export interface Criteria {
   index?: string
 
   /**
+   * Do not change reasons for actions with this index in `meta.indexes`.
+   */
+  exceptIndex?: string
+
+  /**
    * Change reasons only for actions with lower `added`.
    */
   maxAdded?: number
