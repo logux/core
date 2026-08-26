@@ -1,5 +1,6 @@
 import type WebSocket from 'ws'
 
+import type { Action } from '../log/index.js'
 import type { WsConnection } from '../ws-connection/index.js'
 
 /**
@@ -22,4 +23,9 @@ export class WsBinaryConnection<WS = WebSocket> extends WsConnection<WS> {
    * @param opts Extra option for WebSocket constructor.
    */
   constructor(url: string, Class?: unknown, opts?: unknown)
+}
+
+export interface ActionPacker {
+  pack(action: Action): Uint8Array | undefined
+  unpack(action: PackedAction): Action | undefined
 }
