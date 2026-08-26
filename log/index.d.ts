@@ -198,7 +198,7 @@ export interface Criteria {
   youngerThan?: Meta
 }
 
-interface LastSynced {
+export interface LastSynced {
   /**
    * The `added` value of latest received event.
    */
@@ -222,7 +222,7 @@ export interface LogPage {
   next?(): Promise<LogPage>
 }
 
-interface GetOptions {
+export interface GetOptions {
   /**
    * Get entries with a custom index.
    */
