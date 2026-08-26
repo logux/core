@@ -2,6 +2,10 @@
 
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## 0.11.3
+
+- Fixed export of `ActionPacker` type.
+
 ## 0.11.2
 
 - Fixed missed `exceptIndex` pair for `index` log's criteria.
