@@ -39,5 +39,8 @@ export { ServerNode } from './server-node/index.js'
 export { TestLog } from './test-log/index.js'
 export { TestPair } from './test-pair/index.js'
 export { TestTime } from './test-time/index.js'
-export { WsBinaryConnection } from './ws-binary-connection/index.js'
+export {
+  WsBinaryConnection,
+  ActionPacker
+} from './ws-binary-connection/index.js'
 export { WsConnection } from './ws-connection/index.js'
