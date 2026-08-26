@@ -2,6 +2,10 @@
 
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## 0.11.6
+
+- Fixed export `GetOptions` and `LastSynced` from `LogStore` type.
+
 ## 0.11.5
 
 - Removed `ActionPacker` type.
