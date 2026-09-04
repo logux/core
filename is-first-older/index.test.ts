@@ -1,7 +1,7 @@
 import { equal } from 'node:assert'
 import { test } from 'node:test'
 
-import { isFirstOlder, type Meta } from '../index.js'
+import { isFirstOlder, type Meta, type MetaTime } from '../index.js'
 
 function createMeta(id: string, time: number): Meta {
   return { added: 1, id, reasons: [], time }
@@ -55,4 +55,13 @@ test('works with undefined in one meta', () => {
   let a = createMeta('1 a', 1)
   equal(isFirstOlder(a, undefined), false)
   equal(isFirstOlder(undefined, a), true)
+})
+
+test('works with MetaTime', () => {
+  let a: MetaTime = { id: '2 a', time: 2 }
+  let b: MetaTime = { id: '1 a', time: 1 }
+  equal(isFirstOlder(a, b), false)
+  equal(isFirstOlder(b, a), true)
+  equal(isFirstOlder(a, createMeta('1 a', 1)), false)
+  equal(isFirstOlder(b, '10 a'), true)
 })

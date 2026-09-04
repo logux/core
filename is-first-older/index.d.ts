@@ -1,4 +1,4 @@
-import type { Meta } from '../index.js'
+import type { MetaTime } from '../index.js'
 
 /**
  * Compare time, when log entries were created.
@@ -17,6 +17,6 @@ import type { Meta } from '../index.js'
  * @param secondMeta Other action’s metadata.
  */
 export function isFirstOlder(
-  firstMeta: Meta | string | undefined,
-  secondMeta: Meta | string | undefined
+  firstMeta: MetaTime | string | undefined,
+  secondMeta: MetaTime | string | undefined
 ): boolean
