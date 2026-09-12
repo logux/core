@@ -91,6 +91,16 @@ test('round-trips synced message', async () => {
   deepStrictEqual(received, [['synced', 5]])
 })
 
+test('round-trips ready message', async () => {
+  let { connection, received } = await createConnection()
+
+  connection.send(['ready', 149])
+  let binary = connection.ws!.sent[0] as Uint8Array
+  emit(connection.ws, 'message', binary.buffer)
+
+  deepStrictEqual(received, [['ready', 149]])
+})
+
 test('round-trips error message without options', async () => {
   let { connection, received } = await createConnection()
 

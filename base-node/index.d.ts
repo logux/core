@@ -42,6 +42,7 @@ export type Message =
   | ['headers', object]
   | ['ping', number]
   | ['pong', number]
+  | ['ready', number]
   | ['sync', number, ...(AnyAction | SyncMeta)[]]
   | ['synced', number]
 
@@ -154,6 +155,24 @@ export interface NodeOptions<Headers extends object = object> {
    * Milliseconds since last message to test connection by sending ping.
    */
   ping?: number
+
+  /**
+   * Function to delay `ready` message until the node will finish everything
+   * what it does on connection. For instance, Logux Server sends channel’s
+   * initial data before `ready`.
+   *
+   * ```js
+   * new ServerNode(nodeId, log, connection, {
+   *   async ready () {
+   *     if (!node.remoteReady) {
+   *       await new Promise(resolve => node.on('ready', resolve))
+   *     }
+   *     await loadSubscriptions()
+   *   }
+   * })
+   * ```
+   */
+  ready?: () => Promise<void> | void
 
   /**
    * Application subprotocol version.
@@ -302,6 +321,19 @@ export class BaseNode<
   remoteProtocol: number | undefined
 
   /**
+   * Did remote node finish the initial synchronization after the connection.
+   *
+   * It will be `false` again on every disconnect.
+   *
+   * ```js
+   * if (!node.remoteReady) {
+   *   await new Promise(resolve => node.on('ready', resolve))
+   * }
+   * ```
+   */
+  remoteReady: boolean
+
+  /**
    * Remote node’s application subprotocol version.
    *
    * It is undefined until nodes handshake. If remote node will not send
@@ -397,6 +429,8 @@ export class BaseNode<
    * * `headers`: headers was receive from remote node.
    * * `synced`: remote node confirmed a `sync` message. Use it to send
    *             the next batch only after the previous one was received.
+   * * `ready`: remote node sent all actions, which it had on the connection.
+   *            All of them are already in the log.
    *
    * ```js
    * node.on('clientError', error => {
@@ -409,7 +443,7 @@ export class BaseNode<
    * @returns Unbind listener from event.
    */
   on(
-    event: 'connect' | 'debug' | 'headers' | 'state',
+    event: 'connect' | 'debug' | 'headers' | 'ready' | 'state',
     listener: () => void
   ): Unsubscribe
   on(

@@ -33,6 +33,7 @@ async function createTest(opts: NodeOptions): Promise<TestPair> {
   await pair.wait()
   let protocol = pair.leftNode.localProtocol
   pair.right.send(['connected', protocol, 'server', [0, 0]])
+  await pair.wait('right')
   pair.clear()
   return pair
 }
@@ -97,7 +98,7 @@ test('sends ping on idle connection', async () => {
     ['ping', 1],
     ['ping', 1]
   ])
-  deepStrictEqual(pair.leftEvents[3], ['disconnect', 'timeout'])
+  deepStrictEqual(pair.leftEvents.at(-1), ['disconnect', 'timeout'])
 })
 
 test('does not ping before authentication', async () => {

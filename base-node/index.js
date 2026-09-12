@@ -11,6 +11,7 @@ import { errorMessage, sendError } from '../error/index.js'
 import { headersMessage, sendHeaders } from '../headers/index.js'
 import { LoguxError } from '../logux-error/index.js'
 import { pingMessage, pongMessage, sendPing } from '../ping/index.js'
+import { readyMessage, sendReady } from '../ready/index.js'
 import {
   sendSync,
   sendSynced,
@@ -25,6 +26,8 @@ const NOT_TO_THROW = {
 }
 
 const BEFORE_AUTH = ['connect', 'connected', 'error', 'debug', 'headers']
+
+function ignore() {}
 
 function syncEvent(node, entries, added) {
   if (typeof added === 'undefined') {
@@ -41,8 +44,8 @@ export class BaseNode {
     this.remoteProtocol = undefined
     this.remoteSubprotocol = undefined
 
-    this.minProtocol = 6
-    this.localProtocol = 6
+    this.minProtocol = 7
+    this.localProtocol = 7
     this.localNodeId = nodeId
 
     this.log = log
@@ -64,6 +67,10 @@ export class BaseNode {
     this.lastSent = 0
     this.lastReceived = 0
     this.receiving = undefined
+    this.sending = undefined
+
+    this.remoteReady = false
+    this.readySent = false
 
     this.state = 'disconnected'
 
@@ -73,7 +80,8 @@ export class BaseNode {
 
     this.unbind = [
       log.on('batch', entries => {
-        this.onAdd(entries)
+        let sending = Promise.all([this.sending, this.onAdd(entries)])
+        this.sending = sending.then(ignore, ignore)
       }),
       connection.on('connecting', () => {
         this.onConnecting()
@@ -170,16 +178,20 @@ export class BaseNode {
   }
 
   async onAdd(entries) {
+    // `ready` message reports the cache, so it should be updated
+    // even for the actions, which we will not send
+    for (let [, meta] of entries) {
+      if (this.lastAddedCache < meta.added) {
+        this.lastAddedCache = meta.added
+      }
+    }
+
     if (!this.authenticated) return
 
     let added
     let sending = []
     for (let entry of entries) {
       let meta = entry[1]
-      if (this.lastAddedCache < meta.added) {
-        this.lastAddedCache = meta.added
-      }
-
       if (this.received && this.received[meta.id]) {
         delete this.received[meta.id]
         continue
@@ -229,6 +241,8 @@ export class BaseNode {
     this.authenticated = false
     this.connected = false
     this.syncing = 0
+    this.remoteReady = false
+    this.readySent = false
     this.setState('disconnected')
   }
 
@@ -259,8 +273,10 @@ export class BaseNode {
   }
 
   setLastReceived(value) {
-    if (this.lastReceived < value) this.lastReceived = value
-    this.log.store.setLastSynced({ received: value })
+    if (this.lastReceived < value) {
+      this.lastReceived = value
+      this.log.store.setLastSynced({ received: value })
+    }
   }
 
   setLastSent(value) {
@@ -316,6 +332,7 @@ export class BaseNode {
     } else {
       this.setState('synchronized')
     }
+    await this.sendReady()
   }
 
   async syncSinceQuery(lastSynced) {
@@ -381,6 +398,9 @@ BaseNode.prototype.sendSync = sendSync
 BaseNode.prototype.sendSynced = sendSynced
 BaseNode.prototype.syncMessage = syncMessage
 BaseNode.prototype.syncedMessage = syncedMessage
+
+BaseNode.prototype.sendReady = sendReady
+BaseNode.prototype.readyMessage = readyMessage
 
 BaseNode.prototype.sendPing = sendPing
 BaseNode.prototype.pingMessage = pingMessage

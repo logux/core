@@ -251,6 +251,12 @@ function decodeMessage(ctx, buf) {
     return ['synced', synced]
   }
 
+  // 'r' — ready
+  if (type === 0x72) {
+    let [added] = decodeVarint(buf, offset)
+    return ['ready', added]
+  }
+
   // 'd' — debug
   if (type === 0x64) {
     let [debugType, pos] = decodeString(buf, offset)
@@ -422,6 +428,10 @@ function encodeMessage(ctx, message) {
     }
     case 'pong': {
       bytes = [0x50 /* 'P' */, ...encodeVarint(message[1])]
+      break
+    }
+    case 'ready': {
+      bytes = [0x72 /* 'r' */, ...encodeVarint(message[1])]
       break
     }
     case 'sync': {

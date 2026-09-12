@@ -77,6 +77,10 @@ let validators = {
     return msg.length === 2 && isNumber(msg[1])
   },
 
+  ready(msg) {
+    return msg.length === 2 && isNumber(msg[1])
+  },
+
   sync(msg) {
     if (!isNumber(msg[1])) return false
     if (msg.length % 2 !== 0) return false

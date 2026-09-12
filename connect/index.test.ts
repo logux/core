@@ -378,7 +378,8 @@ test('sends headers before connect message (if headers is set)', async () => {
   await setTimeout(101)
   deepStrictEqual(pair.leftSent, [
     ['headers', { env: 'development' }],
-    ['connect', PROTOCOL, 'client', 0]
+    ['connect', PROTOCOL, 'client', 0],
+    ['ready', 0]
   ])
 })
 
@@ -389,7 +390,8 @@ test('answers with headers before connected message', async () => {
   await setTimeout(101)
   deepStrictEqual(pair.rightSent, [
     ['headers', { env: 'development' }],
-    ['connected', PROTOCOL, 'server', [2, 3]]
+    ['connected', PROTOCOL, 'server', [2, 3]],
+    ['ready', 0]
   ])
 })
 
@@ -403,7 +405,8 @@ test('sends headers if connection is active', async () => {
   await setTimeout(101)
   deepStrictEqual(pair.leftSent, [
     ['connect', PROTOCOL, 'client', 0],
-    ['headers', { env: 'development' }]
+    ['headers', { env: 'development' }],
+    ['ready', 0]
   ])
 })
 

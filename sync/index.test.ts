@@ -3,9 +3,11 @@ import { afterEach, test } from 'node:test'
 import { setTimeout } from 'node:timers/promises'
 
 import {
+  type BaseNode,
   ClientNode,
   type NodeOptions,
   ServerNode,
+  type TestLog,
   TestPair,
   TestTime
 } from '../index.js'
@@ -19,6 +21,13 @@ afterEach(() => {
 
 function privateMethods(obj: object): any {
   return obj
+}
+
+function whenReady(node: BaseNode<object, TestLog>): Promise<void> {
+  if (node.remoteReady) return Promise.resolve()
+  return new Promise(resolve => {
+    node.on('ready', resolve)
+  })
 }
 
 function syncActions(message: any): any[] {
@@ -57,6 +66,7 @@ async function createTest(
   before?.(pair)
   pair.left.connect()
   await pair.leftNode.waitFor('synchronized')
+  await Promise.all([whenReady(pair.leftNode), whenReady(pair.rightNode)])
   pair.clear()
   privateMethods(pair.leftNode).baseTime = 0
   privateMethods(pair.rightNode).baseTime = 0
