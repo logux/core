@@ -58,10 +58,6 @@ export async function syncMessage(added, ...data) {
     }
   }
 
-  // `synced` tells the other node that the actions are in the log and will
-  // not be re-sent, so it must wait for the log. Messages are confirmed
-  // in the order they came: a fast later message must not confirm
-  // a slow earlier one
   let previous = this.receiving ?? Promise.resolve()
   let current = previous.then(() => Promise.all(promises))
   this.receiving = current.then(ignore, ignore)
