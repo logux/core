@@ -355,7 +355,8 @@ export class BaseNode<
    * * `disconnected`: no connection.
    * * `connecting`: connection was started and we wait for node answer.
    * * `sending`: new actions was sent, waiting for answer.
-   * * `synchronized`: all actions was synchronized and we keep connection.
+   * * `synchronized`: all actions was synchronized in both ways (remote node
+   *                   sent `ready` message) and we keep connection.
    *
    * ```js
    * node.on('state', () => {

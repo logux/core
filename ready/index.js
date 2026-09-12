@@ -23,6 +23,7 @@ export async function readyMessage(added) {
   if (added > this.lastReceived) this.setLastReceived(added)
   if (!this.remoteReady) {
     this.remoteReady = true
+    this.checkSynchronized()
     this.emitter.emit('ready')
   }
 }

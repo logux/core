@@ -92,7 +92,5 @@ export function syncedMessage(synced) {
   this.setLastSent(synced)
   this.emitter.emit('synced', synced)
   if (this.syncing > 0) this.syncing -= 1
-  if (this.syncing === 0) {
-    this.setState('synchronized')
-  }
+  this.checkSynchronized()
 }

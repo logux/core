@@ -272,6 +272,12 @@ export class BaseNode {
     this.send(['duilian', Object.keys(DUILIANS)[0]])
   }
 
+  checkSynchronized() {
+    if (this.syncing === 0 && this.remoteReady) {
+      this.setState('synchronized')
+    }
+  }
+
   setLastReceived(value) {
     if (this.lastReceived < value) {
       this.lastReceived = value
@@ -330,7 +336,7 @@ export class BaseNode {
     if (data.entries.length > 0) {
       this.sendSync(data.added, data.entries)
     } else {
-      this.setState('synchronized')
+      this.checkSynchronized()
     }
     await this.sendReady()
   }

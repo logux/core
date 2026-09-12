@@ -208,8 +208,14 @@ test('sends credentials in connect', async () => {
 
   pair.left.connect()
   await pair.leftNode.waitFor('synchronized')
-  deepStrictEqual(pair.leftSent, [
-    ['connect', PROTOCOL, 'client', 0, { token: '1' }]
+  deepStrictEqual(pair.leftSent[0], [
+    'connect',
+    PROTOCOL,
+    'client',
+    0,
+    {
+      token: '1'
+    }
   ])
 })
 
@@ -219,8 +225,14 @@ test('generates credentials in connect', async () => {
 
   pair.left.connect()
   await pair.leftNode.waitFor('synchronized')
-  deepStrictEqual(pair.leftSent, [
-    ['connect', PROTOCOL, 'client', 0, { token: '1' }]
+  deepStrictEqual(pair.leftSent[0], [
+    'connect',
+    PROTOCOL,
+    'client',
+    0,
+    {
+      token: '1'
+    }
   ])
 })
 
@@ -230,8 +242,14 @@ test('sends credentials in connected', async () => {
 
   pair.left.connect()
   await pair.leftNode.waitFor('synchronized')
-  deepStrictEqual(pair.rightSent, [
-    ['connected', PROTOCOL, 'server', [2, 3], { token: '1' }]
+  deepStrictEqual(pair.rightSent[0], [
+    'connected',
+    PROTOCOL,
+    'server',
+    [2, 3],
+    {
+      token: '1'
+    }
   ])
 })
 
@@ -241,8 +259,14 @@ test('generates credentials in connected', async () => {
 
   pair.left.connect()
   await pair.leftNode.waitFor('synchronized')
-  deepStrictEqual(pair.rightSent, [
-    ['connected', PROTOCOL, 'server', [2, 3], { token: '1' }]
+  deepStrictEqual(pair.rightSent[0], [
+    'connected',
+    PROTOCOL,
+    'server',
+    [2, 3],
+    {
+      token: '1'
+    }
   ])
 })
 

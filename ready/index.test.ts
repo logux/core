@@ -170,6 +170,44 @@ test('reports an error from ready option', async () => {
   deepStrictEqual(types(pair.leftSent), ['connect'])
 })
 
+test('is not synchronized until remote node is ready', async () => {
+  let finish = (): void => {}
+  let pair = createPair()
+  pair.rightNode.options.ready = () =>
+    new Promise<void>(resolve => {
+      finish = resolve
+    })
+
+  let states: string[] = []
+  pair.leftNode.on('state', () => {
+    states.push(pair.leftNode.state)
+  })
+
+  pair.left.connect()
+  await pair.wait('left')
+  await setTimeout(10)
+
+  deepStrictEqual(states, ['connecting'])
+  equal(pair.leftNode.remoteReady, false)
+
+  finish()
+  await pair.leftNode.waitFor('synchronized')
+  deepStrictEqual(states, ['connecting', 'synchronized'])
+})
+
+test('stays in sending until the actions are confirmed', async () => {
+  let pair = createPair()
+  await pair.leftNode.log.add({ type: 'a' })
+
+  pair.left.connect()
+  await whenReady(pair.leftNode)
+
+  equal(pair.leftNode.remoteReady, true)
+  equal(pair.leftNode.state, 'sending')
+
+  await pair.leftNode.waitFor('synchronized')
+})
+
 test('emits ready only after the actions are in the log', async () => {
   let pair = createPair({
     onReceive: async (action, meta) => {
