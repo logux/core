@@ -72,14 +72,14 @@ export async function syncMessage(added, ...data) {
 }
 
 async function runOnReceiveInParallel(node, action, meta) {
+  let result
   try {
-    let result = await node.options.onReceive(action, meta)
-    if (result) {
-      add(node, result[0], result[1])
-    }
+    result = await node.options.onReceive(action, meta)
   } catch (e) {
     node.error(e)
+    return
   }
+  if (result) await add(node, result[0], result[1])
 }
 
 function add(node, action, meta) {

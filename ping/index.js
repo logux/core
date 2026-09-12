@@ -5,13 +5,13 @@ export function sendPing() {
 }
 
 export function pingMessage(synced) {
-  this.setLastReceived(synced)
   if (this.connected && this.authenticated) {
     this.send(['pong', this.lastAddedCache])
   }
+  this.saveReceived(synced)
 }
 
 export function pongMessage(synced) {
-  this.setLastReceived(synced)
   this.endTimeout()
+  this.saveReceived(synced)
 }

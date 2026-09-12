@@ -19,6 +19,7 @@ export async function sendReady() {
 
 export async function readyMessage(added) {
   await this.receiving
+  if (!this.connected) return
 
   if (added > this.lastReceived) this.setLastReceived(added)
   if (!this.remoteReady) {

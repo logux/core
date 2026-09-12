@@ -32,10 +32,14 @@ test('saves last added from ping', async () => {
   equal(node.lastReceived, 0)
   pair.right.send(['ping', 1])
   await pair.wait('right')
+  // The checkpoint is saved only after the actions from `sync` messages
+  // will be in the log
+  await setTimeout(1)
   equal(node.lastReceived, 1)
   privateMethods(node).sendPing()
   pair.right.send(['pong', 2])
   await pair.wait('left')
+  await setTimeout(1)
   equal(node.lastReceived, 2)
 })
 

@@ -258,6 +258,11 @@ export class BaseNode {
     this[name + 'Message'](...msg.slice(1))
   }
 
+  async saveReceived(value) {
+    await this.receiving
+    if (this.connected) this.setLastReceived(value)
+  }
+
   send(msg) {
     if (!this.connected) return
     this.delayPing()

@@ -3,8 +3,11 @@ import { afterEach, test } from 'node:test'
 import { setTimeout } from 'node:timers/promises'
 
 import {
+  type Action,
   type BaseNode,
   ClientNode,
+  MemoryStore,
+  type Meta,
   type NodeOptions,
   ServerNode,
   type TestLog,
@@ -28,6 +31,52 @@ function whenReady(node: BaseNode<object, TestLog>): Promise<void> {
   return new Promise(resolve => {
     node.on('ready', resolve)
   })
+}
+
+class BrokenStore extends MemoryStore {
+  override add(): Promise<false | Meta> {
+    return Promise.reject(new Error('Disk error'))
+  }
+}
+
+// The failure is slow enough for `ready` message to be received
+// before the log will report the error
+class SlowBrokenStore extends MemoryStore {
+  override add(): Promise<false | Meta> {
+    return new Promise((resolve, reject) => {
+      globalThis.setTimeout(() => {
+        reject(new Error('Disk error'))
+      }, 20)
+    })
+  }
+}
+
+function createStoreNodes(
+  store?: MemoryStore
+): [ClientNode<object, TestLog>, ServerNode, TestPair] {
+  let time = new TestTime()
+  let pair = new TestPair()
+
+  destroyable = pair
+  let client = new ClientNode<object, TestLog>(
+    'client:1',
+    time.nextLog({ nodeId: 'client:1', store }),
+    pair.left,
+    {
+      fixTime: false,
+      // Like `encryptActions()` in Logux Client
+      onReceive: (action: Action, meta: Meta) => [action, meta],
+      ping: 0,
+      timeout: 0
+    }
+  )
+  let server = new ServerNode('server:1', time.nextLog(), pair.right, {
+    ping: 0,
+    timeout: 0
+  })
+  pair.leftNode = client
+  pair.rightNode = server
+  return [client, server, pair]
 }
 
 function syncActions(message: any): any[] {
@@ -643,4 +692,87 @@ test('reports errors instead of confirming the message', async () => {
   deepStrictEqual(catched, [error])
   deepStrictEqual(pair.rightSent, [])
   equal(pair.rightNode.lastReceived, 0)
+})
+
+test('confirms the actions after they were stored', async () => {
+  let [client, server, pair] = createStoreNodes()
+  await server.log.add(
+    { type: 'A' },
+    { id: '1 server:1', reasons: ['test'], time: 1 }
+  )
+
+  await pair.left.connect()
+  await new Promise<void>(resolve => {
+    server.on('synced', () => {
+      resolve()
+    })
+  })
+
+  equal(client.log.entries().length, 1)
+  equal(client.lastReceived, 1)
+})
+
+test('does not confirm the actions, which the log failed to store', async () => {
+  let [client, server, pair] = createStoreNodes(new BrokenStore())
+  await server.log.add(
+    { type: 'A' },
+    { id: '1 server:1', reasons: ['test'], time: 1 }
+  )
+
+  let confirmed = false
+  server.on('synced', () => {
+    confirmed = true
+  })
+  await pair.left.connect()
+  let error = await new Promise<Error>(resolve => {
+    client.catch(resolve)
+  })
+
+  equal(error.message, 'Disk error')
+  equal(confirmed, false)
+  // The server will send the actions again on the next connection
+  equal(client.lastReceived, 0)
+})
+
+test('does not move the checkpoint by `ready` message', async () => {
+  let [client, server, pair] = createStoreNodes(new SlowBrokenStore())
+  await server.log.add(
+    { type: 'A' },
+    { id: '1 server:1', reasons: ['test'], time: 1 }
+  )
+
+  await pair.left.connect()
+  let error = await new Promise<Error>(resolve => {
+    client.catch(resolve)
+  })
+  await setTimeout(20)
+
+  equal(error.message, 'Disk error')
+  deepStrictEqual(pair.rightSent.at(-1), ['ready', 1])
+  // The server will send the action again on the next connection
+  equal(client.lastReceived, 0)
+  equal((await client.log.store.getLastSynced()).received, 0)
+})
+
+test('does not move the checkpoint by `ping` message', async () => {
+  let [client, server, pair] = createStoreNodes(new SlowBrokenStore())
+  await server.log.add(
+    { type: 'A' },
+    { id: '1 server:1', reasons: ['test'], time: 1 }
+  )
+
+  await pair.left.connect()
+  // The action is in the log write, which will fail
+  await setTimeout(10)
+  pair.right.send(['ping', 1])
+
+  let error = await new Promise<Error>(resolve => {
+    client.catch(resolve)
+  })
+  await setTimeout(20)
+
+  equal(error.message, 'Disk error')
+  // The server will send the action again on the next connection
+  equal(client.lastReceived, 0)
+  equal((await client.log.store.getLastSynced()).received, 0)
 })
