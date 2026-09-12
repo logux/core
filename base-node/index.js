@@ -63,6 +63,7 @@ export class BaseNode {
 
     this.lastSent = 0
     this.lastReceived = 0
+    this.receiving = undefined
 
     this.state = 'disconnected'
 

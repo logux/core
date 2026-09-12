@@ -36,7 +36,10 @@ export function sendSynced(added) {
   this.send(['synced', added])
 }
 
+function ignore() {}
+
 export async function syncMessage(added, ...data) {
+  let promises = []
   for (let i = 0; i < data.length - 1; i += 2) {
     let action = data[i]
     let meta = data[i + 1]
@@ -49,12 +52,25 @@ export async function syncMessage(added, ...data) {
     if (this.timeFix) meta.time = meta.time + this.timeFix
 
     if (this.options.onReceive) {
-      runOnReceiveInParallel(this, action, meta)
+      promises.push(runOnReceiveInParallel(this, action, meta))
     } else {
-      add(this, action, meta)
+      promises.push(add(this, action, meta))
     }
   }
 
+  // `synced` tells the other node that the actions are in the log and will
+  // not be re-sent, so it must wait for the log. Messages are confirmed
+  // in the order they came: a fast later message must not confirm
+  // a slow earlier one
+  let previous = this.receiving ?? Promise.resolve()
+  let current = previous.then(() => Promise.all(promises))
+  this.receiving = current.then(ignore, ignore)
+  try {
+    await current
+  } catch (e) {
+    this.error(e)
+    return
+  }
   this.setLastReceived(added)
   this.sendSynced(added)
 }

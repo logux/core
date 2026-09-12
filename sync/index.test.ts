@@ -559,3 +559,78 @@ test('keeps order on slow onSend', async () => {
     { type: 'c' }
   ])
 })
+
+test('sends synced only after the actions are in the log', async () => {
+  let delays: Promise<void>[] = []
+  let received: string[] = []
+  let pair = await createTest(created => {
+    created.rightNode.options.onReceive = async (action, meta) => {
+      let delay = setTimeout(action.type === 'slow' ? 100 : 0)
+      delays.push(delay)
+      await delay
+      received.push(action.type)
+      return [action, meta]
+    }
+  })
+
+  pair.left.send(['sync', 1, { type: 'slow' }, { id: '1 client 0', time: 1 }])
+  pair.left.send(['sync', 2, { type: 'fast' }, { id: '2 client 0', time: 2 }])
+  await setTimeout(20)
+  deepStrictEqual(pair.rightSent, [])
+
+  await Promise.all(delays)
+  await setTimeout(10)
+  deepStrictEqual(received, ['fast', 'slow'])
+  deepStrictEqual(pair.rightSent, [
+    ['synced', 1],
+    ['synced', 2]
+  ])
+  deepStrictEqual(pair.rightNode.log.actions(), [
+    { type: 'slow' },
+    { type: 'fast' }
+  ])
+})
+
+test('keeps order on slow log', async () => {
+  let added: string[] = []
+  let pair = await createTest(created => {
+    let store = created.rightNode.log.store
+    let originAdd = store.add.bind(store)
+    store.add = async (action, meta) => {
+      await setTimeout(action.type === 'slow' ? 100 : 0)
+      added.push(action.type)
+      return originAdd(action, meta)
+    }
+  })
+
+  pair.left.send(['sync', 1, { type: 'slow' }, { id: '1 client 0', time: 1 }])
+  pair.left.send(['sync', 2, { type: 'fast' }, { id: '2 client 0', time: 2 }])
+  await setTimeout(20)
+  deepStrictEqual(added, ['fast'])
+  deepStrictEqual(pair.rightSent, [])
+
+  await setTimeout(120)
+  deepStrictEqual(added, ['fast', 'slow'])
+  deepStrictEqual(pair.rightSent, [
+    ['synced', 1],
+    ['synced', 2]
+  ])
+  equal(pair.rightNode.lastReceived, 2)
+})
+
+test('reports errors instead of confirming the message', async () => {
+  let error = new Error('test')
+  let catched: Error[] = []
+  let pair = await createTest()
+  pair.rightNode.catch(e => {
+    catched.push(e)
+  })
+  pair.rightNode.log.add = () => Promise.reject(error)
+
+  pair.left.send(['sync', 1, { type: 'a' }, { id: '1 client 0', time: 1 }])
+  await setTimeout(10)
+
+  deepStrictEqual(catched, [error])
+  deepStrictEqual(pair.rightSent, [])
+  equal(pair.rightNode.lastReceived, 0)
+})
