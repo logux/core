@@ -38,13 +38,13 @@
     "nanoevents": "^10.0.0"
   },
   "devDependencies": {
-    "@logux/oxc-configs": "^1.1.0",
+    "@logux/oxc-configs": "^1.2.0",
     "@types/ws": "^8.18.1",
     "better-node-test": "^1.0.0",
     "check-dts": "^2.0.1",
     "eslint-plugin-prefer-let": "^4.2.2",
     "nanospy": "^2.0.2",
-    "oxlint": "^1.81.0",
+    "oxlint": "^1.82.0",
     "oxlint-tsgolint": "^7.0.2001",
     "typescript": "^7.0.2",
     "ws": "^8.21.3"
