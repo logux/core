@@ -2,7 +2,7 @@ import { restoreAll, spyOn } from 'nanospy'
 import { deepStrictEqual, equal } from 'node:assert'
 import { afterEach, test } from 'node:test'
 
-import { type Message, WsConnection } from '../index.js'
+import { BaseNode, type Message, TestTime, WsConnection } from '../index.js'
 import { FakeWebSocket } from '../test/fake-ws.js'
 
 function privateMethods(obj: object): any {
@@ -59,8 +59,69 @@ test('emits error on error', async () => {
   emit(connection.ws, 'error', new Error('test'))
   if (typeof error === 'undefined') throw new Error('Error was not sent')
   equal(error.message, 'test')
+  error = undefined
   emit(connection.ws, 'error')
-  equal(error.message, 'WS Error')
+  equal(error, undefined)
+})
+
+test('disconnects node with error only on error with details', async () => {
+  setWebSocket(FakeWebSocket)
+  let connection = new WsConnection<FakeWebSocket>('ws://localhost')
+  let node = new BaseNode('client', TestTime.getLog(), connection)
+  let errors: string[] = []
+  node.catch(err => {
+    errors.push(err.message)
+  })
+  let states: string[] = []
+  node.on('state', () => {
+    states.push(node.state)
+  })
+
+  await connection.connect()
+  equal(node.connected, true)
+  deepStrictEqual(states, ['connecting'])
+
+  emit(connection.ws, 'error', new Error('test'))
+  equal(node.connected, false)
+  equal(node.state, 'disconnected')
+  deepStrictEqual(errors, ['test'])
+  equal(connection.ws, undefined)
+
+  await connection.connect()
+  equal(node.connected, true)
+  equal(node.state, 'connecting')
+
+  emit(connection.ws, 'error')
+  equal(node.connected, true)
+  equal(node.state, 'connecting')
+  deepStrictEqual(errors, ['test'])
+
+  // Browser’s WebSocket always sends close event after error event
+  emit(connection.ws, 'close')
+  equal(node.connected, false)
+  equal(node.state, 'disconnected')
+  deepStrictEqual(errors, ['test'])
+
+  await connection.connect()
+  equal(node.connected, true)
+  equal(node.state, 'connecting')
+
+  // Chrome switches readyState to CLOSING before sending close event
+  connection.ws!.readyState = 2
+  privateMethods(node).send(['ping', 0])
+  equal(node.connected, false)
+  equal(node.state, 'disconnected')
+  deepStrictEqual(errors, ['test'])
+  deepStrictEqual(states, [
+    'connecting',
+    'disconnected',
+    'connecting',
+    'disconnected',
+    'connecting',
+    'disconnected'
+  ])
+
+  node.destroy()
 })
 
 test('emits connection states', async () => {
@@ -198,7 +259,7 @@ test('passes extra option for WebSocket', async () => {
   deepStrictEqual(connection.ws.opts, { a: 1 })
 })
 
-test('does not send to closed socket', async () => {
+test('disconnects on sending to closed socket', async () => {
   setWebSocket(FakeWebSocket)
   let connection = new WsConnection<FakeWebSocket>('ws://localhost')
 
@@ -206,15 +267,24 @@ test('does not send to closed socket', async () => {
   connection.on('error', e => {
     errors.push(e.message)
   })
+  let disconnects = 0
+  connection.on('disconnect', () => {
+    disconnects += 1
+  })
 
   await connection.connect()
   if (typeof connection.ws === 'undefined') {
     throw new Error('WebSocket was not created')
   }
 
-  connection.ws.readyState = 2
+  let ws = connection.ws
+  ws.readyState = 2
   connection.send(['ping', 1])
-  deepStrictEqual(errors, ['WS was closed'])
+  deepStrictEqual(ws.sent, [])
+  deepStrictEqual(errors, [])
+  equal(disconnects, 1)
+  equal(connection.connected, false)
+  equal(connection.ws, undefined)
 })
 
 test('ignores double connect call', async () => {

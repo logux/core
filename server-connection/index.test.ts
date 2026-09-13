@@ -105,7 +105,7 @@ test('sends text messages after receiving text', () => {
   deepStrictEqual(sent, ['["pong",1]'])
 })
 
-test('does not send to closed socket', () => {
+test('disconnects on sending to closed socket', () => {
   let sent: string[] = []
   let ws = prepareWs()
   ws.send = (msg: string) => {
@@ -118,10 +118,16 @@ test('does not send to closed socket', () => {
   connection.on('error', e => {
     errors.push(e.message)
   })
+  let disconnects = 0
+  connection.on('disconnect', () => {
+    disconnects += 1
+  })
 
   privateMethods(connection.ws)._readyState = 2
 
   connection.send(['ping', 1])
   deepStrictEqual(sent, [])
-  deepStrictEqual(errors, ['WS was closed'])
+  deepStrictEqual(errors, [])
+  equal(disconnects, 1)
+  equal(connection.connected, false)
 })

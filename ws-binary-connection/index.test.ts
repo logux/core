@@ -576,16 +576,25 @@ test('closes WebSocket', async () => {
   equal(connection.connected, false)
 })
 
-test('does not send to closed socket', async () => {
+test('disconnects on sending to closed socket', async () => {
   let { connection } = await createConnection()
   let errors: string[] = []
   connection.on('error', e => {
     errors.push(e.message)
   })
+  let disconnects = 0
+  connection.on('disconnect', () => {
+    disconnects += 1
+  })
 
-  connection.ws!.readyState = 2
+  let ws = connection.ws!
+  ws.readyState = 2
   connection.send(['ping', 1])
-  deepStrictEqual(errors, ['WS was closed'])
+  deepStrictEqual(ws.sent, [])
+  deepStrictEqual(errors, [])
+  equal(disconnects, 1)
+  equal(connection.connected, false)
+  equal(connection.ws, undefined)
 })
 
 test('tracks context from connect/connected messages', async () => {

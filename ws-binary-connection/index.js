@@ -537,7 +537,7 @@ export class WsBinaryConnection extends WsConnection {
         this.ws.send(encodeMessage(this, message))
       }
     } else {
-      this.emitter.emit('error', new Error('WS was closed'))
+      this.disconnect()
     }
   }
 }

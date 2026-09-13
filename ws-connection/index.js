@@ -48,7 +48,7 @@ export class WsConnection {
 
   init(ws) {
     ws.onerror = event => {
-      this.emitter.emit('error', event.error || new Error('WS Error'))
+      if (event.error) this.emitter.emit('error', event.error)
     }
 
     ws.onclose = () => {
@@ -85,7 +85,7 @@ export class WsConnection {
     if (this.ws && this.ws.readyState === this.ws.OPEN) {
       this.ws.send(JSON.stringify(message))
     } else {
-      this.emitter.emit('error', new Error('WS was closed'))
+      this.disconnect()
     }
   }
 }
