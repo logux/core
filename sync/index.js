@@ -23,12 +23,20 @@ export function sendSync(added, entries) {
   // but the wire order is from the oldest to the newest one
   let ordered = entries.toReversed()
   let batch = this.options.syncBatch ?? 100
+  let chunkAdded = 0
   for (let i = 0; i < ordered.length; i += batch) {
     let chunk = ordered.slice(i, i + batch)
+    if (i + batch >= ordered.length) {
+      chunkAdded = added
+    } else {
+      for (let [, meta] of chunk) {
+        if (meta.added > chunkAdded) chunkAdded = meta.added
+      }
+    }
     this.startTimeout()
     this.syncing += 1
     this.setState('sending')
-    this.send(['sync', added].concat(encodeEntries(this, chunk)))
+    this.send(['sync', chunkAdded].concat(encodeEntries(this, chunk)))
   }
 }
 

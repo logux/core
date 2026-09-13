@@ -52,7 +52,8 @@ class SlowBrokenStore extends MemoryStore {
 }
 
 function createStoreNodes(
-  store?: MemoryStore
+  store?: MemoryStore,
+  serverOpts: NodeOptions = {}
 ): [ClientNode<object, TestLog>, ServerNode, TestPair] {
   let time = new TestTime()
   let pair = new TestPair()
@@ -72,7 +73,8 @@ function createStoreNodes(
   )
   let server = new ServerNode('server:1', time.nextLog(), pair.right, {
     ping: 0,
-    timeout: 0
+    timeout: 0,
+    ...serverOpts
   })
   pair.leftNode = client
   pair.rightNode = server
@@ -775,4 +777,107 @@ test('does not move the checkpoint by `ping` message', async () => {
   // The server will send the action again on the next connection
   equal(client.lastReceived, 0)
   equal((await client.log.store.getLastSynced()).received, 0)
+})
+
+test('reports only the own actions of every split chunk', async () => {
+  let pair = await createTest(undefined, { syncBatch: 2 })
+  await pair.leftNode.log.add([
+    [{ type: 'a' }],
+    [{ type: 'b' }],
+    [{ type: 'c' }],
+    [{ type: 'd' }],
+    [{ type: 'e' }]
+  ])
+  await pair.leftNode.waitFor('synchronized')
+
+  deepStrictEqual(
+    pair.leftSent.map(message => message[1]),
+    [2, 4, 5]
+  )
+})
+
+test('reports the filtered actions in the last split chunk', async () => {
+  let pair = await createTest(
+    created => {
+      created.leftNode.options.onSend = async (action, meta) => {
+        return action.type === 'e' ? false : [action, meta]
+      }
+    },
+    { syncBatch: 2 }
+  )
+  await pair.leftNode.log.add([
+    [{ type: 'a' }],
+    [{ type: 'b' }],
+    [{ type: 'c' }],
+    [{ type: 'd' }],
+    [{ type: 'e' }]
+  ])
+  await setTimeout(10)
+
+  deepStrictEqual(pair.leftSent.map(syncActions), [
+    [{ type: 'a' }, { type: 'b' }],
+    [{ type: 'c' }, { type: 'd' }]
+  ])
+  // The last chunk covers `e`, which `onSend()` removed
+  deepStrictEqual(
+    pair.leftSent.map(message => message[1]),
+    [2, 5]
+  )
+})
+
+test('does not lose the actions on disconnect between split chunks', async () => {
+  let [client, server, pair] = createStoreNodes(undefined, { syncBatch: 2 })
+  for (let i = 1; i <= 4; i++) {
+    await server.log.add(
+      { type: 'A' + i },
+      { id: i + ' server:1', reasons: ['test'], time: i }
+    )
+  }
+
+  let alive = true
+  let syncs = 0
+  let origin = pair.right.send.bind(pair.right)
+  privateMethods(pair.right).send = (msg: any): void => {
+    if (!alive) return
+    // The connection dies after the first chunk of the batch
+    if (msg[0] === 'sync' && ++syncs > 1) {
+      alive = false
+      return
+    }
+    origin(msg)
+  }
+
+  await pair.left.connect()
+  await setTimeout(10)
+
+  deepStrictEqual(client.log.actions(), [{ type: 'A1' }, { type: 'A2' }])
+  equal(client.lastReceived, 2)
+  equal((await client.log.store.getLastSynced()).received, 2)
+
+  privateMethods(pair.right).send = origin
+  pair.left.disconnect()
+  await setTimeout(10)
+
+  // Logux Server creates a new node for every connection
+  let server2 = new ServerNode(
+    'server:1',
+    privateMethods(server).log,
+    pair.right,
+    {
+      ping: 0,
+      syncBatch: 2,
+      timeout: 0
+    }
+  )
+  pair.rightNode = server2
+  await pair.left.connect()
+  await whenReady(client)
+
+  deepStrictEqual(client.log.actions(), [
+    { type: 'A1' },
+    { type: 'A2' },
+    { type: 'A3' },
+    { type: 'A4' }
+  ])
+  equal(client.lastReceived, 4)
 })
