@@ -201,7 +201,7 @@ test('does not override smaller lastSent', async () => {
   equal(privateMethods(node.log.store).lastSent, 2)
 })
 
-test('has separated timeouts', async () => {
+test('counts the timeout from the last answer', async () => {
   let node = createNode({ timeout: 100 })
 
   let error: Error | undefined
@@ -210,8 +210,11 @@ test('has separated timeouts', async () => {
   })
 
   privateMethods(node).startTimeout()
-  await setTimeout(60)
   privateMethods(node).startTimeout()
+  await setTimeout(60)
+  privateMethods(node).endTimeout()
+  await setTimeout(60)
+  equal(error, undefined)
   await setTimeout(60)
   if (typeof error === 'undefined') throw new Error('Error was no sent')
   ok(error.message.includes('timeout'))

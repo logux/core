@@ -75,7 +75,7 @@ export class BaseNode {
     this.state = 'disconnected'
 
     this.emitter = createNanoEvents()
-    this.timeouts = []
+    this.waiting = 0
     this.throwsError = true
 
     this.unbind = [
@@ -148,9 +148,11 @@ export class BaseNode {
   }
 
   endTimeout() {
-    if (this.timeouts.length > 0) {
-      clearTimeout(this.timeouts.shift())
-    }
+    if (this.waiting === 0) return
+    this.waiting -= 1
+    clearTimeout(this.timeout)
+    this.timeout = undefined
+    if (this.waiting > 0) this.runTimeout()
   }
 
   error(err) {
@@ -217,7 +219,12 @@ export class BaseNode {
         this.error(e)
         return
       }
-      let filtered = results.filter(Boolean)
+      let filtered = []
+      for (let i = 0; i < results.length; i++) {
+        let result = results[i]
+        if (!result) continue
+        filtered.push([result[0], { ...result[1], added: sending[i][1].added }])
+      }
       if (filtered.length > 0) syncEvent(this, filtered, added)
     } else {
       syncEvent(this, sending, added)
@@ -234,9 +241,9 @@ export class BaseNode {
   }
 
   onDisconnect() {
-    while (this.timeouts.length > 0) {
-      this.endTimeout()
-    }
+    this.waiting = 0
+    clearTimeout(this.timeout)
+    this.timeout = undefined
     if (this.pingTimeout) clearTimeout(this.pingTimeout)
     this.authenticated = false
     this.connected = false
@@ -311,16 +318,21 @@ export class BaseNode {
     }
   }
 
-  startTimeout() {
-    if (!this.options.timeout) return
-
+  runTimeout() {
     let ms = this.options.timeout
-    let timeout = setTimeout(() => {
+    this.timeout = setTimeout(() => {
       if (this.connected) this.connection.disconnect('timeout')
       this.syncError('timeout', ms)
     }, ms)
+  }
 
-    this.timeouts.push(timeout)
+  // The remote node answers in order, so one timer for the oldest
+  // unanswered message is enough: a big sync is sent in chunks at once,
+  // and a timer per chunk would count the time of writing all previous ones
+  startTimeout() {
+    if (!this.options.timeout) return
+    this.waiting += 1
+    if (!this.timeout) this.runTimeout()
   }
 
   syncError(type, options, received) {
@@ -361,6 +373,9 @@ export class BaseNode {
                 if (meta.added > maxAdded) {
                   maxAdded = meta.added
                 }
+                // `onSend()` can drop `added`, but every chunk of the sync
+                // needs it to tell the remote node what it has received
+                return [result[0], { ...result[1], added: meta.added }]
               }
               return result
             } catch (e) {

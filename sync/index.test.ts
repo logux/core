@@ -85,6 +85,11 @@ function syncActions(message: any): any[] {
   return message.slice(2).filter((_: unknown, i: number) => i % 2 === 0)
 }
 
+// Like `cleanMeta()` in Logux Client, which removes `added` before sending
+function dropAdded(meta: Meta): Meta {
+  return { id: meta.id, reasons: meta.reasons, time: meta.time } as Meta
+}
+
 function createPair(opts: NodeOptions = {}): TestPair {
   let time = new TestTime()
   let log1 = time.nextLog()
@@ -430,21 +435,21 @@ test('starts and ends timeout', async () => {
   privateMethods(pair.leftNode).sendSync(2, [
     [{ type: 'a' }, { added: 1, id: '2 test2', time: 2 }]
   ])
-  equal(privateMethods(pair.leftNode).timeouts.length, 2)
+  equal(privateMethods(pair.leftNode).waiting, 2)
 
   privateMethods(pair.leftNode).syncedMessage(1)
-  equal(privateMethods(pair.leftNode).timeouts.length, 1)
+  equal(privateMethods(pair.leftNode).waiting, 1)
 
   privateMethods(pair.leftNode).syncedMessage(2)
-  equal(privateMethods(pair.leftNode).timeouts.length, 0)
+  equal(privateMethods(pair.leftNode).waiting, 0)
 })
 
 test('should nothing happend if syncedMessage of empty syncing', async () => {
   let pair = await createTest()
-  equal(privateMethods(pair.leftNode).timeouts.length, 0)
+  equal(privateMethods(pair.leftNode).waiting, 0)
 
   privateMethods(pair.leftNode).syncedMessage(1)
-  equal(privateMethods(pair.leftNode).timeouts.length, 0)
+  equal(privateMethods(pair.leftNode).waiting, 0)
 })
 
 test('uses always latest added', async () => {
@@ -572,12 +577,12 @@ test('keeps timeouts and syncing balanced on split batch', async () => {
   await pair.leftNode.log.add([[{ type: 'a' }], [{ type: 'b' }]])
   await pair.wait('right')
   equal(privateMethods(pair.leftNode).syncing, 2)
-  equal(privateMethods(pair.leftNode).timeouts.length, 2)
+  equal(privateMethods(pair.leftNode).waiting, 2)
 
   privateMethods(pair.leftNode).syncedMessage(1)
   privateMethods(pair.leftNode).syncedMessage(2)
   equal(privateMethods(pair.leftNode).syncing, 0)
-  equal(privateMethods(pair.leftNode).timeouts.length, 0)
+  equal(privateMethods(pair.leftNode).waiting, 0)
   equal(pair.leftNode.state, 'synchronized')
   deepStrictEqual(synced, [1, 2])
 })
@@ -591,7 +596,7 @@ test('does not send message on fully filtered batch', async () => {
 
   deepStrictEqual(pair.leftSent, [])
   equal(privateMethods(pair.leftNode).syncing, 0)
-  equal(privateMethods(pair.leftNode).timeouts.length, 0)
+  equal(privateMethods(pair.leftNode).waiting, 0)
 })
 
 test('keeps order on slow onSend', async () => {
@@ -794,6 +799,55 @@ test('reports only the own actions of every split chunk', async () => {
     pair.leftSent.map(message => message[1]),
     [2, 4, 5]
   )
+})
+
+test('reports every split chunk with onSend, which drops added', async () => {
+  let pair = await createTest(
+    created => {
+      created.leftNode.options.onSend = async (action, meta) => {
+        return [action, dropAdded(meta)]
+      }
+    },
+    { syncBatch: 2 }
+  )
+  await pair.leftNode.log.add([
+    [{ type: 'a' }],
+    [{ type: 'b' }],
+    [{ type: 'c' }],
+    [{ type: 'd' }],
+    [{ type: 'e' }]
+  ])
+  await setTimeout(10)
+
+  deepStrictEqual(
+    pair.leftSent.map(message => message[1]),
+    [2, 4, 5]
+  )
+  equal(pair.rightNode.lastReceived, 5)
+})
+
+test('reports every split chunk of the sync on connect', async () => {
+  let pair = createPair({ syncBatch: 2 })
+  pair.leftNode.options.onSend = async (action, meta) => {
+    return [action, dropAdded(meta)]
+  }
+  await pair.leftNode.log.add([
+    [{ type: 'a' }],
+    [{ type: 'b' }],
+    [{ type: 'c' }],
+    [{ type: 'd' }],
+    [{ type: 'e' }]
+  ])
+  pair.left.connect()
+  await pair.leftNode.waitFor('synchronized')
+
+  deepStrictEqual(
+    pair.leftSent
+      .filter(message => message[0] === 'sync')
+      .map(message => message[1]),
+    [2, 4, 5]
+  )
+  equal(pair.rightNode.lastReceived, 5)
 })
 
 test('reports the filtered actions in the last split chunk', async () => {
