@@ -465,6 +465,27 @@ test('uses always latest added', async () => {
   equal(pair.leftSent[1]![1], 1)
 })
 
+test('keeps the wire order on slow onReceive', async () => {
+  let pair = await createTest(created => {
+    created.rightNode.options.onReceive = async (action, meta) => {
+      if (action.type === 'a') await setTimeout(20)
+      return [action, meta]
+    }
+  })
+  await pair.leftNode.log.add([
+    [{ type: 'a' }],
+    [{ type: 'b' }],
+    [{ type: 'c' }]
+  ])
+  await setTimeout(50)
+
+  deepStrictEqual(pair.rightNode.log.actions(), [
+    { type: 'a' },
+    { type: 'b' },
+    { type: 'c' }
+  ])
+})
+
 test('changes multiple actions in map', async () => {
   let pair = await createTest(created => {
     created.leftNode.options.onSend = async (action, meta) => {
@@ -672,11 +693,11 @@ test('keeps order on slow log', async () => {
   pair.left.send(['sync', 1, { type: 'slow' }, { id: '1 client 0', time: 1 }])
   pair.left.send(['sync', 2, { type: 'fast' }, { id: '2 client 0', time: 2 }])
   await setTimeout(20)
-  deepStrictEqual(added, ['fast'])
+  deepStrictEqual(added, [])
   deepStrictEqual(pair.rightSent, [])
 
   await setTimeout(120)
-  deepStrictEqual(added, ['fast', 'slow'])
+  deepStrictEqual(added, ['slow', 'fast'])
   deepStrictEqual(pair.rightSent, [
     ['synced', 1],
     ['synced', 2]

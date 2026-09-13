@@ -47,7 +47,7 @@ export function sendSynced(added) {
 function ignore() {}
 
 export async function syncMessage(added, ...data) {
-  let promises = []
+  let entries = []
   for (let i = 0; i < data.length - 1; i += 2) {
     let action = data[i]
     let meta = data[i + 1]
@@ -59,15 +59,16 @@ export async function syncMessage(added, ...data) {
     meta.time = meta.time + this.baseTime
     if (this.timeFix) meta.time = meta.time + this.timeFix
 
-    if (this.options.onReceive) {
-      promises.push(runOnReceiveInParallel(this, action, meta))
-    } else {
-      promises.push(add(this, action, meta))
-    }
+    entries.push([action, meta])
   }
 
+  let filtered = this.options.onReceive
+    ? filter(this, entries)
+    : Promise.resolve(entries)
   let previous = this.receiving ?? Promise.resolve()
-  let current = previous.then(() => Promise.all(promises))
+  let current = Promise.all([previous, filtered]).then(([, ready]) =>
+    add(this, ready)
+  )
   this.receiving = current.then(ignore, ignore)
   try {
     await current
@@ -79,20 +80,28 @@ export async function syncMessage(added, ...data) {
   this.sendSynced(added)
 }
 
-async function runOnReceiveInParallel(node, action, meta) {
-  let result
+async function runOnReceive(node, action, meta) {
   try {
-    result = await node.options.onReceive(action, meta)
+    return await node.options.onReceive(action, meta)
   } catch (e) {
     node.error(e)
-    return
+    return false
   }
-  if (result) await add(node, result[0], result[1])
 }
 
-function add(node, action, meta) {
-  if (node.received) node.received[meta.id] = true
-  return node.log.add(action, meta)
+async function filter(node, entries) {
+  let results = await Promise.all(
+    entries.map(([action, meta]) => runOnReceive(node, action, meta))
+  )
+  return results.filter(Boolean)
+}
+
+async function add(node, entries) {
+  if (entries.length === 0) return
+  if (node.received) {
+    for (let [, meta] of entries) node.received[meta.id] = true
+  }
+  await node.log.add(entries)
 }
 
 export function syncedMessage(synced) {
