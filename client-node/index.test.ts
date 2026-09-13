@@ -62,6 +62,6 @@ test('does not connect before initializing', async () => {
   await setTimeout(10)
   deepStrictEqual(pair.leftSent, [])
   returnLastAdded(10)
-  await setTimeout(10)
+  await pair.wait('right')
   deepStrictEqual(pair.leftSent, [['connect', node.localProtocol, 'client', 0]])
 })
