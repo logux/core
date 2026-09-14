@@ -34,7 +34,7 @@ function whenReady(node: BaseNode<object, TestLog>): Promise<void> {
 }
 
 class BrokenStore extends MemoryStore {
-  override add(): Promise<false | Meta> {
+  override add(): Promise<(false | Meta)[]> {
     return Promise.reject(new Error('Disk error'))
   }
 }
@@ -42,7 +42,7 @@ class BrokenStore extends MemoryStore {
 // The failure is slow enough for `ready` message to be received
 // before the log will report the error
 class SlowBrokenStore extends MemoryStore {
-  override add(): Promise<false | Meta> {
+  override add(): Promise<(false | Meta)[]> {
     return new Promise((resolve, reject) => {
       globalThis.setTimeout(() => {
         reject(new Error('Disk error'))
@@ -683,10 +683,12 @@ test('keeps order on slow log', async () => {
   let pair = await createTest(created => {
     let store = created.rightNode.log.store
     let originAdd = store.add.bind(store)
-    store.add = async (action, meta) => {
-      await setTimeout(action.type === 'slow' ? 100 : 0)
-      added.push(action.type)
-      return originAdd(action, meta)
+    store.add = async entries => {
+      for (let [action] of entries) {
+        await setTimeout(action.type === 'slow' ? 100 : 0)
+        added.push(action.type)
+      }
+      return originAdd(entries)
     }
   })
 

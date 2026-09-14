@@ -59,6 +59,58 @@ function toReasons(reasons) {
   return typeof reasons === 'string' ? [reasons] : reasons
 }
 
+function prepare(log, action, meta) {
+  if (typeof action.type === 'undefined') {
+    throw new Error('Expected "type" in action')
+  }
+
+  let newId = false
+  if (typeof meta.id === 'undefined') {
+    newId = true
+    meta.id = log.generateId()
+    if (typeof meta.time === 'undefined') meta.time = log.lastTime
+  } else if (typeof meta.time === 'undefined') {
+    meta.time = log.now()
+  }
+
+  if (typeof meta.reasons === 'undefined') {
+    meta.reasons = []
+  }
+
+  if (process.env.NODE_ENV !== 'production') {
+    if (!Array.isArray(meta.reasons)) {
+      throw new Error('Expected "reasons" to be an array of strings')
+    }
+
+    for (let reason of meta.reasons) {
+      if (typeof reason !== 'string') {
+        throw new Error('Expected "reasons" to be an array of strings')
+      }
+    }
+
+    if (typeof meta.indexes !== 'undefined') {
+      if (!Array.isArray(meta.indexes)) {
+        throw new Error('Expected "indexes" to be an array of strings')
+      }
+
+      for (let index of meta.indexes) {
+        if (typeof index !== 'string') {
+          throw new Error('Expected "indexes" to be an array of strings')
+        }
+      }
+    }
+  }
+
+  actionEvents(log.emitter, 'preadd', action, meta)
+
+  // The reason must be in the meta before the write, but the cleaning
+  // of the previous action can only run after it: inside a batch the older
+  // actions are stored by the same write
+  if (meta.keepLast) meta.reasons.push(meta.keepLast)
+
+  return newId
+}
+
 export class Log {
   constructor(opts = {}) {
     if (process.env.NODE_ENV !== 'production') {
@@ -86,85 +138,66 @@ export class Log {
     let wasBatched = Array.isArray(input)
     let entries = wasBatched ? input : [[input, inputMeta]]
 
+    // Every `preadd` is called before the write, since the store needs
+    // the final reasons of all actions to know what to write. As a result,
+    // `add` of the first action is called after `preadd` of the last one.
+    let newIds = []
+    let writing = []
+    let checking = []
+    for (let i = 0; i < entries.length; i++) {
+      let [action, meta = {}] = entries[i]
+      let newId = prepare(this, action, meta)
+      newIds.push(newId)
+      entries[i] = [action, meta]
+      if (meta.reasons.length > 0) {
+        writing.push(entries[i])
+      } else if (!newId) {
+        // Actions without reasons are not stored, but an action with the same
+        // ID could be stored before with a reason
+        checking.push(meta.id)
+      }
+    }
+
+    // All actions of a single `sync` message are written by a single call,
+    // so a store can put them into a single transaction
+    let written = writing.length > 0 ? await this.store.add(writing) : []
+    // The check runs after the write, so an action of this batch is found
+    // by the duplicate of it in the same batch
+    let stored = checking.length > 0 ? await this.store.has(checking) : []
+    let known = stored.length > 0 ? new Set(stored) : undefined
+
     let results = []
     let batch = []
-    for (let [action, meta = {}] of entries) {
-      if (typeof action.type === 'undefined') {
-        throw new Error('Expected "type" in action')
-      }
-
-      let newId = false
-      if (typeof meta.id === 'undefined') {
-        newId = true
-        meta.id = this.generateId()
-        if (typeof meta.time === 'undefined') meta.time = this.lastTime
-      } else if (typeof meta.time === 'undefined') {
-        meta.time = this.now()
-      }
-
-      if (typeof meta.reasons === 'undefined') {
-        meta.reasons = []
-      }
-
-      if (process.env.NODE_ENV !== 'production') {
-        if (!Array.isArray(meta.reasons)) {
-          throw new Error('Expected "reasons" to be an array of strings')
-        }
-
-        for (let reason of meta.reasons) {
-          if (typeof reason !== 'string') {
-            throw new Error('Expected "reasons" to be an array of strings')
-          }
-        }
-
-        if (typeof meta.indexes !== 'undefined') {
-          if (!Array.isArray(meta.indexes)) {
-            throw new Error('Expected "indexes" to be an array of strings')
-          }
-
-          for (let index of meta.indexes) {
-            if (typeof index !== 'string') {
-              throw new Error('Expected "indexes" to be an array of strings')
-            }
-          }
-        }
-      }
-
-      actionEvents(this.emitter, 'preadd', action, meta)
-
-      if (meta.keepLast) {
-        this.removeReason(meta.keepLast, { olderThan: meta })
-        meta.reasons.push(meta.keepLast)
-      }
-
-      // Actions without reasons will not be stored, so we can skip the store
-      // and keep `add()` synchronous for them
+    let next = 0
+    for (let i = 0; i < entries.length; i++) {
+      let [action, meta] = entries[i]
+      if (meta.keepLast) this.removeReason(meta.keepLast, { olderThan: meta })
       let result
-      if (meta.reasons.length === 0 && newId) {
-        actionEvents(this.emitter, 'add', action, meta)
-        actionEvents(this.emitter, 'clean', action, meta)
-        result = meta
-      } else if (meta.reasons.length === 0) {
-        let [action2] = await this.store.byId(meta.id)
-        if (action2) {
-          result = false
-        } else {
-          actionEvents(this.emitter, 'add', action, meta)
-          actionEvents(this.emitter, 'clean', action, meta)
-          result = meta
-        }
-      } else {
-        let addedMeta = await this.store.add(action, meta)
+      if (meta.reasons.length > 0) {
+        let addedMeta = written[next++]
         if (addedMeta === false) {
           result = false
         } else {
           actionEvents(this.emitter, 'add', action, meta)
           result = addedMeta
         }
+      } else if (newIds[i]) {
+        // The ID was just generated, so no other action can have it
+        actionEvents(this.emitter, 'add', action, meta)
+        actionEvents(this.emitter, 'clean', action, meta)
+        result = meta
+      } else {
+        if (known && known.has(meta.id)) {
+          result = false
+        } else {
+          actionEvents(this.emitter, 'add', action, meta)
+          actionEvents(this.emitter, 'clean', action, meta)
+          result = meta
+        }
       }
 
       results.push(result)
-      if (result !== false) batch.push([action, meta])
+      if (result !== false) batch.push(entries[i])
     }
 
     if (batch.length > 0) this.emitter.emit('batch', batch)

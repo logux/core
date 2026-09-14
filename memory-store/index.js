@@ -104,6 +104,35 @@ function selectEntries(store, criteria) {
   return entries.filter(([, meta]) => matchCriteria(meta, criteria))
 }
 
+function addEntry(store, action, meta) {
+  let entry = [action, meta]
+  let id = meta.id
+
+  let list = store.entries
+  for (let i = 0; i < list.length; i++) {
+    let [, otherMeta] = list[i]
+    if (id === otherMeta.id) {
+      return false
+    } else if (!isFirstOlder(otherMeta, meta)) {
+      forEachIndex(meta, index => {
+        checkIndex(store, index)
+        let indexList = store.indexes[index].entries
+        let j = indexList.findIndex(item => !isFirstOlder(item[1], meta))
+        indexList.splice(j, 0, entry)
+      })
+      list.splice(i, 0, entry)
+      return insert(store, entry)
+    }
+  }
+
+  forEachIndex(meta, index => {
+    checkIndex(store, index)
+    store.indexes[index].entries.push(entry)
+  })
+  list.push(entry)
+  return insert(store, entry)
+}
+
 export class MemoryStore {
   constructor() {
     this.entries = []
@@ -114,33 +143,12 @@ export class MemoryStore {
     this.lastSent = 0
   }
 
-  async add(action, meta) {
-    let entry = [action, meta]
-    let id = meta.id
-
-    let list = this.entries
-    for (let i = 0; i < list.length; i++) {
-      let [, otherMeta] = list[i]
-      if (id === otherMeta.id) {
-        return false
-      } else if (!isFirstOlder(otherMeta, meta)) {
-        forEachIndex(meta, index => {
-          checkIndex(this, index)
-          let indexList = this.indexes[index].entries
-          let j = indexList.findIndex(item => !isFirstOlder(item[1], meta))
-          indexList.splice(j, 0, entry)
-        })
-        list.splice(i, 0, entry)
-        return insert(this, entry)
-      }
+  async add(entries) {
+    let results = []
+    for (let [action, meta] of entries) {
+      results.push(await addEntry(this, action, meta))
     }
-
-    forEachIndex(meta, index => {
-      checkIndex(this, index)
-      this.indexes[index].entries.push(entry)
-    })
-    list.push(entry)
-    return insert(this, entry)
+    return results
   }
 
   async addReason(reasons, criteria) {
@@ -179,6 +187,11 @@ export class MemoryStore {
     this.lastReceived = 0
     this.lastAdded = 0
     this.lastSent = 0
+  }
+
+  async has(ids) {
+    let looking = new Set(ids)
+    return this.entries.map(([, meta]) => meta.id).filter(id => looking.has(id))
   }
 
   async get(opts = {}) {

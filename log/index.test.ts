@@ -1,5 +1,6 @@
 import { deepStrictEqual, equal, ok, throws } from 'node:assert'
 import { afterEach, test } from 'node:test'
+import { setTimeout as delay } from 'node:timers/promises'
 
 import {
   type Action,
@@ -842,4 +843,128 @@ test('emits batch event with metadata', async () => {
 
   let metas = await log.add([[{ type: 'A' }], [{ type: 'B' }]])
   deepStrictEqual(ids, [metas[0] && metas[0].id, metas[1] && metas[1].id])
+})
+
+test('adds all actions of a batch by a single store call', async () => {
+  let log = createLog()
+  let calls: number[] = []
+  let origin = log.store.add.bind(log.store)
+  log.store.add = entries => {
+    calls.push(entries.length)
+    return origin(entries)
+  }
+
+  let metas = await log.add([
+    [{ type: 'A' }, { id: '1 test', reasons: ['test'], time: 1 }],
+    // Actions without reasons are not stored, so they are not in the call
+    [{ type: 'B' }, { id: '2 test', time: 2 }],
+    [{ type: 'C' }, { id: '3 test', reasons: ['test'], time: 3 }],
+    // The duplicate of the first action still gets its own result
+    [{ type: 'A' }, { id: '1 test', reasons: ['test'], time: 1 }]
+  ])
+
+  deepStrictEqual(calls, [3])
+  deepStrictEqual(
+    metas.map(meta => meta !== false),
+    [true, true, true, false]
+  )
+  checkActions(log, [{ type: 'A' }, { type: 'C' }])
+})
+
+test('cleans keepLast of the older action inside the batch', async () => {
+  let log = createLog()
+  await log.add([
+    [{ type: 'A' }, { id: '1 test', keepLast: 'x', time: 1 }],
+    [{ type: 'B' }, { id: '2 test', keepLast: 'x', time: 2 }]
+  ])
+  await delay(10)
+
+  // Only the last action of the batch keeps the reason
+  checkActions(log, [{ type: 'B' }])
+})
+
+test('checks IDs of a batch by a single store call', async () => {
+  let log = createLog()
+  await log.add({ type: 'A' }, { id: '1 test', reasons: ['test'], time: 1 })
+
+  let calls: string[][] = []
+  let origin = log.store.has.bind(log.store)
+  log.store.has = ids => {
+    calls.push(ids)
+    return origin(ids)
+  }
+
+  let metas = await log.add([
+    // It was stored before with a reason, so it is a duplicate
+    [{ type: 'A' }, { id: '1 test', time: 1 }],
+    [{ type: 'B' }, { id: '2 test', time: 2 }],
+    // The ID was just generated, so the store can’t have it
+    [{ type: 'C' }]
+  ])
+
+  deepStrictEqual(calls, [['1 test', '2 test']])
+  deepStrictEqual(
+    metas.map(meta => meta !== false),
+    [false, true, true]
+  )
+})
+
+test('does not touch the store for new actions without reasons', async () => {
+  let log = createLog()
+  let calls: string[] = []
+  let originAdd = log.store.add.bind(log.store)
+  log.store.add = entries => {
+    calls.push('add')
+    return originAdd(entries)
+  }
+  let originHas = log.store.has.bind(log.store)
+  log.store.has = ids => {
+    calls.push('has')
+    return originHas(ids)
+  }
+
+  await log.add([[{ type: 'A' }], [{ type: 'B' }]])
+  deepStrictEqual(calls, [])
+
+  await log.add([[{ type: 'C' }, { reasons: ['test'] }]])
+  deepStrictEqual(calls, ['add'])
+})
+
+test('fires preadd of the whole batch before the first add', async () => {
+  let log = createLog()
+  let events: string[] = []
+  log.on('preadd', action => {
+    events.push(`preadd ${action.type}`)
+  })
+  log.on('add', action => {
+    events.push(`add ${action.type}`)
+  })
+
+  await log.add([
+    [{ type: 'A' }, { reasons: ['test'] }],
+    [{ type: 'B' }, { reasons: ['test'] }]
+  ])
+
+  deepStrictEqual(events, ['preadd A', 'preadd B', 'add A', 'add B'])
+})
+
+test('finds a duplicate without reasons inside the batch', async () => {
+  let log = createLog()
+  let added: string[] = []
+  log.on('add', action => {
+    added.push(action.type)
+  })
+
+  let metas = await log.add([
+    [{ type: 'A' }, { id: '1 test', reasons: ['test'], time: 1 }],
+    // The same ID as the action, which this very batch stores
+    [{ type: 'B' }, { id: '1 test', time: 1 }]
+  ])
+
+  deepStrictEqual(
+    metas.map(meta => meta !== false),
+    [true, false]
+  )
+  deepStrictEqual(added, ['A'])
+  checkActions(log, [{ type: 'A' }])
 })

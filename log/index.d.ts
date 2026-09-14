@@ -244,14 +244,15 @@ export interface GetOptions {
  */
 export abstract class LogStore {
   /**
-   * Add action to store. Action always will have `type` property.
+   * Add all actions of a single {@link Log#add} call to the store.
+   * Actions always will have `type` property.
    *
-   * @param action The action to add.
-   * @param meta Action’s metadata.
-   * @returns Promise with `meta` for new action or `false` if action with
-   *          same `meta.id` was already in store.
+   * @param entries Actions with their metadata.
+   * @returns Promise with an array of `meta` for every new action
+   *          or `false` for an action with the `meta.id`, which was already
+   *          in the store.
    */
-  add(action: AnyAction, meta: Meta): Promise<false | Meta>
+  add(entries: [AnyAction, Meta][]): Promise<(false | Meta)[]>
 
   /**
    * Add reasons to metadata of actions, which are already in the store.
@@ -271,6 +272,14 @@ export abstract class LogStore {
    * @returns Promise with array of action and metadata.
    */
   byId(id: ID): Promise<[Action, Meta] | [null, null]>
+
+  /**
+   * Return IDs, which the store already has.
+   *
+   * @param ids Action IDs to check.
+   * @returns Promise with the IDs, which are in the store.
+   */
+  has(ids: ID[]): Promise<ID[]>
 
   /**
    * Change action metadata.
@@ -517,6 +526,7 @@ export class Log<
    *
    * * `preadd`: when somebody try to add action to log.
    *   It fires before ID check. The best place to add reason.
+   *   For a batch, `preadd` of every action fires before the first `add`.
    * * `add`: when new action was added to log.
    * * `clean`: when action was cleaned from store.
    * * `batch`: when actions from a single `Log#add()` call were added.
