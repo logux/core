@@ -427,29 +427,12 @@ test('supports multiple actions in sync', async () => {
   ])
 })
 
-test('starts and ends timeout', async () => {
-  let pair = await createTest()
-  privateMethods(pair.leftNode).sendSync(1, [
-    [{ type: 'a' }, { added: 1, id: '1 test2', time: 1 }]
-  ])
-  privateMethods(pair.leftNode).sendSync(2, [
-    [{ type: 'a' }, { added: 1, id: '2 test2', time: 2 }]
-  ])
-  equal(privateMethods(pair.leftNode).waiting, 2)
-
-  privateMethods(pair.leftNode).syncedMessage(1)
-  equal(privateMethods(pair.leftNode).waiting, 1)
-
-  privateMethods(pair.leftNode).syncedMessage(2)
-  equal(privateMethods(pair.leftNode).waiting, 0)
-})
-
 test('should nothing happend if syncedMessage of empty syncing', async () => {
   let pair = await createTest()
-  equal(privateMethods(pair.leftNode).waiting, 0)
+  equal(privateMethods(pair.leftNode).syncing, 0)
 
   privateMethods(pair.leftNode).syncedMessage(1)
-  equal(privateMethods(pair.leftNode).waiting, 0)
+  equal(privateMethods(pair.leftNode).syncing, 0)
 })
 
 test('uses always latest added', async () => {
@@ -583,7 +566,7 @@ test('splits big batch by actions count', async () => {
   ])
 })
 
-test('keeps timeouts and syncing balanced on split batch', async () => {
+test('keeps syncing balanced on split batch', async () => {
   let synced: number[] = []
   let pair = await createTest(
     created => {
@@ -598,12 +581,10 @@ test('keeps timeouts and syncing balanced on split batch', async () => {
   await pair.leftNode.log.add([[{ type: 'a' }], [{ type: 'b' }]])
   await pair.wait('right')
   equal(privateMethods(pair.leftNode).syncing, 2)
-  equal(privateMethods(pair.leftNode).waiting, 2)
 
   privateMethods(pair.leftNode).syncedMessage(1)
   privateMethods(pair.leftNode).syncedMessage(2)
   equal(privateMethods(pair.leftNode).syncing, 0)
-  equal(privateMethods(pair.leftNode).waiting, 0)
   equal(pair.leftNode.state, 'synchronized')
   deepStrictEqual(synced, [1, 2])
 })
@@ -617,7 +598,6 @@ test('does not send message on fully filtered batch', async () => {
 
   deepStrictEqual(pair.leftSent, [])
   equal(privateMethods(pair.leftNode).syncing, 0)
-  equal(privateMethods(pair.leftNode).waiting, 0)
 })
 
 test('keeps order on slow onSend', async () => {

@@ -33,7 +33,6 @@ export function sendSync(added, entries) {
         if (meta.added > chunkAdded) chunkAdded = meta.added
       }
     }
-    this.startTimeout()
     this.syncing += 1
     this.setState('sending')
     this.send(['sync', chunkAdded].concat(encodeEntries(this, chunk)))
@@ -105,7 +104,6 @@ async function add(node, entries) {
 }
 
 export function syncedMessage(synced) {
-  this.endTimeout()
   this.setLastSent(synced)
   this.emitter.emit('synced', synced)
   if (this.syncing > 0) this.syncing -= 1

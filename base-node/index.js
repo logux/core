@@ -326,9 +326,8 @@ export class BaseNode {
     }, ms)
   }
 
-  // The remote node answers in order, so one timer for the oldest
-  // unanswered message is enough: a big sync is sent in chunks at once,
-  // and a timer per chunk would count the time of writing all previous ones
+  // Only `connect` and `ping` wait for an answer. The remote node answers
+  // in order, so one timer for the oldest unanswered message is enough
   startTimeout() {
     if (!this.options.timeout) return
     this.waiting += 1
