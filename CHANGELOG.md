@@ -2,6 +2,19 @@
 
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## 0.12 ⴰ
+
+- Moved to Protocol 7 with `ready` message.
+- Changed `LogStore#add()` to accept an array of actions.
+- Added `LogStore#hash()`.
+- Added `ready` event and `BaseNode#remoteReady`.
+- Added `ready` option to nodes to delay `ready` message.
+- Changed `synchronized` state to wait for `ready` message from remote node.
+- Removed timeout for `sync` and `synced` messages.
+- Fixed actions order on different speed of `onReceive` processing.
+- Fixed losing actions on disconnection in the middle of initial sync.
+- Removed treating closed WebSocket as an error.
+
 ## 0.11.8
 
 - Fixed sending `synced` message before action was processed.
