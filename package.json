@@ -39,15 +39,15 @@
   },
   "devDependencies": {
     "@logux/oxc-configs": "^1.2.0",
-    "@types/ws": "^8.18.1",
+    "@types/ws": "^8.18.2",
     "better-node-test": "^1.0.0",
     "check-dts": "^2.0.1",
     "eslint-plugin-prefer-let": "^4.2.2",
     "nanospy": "^2.0.2",
-    "oxlint": "^1.82.0",
-    "oxlint-tsgolint": "^7.0.2001",
+    "oxlint": "^1.87.0",
+    "oxlint-tsgolint": "^7.0.2003",
     "typescript": "^7.0.2",
-    "ws": "^8.21.3"
+    "ws": "^8.22.0"
   },
   "engines": {
     "node": "^22.0.0 || ^24.0.0 || >=26.0.0"

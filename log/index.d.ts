@@ -495,7 +495,6 @@ export class Log<
    * @returns When iteration will be finished by iterator or end of actions.
    */
   each(callback: ActionIterator<LogMeta>): Promise<void>
-  each(callback: ActionIterator<LogMeta>): Promise<void>
 
   /**
    * Generate next unique action ID.
