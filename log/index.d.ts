@@ -363,6 +363,32 @@ interface LogOptions<Store extends LogStore = LogStore> {
   nodeId: string
 
   /**
+   * Function to change or skip actions on reading them from the store
+   * by `Log#each()` and `Log#byId()`. For instance, for migrations
+   * of old actions.
+   *
+   * ```js
+   * new Log({
+   *   nodeId,
+   *   onRead(action, meta) {
+   *     if (action.type === 'user/rename') {
+   *       return [{ ...action, type: 'user/changeName' }, meta]
+   *     } else if (action.type === 'user/legacy') {
+   *       return false
+   *     } else {
+   *       return [action, meta]
+   *     }
+   *   },
+   *   store
+   * })
+   * ```
+   */
+  onRead?: (
+    action: Action,
+    meta: Meta
+  ) => [Action, Meta] | false | Promise<[Action, Meta] | false>
+
+  /**
    * Store for log.
    */
   store: Store
@@ -391,6 +417,11 @@ export class Log<
    * Unique node ID. It is used in action IDs.
    */
   nodeId: string
+
+  /**
+   * Function to change or skip actions on reading them from the store.
+   */
+  onRead: LogOptions['onRead']
 
   /**
    * Log store.

@@ -125,11 +125,11 @@ export class Log {
       }
     }
 
-    this.nodeId = opts.nodeId
-
     this.lastTime = 0
 
+    this.nodeId = opts.nodeId
     this.store = opts.store
+    this.onRead = opts.onRead
 
     this.emitter = createNanoEvents()
   }
@@ -208,8 +208,10 @@ export class Log {
     return this.store.addReason(toReasons(reasons), criteria)
   }
 
-  byId(id) {
-    return this.store.byId(id)
+  async byId(id) {
+    let entry = await this.store.byId(id)
+    if (!this.onRead || !entry[0]) return entry
+    return (await this.onRead(entry[0], entry[1])) || [null, null]
   }
 
   async changeMeta(id, diff) {
@@ -244,24 +246,30 @@ export class Log {
     }
 
     let store = this.store
-    return new Promise(resolve => {
+    let onRead = this.onRead
+    return new Promise((resolve, reject) => {
       async function nextPage(get) {
         let page = await get()
         let result
         for (let i = page.entries.length - 1; i >= 0; i--) {
-          let entry = page.entries[i]
-          result = callback(entry[0], entry[1])
+          let [action, meta] = page.entries[i]
+          if (onRead) {
+            let entry = await onRead(action, meta)
+            if (!entry) continue
+            ;[action, meta] = entry
+          }
+          result = callback(action, meta)
           if (result === false) break
         }
 
         if (result === false || !page.next) {
           resolve()
         } else {
-          nextPage(page.next)
+          nextPage(page.next).catch(reject)
         }
       }
 
-      nextPage(store.get.bind(store, opts))
+      nextPage(store.get.bind(store, opts)).catch(reject)
     })
   }
 

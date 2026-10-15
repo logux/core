@@ -449,6 +449,101 @@ test('returns action by ID', async () => {
   equal(result2[1], null)
 })
 
+test('changes and skips entries on reading', async () => {
+  let store = new MemoryStore()
+  let meta: Meta = { added: 0, id: '1 0', reasons: ['test'], time: 0 }
+  let get: (opts?: object) => Promise<LogPage> = async () => {
+    return {
+      entries: [
+        [{ type: 'skip' }, meta],
+        [{ type: 'a' }, meta]
+      ],
+      async next(): Promise<LogPage> {
+        return {
+          entries: [
+            [{ type: 'b' }, meta],
+            [{ type: 'skip' }, meta]
+          ]
+        }
+      }
+    }
+  }
+  store.get = get
+  let calls: string[] = []
+  let log = new Log({
+    nodeId: 'test',
+    async onRead(action, entryMeta) {
+      calls.push(action.type)
+      if (action.type === 'skip') return false
+      return [{ type: action.type + '2' }, { ...entryMeta, migrated: true }]
+    },
+    store
+  })
+
+  let entries: [Action, Meta][] = []
+  await log.each((action, entryMeta) => {
+    entries.push([action, entryMeta])
+  })
+  deepStrictEqual(calls, ['a', 'skip', 'skip', 'b'])
+  deepStrictEqual(entries, [
+    [{ type: 'a2' }, { ...meta, migrated: true }],
+    [{ type: 'b2' }, { ...meta, migrated: true }]
+  ])
+})
+
+test('stops reading on false from callback', async () => {
+  let calls: string[] = []
+  let log = new Log({
+    nodeId: 'test',
+    onRead(action, meta) {
+      calls.push(action.type)
+      return [action, meta]
+    },
+    store: new MemoryStore()
+  })
+  await log.add({ type: 'A' }, { reasons: ['test'] })
+  await log.add({ type: 'B' }, { reasons: ['test'] })
+  await log.each(() => false)
+  deepStrictEqual(calls, ['B'])
+})
+
+test('rejects on onRead error', async () => {
+  let log = new Log({
+    nodeId: 'test',
+    onRead() {
+      throw new Error('test')
+    },
+    store: new MemoryStore()
+  })
+  await log.add({ type: 'A' }, { reasons: ['test'] })
+  equal(await getError(() => log.each(() => {})), 'test')
+})
+
+test('changes action by ID on reading', async () => {
+  let calls: string[] = []
+  let log = new Log<Meta, MemoryStore>({
+    nodeId: 'test',
+    async onRead(action, meta) {
+      calls.push(action.type)
+      if (action.type === 'B') return false
+      return [{ type: 'A2' }, meta]
+    },
+    store: new MemoryStore()
+  })
+  await log.add({ type: 'A' }, { id: '1 n', reasons: ['test'] })
+  await log.add({ type: 'B' }, { id: '2 n', reasons: ['test'] })
+
+  let result1 = await log.byId('1 n')
+  deepStrictEqual(result1[0], { type: 'A2' })
+  equal(result1[1]?.id, '1 n')
+
+  deepStrictEqual(await log.byId('2 n'), [null, null])
+  deepStrictEqual(await log.byId('3 n'), [null, null])
+  deepStrictEqual(calls, ['A', 'B'])
+
+  checkActions(log, [{ type: 'A' }, { type: 'B' }])
+})
+
 test('cleans log by reason', async () => {
   let log = await logWith([
     [{ type: 'A' }, { reasons: ['a'] }],
