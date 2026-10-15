@@ -19,6 +19,11 @@ log.addReason('user', { id: '1 test' })
 
 log.addReason(['users/1', 'users/2'])
 
+log.removeReason('user', {
+  olderThan: { id: '1 test 0', time: 1 },
+  youngerThan: { id: '2 test 0', time: 2 }
+})
+
 log.on('batch', entries => {
   for (let [action, meta] of entries) {
     console.log(action.type, meta.id)

@@ -190,12 +190,12 @@ export interface Criteria {
   /**
    * Change reasons only for actions older than specific action.
    */
-  olderThan?: Meta
+  olderThan?: MetaTime
 
   /**
    * Change reasons only for actions younger than specific action.
    */
-  youngerThan?: Meta
+  youngerThan?: MetaTime
 }
 
 export interface LastSynced {
