@@ -2,6 +2,10 @@
 
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## 0.12.1
+
+- Fixed `Criteria.olderThan`/`youngerThan` types.
+
 ## 0.12 ⴰ
 
 - Moved to Protocol 7 with `ready` message.
