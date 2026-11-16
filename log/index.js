@@ -186,14 +186,12 @@ export class Log {
         actionEvents(this.emitter, 'add', action, meta)
         actionEvents(this.emitter, 'clean', action, meta)
         result = meta
+      } else if (known && known.has(meta.id)) {
+        result = false
       } else {
-        if (known && known.has(meta.id)) {
-          result = false
-        } else {
-          actionEvents(this.emitter, 'add', action, meta)
-          actionEvents(this.emitter, 'clean', action, meta)
-          result = meta
-        }
+        actionEvents(this.emitter, 'add', action, meta)
+        actionEvents(this.emitter, 'clean', action, meta)
+        result = meta
       }
 
       results.push(result)

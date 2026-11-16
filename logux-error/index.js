@@ -15,10 +15,6 @@ export class LoguxError extends Error {
     } else {
       this.message = this.description
     }
-
-    if (Error.captureStackTrace) {
-      Error.captureStackTrace(this, LoguxError)
-    }
   }
 
   static describe(type, options) {
