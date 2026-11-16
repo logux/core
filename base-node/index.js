@@ -219,6 +219,8 @@ export class BaseNode {
         this.error(e)
         return
       }
+      // Connection could be lost during slow `onSend()`
+      if (!this.authenticated) return
       let filtered = []
       for (let i = 0; i < results.length; i++) {
         let result = results[i]

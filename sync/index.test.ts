@@ -938,3 +938,24 @@ test('does not lose the actions on disconnect between split chunks', async () =>
   ])
   equal(client.lastReceived, 4)
 })
+
+test('does not count the actions of the lost connection', async () => {
+  let pair = await createTest(created => {
+    created.leftNode.options.onSend = async (action, meta) => {
+      await setTimeout(10)
+      return [action, meta]
+    }
+  })
+  pair.leftNode.log.add({ type: 'a' })
+  await setTimeout(1)
+  pair.left.disconnect()
+  await setTimeout(20)
+  equal(pair.leftNode.state, 'disconnected')
+
+  // Logux Server creates a new node for every connection
+  pair.rightNode = new ServerNode('server2', pair.rightNode.log, pair.right)
+  await pair.left.connect()
+  await setTimeout(50)
+  equal(pair.leftNode.state, 'synchronized')
+  deepStrictEqual(pair.rightNode.log.actions(), [{ type: 'a' }])
+})
