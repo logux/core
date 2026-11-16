@@ -2,6 +2,10 @@
 
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## 0.12.2
+
+- Does not count the actions of the lost connection.
+
 ## 0.12.1
 
 - Fixed `Criteria.olderThan`/`youngerThan` types.
